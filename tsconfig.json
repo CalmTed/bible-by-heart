@@ -1,6 +1,46 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+		"target": "ESNext",
+		"module": "ES2022",
+		"moduleResolution": "node",
+		"esModuleInterop": true,		
+
+		"jsx": "react-native",
+
+		"lib": ["DOM", "ESNext"],
+		"noEmit": true,
+		"resolveJsonModule": true,
+
+
+		"allowJs": true,
+		"checkJs": false,
+		"strict": true,
+
+		"declaration": true,
+		"sourceMap": true, 
+
+		"useDefineForClassFields": true,
+
+		"experimentalDecorators": true,
+
+		"forceConsistentCasingInFileNames": true,
+
+		"outDir": "dist/",
+		"baseUrl": ".",
+
+		"skipLibCheck": true
+	},
+
+	"include": [
+		"*.ts",
+		"*.tsx",
+		"src/*.ts",
+		"src/*.tsx",
+		"src/**/*.ts",
+		"src/**/*.tsx"
+	],
+  "exclude": [
+		"node_modules"
+	],
+  "extends": "expo/tsconfig.base"
 }

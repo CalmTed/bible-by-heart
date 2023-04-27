@@ -1,20 +1,40 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from "react-native";
+import { storageName } from './src/constants';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { AppStateModel } from './src/models';
+import { Navigator } from './src/navigator';
+import Storage from "react-native-storage";
+import AsyncStorage from "@react-native-community/async-storage";
+import { createAppState } from "./src/initials"
+
+const storage = new Storage({
+  size: 100,
+  storageBackend: AsyncStorage,
+  defaultExpires: null,
+});
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  const [isReady, setReady] = useState(false);
+  const [state, setState] : [AppStateModel, Dispatch<SetStateAction<AppStateModel>>] = useState(createAppState);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  useEffect(() => {
+    storage.load({
+      key: storageName
+    }).then((data) => {
+      setState(data);
+      setReady(true);
+    }).catch((e) => {
+      console.error(e)
+      setReady(true);
+    })
+  })
+
+  return (
+    <>
+        {isReady && <Navigator state={state}/>}
+        <StatusBar style="light"/>
+    </>
+  );
+  
+}
