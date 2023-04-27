@@ -3,6 +3,8 @@ import { StyleSheet, View, Text, Vibration } from "react-native"
 import { COLOR, globalStyle } from "../constants"
 // import { IconButton } from "./button"
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
+import { IconButton } from "./Button"
+import { IconName } from "./Icon"
 
 interface HeaderModel{
   navigation: StackNavigationHelpers
@@ -19,7 +21,7 @@ export const Header: FC<HeaderModel> = ({navigation,title, showBackButton, addit
   }
   return (
   <View style={headerStyle.view}>
-    {/* {showBackButton && <IconButton onPress={handleBack} icon="close"></IconButton>} */}
+    {showBackButton && <IconButton onPress={handleBack} icon={IconName.back}></IconButton>}
     <View style={headerStyle.textView}>
       {title && <Text style={headerStyle.text}>{title}</Text>}
     </View>
@@ -33,10 +35,8 @@ export const Header: FC<HeaderModel> = ({navigation,title, showBackButton, addit
 
 const headerStyle = StyleSheet.create({
   view: {
-    backgroundColor: COLOR.bgSecond,
-    height: 100,
+    height: 60,
     width: "100%",
-    paddingTop: 30,
     flexDirection: "row"
   },
   textView: {
