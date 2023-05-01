@@ -11,9 +11,10 @@ interface ButtonModel {
   disabled?: boolean
   type?: "main"
   icon?: IconName
+  color?: string
 }
 
-export const Button: FC<ButtonModel> = ({title, style, onPress, disabled, type, icon}) => {
+export const Button: FC<ButtonModel> = ({title, style, onPress, disabled, type, icon, color}) => {
   return <TouchableOpacity style={{ flexDirection: "row", opacity: disabled ? 0.5 : 1}} onPress={onPress} disabled={disabled}>
     
     {
@@ -30,8 +31,8 @@ export const Button: FC<ButtonModel> = ({title, style, onPress, disabled, type, 
       }
       {
         type !== "main" &&  <View style={{...buttonStyles.buttonStyle,...style}}>
-          {icon && <Icon iconName={icon}/>}
-          {title && <Text style={buttonStyles.buttonText}>{title}</Text>}
+          {icon && <Icon iconName={icon} color={color}/>}
+          {title && <Text style={{...buttonStyles.buttonText, color: (color ? color : COLOR.text)}}>{title}</Text>}
         </View>
       }
   </TouchableOpacity>
@@ -42,10 +43,11 @@ interface IconButtonModel{
   onPress: () => void
   style?: StyleSheet.NamedStyles<{}>
   disabled?: boolean
+  color?: string
 }
 
-export const IconButton: FC<IconButtonModel> = ({icon, onPress, style, disabled}) => {
-  return <Button icon={icon} onPress={onPress} style={{...buttonStyles.iconButton, ...style}} disabled={disabled}/>
+export const IconButton: FC<IconButtonModel> = ({icon, onPress, style, disabled, color}) => {
+  return <Button icon={icon} onPress={onPress} style={{...buttonStyles.iconButton, ...style}} disabled={disabled} color={color}/>
 }
 
 const buttonStyles = StyleSheet.create({

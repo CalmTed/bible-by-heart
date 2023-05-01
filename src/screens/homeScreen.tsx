@@ -3,24 +3,17 @@ import { View, Text, Modal, StyleSheet, TouchableWithoutFeedback, ScrollView, To
 import { storageName, globalStyle, SCREEN, LANGCODE } from "../constants"
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { ActionName, AppStateModel } from "../models"
-import Storage from "react-native-storage"
-import AsyncStorage from "@react-native-community/async-storage"
 import { navigateWithState, reduce } from "../screeenManagement"
 import { createAppState } from "../initials"
 import { createT } from "../l10n"
 import { Button } from "../components/Button"
 import { DaggerLogoSVG } from "../svg/daggetLogo"
+import storage from "../storage"
 
 export interface ScreenModel {
   route: any
   navigation: StackNavigationHelpers
 }
-
-const storage = new Storage({
-  size: 100,
-  storageBackend: AsyncStorage,
-  defaultExpires: null,
-});
 
 export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -38,7 +31,6 @@ export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
     })
   }, [JSON.stringify(state)]);
 
-  
   return <View style={{...globalStyle.screen,...globalStyle.view}}>
     <View style={homeStyle.logoView}>
       <DaggerLogoSVG/>

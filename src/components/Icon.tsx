@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { iconAdd, iconBack, iconBellGradient, iconBellOutline, iconDone, iconFilter, iconSearch, iconSelectArrow } from "./icondata";
+import { iconAdd, iconBack, iconBellGradient, iconBellOutline, iconCross, iconDone, iconFilter, iconSearch, iconSelectArrow } from "./icondata";
 import { SvgXml } from "react-native-svg";
 
 export enum IconName {
@@ -10,10 +10,11 @@ export enum IconName {
   filter = iconFilter,
   selectArrow = iconSelectArrow,
   bellOutline = iconBellOutline,
-  bellGradient = iconBellGradient
+  bellGradient = iconBellGradient,
+  cross = iconCross
 }
 
-export const Icon: FC<{iconName: IconName}> = ({iconName}) => {
+export const Icon: FC<{iconName: IconName, color?: string}> = ({iconName, color}) => {
 
-  return <SvgXml xml={iconName} width="18" height="18"/>;
+  return <SvgXml xml={iconName} width="18" height="18" stroke={color}/>;
 }

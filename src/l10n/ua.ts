@@ -3,14 +3,25 @@ import { en } from "./en";
 export const ua: typeof en = {
   name: "Українська",
   appName: "Біблія напам'ять",
+  //buttons
   homePractice: "Практика",
   homeList: "Список",
   homeChangeLang: "Змінити мову",
   homeClearData: "Стерти данні",
-
+  Archive: "Архівувати",
+  Archived: "Архівовано",
+  Remove: "Видалити",
+  Edit: "Редагувати",
+  //titles
   listScreenTitle: "Список",
-
   APSelectBook: "Вибір книги",
+  EditPassageTitle: "Редагування тексту",
+
+  //sub texts
+  DateCreated: "Додано",
+  DateEdited: "Змінено",
+  DateTested: "Практиковано",
+  AddTag: "Додати категорію...",
 
   bGenShrt:"Бут",
   bGenLong: "Буття",
@@ -70,7 +81,7 @@ export const ua: typeof en = {
   bJobLong: "Йова",
 
   bPsShrt:"Пс",
-  bPsLong: "Псалмів",
+  bPsLong: "Псалом",
 
   bProvShrt:"Прип",
   bProvLong: "Приповісті",

@@ -22,14 +22,14 @@ Whats the same:
 Roadmap
 ---
 
-- [+] asyncly get local storage
-- [+] navigation, state management
-- [+] interface l10n support
-- [ ] list manipulation (add, remove, edit, archive, search, filter)
-  - [ ] address selector
-  - [ ] add, remove
-  - [ ] edit text, set tag(archive)
-  - [ ] search (text, address, tag)
+- [x] asyncly get local storage
+- [x] navigation, state management
+- [x] interface l10n support
+- [.] list manipulation (add, remove, edit, archive, search, filter)
+  - [x] address selector
+  - [x] add, remove
+  - [x] edit text, set tag(archive)
+  - [x] search (text, address, tag)
   - [ ] filter ady parameter array (address  group, max level, curr level, date) or sorting?
 - [ ] address testing view (generate tests, get answers, float wrong answers to the end, result screen)
 - [ ] more levels, open level by learning, level select

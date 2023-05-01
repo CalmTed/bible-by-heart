@@ -1,9 +1,8 @@
 import React, { FC } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { ActionModel, ActionName, AppStateModel } from "./models";
+import { AppStateModel } from "./models";
 import { SCREEN } from "./constants";
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { HomeScreen } from "./screens/homeScreen";
 import { ListScreen } from "./screens/listScreen";
 

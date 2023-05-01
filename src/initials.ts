@@ -26,7 +26,7 @@ export const createAppState: () => AppStateModel = () => {
 export const createPassage: (
   address: AddressType,
   text: string,
-  translation: string,
+  translation?: string,
   ownnerId?:number
 ) => PassageModel = (address, text, translation, ownerId) => {
   return {
@@ -34,9 +34,9 @@ export const createPassage: (
     ownerId: ownerId || null,
     address: address,
     verseText: text,
-    verseTranslation: translation,
-    dateCreated: new Date().getDate(),
-    dateEdited: new Date().getDate(),
+    verseTranslation: translation || null,
+    dateCreated: new Date().getTime(),
+    dateEdited: new Date().getTime(),
     dateTested: 0,
     minIntervalDaysNum: null,
     selectedLevel: TestLevel.l10,

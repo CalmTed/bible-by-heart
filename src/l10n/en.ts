@@ -1,14 +1,25 @@
 export const en = {
   name: "English",
   appName: "Bible by heart",
+  //buttons
   homePractice: "Practice",
   homeList: "List",
   homeChangeLang: "Change Language",
   homeClearData: "Clear data",
-
+  Archive: "Archive",
+  Archived: "Archived",
+  Remove: "Remove",
+  Edit: "Edit",
+  //titles
   listScreenTitle: "List",
-
   APSelectBook: "Select book",
+  EditPassageTitle: "Edit passage",
+  
+  //subtexts
+  DateCreated: "Date created",
+  DateEdited: "Date edited",
+  DateTested: "Date tested",
+  AddTag: "Add tag...",
 
   bGenShrt:"Gen",
   bGenLong: "Genesis",
@@ -17,200 +28,200 @@ export const en = {
   bExoLong: "Exodus",
 
   bLevShrt:"Lev",
-  bLevLong: "bLevLong",
+  bLevLong: "Leviticus",
 
   bNumShrt:"Num",
-  bNumLong: "bNumLong",
+  bNumLong: "Numbers",
 
   bDeuShrt:"Deu",
-  bDeuLong: "bDeuLong",
+  bDeuLong: "Deoteronomy",
 
 
   bJoshShrt:"Josh",
-  bJoshLong: "bJoshLong",
+  bJoshLong: "Joshua",
 
   bJudgShrt:"Judg",
-  bJudgLong: "bJudgLong",
+  bJudgLong: "Judges",
 
   bRuthShrt:"Ruth",
-  bRuthLong: "bRuthLong",
+  bRuthLong: "Ruth",
 
 
   b1SamShrt:"1 Sam",
-  b1SamLong: "b1SamLong",
+  b1SamLong: "1 Samuel",
 
   b2SamShrt:"2 Sam",
-  b2SamLong: "b2SamLong",
+  b2SamLong: "2 Samuel",
 
   b1KinShrt:"1 Kin",
-  b1KinLong: "b1KinLong",
+  b1KinLong: "1 Kings",
 
   b2KinShrt:"2 Kin",
-  b2KinLong: "b2KinLong",
+  b2KinLong: "2 Kings",
 
   b1ChrShrt:"1 Chr",
-  b1ChrLong: "b1ChrLong",
+  b1ChrLong: "1 Chronicles",
 
-  b2ChrShrt:"2Chr",
-  b2ChrLong: "b2ChrLong",
+  b2ChrShrt:"2 Chr",
+  b2ChrLong: "2 Chronicles",
 
   bEzrShrt:"Ezr",
-  bEzrLong: "bEzrLong",
+  bEzrLong: "Ezra",
 
   bNehShrt:"Neh",
-  bNehLong: "bNehLong",
+  bNehLong: "Nehemiah",
 
   bEsthShrt:"Esth",
-  bEsthLong: "bEsthLong",
+  bEsthLong: "Esther",
 
 
   bJobShrt:"Job",
-  bJobLong: "bJobLong",
+  bJobLong: "Job",
 
   bPsShrt:"Ps",
-  bPsLong: "bPsLong",
+  bPsLong: "Psalm",
 
   bProvShrt:"Prov",
-  bProvLong: "bProvLong",
+  bProvLong: "Proverbs",
 
   bEcclShrt:"Eccl",
-  bEcclLong: "bEcclLong",
+  bEcclLong: "Ecclesiastes",
 
   bSongShrt:"Song",
-  bSongLong: "bSongLong",
+  bSongLong: "Song of Solomon",
 
   bIsaShrt:"Isa",
-  bIsaLong: "bIsaLong",
+  bIsaLong: "Isaiah",
 
   bJerShrt:"Jer",
-  bJerLong: "bJerLong",
+  bJerLong: "Jeremiah",
 
   bLamShrt:"Lam",
-  bLamLong: "bLamLong",
+  bLamLong: "Lamentations",
 
   bEzekShrt:"Ezek",
-  bEzekLong: "bEzekLong",
+  bEzekLong: "Ezekiel",
 
   bDanShrt:"Dan",
-  bDanLong: "bDanLong",
+  bDanLong: "Daniel",
 
   bHosShrt:"Hos",
-  bHosLong: "bHosLong",
+  bHosLong: "Hosea",
 
   bJoelShrt:"Joel",
-  bJoelLong: "bJoelLong",
+  bJoelLong: "Joel",
 
   bAmShrt:"Am",
-  bAmLong: "bAmLong",
+  bAmLong: "Amos",
 
   bObaShrt:"Oba",
-  bObaLong: "bObaLong",
+  bObaLong: "Obadiah",
 
   bJonaShrt:"Jona",
-  bJonaLong: "bJonaLong",
+  bJonaLong: "Jonah",
 
   bMicShrt:"Mic",
-  bMicLong: "bMicLong",
+  bMicLong: "Micah",
 
   bNahShrt:"Nah",
-  bNahLong: "bNahLong",
+  bNahLong: "Nahum",
 
   bHabShrt:"Hab",
-  bHabLong: "bHabLong",
+  bHabLong: "Habakkuk",
 
   bZephShrt:"Zeph",
-  bZephLong: "bZephLong",
+  bZephLong: "Zephaniah",
 
   bHagShrt:"Hag",
-  bHagLong: "bHagLong",
+  bHagLong: "Haggai",
 
   bZechShrt:"Zech",
-  bZechLong: "bZechLong",
+  bZechLong: "Zechariah",
 
   bMalShrt:"Mal",
-  bMalLong: "bMalLong",
+  bMalLong: "Malachi",
 
 
   bMatShrt:"Mat",
-  bMatLong: "bMatLong",
+  bMatLong: "Matthew",
 
   bMarShrt:"Mar",
-  bMarLong: "bMarLong",
+  bMarLong: "Mark",
 
   bLukShrt:"Luk",
-  bLukLong: "bLukLong",
+  bLukLong: "Luke",
 
   bJohnShrt:"John",
-  bJohnLong: "bJohnLong",
+  bJohnLong: "John",
 
   bActsShrt:"Acts",
-  bActsLong: "bActsLong",
+  bActsLong: "Acts",
 
   bRomShrt:"Rom",
-  bRomLong: "bRomLong",
+  bRomLong: "Romans",
 
   b1CorShrt:"1 Cor",
-  b1CorLong: "b1CorLong",
+  b1CorLong: "1 Corinthians",
 
   b2CorShrt:"2 Cor",
-  b2CorLong: "b2CorLong",
+  b2CorLong: "2 Corinthians",
 
   bGalShrt:"Gal",
-  bGalLong: "bGalLong",
+  bGalLong: "Galatians",
 
   bEphShrt:"Eph",
-  bEphLong: "bEphLong",
+  bEphLong: "Ephesians",
 
   bPhilShrt:"Phil",
-  bPhilLong: "bPhilLong",
+  bPhilLong: "Philippians",
 
   bColShrt:"Col",
-  bColLong: "bColLong",
+  bColLong: "Colossians",
 
   b1ThsShrt:"1 Ths",
-  b1ThsLong: "b1ThsLong",
+  b1ThsLong: "1 Thessalonians",
 
   b2ThsShrt:"2 Ths",
-  b2ThsLong: "b2ThsLong",
+  b2ThsLong: "2 Thessalonians",
 
   
   b1TimShrt:"1 Tim",
-  b1TimLong: "b1TimLong",
+  b1TimLong: "1 Timothy",
 
   b2TimShrt:"2 Tim",
-  b2TimLong: "b2TimLong",
+  b2TimLong: "2 Timothy",
 
   bTitShrt:"Tit",
-  bTitLong: "bTitLong",
+  bTitLong: "Titus",
 
   bPhlmShrt:"Phlm",
-  bPhlmLong: "bPhlmLong",
+  bPhlmLong: "Philemon",
 
   bHebShrt:"Heb",
-  bHebLong: "bHebLong",
+  bHebLong: "Hebrews",
 
   bJamShrt:"Jam",
-  bJamLong: "bJamLong",
+  bJamLong: "James",
 
   b1PetShrt:"1 Pet",
-  b1PetLong: "b1PetLong",
+  b1PetLong: "1 Peter",
 
   b2PetShrt:"2 Pet",
-  b2PetLong: "b2PetLong",
+  b2PetLong: "2 Peter",
 
   b1JnShrt:"1 Jn",
-  b1JnLong: "b1JnLong",
+  b1JnLong: "1 John",
 
   b2JnShrt:"2 Jn",
-  b2JnLong: "b2JnLong",
+  b2JnLong: "2 John",
 
   b3JnShrt:"3 Jn",
-  b3JnLong: "b3JnLong",
+  b3JnLong: "3 John",
 
   bJudShrt:"Jud",
-  bJudLong: "bJudLong",
+  bJudLong: "Jode",
 
   bRevShrt:"Rev",
-  bRevLong: "bRevLong",
+  bRevLong: "Revelation",
 
 }

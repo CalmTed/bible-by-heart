@@ -21,7 +21,7 @@ export interface PassageModel{
   ownerId: number | null //userId
   address: AddressType
   verseText: string
-  verseTranslation: string
+  verseTranslation: string | null
   dateCreated: number
   dateEdited: number
   dateTested: number
@@ -57,9 +57,17 @@ export interface AddressType{
 }
 
 export enum ActionName {
-  setLang = "setLang"
+  setLang = "setLang",
+  setPassage = "setPassage",
+  removePassage = "removePassage"
 }
 export type ActionModel = {
   name: ActionName.setLang
   payload: LANGCODE
+} | {
+  name: ActionName.setPassage
+  payload: PassageModel
+} | {
+  name: ActionName.removePassage
+  payload: number //passageId
 }

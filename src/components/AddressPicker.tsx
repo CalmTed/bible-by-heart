@@ -1,14 +1,11 @@
 import { FC, useEffect, useState } from "react"
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { COLOR, globalStyle } from "../constants"
 import { AddressType } from "../models"
-import { Header } from "../components/Header"
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { IconButton } from "./Button"
 import { IconName } from "./Icon"
 import { WORD } from "../l10n"
 import { bibleReference } from "../bibleReference"
-import { ScrollView } from "react-native"
 
 interface AddressPickerModel{
   visible: boolean
@@ -37,7 +34,11 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
         onCancel();
         setAddressPart(Object.keys(tempAddres)[0]);
       break;
-      default: setAddressPart(Object.keys(tempAddres)[curPartIndex - 1]);
+      default:
+        setAddress(prv => {
+          return {...prv, [Object.keys(tempAddres)[curPartIndex - 1]]: NaN}
+        });
+        setAddressPart(Object.keys(tempAddres)[curPartIndex - 1]);
     }
   }
   const handleListButtonPress: (index: number) => void = (index) => {
@@ -49,9 +50,9 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
       case -1: 
         setAddressPart(Object.keys(tempAddres)[0]);
       break;
-      case Object.keys(tempAddres).length - 1: 
-        setAddressPart(Object.keys(tempAddres)[0]);
-        onConfirm(tempAddres);
+      case Object.keys(tempAddres).length - 1:
+        //auto confirming address
+        onConfirm({...tempAddres,[addresPart]: index})
       break;
       default: setAddressPart(Object.keys(tempAddres)[curPartIndex + 1]);
     }
@@ -64,6 +65,8 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
       <IconButton  style={APstyle.headerBotton} icon={IconName.done} onPress={() => {onConfirm(tempAddres)}} disabled={isNaN(tempAddres.bookIndex) || isNaN(tempAddres.startChapterNum) || isNaN(tempAddres.startVerseNum)} />
     </View>
     {/* LIST */}
+      <View style={APstyle.listView}>
+      <ScrollView>
       <View style={APstyle.listView}>
       {addresPart === "bookIndex" && bookList.map((bookItem, i) => {
         const title = bookItem as WORD;
@@ -91,6 +94,8 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
         }
         return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}/>
       })}
+      </View>
+      </ScrollView>
       </View>
   </Modal>
 }
@@ -127,9 +132,11 @@ const APstyle = StyleSheet.create({
   listView: {
     backgroundColor: COLOR.bgSecond,
     height: "93%",
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
-    alignContent: "stretch"
+    alignContent: "stretch",
+    justifyContent: "space-evenly"
   },
   listButton: {
     width: 66,
