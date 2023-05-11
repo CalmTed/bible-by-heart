@@ -12,19 +12,20 @@ interface HeaderModel{
   title?: string
   additionalChild?: React.ReactNode
   additionalChildren?: React.ReactNode[]
+  alignChildren?: "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
 }
 
 
-export const Header: FC<HeaderModel> = ({navigation,title, showBackButton, additionalChild, additionalChildren}) => {
+export const Header: FC<HeaderModel> = ({navigation,title, showBackButton, additionalChild, additionalChildren, alignChildren}) => {
   const handleBack = () => {
     navigation.goBack();
   }
   return (
-  <View style={headerStyle.view}>
+  <View style={{...headerStyle.view, justifyContent: alignChildren || "flex-end"}}>
     {showBackButton && <IconButton onPress={handleBack} icon={IconName.back}></IconButton>}
-    <View style={headerStyle.textView}>
+    {title && <View style={headerStyle.textView}>
       {title && <Text style={headerStyle.text}>{title}</Text>}
-    </View>
+    </View>}
     {additionalChild}
     {additionalChildren && additionalChildren.map((child, i) => {
       return <View key={i}>{child}</View>

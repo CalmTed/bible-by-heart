@@ -25,19 +25,19 @@ Roadmap
 - [x] asyncly get local storage
 - [x] navigation, state management
 - [x] interface l10n support
-- [.] list manipulation (add, remove, edit, archive, search, filter)
+- [ ] list manipulation (add, remove, edit, archive, search, filter)
   - [x] address selector
   - [x] add, remove
   - [x] edit text, set tag(archive)
   - [x] search (text, address, tag)
-  - [ ] filter ady parameter array (address  group, max level, curr level, date) or sorting?
-- [ ] address testing view (generate tests, get answers, float wrong answers to the end, result screen)
+  - [ ] filter any parameter array (address  group, max level, curr level, date) or sorting?
+- [x] address testing view (generate tests, get answers, float wrong answers to the end, result screen)
 - [ ] more levels, open level by learning, level select
 - [ ] save stats (tests result, stroke, weekly progress)
 - [ ] app settings (language, theme, translation, notifications)
 - [ ] customizable daily reminder
 - [ ] register and login (confirm email or google/facebook login)
-- [ ] sync + custom sync
+- [ ] sync + custom sync(without need for registration) 
 
 Dev. rules
 ---

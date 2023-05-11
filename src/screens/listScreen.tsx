@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle } from "react-native"
 import { storageName, globalStyle, COLOR } from "../constants"
 import { ActionName, AddressType, AppStateModel, PassageModel } from "../models"
-import { navigateWithState, reduce } from "../screeenManagement"
+import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header"
 import { Button, IconButton } from "../components/Button"
@@ -15,6 +15,7 @@ import storage from "../storage"
 import { PassageEditor } from "../components/PassageEditor"
 import addressToString from "../tools/addressToString"
 import { TouchableOpacity } from "react-native-gesture-handler"
+import { reduce } from "../tools/reduce"
 
 export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -89,14 +90,19 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       });
       return newState ? newState : prv;
     })
-  } 
-  const filteredPassages = state?.passages.filter(p => 
+  }
+  const sortedPassages = state.passages.sort((a, b) => {
+    const sumA = a.address.bookIndex + a.address.startChapterNum + a.address.startVerseNum;
+    const sumB = b.address.bookIndex + b.address.startChapterNum + b.address.startVerseNum;
+    return sumA - sumB 
+  })
+  const filteredPassages = sortedPassages.filter(p => 
     p.verseText.toLowerCase().includes(searchText.toLowerCase())
     || addressToString(p.address, t).toLowerCase().includes(searchText.toLowerCase())
     || p.tags.join("").toLowerCase().includes(searchText.toLowerCase())
   )
   return <View style={{...globalStyle.screen,...globalStyle.view}}>
-    <Header navigation={navigation} showBackButton title={t("listScreenTitle")} additionalChildren={[
+    <Header navigation={navigation} showBackButton={false} title={t("listScreenTitle")} additionalChildren={[
       <IconButton icon={IconName.add} onPress={handleAPOpen} />,
       <IconButton icon={IconName.done} onPress={() => navigateWithState({navigation, screen: SCREEN.home, state})} />
     ]} />
@@ -141,7 +147,6 @@ const listStyle = StyleSheet.create({
   },
   listView: {
     width: "100%",
-    
   },
   listItemView: {
     backgroundColor: COLOR.bgSecond,
@@ -149,7 +154,7 @@ const listStyle = StyleSheet.create({
     paddingHorizontal: 15,
     marginHorizontal: 10,
     borderRadius: 10,
-    marginBottom: 10
+    marginVertical: 5
   },
   listItemAddress: {
     color: COLOR.text,

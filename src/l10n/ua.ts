@@ -12,10 +12,12 @@ export const ua: typeof en = {
   Archived: "Архівовано",
   Remove: "Видалити",
   Edit: "Редагувати",
+  finishContinue: "Continue",
   //titles
   listScreenTitle: "Список",
   APSelectBook: "Вибір книги",
   EditPassageTitle: "Редагування тексту",
+  titleWelldone: "Well done",
 
   //sub texts
   DateCreated: "Додано",

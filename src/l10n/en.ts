@@ -10,10 +10,12 @@ export const en = {
   Archived: "Archived",
   Remove: "Remove",
   Edit: "Edit",
+  finishContinue: "Continue",
   //titles
   listScreenTitle: "List",
   APSelectBook: "Select book",
   EditPassageTitle: "Edit passage",
+  titleWelldone: "Well done",
   
   //subtexts
   DateCreated: "Date created",

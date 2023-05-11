@@ -3,6 +3,10 @@ import { WORD } from "../l10n";
 import { AddressType } from "../models";
 
 const addressToString: (address: AddressType, t: (w: WORD) => string) => string = (address, t) => {
+  if(!address){
+    console.error("Addres not defined")
+    return "-";
+  }
   //empty
   if(address.bookIndex === null || !address.startChapterNum === null || !address.startVerseNum === null || isNaN(address.bookIndex) || isNaN(address.startChapterNum) || isNaN(address.startVerseNum)){
     return `-`;

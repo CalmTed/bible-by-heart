@@ -8,6 +8,7 @@ import { WORD } from "../l10n"
 import addressToString from "../tools/addressToString"
 import { TextInput } from "react-native-gesture-handler"
 import timeToString from "../tools/timeToString"
+import { getVersesNumber } from "../initials"
 
 interface PassageEditorModel{
   visible: boolean
@@ -69,7 +70,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         <View style={PEstyle.bodyTop}>
           {/* TODO:change address on click */}
           <Pressable onPress={()=>{ToastAndroid.show("TODO",1)}}>
-            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}</Text>
+            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{!!tempPassage.versesNumber ? `(${tempPassage.versesNumber})` : `(${getVersesNumber(tempPassage.address)})`}</Text>
           </Pressable>
           <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/>
         </View>
@@ -95,7 +96,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         </View>
         <View style={PEstyle.bodyButtons}>
           <Button title={t("Archive")} onPress={() => handleTagAdd(t("Archived"))} disabled={tempPassage.tags.includes(t("Archived"))}/>
-          <Button title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color={COLOR.textDanger}/>
+          <Button title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
         </View>
       </ScrollView>
     </View>
@@ -132,7 +133,7 @@ const PEstyle = StyleSheet.create({
     aspectRatio: 1,
   },
   listView: {
-    backgroundColor: COLOR.bgSecond,
+    backgroundColor: COLOR.bg,
     height: "93%",
     width: "100%",
     flexDirection: "row",
@@ -153,16 +154,18 @@ const PEstyle = StyleSheet.create({
   bodyTopAddress: {
     color: COLOR.text,
     textTransform: "uppercase",
-    fontSize: 18,
-    alignItems: "flex-start"
+    fontSize: 20,
+    fontWeight: "500",
+    alignItems: "flex-start",
+    marginLeft: 5
   },
   //text
   bodyText: {
     marginHorizontal: 20,
-    marginVertical: 15
+    marginVertical: 0
   },
   bodyTextInput: {
-    backgroundColor: COLOR.bg,
+    backgroundColor: COLOR.bgSecond,
     paddingHorizontal: 10,
     paddingVertical: 10,
     color: COLOR.text,
@@ -177,8 +180,7 @@ const PEstyle = StyleSheet.create({
   },
   tagItemList: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    // maxWidth: "100%"
+    flexWrap: "wrap"
   },
   tagItemView: {
     borderRadius: 50,
@@ -187,7 +189,8 @@ const PEstyle = StyleSheet.create({
     flexDirection: "row",
     height: 40,
     alignItems: "center",
-    backgroundColor: COLOR.mainColor
+    borderColor: COLOR.mainColor,
+    borderWidth: 2,
   },
   tagItemText: {
     color: COLOR.text,
