@@ -38,7 +38,7 @@ export const FinishScreen: FC<ScreenModel> = ({route, navigation}) => {
     <View style={finishStyle.buttonView}>
       <Button
         type="main"
-        title={t("finishContinue")}
+        title={t("Continue")}
         onPress={() => navigateWithState({navigation, screen: SCREEN.home, state: state})} 
       />
     </View>

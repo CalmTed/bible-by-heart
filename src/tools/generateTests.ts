@@ -22,39 +22,26 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
     return [];
   }
   const sessionId = Math.round(Math.random() * 10000000)
+  const testsListNumber = 10
   //sort for oldest tested
   //TODO add some randomness 
   const tests: TestModel[] = passages
     .sort((a,b) => a.dateTested - b.dateTested)//getting oldest to test
-    .slice(0,Math.min(passages.length, 5))//limiting max number
+    .slice(0,Math.min(passages.length, testsListNumber))//limiting max number
     .sort(() => Math.random() > 0.5 ? -1 : 1)//shuffling
     .map(p => {
     const initialTest = createTest(sessionId, p.id, p.selectedLevel)
     //filling test data here
-    switch(initialTest.level){
-      case TestLevel.l10://select right address from options
-        const test =  createL10Test({
-          initialTest,
-          passages,
-          passageHistory: history
-        })
-        return test;
-      case TestLevel.l11://select right passage from options
-        return initialTest;
-      case TestLevel.l20://select address with AP
-        return initialTest;
-      case TestLevel.l21://start typing first words with autocomplete
-        return initialTest;
-      case TestLevel.l30://complete missing words 10-100%
-        return initialTest;
-      case TestLevel.l40://write passage with autocomplete(from all passages)
-        return initialTest;
-      case TestLevel.l50://write passage without autocomplete and with checking on finish
-        return initialTest;
-      default:
-        console.error("Unknown level type, unable to create test")
-        return initialTest;
+    const testCreationList = {
+      [TestLevel.l10]: createL10Test,
+      [TestLevel.l11]: createL11Test,
+      [TestLevel.l20]: createL20Test,
+      [TestLevel.l21]: createL21Test,
+      [TestLevel.l30]: createL10Test,
+      [TestLevel.l40]: createL10Test,
+      [TestLevel.l50]: createL10Test,
     }
+    return testCreationList[initialTest.level]({initialTest, passages, passageHistory: history})
   })
   return tests;
 }
@@ -69,12 +56,18 @@ const randomItem: (list: (number | string | AddressType)[]) => (number | string 
   return list[randomRange(0, list.length-1)];
 }
 
+const randomListRange: (list: (number | string | PassageModel)[], length: number) => (number | string | PassageModel)[] = (list, range) => {
+  if(list.length < range ){
+    return list.sort(() => Math.random() > 0.5 ? -1 : 1);
+  }
+  return list.sort(() => Math.random() > 0.5 ? -1 : 1).slice(0,range)
+}
+
 const addressDistance: (address1: AddressType, address2: AddressType) => number = (address1, address2) => {
   return (Math.abs(address2.bookIndex - address1.bookIndex) * 100)
           + (Math.abs(address2.startChapterNum - address1.startChapterNum) * 10)
           + Math.abs(address2.startVerseNum - address1.startVerseNum);
 }
-
 
 interface CreateTestInputModel {
   initialTest: TestModel
@@ -88,7 +81,7 @@ const createL10Test: CreateTestMethodModel = ({initialTest, passages, passageHis
   if(!p){
     return initialTest
   }
-  const getRandomItem = () => {
+  const getRandomAddress = () => {
     //1 same book diff address
     const sameBookAddresses = passages.filter(n => n.address.bookIndex === p.address.bookIndex && n.address !== p.address).map(n => n.address);
     //2 just random from passages
@@ -125,14 +118,57 @@ const createL10Test: CreateTestMethodModel = ({initialTest, passages, passageHis
     const wrongAdressesWithSamePassage = passageHistory.filter(ph => ph.passageId === p.id).map(p => p.wrongAddress).flat()
     return randomItem([...sameBookAddresses, ...justRandomOtherNeigborAddresses, ...wrongAdressesWithSamePassage, justRandomAddress]) as AddressType
   }
-  const addressOptions:AddressType[] = [p.address]
-  while(addressOptions.length < 4){
-    const randomAddres = getRandomItem()
-    if(!addressOptions.map(a => JSON.stringify(a)).includes(JSON.stringify(randomAddres))){
-      addressOptions.push(randomAddres)
+  const addressOptions:AddressType[] = [p.address]//adding right answer
+  let iteration = 0
+  const maxIteration = 1000
+  while(addressOptions.length < 4 && iteration < maxIteration){
+    const randomAddress = getRandomAddress()
+    // console.log(addressOptions.map( a => `${a.bookIndex} ${a.startChapterNum} ${a.startVerseNum}`))
+    // console.log(randomAddress.bookIndex, randomAddress.startChapterNum, randomAddress.startVerseNum)
+    if(!addressOptions.map(a => JSON.stringify(a)).includes(JSON.stringify(randomAddress))){
+      addressOptions.push(randomAddress)
     }
+    iteration++
+  }
+  if(iteration >= maxIteration){
+    console.warn("Max iteration number exided")
   }
   //shuffling
   initialTest.testData.addressOptions = addressOptions.sort(() => Math.random() > 0.5 ? -1 : 1);
   return initialTest;
+}
+
+const createL11Test: CreateTestMethodModel = ({initialTest, passages, passageHistory}) => {
+  const optionsLength = 4;
+
+  //if passages.length < optionsLength - replace with L10
+  if(passages.length < optionsLength) {
+    return createL10Test({initialTest, passages, passageHistory});
+  }
+  //passages from errors
+  const rightOne = passages.find(p => p.id === initialTest.passageId) as PassageModel
+  const fromErrors = passageHistory.filter(ph => ph.passageId === initialTest.passageId).map(ph => passages.filter(p => (ph.wrongPassagesId || []).includes(p.id) ) ).flat()
+  //closest passages
+  const closestPassages = passages.sort((a,b) => addressDistance(a.address,b.address))
+  //random passages from the list
+  const randomPassages = [] as PassageModel[];
+  const wrongOptions = (
+    randomListRange(
+      [...randomPassages, ...closestPassages, ...fromErrors]
+      .filter((v, i, arr) => {
+        return arr.indexOf(v) === i;
+      })
+      .filter(p => p.id !== rightOne.id),
+    optionsLength-1) as PassageModel[])
+  const allOptions = [...wrongOptions, rightOne].sort(() => Math.random() > 0.5 ? -1 : 1)
+  const returnTest:TestModel = {...initialTest, testData: {...initialTest.testData, passagesOptions: allOptions}}
+  return returnTest;
+}
+
+const createL20Test: CreateTestMethodModel = ({initialTest}) => {
+  return initialTest
+}
+
+const createL21Test: CreateTestMethodModel = ({initialTest}) => {
+  return initialTest
 }

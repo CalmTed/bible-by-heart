@@ -26,6 +26,7 @@ export enum LANGCODE {
 
 export const COLOR = {
     bg: '#272A27',
+    bgBackdrop: '#272A2799',
     bgSecond: '#2C302C',
     text: '#ECECEC',
     textSecond: '#A0A0A0',

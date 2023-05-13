@@ -12,18 +12,27 @@ export const ua: typeof en = {
   Archived: "Архівовано",
   Remove: "Видалити",
   Edit: "Редагувати",
-  finishContinue: "Continue",
+  Continue: "Продовжити",
+  Submit: "Далі",
+  ShowAnswer: "Підказка",
+  Reset: "Заново",
+  Level: "Рівень",
+
   //titles
   listScreenTitle: "Список",
-  APSelectBook: "Вибір книги",
+  APSelectBook: "Оберіть книгу",
   EditPassageTitle: "Редагування тексту",
-  titleWelldone: "Well done",
+  titleWelldone: "Чудова робота!",
+  LanguagePickerHeading: "Оберіть рівень",
 
   //sub texts
   DateCreated: "Додано",
   DateEdited: "Змінено",
   DateTested: "Практиковано",
   AddTag: "Додати категорію...",
+  LevelSelectAddress: "Select address",
+  LevelStartWritingPassage: "Start writing passage",
+  LanguagePickerSubtext: "Потренуйте цей текст тричі без помилок щоб відкрити наступний рівень",
 
   bGenShrt:"Бут",
   bGenLong: "Буття",

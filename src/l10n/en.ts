@@ -10,18 +10,26 @@ export const en = {
   Archived: "Archived",
   Remove: "Remove",
   Edit: "Edit",
-  finishContinue: "Continue",
+  Continue: "Continue",
+  Submit: "Submit",
+  ShowAnswer: "Show answer",
+  Reset: "Reset",
+  Level: "Level",
   //titles
   listScreenTitle: "List",
   APSelectBook: "Select book",
   EditPassageTitle: "Edit passage",
   titleWelldone: "Well done",
+  LanguagePickerHeading: "Select level",
   
   //subtexts
   DateCreated: "Date created",
   DateEdited: "Date edited",
   DateTested: "Date tested",
   AddTag: "Add tag...",
+  LevelSelectAddress: "Select address",
+  LevelStartWritingPassage: "Start writing passage",
+  LanguagePickerSubtext: "Train this 3 times without an error to open next level",
 
   bGenShrt:"Gen",
   bGenLong: "Genesis",

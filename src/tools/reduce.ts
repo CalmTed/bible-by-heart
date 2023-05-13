@@ -35,8 +35,12 @@ export const reduce: (
               passages: state.passages.filter((p) => p.id !== action.payload)
           };
           break;
-      case ActionName.setActivatTests:
-          changedState = { ...state, testsActive: action.payload };
+      case ActionName.setActiveTests:
+          if(!state.testsActive.length){
+              changedState = { ...state, testsActive: action.payload };
+          }else{
+            changedState = { ...state, testsActive: [] };
+          }
           break;
       case ActionName.updateTest:
         const updatedTests = state.testsActive.map(t => {
@@ -52,7 +56,7 @@ export const reduce: (
         ]
         changedState = {...state, testsActive: sortedTests}
         break;
-    case ActionName.finishTesting:
+      case ActionName.finishTesting:
         //clear active tests
         //update history
         //update passages last tested time

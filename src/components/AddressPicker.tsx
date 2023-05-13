@@ -6,18 +6,19 @@ import { IconButton } from "./Button"
 import { IconName } from "./Icon"
 import { WORD } from "../l10n"
 import { bibleReference } from "../bibleReference"
+import { createAddress } from "../initials"
 
 interface AddressPickerModel{
   visible: boolean
-  address: AddressType
   onCancel: () => void
   onConfirm: (address: AddressType) => void
   t: (w: WORD) => string
+  address?: AddressType
 }
 
 const bookList = bibleReference.map(book => book.titleShort);
 
-export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCancel, onConfirm, t}) => {
+export const AddressPicker: FC<AddressPickerModel> = ({visible, address = createAddress(), onCancel, onConfirm, t}) => {
   useEffect(()=>{
     setAddressPart(Object.keys(address)[0]);
     setAddress(address);

@@ -108,7 +108,7 @@ export const createTest: (
     const selectedLevel = (level: PassageLevel) => {
         switch (level) {
             case PassageLevel.l1:
-                return Math.random() > 0.5 ? TestLevel.l10 : TestLevel.l10;
+                return Math.random() > 0.5 ? TestLevel.l10 : TestLevel.l11;
             case PassageLevel.l2:
                 return Math.random() > 0.5 ? TestLevel.l20 : TestLevel.l21;
             case PassageLevel.l3:
@@ -131,7 +131,8 @@ export const createTest: (
         errorNumber: null,
         errorType: null,
         wrongAddress: [],
-        wrongWords: []
+        wrongWords: [],
+        wrongPassagesId: []
     };
 };
 

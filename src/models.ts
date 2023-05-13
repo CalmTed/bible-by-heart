@@ -61,6 +61,7 @@ export interface TestModel {
           )
         | null;
     wrongAddress: AddressType[];
+    wrongPassagesId: number[]
     wrongWords: [number, string][]; //word index, wrong word string
 }
 
@@ -76,7 +77,7 @@ export enum ActionName {
     setLang = 'setLang',
     setPassage = 'setPassage',
     removePassage = 'removePassage',
-    setActivatTests = 'setActivatTests',
+    setActiveTests = 'setActiveTests',
     updateTest = 'updateTest',
     finishTesting = 'finishTesting'
 }
@@ -94,7 +95,7 @@ export type ActionModel =
           payload: number; //passageId
       }
     | {
-          name: ActionName.setActivatTests;
+          name: ActionName.setActiveTests;
           payload: TestModel[];
       }
     | {

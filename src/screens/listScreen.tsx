@@ -123,13 +123,13 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
 
 const ListItem: FC<{data: PassageModel, t:any, onPress: () => void, onEdit: () => void}> = ({data, t, onPress, onEdit}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
-  return <TouchableOpacity onPress={onPress}>
+  return <Pressable onPress={onPress}>
     <View style={listStyle.listItemView}>
       <Text style={listStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
       <Text style={{...listStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
       {data.isCollapsed && <Button title={t("Edit")} onPress={onEdit} />}
     </View>
-  </TouchableOpacity>
+  </Pressable>
 }
 
 const listStyle = StyleSheet.create({

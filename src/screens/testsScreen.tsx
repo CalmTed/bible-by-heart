@@ -1,29 +1,32 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { storageName, globalStyle, COLOR, TestLevel } from "../constants"
-import { ActionName, AddressType, AppStateModel, TestModel } from "../models"
+import { View, Text, StyleSheet } from "react-native"
+import { storageName, globalStyle, TestLevel, COLOR, PassageLevel } from "../constants"
+import { ActionModel, ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header"
 import { Button, IconButton } from "../components/Button"
 import { IconName } from "../components/Icon"
-import { createAddress, createPassage } from "../initials"
-import { AddressPicker } from "../components/AddressPicker"
-import { WORD, createT } from "../l10n"
+import { createT } from "../l10n"
 import { ScreenModel } from "./homeScreen"
 import storage from "../storage"
 import { generateTests } from "../tools/generateTests"
-import addressToString from "../tools/addressToString"
 import { reduce } from "../tools/reduce"
 import { TestNavDott } from "../components/testNevDott"
+import { L10, L11 } from "../components/levels/l1"
+import { L20, L21 } from "../components/levels/l2"
+import { MiniModal } from "../components/miniModal"
 
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
   const [state, setState] = useState(oldState);
   const [activeTestIndex, setActiveTest] = useState(0)
+  const [levelPickerShown, setLevelPickerShown] = useState(false)
   const t = createT(state.langCode);
   useEffect(() => {//updating state on component mounting
-    setState(oldState);
+    if(oldState.lastChange > state.lastChange){
+      setState(oldState);
+    }
   }, [JSON.stringify(oldState)]);
 
   useEffect(() => {//saving to storage every state change
@@ -36,7 +39,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
 
   const exitTests = () => {
     const newState = reduce(state, {
-      name: ActionName.setActivatTests,
+      name: ActionName.setActiveTests,
       payload: []
     }) || state
     navigateWithState({navigation, screen: SCREEN.home, state: newState}) 
@@ -45,7 +48,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const activateTests = () => {
     setState(prevState => {
       const newState = reduce(prevState, {
-        name: ActionName.setActivatTests,
+        name: ActionName.setActiveTests,
         payload: generateTests(state.passages, state.testsHistory)
       })
       return newState ? newState : prevState
@@ -54,21 +57,18 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const handleReset = () => {
     setState(prevState => {
       const newState = reduce(prevState, {
-        name: ActionName.setActivatTests,
+        name: ActionName.setActiveTests,
         payload: []
       })
+      setActiveTest(0)
       return newState ? newState : prevState
     })
   }
   const handleTestSubmit: (data: {isRight:boolean, modifiedTest: TestModel}) => void = ({isRight, modifiedTest}) => {
-    //update test
-    //shuffle list if needed
     if(isRight && activeTestIndex < state.testsActive.length-1){
       setActiveTest(prv => prv + 1);
     }else if(isRight){
-      //submit tests
-      //remove active
-      //add history  
+      //if last test and right
       const newState = reduce(state, {
         name: ActionName.finishTesting,
         payload: {
@@ -86,12 +86,19 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
         }
       }) || prv;
     })
-    //toggle test
   }
-
+  const closeLevelPicker = () => {
+    setLevelPickerShown(false)
+  }
+  const openLevelPicker = () => {
+    setLevelPickerShown(true)
+  }
+  const submitLevelPicker = (level: number) => {
+    console.log(level)
+    closeLevelPicker()
+  }
   //if no active tests > create them
   if(!state.testsActive.length){
-    setActiveTest(0)
     activateTests();
     return <View style={{...globalStyle.screen}}></View>
   }
@@ -99,6 +106,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
     ...state.testsActive[activeTestIndex],
     dateStarted: !!state.testsActive[activeTestIndex]?.dateStarted ? state.testsActive[activeTestIndex]?.dateStarted : new Date().getTime()
   }
+  const targetPassage = state.passages.find(p => p.id === activeTestObj.passageId) as PassageModel
   return <View style={{...globalStyle.screen}}>
     <View style={{
       ...globalStyle.view,
@@ -110,19 +118,40 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
           {state.testsActive.map((t, i) => {
             const isFinished = !!state.testsActive[i].dateFinished
             const hasErrors = !!state.testsActive[i].errorNumber
-            const color = (isFinished || activeTestIndex === i) && !hasErrors ? "green" : hasErrors ? "red" : "gray";
+            const color = (isFinished || (activeTestIndex === i && !hasErrors) ) ? "green" : hasErrors ? "red" : "gray";
             return <TestNavDott key={t.id} isCurrent={activeTestIndex === i} color={color}/>
           })}
         </View>
       ]} />
+      <View style={{...testsStyle.levelPickerView}}>
+        <Button title={ `${t("Level")} ${targetPassage.selectedLevel}`} icon={IconName.selectArrow} onPress={() => openLevelPicker()}/>
+        <MiniModal shown={levelPickerShown} handleClose={() => setLevelPickerShown(false)}>
+          <Text style={levelPickerStyles.headerText}>{t("LanguagePickerHeading")}</Text>
+          <View style={levelPickerStyles.buttonsView}>
+            {[PassageLevel.l1,PassageLevel.l2,PassageLevel.l3,PassageLevel.l4,PassageLevel.l5].map(n => {
+              const color = targetPassage.selectedLevel === n ? "green" : "gray"
+              const disabled = n >targetPassage.maxLevel
+              return <Button type={"secondary"} color={color} style={levelPickerStyles.buttonStyle} key={n} title={n.toString()} onPress={() => submitLevelPicker(n)} disabled={disabled}/>
+            })}
+          </View>
+          <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}</Text>
+        </MiniModal>
+      </View>
       { activeTestObj?.level === TestLevel.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
       { activeTestObj?.level === TestLevel.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      <Button type="main" color="gray" title="Reset" onPress={handleReset}></Button>
+      { activeTestObj?.level === TestLevel.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TestLevel.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button>
     </View>
   </View>
 }
 
 const testsStyle = StyleSheet.create({
+  levelPickerView: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+    width: "100%"
+  },
   viewHidden: {
     display: "none"
   },
@@ -133,78 +162,28 @@ const testsStyle = StyleSheet.create({
     flex: 1,
     height: "100%",
     overflow: "scroll"
-  }
+  },
 });
 
-interface LevelComponentModel {
-  test: TestModel
-  state: AppStateModel
-  t: (w: WORD) => string
-  submitTest: (data:{isRight: boolean, modifiedTest: TestModel}) => void
-}
-
-const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
+const levelPickerStyles = StyleSheet.create({
+  headerText: {
+    color: COLOR.text,
+    textTransform: "uppercase",
+    fontWeight: "500",
+    fontSize: 22,
   },
-  passageTextView: {
-    flex: 1
+  subText: {
+    textAlign: "center",
+    color: COLOR.textSecond,
+    fontSize: 16
   },
-  passageText: {
-    fontSize: 18,
-    letterSpacing: 0.5,
-    margin: 20
+  buttonsView: {
+    marginTop: 50,
+    marginBottom: 20,
+    flexDirection: "row",
+    gap: 5
   },
-  optionButtonsWrapper: {
-    flex: 2,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+  buttonStyle: {
+    margin: 0
   }
 })
-
-const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
-  const handleTestSubmit = (value: AddressType) => {
-    const targetPassage = state.passages.find(p => test.passageId === p.id)
-    if(!targetPassage){
-      return <View></View>;
-    }
-    
-    if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
-      //set right: error: 0
-      submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
-      }})
-    }else{
-      //add error
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
-      }})
-    }
-  }
-  return <View style={{...levelComponentStyle.levelComponentView}}>
-    <ScrollView style={{...levelComponentStyle.passageTextView}}>
-      <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{state.passages.find(p => p.id === test.passageId)?.verseText}</Text>
-    </ScrollView>
-    <View style={{...levelComponentStyle.optionButtonsWrapper}}>
-      { 
-      test.testData.addressOptions && test.testData.addressOptions.map(op => {
-        return <Button key={JSON.stringify(op)} title={addressToString(op,t)} type="outline" color="green" onPress={() => handleTestSubmit(op)}/>
-      })}
-    </View>
-  </View>
-}
-
-const L11: FC<LevelComponentModel> = ({test, state, t}) => {
-  const activePassage = state.passages.find(p => p.id === test.passageId)
-  return <View>
-    {activePassage && <Text style={{...globalStyle.text}}>{addressToString(activePassage.address, t)}</Text>}
-  </View>
-}
-
