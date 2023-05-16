@@ -1,7 +1,8 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
+import { LinearGradient } from "expo-linear-gradient"
 import { storageName, globalStyle, TestLevel, COLOR, PassageLevel } from "../constants"
-import { ActionModel, ActionName, AppStateModel, PassageModel, TestModel } from "../models"
+import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header"
@@ -16,6 +17,7 @@ import { TestNavDott } from "../components/testNevDott"
 import { L10, L11 } from "../components/levels/l1"
 import { L20, L21 } from "../components/levels/l2"
 import { MiniModal } from "../components/miniModal"
+import { getPerfectTestsNumber } from "../tools/getPerfectTests"
 
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -90,12 +92,37 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const closeLevelPicker = () => {
     setLevelPickerShown(false)
   }
-  const openLevelPicker = () => {
+  const openLevelPicker = (passageId: number) => {
+    setState(prv => {
+      return reduce(prv, {
+        name: ActionName.disableNewLevelFlag,
+        payload: passageId
+      }) || prv
+    })
     setLevelPickerShown(true)
   }
-  const submitLevelPicker = (level: number) => {
-    console.log(level)
+  const submitLevelPicker = (level: PassageLevel, passageId: number) => {
+    setState((prv) => {
+      return reduce(prv, {
+        name: ActionName.setPassageLevel,
+        payload: {
+          passageId: passageId,
+          level: level
+        }
+      }) || prv
+    });
     closeLevelPicker()
+  }
+  if(!state.passages.length){
+    return <View style={{...globalStyle.screen}}>
+      <Header navigation={navigation} showBackButton={true} alignChildren="flex-start"/>
+      <View style={testsStyle.centeredView}>
+        <Text style={testsStyle.subText}>
+          {t("TestsAddPassagesToTest")}
+        </Text>
+        <Button type="main" title={t("AddPassages")} onPress={() => navigateWithState({screen: SCREEN.listPassage, state, navigation})}/>
+      </View>
+    </View>
   }
   //if no active tests > create them
   if(!state.testsActive.length){
@@ -107,6 +134,10 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
     dateStarted: !!state.testsActive[activeTestIndex]?.dateStarted ? state.testsActive[activeTestIndex]?.dateStarted : new Date().getTime()
   }
   const targetPassage = state.passages.find(p => p.id === activeTestObj.passageId) as PassageModel
+  if(!targetPassage){//if passages from old tests left in state
+    activateTests();
+    return <View style={{...globalStyle.screen}}></View>
+  }
   return <View style={{...globalStyle.screen}}>
     <View style={{
       ...globalStyle.view,
@@ -124,24 +155,41 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
         </View>
       ]} />
       <View style={{...testsStyle.levelPickerView}}>
-        <Button title={ `${t("Level")} ${targetPassage.selectedLevel}`} icon={IconName.selectArrow} onPress={() => openLevelPicker()}/>
+        <View style={{...testsStyle.levelPickerWrapper}}>
+          <Button title={ `${t("Level")} ${targetPassage.selectedLevel}`} icon={IconName.selectArrow} onPress={() => openLevelPicker(targetPassage.id)}/>
+          {targetPassage.isNewLevelAwalible && <NewLevelIndicator />}
+        </View>
         <MiniModal shown={levelPickerShown} handleClose={() => setLevelPickerShown(false)}>
           <Text style={levelPickerStyles.headerText}>{t("LanguagePickerHeading")}</Text>
           <View style={levelPickerStyles.buttonsView}>
-            {[PassageLevel.l1,PassageLevel.l2,PassageLevel.l3,PassageLevel.l4,PassageLevel.l5].map(n => {
+            {[
+              PassageLevel.l1,PassageLevel.l2,
+              // PassageLevel.l3,PassageLevel.l4,PassageLevel.l5
+            ].map(n => {
               const color = targetPassage.selectedLevel === n ? "green" : "gray"
               const disabled = n >targetPassage.maxLevel
-              return <Button type={"secondary"} color={color} style={levelPickerStyles.buttonStyle} key={n} title={n.toString()} onPress={() => submitLevelPicker(n)} disabled={disabled}/>
+              return <Button
+                type={"secondary"}
+                color={color}
+                style={levelPickerStyles.buttonStyle}
+                key={n}
+                title={n.toString()}
+                onPress={() => submitLevelPicker(n, targetPassage.id)}
+                disabled={disabled}
+              />
             })}
           </View>
-          <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}</Text>
-        </MiniModal>
+          {targetPassage.selectedLevel.toString() === activeTestObj.level.toString().slice(0,1) 
+            && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}  ({getPerfectTestsNumber(state.testsHistory,targetPassage)}/3)</Text>}
+          {targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 
+            && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtextSecond")}</Text>}
+          </MiniModal>
       </View>
       { activeTestObj?.level === TestLevel.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
       { activeTestObj?.level === TestLevel.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TestLevel.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TestLevel.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button>
+      { state.devMode && <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
     </View>
   </View>
 }
@@ -163,6 +211,22 @@ const testsStyle = StyleSheet.create({
     height: "100%",
     overflow: "scroll"
   },
+  centeredView: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 30
+  },
+  subText: {
+    color: COLOR.text,
+    fontSize: 20,
+    textAlign: "center",
+    marginHorizontal: 20
+  },
+  levelPickerWrapper: {
+    flexDirection: "row",
+    justifyContent: "center",
+  }
 });
 
 const levelPickerStyles = StyleSheet.create({
@@ -175,7 +239,7 @@ const levelPickerStyles = StyleSheet.create({
   subText: {
     textAlign: "center",
     color: COLOR.textSecond,
-    fontSize: 16
+    fontSize: 16,
   },
   buttonsView: {
     marginTop: 50,
@@ -187,3 +251,28 @@ const levelPickerStyles = StyleSheet.create({
     margin: 0
   }
 })
+
+
+const NewLevelIndicator: FC<{}> = () => {
+  return <View style={{
+    width: 10,
+    aspectRatio: 1,
+    borderRadius: 100,
+    overflow: "hidden",
+    marginLeft: -35,
+    marginRight: 35,
+    marginTop: 15,
+    marginBottom: -15
+  }}>
+    <LinearGradient
+      colors={[COLOR.gradient1, COLOR.gradient2] }
+      start={{ x: 0.0, y: 0 }}
+      end={{ x: 0.0, y: 1.0 }}
+      locations={[0, 1]}
+      style={{
+        height: "100%",
+        width: "100%",
+      }}
+    />
+  </View>
+}

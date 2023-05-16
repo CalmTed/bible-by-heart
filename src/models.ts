@@ -14,6 +14,7 @@ export interface AppStateModel {
     testsHistory: TestModel[];
     reminderTimes: number[];
     userId: number | null;
+    devMode: boolean;
 }
 
 export interface PassageModel {
@@ -33,6 +34,11 @@ export interface PassageModel {
     tags: string[]; //archive and custom
     isReminderOn: boolean;
     isCollapsed: boolean;
+}
+
+export interface exportingModel {
+    version: string;
+    passages: PassageModel[];
 }
 
 export interface TestModel {
@@ -61,7 +67,7 @@ export interface TestModel {
           )
         | null;
     wrongAddress: AddressType[];
-    wrongPassagesId: number[]
+    wrongPassagesId: number[];
     wrongWords: [number, string][]; //word index, wrong word string
 }
 
@@ -76,10 +82,14 @@ export interface AddressType {
 export enum ActionName {
     setLang = 'setLang',
     setPassage = 'setPassage',
+    setPassagesList = 'setPassagesList',
     removePassage = 'removePassage',
     setActiveTests = 'setActiveTests',
     updateTest = 'updateTest',
-    finishTesting = 'finishTesting'
+    finishTesting = 'finishTesting',
+    setPassageLevel = 'setPassageLevel',
+    disableNewLevelFlag = 'disableNewLevelFlag',
+    setDevMode = 'setDevMode'
 }
 export type ActionModel =
     | {
@@ -89,6 +99,10 @@ export type ActionModel =
     | {
           name: ActionName.setPassage;
           payload: PassageModel;
+      }
+    | {
+          name: ActionName.setPassagesList;
+          payload: PassageModel[];
       }
     | {
           name: ActionName.removePassage;
@@ -110,4 +124,19 @@ export type ActionModel =
           payload: {
               tests: TestModel[];
           };
+      }
+    | {
+          name: ActionName.setPassageLevel;
+          payload: {
+              passageId: number;
+              level: PassageLevel;
+          };
+      }
+    | {
+          name: ActionName.disableNewLevelFlag;
+          payload: number;
+      }
+    | {
+          name: ActionName.setDevMode;
+          payload: boolean;
       };

@@ -1,11 +1,18 @@
 export const en = {
   name: "English",
+  flag: "🇺🇸",
   appName: "Bible by heart",
   //buttons
   homePractice: "Practice",
   homeList: "List",
-  homeChangeLang: "Change Language",
-  homeClearData: "Clear data",
+  homeSettings: "Settings",
+  settingsChangeLang: "Change Language",
+  settingsExport: "Export passages",
+  settingsImport: "Import passages",
+  settingsToggleDevMode: "Dev mode",
+  settingsClearHistory: "Clear history",
+  settingsClearPassages: "Clear passages",
+  settingsClearData: "Reset all data",
   Archive: "Archive",
   Archived: "Archived",
   Remove: "Remove",
@@ -15,12 +22,14 @@ export const en = {
   ShowAnswer: "Show answer",
   Reset: "Reset",
   Level: "Level",
+  AddPassages: "Add passages",
   //titles
-  listScreenTitle: "List",
+  listScreenTitle: "Passages list",
   APSelectBook: "Select book",
   EditPassageTitle: "Edit passage",
   titleWelldone: "Well done",
   LanguagePickerHeading: "Select level",
+  settingsScreenTitle: "Settings",
   
   //subtexts
   DateCreated: "Date created",
@@ -30,6 +39,11 @@ export const en = {
   LevelSelectAddress: "Select address",
   LevelStartWritingPassage: "Start writing passage",
   LanguagePickerSubtext: "Train this 3 times without an error to open next level",
+  LanguagePickerSubtextSecond: "Level will change next time",
+  TestsAddPassagesToTest: "Add some passages to list to be able to test them",
+  version: "Version",
+  TestsCompleted: "Tests completed",
+  ErrorsMade: "Errors made",
 
   bGenShrt:"Gen",
   bGenLong: "Genesis",

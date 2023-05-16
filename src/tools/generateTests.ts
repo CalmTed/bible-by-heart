@@ -1,5 +1,5 @@
 import { bibleReference } from "../bibleReference";
-import { TestLevel } from "../constants";
+import { TEST_LIST_NUMBER, TestLevel } from "../constants";
 import { createAddress, createTest } from "../initials";
 import { AddressType, PassageModel, TestModel } from "../models";
 
@@ -22,27 +22,28 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
     return [];
   }
   const sessionId = Math.round(Math.random() * 10000000)
-  const testsListNumber = 10
   //sort for oldest tested
   //TODO add some randomness 
   const tests: TestModel[] = passages
     .sort((a,b) => a.dateTested - b.dateTested)//getting oldest to test
-    .slice(0,Math.min(passages.length, testsListNumber))//limiting max number
+    .slice(0,Math.min(passages.length, TEST_LIST_NUMBER))//limiting max number
     .sort(() => Math.random() > 0.5 ? -1 : 1)//shuffling
     .map(p => {
-    const initialTest = createTest(sessionId, p.id, p.selectedLevel)
-    //filling test data here
-    const testCreationList = {
-      [TestLevel.l10]: createL10Test,
-      [TestLevel.l11]: createL11Test,
-      [TestLevel.l20]: createL20Test,
-      [TestLevel.l21]: createL21Test,
-      [TestLevel.l30]: createL10Test,
-      [TestLevel.l40]: createL10Test,
-      [TestLevel.l50]: createL10Test,
-    }
-    return testCreationList[initialTest.level]({initialTest, passages, passageHistory: history})
-  })
+      const initialTest = createTest(sessionId, p.id, p.selectedLevel)
+      //l11 can't be done without 4 passages min
+      const testTenghtSafeTest = passages.length > 3 ? initialTest : initialTest.level === TestLevel.l11 ? {...initialTest, level: TestLevel.l10} : initialTest;
+      //filling test data here
+      const testCreationList = {
+        [TestLevel.l10]: createL10Test,
+        [TestLevel.l11]: createL11Test,
+        [TestLevel.l20]: createL20Test,
+        [TestLevel.l21]: createL21Test,
+        [TestLevel.l30]: createL10Test,
+        [TestLevel.l40]: createL10Test,
+        [TestLevel.l50]: createL10Test,
+      }
+      return testCreationList[testTenghtSafeTest.level]({initialTest: testTenghtSafeTest, passages, passageHistory: history})
+    })
   return tests;
 }
 

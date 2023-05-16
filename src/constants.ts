@@ -1,6 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-export const VERSION = '1.0.0';
+export const VERSION = '0.0.4';
+
+export const alowedStateVersions = [VERSION]; //make translators for imported data
 
 export const API_VERSION = '0.0.1';
 //cant sync with oudated version
@@ -8,6 +10,9 @@ export const API_VERSION = '0.0.1';
 //recreate the state if version is outdated
 
 export const storageName = 'data';
+
+export const PERFECT_TESTS_TO_PRCEED = 3;
+export const TEST_LIST_NUMBER = 10;
 
 export enum SCREEN {
     home = 'home',

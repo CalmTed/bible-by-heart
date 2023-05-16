@@ -26,7 +26,8 @@ export const createAppState: () => AppStateModel = () => {
         testsActive: [],
         testsHistory: [],
         reminderTimes: [],
-        userId: null
+        userId: null,
+        devMode: false
     };
 };
 

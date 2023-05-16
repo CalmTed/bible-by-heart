@@ -1,5 +1,5 @@
-import { FC, ReactElement } from "react"
-import { TouchableOpacity, StyleSheet, Text, View, TextInput } from "react-native"
+import { FC } from "react"
+import { StyleSheet, View, TextInput } from "react-native"
 import { COLOR } from "../constants"
 import { LinearGradient } from "expo-linear-gradient"
 import { Icon, IconName } from "./Icon"
@@ -8,16 +8,19 @@ interface InputModel {
   onChange: (value: string) => void
   onSubmit: (value: string) => void
   placeholder: string
-  defaultText?: string
+  value?: string
   disabled?: boolean
   type?: "main" | "outline" | "secondary" | "transparent"
   icon?: IconName
   color?: "green" | "red" | "gray"
   style?: StyleSheet.NamedStyles<{}>
   textStyle?: StyleSheet.NamedStyles<{}>
+  multiline?: boolean
+  numberOfLines?: number
+  selectTextOnFocus?: boolean
 }
 
-export const Input: FC<InputModel> = ({defaultText, placeholder, style, textStyle, onSubmit, onChange, disabled, type = "secondary", icon, color = "gray"}) => {
+export const Input: FC<InputModel> = ({value, placeholder, style, textStyle, onSubmit, onChange, disabled, type = "secondary", icon, color = "gray", multiline = false, numberOfLines = 1, selectTextOnFocus}) => {
   const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [COLOR.bgSecond, COLOR.bgSecond] : color === "green" ? [COLOR.gradient1, COLOR.gradient2] : [COLOR.redGradient1, COLOR.redGradient2]
   return   <View style={{...InputStyles.touch}}>
   <View style={{...InputStyles.touch , opacity: disabled ? 0.5 : 1}} >
@@ -36,13 +39,15 @@ export const Input: FC<InputModel> = ({defaultText, placeholder, style, textStyl
             {icon && <Icon iconName={icon} color={color}/>}
             <TextInput
               style={{...InputStyles.InputText}}
-              defaultValue={defaultText} 
+              value={value} 
               onChangeText={onChange}
               placeholder={placeholder}
               onSubmitEditing={(e) => onSubmit(e.currentTarget.toString())}
               editable={!disabled}
-              selectTextOnFocus={!disabled}
+              selectTextOnFocus={true}
               placeholderTextColor={COLOR.textSecond}
+              multiline={multiline}
+              numberOfLines={numberOfLines}
             />
           </View>
         </LinearGradient>
@@ -75,7 +80,6 @@ const InputStyles = StyleSheet.create({
   },
   InputText: {
     color: COLOR.text,
-    textTransform: "uppercase",
     fontSize: 18,
     paddingHorizontal: 28,
     paddingVertical: 14,

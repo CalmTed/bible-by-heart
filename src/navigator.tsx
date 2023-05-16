@@ -7,6 +7,7 @@ import { HomeScreen } from './screens/homeScreen';
 import { ListScreen } from './screens/listScreen';
 import { TestsScreen } from './screens/testsScreen';
 import { FinishScreen } from './screens/finishScreen';
+import { SettingsScreen } from './screens/settingsScreen';
 
 const Stack = createStackNavigator();
 
@@ -43,6 +44,11 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
                 <Stack.Screen
                     name={SCREEN.testResults}
                     component={FinishScreen}
+                    initialParams={{ ...state }}
+                />
+                <Stack.Screen
+                    name={SCREEN.settings}
+                    component={SettingsScreen}
                     initialParams={{ ...state }}
                 />
             </Stack.Navigator>
