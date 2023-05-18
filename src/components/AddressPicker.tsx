@@ -18,13 +18,17 @@ interface AddressPickerModel{
 
 const bookList = bibleReference.map(book => book.titleShort);
 
-export const AddressPicker: FC<AddressPickerModel> = ({visible, address = createAddress(), onCancel, onConfirm, t}) => {
-  useEffect(()=>{
-    setAddressPart(Object.keys(address)[0]);
-    setAddress(address);
+export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCancel, onConfirm, t}) => {
+  const isAddressProvided = !!address
+  const defaultAddress = address || createAddress()
+  useEffect(() => {
+    setAddressPart(isAddressProvided ? 
+      Object.keys(defaultAddress)[Object.keys(defaultAddress).length-1] :
+      Object.keys(defaultAddress)[0]);
+    setAddress(defaultAddress);
   },[visible])
-  const [tempAddres, setAddress] = useState(address);
-  const [addresPart, setAddressPart] = useState(Object.keys(address)[0]);
+  const [tempAddres, setAddress] = useState(defaultAddress);
+  const [addresPart, setAddressPart] = useState(Object.keys(defaultAddress)[0]);
   const chaptersNumber = bibleReference[tempAddres.bookIndex]?.chapters.length
   const versesNumber = bibleReference[tempAddres.bookIndex]?.chapters[tempAddres[addresPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"]]
   const handleBack = () => {

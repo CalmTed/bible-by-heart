@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react"
-import { Modal, Pressable, ScrollView, StyleSheet, Text, ToastAndroid, TouchableOpacity, View } from "react-native"
-import { COLOR, globalStyle } from "../constants"
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
+import { COLOR, PassageLevel, archivedName, globalStyle } from "../constants"
 import { AddressType, PassageModel } from "../models"
 import { Button, IconButton } from "./Button"
 import { IconName } from "./Icon"
@@ -9,6 +9,8 @@ import addressToString from "../tools/addressToString"
 import { TextInput } from "react-native-gesture-handler"
 import timeToString from "../tools/timeToString"
 import { getVersesNumber } from "../initials"
+import { AddressPicker } from "./AddressPicker"
+import { LevelPicker } from "./LevelPicker"
 
 interface PassageEditorModel{
   visible: boolean
@@ -20,10 +22,13 @@ interface PassageEditorModel{
 }
 
 export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCancel, onConfirm, onRemove, t}) => {
+  const [isAPVisible, setAPVisible] = useState(false)
+  const [tempPassage, setPassage] = useState(passage);
+
   useEffect(()=>{
     setPassage(passage);
   },[visible])
-  const [tempPassage, setPassage] = useState(passage);
+  
   const handleBack = () => {
     //TODO: confirm if changed
     onCancel();
@@ -42,7 +47,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
 
   const handleTagAdd = (tag: string) => {
     setPassage(prv => {
-      if(!tag || prv.tags.includes(tag)){
+      if(tag === t("Archive") || !tag || prv.tags.includes(tag)){
         return prv;
       }
       return {...prv, tags: [...prv.tags, tag]}
@@ -58,6 +63,22 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       return {...prv, isReminderOn: !prv.isReminderOn}
     })
   }
+  const handleAddresChange = (newAdress: AddressType) => {
+    setPassage(prv => {
+      return {...prv, address: newAdress}
+    })
+    setAPVisible(false);
+  }
+  const handleLevelPickerOpen = () => {
+    setPassage(prv => {
+      return {...prv, isNewLevelAwalible: false}
+    })
+  }
+  const handleLevelChange = (level: PassageLevel) => {
+    setPassage(prv => {
+      return {...prv, selectedLevel: level}
+    })
+  }
   return <Modal visible={visible}>
     <View style={PEstyle.headerView}>
       <IconButton  style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
@@ -69,7 +90,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       <ScrollView>
         <View style={PEstyle.bodyTop}>
           {/* TODO:change address on click */}
-          <Pressable onPress={()=>{ToastAndroid.show("TODO",1)}}>
+          <Pressable onPress={() => setAPVisible(true)}>
             <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{!!tempPassage.versesNumber ? `(${tempPassage.versesNumber})` : `(${getVersesNumber(tempPassage.address)})`}</Text>
           </Pressable>
           <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/>
@@ -85,7 +106,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         <View style={PEstyle.tagItemListBlock}>
           
           <View style={PEstyle.tagItemList}>
-            {tempPassage.tags.map(p => <TagItem key={p} title={p} onRemove={() => handleTagRemove(p)}/>)}
+            {tempPassage.tags.map(p => <TagItem key={p} title={p === archivedName ? t("Archived") : p} onRemove={() => handleTagRemove(p)}/>)}
           </View>
           <TextInput placeholderTextColor={COLOR.textSecond} style={PEstyle.tagListInput} placeholder={t("AddTag")} maxLength={15} onSubmitEditing={newVal => handleTagAdd(newVal.nativeEvent.text.trim())}></TextInput>
         </View>
@@ -94,12 +115,19 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
           <Text style={PEstyle.bodyMetaText}>{t("DateEdited")}: {timeToString(tempPassage.dateEdited)}</Text>
           <Text style={PEstyle.bodyMetaText}>{tempPassage.dateTested ? t("DateTested") + ": "+ timeToString(tempPassage.dateTested) : ""}</Text>
         </View>
+        <LevelPicker 
+          t={t}
+          targetPassage={tempPassage}
+          handleChange={handleLevelChange}
+          handleOpen={handleLevelPickerOpen}
+        />
         <View style={PEstyle.bodyButtons}>
-          <Button title={t("Archive")} onPress={() => handleTagAdd(t("Archived"))} disabled={tempPassage.tags.includes(t("Archived"))}/>
+          <Button title={t("Archive")} onPress={() => handleTagAdd(archivedName)} disabled={tempPassage.tags.includes(archivedName)}/>
           <Button title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
         </View>
       </ScrollView>
     </View>
+    <AddressPicker visible={isAPVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
   </Modal>
 }
 

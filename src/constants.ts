@@ -11,6 +11,8 @@ export const API_VERSION = '0.0.1';
 
 export const storageName = 'data';
 
+export const archivedName = 'Archived';
+
 export const PERFECT_TESTS_TO_PRCEED = 3;
 export const TEST_LIST_NUMBER = 10;
 

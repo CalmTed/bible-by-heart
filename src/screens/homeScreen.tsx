@@ -39,7 +39,7 @@ export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
       <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("ErrorsMade")}: {errorNumber}</Text>
     </View>
     <View style={homeStyle.buttonView}>
-      <Button type="main" title={t("homePractice")} onPress={() => navigateWithState({navigation, screen: SCREEN.test, state: state})} />
+      <Button type="main" color="green" title={t("homePractice")} onPress={() => navigateWithState({navigation, screen: SCREEN.test, state: state})} />
       <Button title={t("homeList")} onPress={() => navigateWithState({navigation, screen: SCREEN.listPassage, state: state})}></Button>
       <Button title={t("homeSettings")} onPress={() => navigateWithState({navigation, screen: SCREEN.settings, state: state})}></Button>
     </View>

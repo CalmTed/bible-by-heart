@@ -1,16 +1,24 @@
 import { LinearGradient } from "expo-linear-gradient"
 import { FC } from "react"
-import { View, StyleSheet} from "react-native"
+import { View, StyleSheet, Pressable} from "react-native"
 import { COLOR } from "../constants"
 
 interface TestNavDottModel{
   isCurrent: boolean
-  color: "red" | "green" | "gray"
+  color: "red" | "green" | "gray" | "text"
+  onPress?: () => void
 }
 
-export const TestNavDott: FC<TestNavDottModel> = ({isCurrent, color}) => {
-  const colors = color === "gray" ? [COLOR.textSecond, COLOR.textSecond] : color === "red" ? [COLOR.redGradient1, COLOR.redGradient2] : [COLOR.gradient1, COLOR.gradient2]
+export const TestNavDott: FC<TestNavDottModel> = ({isCurrent, color, onPress}) => {
+  const colors = color === "gray" ?
+    [COLOR.textSecond, COLOR.textSecond] :
+    color === "red" ?
+      [COLOR.redGradient1, COLOR.redGradient2] :
+      color === "text" ?
+        [COLOR.text, COLOR.textSecond] :
+        [COLOR.gradient1, COLOR.gradient2]
   return <View style={testNavDottStyles.wrapper}>
+    <Pressable onPress={() => onPress ? onPress() : null}>
     <LinearGradient
         colors={colors}
         start={{ x: 0.0, y: 0 }}
@@ -21,6 +29,7 @@ export const TestNavDott: FC<TestNavDottModel> = ({isCurrent, color}) => {
           
       {!isCurrent && <View style={testNavDottStyles.inner}></View>}
     </LinearGradient>
+    </Pressable>
   </View>
 }
 

@@ -81,18 +81,18 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
         
       </View>
       <View style={settingsStyle.groupView}>
-        <Button type={state.devMode ? "outline" : "outline"} color={state.devMode ? "green" : "gray"} title={`${t("settingsToggleDevMode")} ${state.devMode ? "on" : "off"}`} onPress={() => setState(st => reduce(st, {name: ActionName.setDevMode, payload: !state.devMode}) || st)} />
+        <Button type="outline" color={state.devMode ? "green" : "gray"} title={`${t("settingsToggleDevMode")} ${state.devMode ? "on" : "off"}`} onPress={() => setState(st => reduce(st, {name: ActionName.setDevMode, payload: !state.devMode}) || st)} />
         <Text style={globalStyle.text}>{}</Text>
       </View>
       
 
       {!!state.devMode && <View>
         <View style={settingsStyle.groupView}>
-          <Button type="outline" title={t("settingsExport")} onPress={() => handleExportData(state)} />
+          <Button type="outline" color="gray" title={t("settingsExport")} onPress={() => handleExportData(state)} />
           <Input style={settingsStyle.textarea} placeholder="" value={exportedText} multiline numberOfLines={1} disabled={false} onChange={()=>{setExportedText(exportedText)}} onSubmit={() => {}}/>
         </View>
         <View style={settingsStyle.groupView}>
-          <Button type="outline" title={t("settingsImport")} onPress={() => handleImportData(importedText)} disabled={!importedText.length} />
+          <Button type="outline" color="gray" title={t("settingsImport")} onPress={() => handleImportData(importedText)} disabled={!importedText.length} />
           <Input style={settingsStyle.textarea} value={importedText} multiline numberOfLines={1} onChange={(newVal) => setImportedText(newVal)} onSubmit={(newVal) => handleImportData(newVal)} placeholder="" />
         </View>
         <View style={settingsStyle.groupView}>

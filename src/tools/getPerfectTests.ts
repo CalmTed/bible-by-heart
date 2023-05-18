@@ -9,7 +9,7 @@ export const getPerfectTestsNumber: (history: TestModel[], passageId: PassageMod
   const lastTestsWithMaxLevel = lastThreeTests.filter(t => t.level.toString().slice(0,1) === passage.maxLevel.toString())
   //does last three tests has any error
   const ErrorNUmberFromLastThreeTests = lastTestsWithMaxLevel.filter(th =>    
-      (th.errorNumber || 0) === 0
-  ).length
+    (th.errorNumber || 0) === 0
+    ).length
   return ErrorNUmberFromLastThreeTests;
 }

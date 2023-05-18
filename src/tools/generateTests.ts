@@ -1,7 +1,8 @@
 import { bibleReference } from "../bibleReference";
 import { TEST_LIST_NUMBER, TestLevel } from "../constants";
-import { createAddress, createTest } from "../initials";
+import { createTest } from "../initials";
 import { AddressType, PassageModel, TestModel } from "../models";
+import { getPerfectTestsNumber } from "./getPerfectTests";
 
 //if no passages
 //if not many passages(1-10) > not manu tests (even one) + say "you probably should add more passages ;)"
@@ -25,6 +26,7 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
   //sort for oldest tested
   //TODO add some randomness 
   const tests: TestModel[] = passages
+    // .sort((a,b) => b.dateTested - a.dateTested)//hack for debugging
     .sort((a,b) => a.dateTested - b.dateTested)//getting oldest to test
     .slice(0,Math.min(passages.length, TEST_LIST_NUMBER))//limiting max number
     .sort(() => Math.random() > 0.5 ? -1 : 1)//shuffling
@@ -38,36 +40,13 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
         [TestLevel.l11]: createL11Test,
         [TestLevel.l20]: createL20Test,
         [TestLevel.l21]: createL21Test,
-        [TestLevel.l30]: createL10Test,
+        [TestLevel.l30]: createL30Test,
         [TestLevel.l40]: createL10Test,
         [TestLevel.l50]: createL10Test,
       }
       return testCreationList[testTenghtSafeTest.level]({initialTest: testTenghtSafeTest, passages, passageHistory: history})
     })
   return tests;
-}
-
-const randomRange: (from: number, to: number) => number = (from, to) => {
-  return Math.round(Math.random() * (to - from)) + from
-}
-const randomItem: (list: (number | string | AddressType)[]) => (number | string | AddressType) = (list) => {
-  if (list.length < 2){
-    return list[0];
-  }
-  return list[randomRange(0, list.length-1)];
-}
-
-const randomListRange: (list: (number | string | PassageModel)[], length: number) => (number | string | PassageModel)[] = (list, range) => {
-  if(list.length < range ){
-    return list.sort(() => Math.random() > 0.5 ? -1 : 1);
-  }
-  return list.sort(() => Math.random() > 0.5 ? -1 : 1).slice(0,range)
-}
-
-const addressDistance: (address1: AddressType, address2: AddressType) => number = (address1, address2) => {
-  return (Math.abs(address2.bookIndex - address1.bookIndex) * 100)
-          + (Math.abs(address2.startChapterNum - address1.startChapterNum) * 10)
-          + Math.abs(address2.startVerseNum - address1.startVerseNum);
 }
 
 interface CreateTestInputModel {
@@ -124,8 +103,6 @@ const createL10Test: CreateTestMethodModel = ({initialTest, passages, passageHis
   const maxIteration = 1000
   while(addressOptions.length < 4 && iteration < maxIteration){
     const randomAddress = getRandomAddress()
-    // console.log(addressOptions.map( a => `${a.bookIndex} ${a.startChapterNum} ${a.startVerseNum}`))
-    // console.log(randomAddress.bookIndex, randomAddress.startChapterNum, randomAddress.startVerseNum)
     if(!addressOptions.map(a => JSON.stringify(a)).includes(JSON.stringify(randomAddress))){
       addressOptions.push(randomAddress)
     }
@@ -172,4 +149,140 @@ const createL20Test: CreateTestMethodModel = ({initialTest}) => {
 
 const createL21Test: CreateTestMethodModel = ({initialTest}) => {
   return initialTest
+}
+
+const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHistory}) => {
+  const targetPassage = passages.find(p => p.id === initialTest.passageId);
+  if(!targetPassage){
+    return initialTest
+  }
+
+  const successStroke = getPerfectTestsNumber(passageHistory, targetPassage);
+  const words = targetPassage.verseText.split(" ");
+  if(!words.length){
+    return initialTest
+  }
+  let missingWords: number[] = []
+  
+  if(!successStroke){
+    //just few words: 10%
+    //random words
+    missingWords = words
+      .map((w,i) => i)
+      .sort(() => Math.random() > 0.5 ? -1 : 1)
+      .slice(0, Math.max(1,Math.floor(words.length * 0.15)))
+      .map((w) => w)
+  }else if(successStroke < 2){
+    //many words: 50%
+    //simular words(length, chars, [meaning somehow?])
+      //(sameCharactersNum / length) - lengthDiff
+    //from errors
+    //select next acconding to current list
+    const whileFallBack = 1000;
+    const targetListLength = Math.max(1,Math.floor(words.length * 0.5))
+    let i = 0;
+    while(i<whileFallBack && missingWords.length < targetListLength){
+      if(Math.random() > 0.5){
+        //we know that we have a pair if total number is even
+        //if empty or evenLength select random
+        if(!missingWords.length){
+          missingWords.push(randomRange(0, words.length-1))
+        }else{
+          const randomFromExisting = randomRange(0, missingWords.length-1)
+          const mostSimmularArr = words
+            .map((w,i) => [i,getSimularity(w, words[randomFromExisting])] )
+            .filter(w => w[1] < 1)
+            .sort((a,b) => 
+              b[1] - a[1]
+            )
+          mostSimmularArr.map((mostSimmularWord,i) => {
+            //first three from most simmular
+            const mostSimmular = mostSimmularWord[0]
+            if(i < 3 && mostSimmular !== -1 && !missingWords.includes(mostSimmular)){
+              missingWords.push(mostSimmular)
+            }
+          })
+        }
+        //else select simular
+      }else{
+        //from errors or random
+        const wordsFromErrors = passageHistory.filter(t => t.passageId === initialTest.passageId && t.errorType === "wrongWord").map(t => t.wrongWords).flat()
+        if(!wordsFromErrors.length){
+          const randomIndex = randomRange(0, words.length-1)
+          if(!missingWords.includes(randomIndex)){
+            missingWords.push(randomIndex)
+          }
+        }else{
+          const randomWordFromErrors = randomItem(wordsFromErrors) as [number, string]
+          const wrongWordIndex = words.indexOf(randomWordFromErrors[1])
+          if(wrongWordIndex > -1 && !missingWords.includes(wrongWordIndex) && !missingWords.includes(randomWordFromErrors[0])){
+            missingWords.push(wrongWordIndex)
+            missingWords.push(randomWordFromErrors[0])
+          }
+        }
+      }
+      i++;
+    }
+  }else{
+    //all words: 100%
+    missingWords = words.map((w,i) => i)
+  }
+  return {...initialTest, testData: {
+    ...initialTest.testData,
+    missingWords: missingWords.sort(() => Math.random() > 0.5 ? -1: 1)
+  }}
+}
+
+
+
+//TOOLS
+
+const randomRange: (from: number, to: number) => number = (from, to) => {
+  return Math.round(Math.random() * (to - from)) + from
+}
+const randomItem: (list: (number | string | AddressType | [number, string])[]) => (number | string | AddressType | [number, string]) = (list) => {
+  if (list.length < 2){
+    return list[0];
+  }
+  return list[randomRange(0, list.length-1)];
+}
+
+const randomListRange: (list: (number | string | PassageModel)[], length: number) => (number | string | PassageModel)[] = (list, range) => {
+  if(list.length < range ){
+    return list.sort(() => Math.random() > 0.5 ? -1 : 1);
+  }
+  return list.sort(() => Math.random() > 0.5 ? -1 : 1).slice(0,range)
+}
+
+const addressDistance: (address1: AddressType, address2: AddressType) => number = (address1, address2) => {
+  return (Math.abs(address2.bookIndex - address1.bookIndex) * 100)
+          + (Math.abs(address2.startChapterNum - address1.startChapterNum) * 10)
+          + Math.abs(address2.startVerseNum - address1.startVerseNum);
+}
+
+const getSimularity: (w1: string, w2:string) => number = (w1,w2) => {
+  //returns (0-1]
+  if(w1 === w2){
+    return 1;
+  }
+  const maxLength = Math.max(w1.length, w2.length)
+  const w1Array = w1.split("")
+  const w2Array = w2.split("")
+  const letters = new Set()
+  w1Array.map(l1 => {
+    w2Array.map(l2 => {
+      if(l1 === l2){
+        letters.add(l1)
+      }
+    })
+
+  })
+  const totalCharsNumber = letters.size
+  const mapRange = (value: number, a:number, b:number, c:number, d:number) => {
+    value = (value - a) / (b - a);
+    return c + value * (d - c);
+  }
+  const charSimularity = mapRange(totalCharsNumber, maxLength, 0, 0.5, 0)
+  const lengthSimularity = mapRange(Math.abs(w1.length - w2.length), 0, maxLength, 0.5, 0)
+  return charSimularity + lengthSimularity;
 }

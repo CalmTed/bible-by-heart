@@ -53,7 +53,7 @@ export interface TestModel {
     testData: {
         addressOptions?: AddressType[];
         passagesOptions?: PassageModel[];
-        missingWords?: [number];
+        missingWords?: number[]; //word index
         showAddressOrFirstWords?: boolean;
     };
     errorNumber: number | null; // 0 if passed without error

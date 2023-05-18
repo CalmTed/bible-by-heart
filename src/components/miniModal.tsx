@@ -9,7 +9,6 @@ interface MiniModalModel {
 }
 
 export const MiniModal:FC<MiniModalModel> = ({shown, children, handleClose}) => {
-  // const [modalVisible, setModalVisible] = useState(false);
   return (
     <Modal
       animationType="slide"
@@ -37,7 +36,8 @@ const styles = StyleSheet.create({
     margin: 20,
     backgroundColor: COLOR.bg,
     borderRadius: 10,
-    padding: 35,
+    paddingHorizontal: 35,
+    paddingVertical: 20,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -47,5 +47,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 10,
     elevation: 5,
+    gap: 10
   },
 });

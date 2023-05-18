@@ -15,8 +15,9 @@ interface ButtonModel {
   color?: "green" | "red" | "gray"
 }
 
-export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disabled, type = "transparent", icon, color = "green"}) => {
+export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disabled, type = "transparent", icon, color = "gray"}) => {
   const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [COLOR.bgSecond, COLOR.bgSecond] : color === "green" ? [COLOR.gradient1, COLOR.gradient2] : [COLOR.redGradient1, COLOR.redGradient2]
+  const textColor = type === "transparent" ? color === "red" ? COLOR.textDanger : color === "gray" ? COLOR.text : COLOR.mainColor : COLOR.text;
   return   <View style={{...buttonStyles.touch}}>
   <Pressable
     style={{...buttonStyles.touch , opacity: disabled ? 0.5 : 1}}
@@ -43,8 +44,8 @@ export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disab
             ...buttonStyles.inner,
             ...(!["main", "transparent"].includes(type) ? buttonStyles.innerShown : buttonStyles.innerHidden),
             }}>
-            {icon && <Icon iconName={icon} color={color}/>}
-            {title && <Text style={{...buttonStyles.buttonText, ...textStyle}}>{title}</Text>}
+            {icon && <Icon iconName={icon}/>}
+            {title && <Text style={{...buttonStyles.buttonText, ...textStyle, color: textColor}}>{title}</Text>}
           </View>
         </LinearGradient>
       }

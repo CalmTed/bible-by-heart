@@ -87,13 +87,17 @@ export const reduce: (
                 [PassageLevel.l3]: PassageLevel.l4,
                 [PassageLevel.l4]: PassageLevel.l5,
             }
-            const level = !hasErrorFromLastThreeTests && p.maxLevel !== PassageLevel.l5 ? nextLevel[p.maxLevel] : p.maxLevel
-            const flag = level !== p.maxLevel
+            //if has 3 perfect test stroke and not l5
+            const level = !hasErrorFromLastThreeTests && p.maxLevel !== PassageLevel.l5 ? nextLevel[p.maxLevel] : p.maxLevel;
+            //if new max level is not the current one
+            const flag = level !== p.maxLevel;
+            const lastTest = action.payload.tests.find(t => t.passageId === p.id)
+            const lastTestedTime = lastTest ? lastTest.dateFinished : p.dateTested
             return {
                 ...p,
                 maxLevel: level,
                 isNewLevelAwalible: flag,
-                dateTested: new Date().getTime()
+                dateTested: lastTestedTime
             }
         })
         changedState = {...state, testsActive: [], testsHistory: newHistory, passages: newPassages}

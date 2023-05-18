@@ -31,11 +31,14 @@ Roadmap
   - [x] edit text, set tag(archive)
   - [x] search (text, address, tag)
   - [ ] filter any parameter array (address  group, max level, curr level, date) or sorting?
+  - [ ] edit address
 - [x] address testing view (generate tests, get answers, float wrong answers to the end, result screen) v0.0.4
 - [ ] more levels, open level by learning, level select v0.0.5
   - [x] l1, l2, progressing, level switcher
-  - [ ] l3,l4,l5
+  - [ ] l3, l4, l5
 - [ ] save stats (tests result, stroke, weekly progress) v0.0.6
+  - [ ] stroke counter
+  - [ ] weekly proggress
 - [ ] app settings (language, theme, bible translation, notifications, lists(categories) to hide from tests) v0.0.7
 - [ ] customizable daily reminder v0.0.8
 - [ ] register and login (confirm email or google/facebook login) v0.0.9

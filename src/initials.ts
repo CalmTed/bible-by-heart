@@ -1,3 +1,4 @@
+import { getLocales } from 'expo-localization';
 import { bibleReference } from './bibleReference';
 import {
     API_VERSION,
@@ -13,10 +14,12 @@ const genId: () => number = () => {
 };
 
 export const createAppState: () => AppStateModel = () => {
+    const phoneLangCode = getLocales()[0].languageCode;
+    const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
     return {
         version: VERSION,
         lastChange: 0,
-        langCode: LANGCODE.en,
+        langCode: langCode,
         dateSyncTry: 0,
         dateSyncSuccess: 0,
         theme: 'auto',
@@ -91,8 +94,8 @@ export const createPassage: (
         dateEdited: new Date().getTime(),
         dateTested: 0,
         minIntervalDaysNum: null,
-        selectedLevel: PassageLevel.l1,
-        maxLevel: PassageLevel.l1,
+        selectedLevel: PassageLevel.l3,
+        maxLevel: PassageLevel.l3,
         isNewLevelAwalible: false,
         tags: [],
         isReminderOn: false,

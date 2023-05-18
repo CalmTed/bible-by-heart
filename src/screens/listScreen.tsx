@@ -1,20 +1,20 @@
-import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle } from "react-native"
-import { storageName, globalStyle, COLOR } from "../constants"
+import React, { Component, FC, useEffect, useState } from "react"
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated } from "react-native"
+import { storageName, globalStyle, COLOR, archivedName } from "../constants"
 import { ActionName, AddressType, AppStateModel, PassageModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header"
 import { Button, IconButton } from "../components/Button"
 import { Icon, IconName } from "../components/Icon"
-import { createAddress, createPassage } from "../initials"
+import { createAddress, createPassage, getVersesNumber } from "../initials"
 import { AddressPicker } from "../components/AddressPicker"
 import { WORD, createT } from "../l10n"
 import { ScreenModel } from "./homeScreen"
 import storage from "../storage"
 import { PassageEditor } from "../components/PassageEditor"
 import addressToString from "../tools/addressToString"
-import { TouchableOpacity } from "react-native-gesture-handler"
+import { Swipeable } from "react-native-gesture-handler"
 import { reduce } from "../tools/reduce"
 
 export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
@@ -82,14 +82,13 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     setSelectedPassage(passage);
     setPEOpen(true);
   } 
-  const handleListItemPress = (passage: PassageModel) => {
-    setState((prv) => {
-      const newState = reduce(prv, {
-        name: ActionName.setPassage,
-        payload: {...passage, isCollapsed: !passage.isCollapsed}
-      });
-      return newState ? newState : prv;
-    })
+  const handleListItemArchive = (passage: PassageModel) => {
+    if(passage.tags.includes(archivedName)){
+      return;
+    }
+    handlePESubmit({
+      ...passage, tags: [...passage.tags, archivedName]
+    })    
   }
   const sortedPassages = state.passages.sort((a, b) => {
     const sumA = a.address.bookIndex + a.address.startChapterNum + a.address.startVerseNum;
@@ -112,23 +111,69 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         <TextInput style={listStyle.searchTextInput} value={searchText} onChangeText={(newVal) => setSearch(newVal)}/>
         {!!searchText.length && <IconButton icon={IconName.cross} onPress={() => setSearch("")}/>}
       </View>
-      {filteredPassages.map(passage => {
-        return <ListItem key={passage.id} data={passage} t={t} onPress={() => handleListItemPress(passage)} onEdit={() => handleListItemEdit(passage)}/>
-      })}
+      <View>
+        {filteredPassages.map(passage => {
+          return <ListItem
+            key={passage.id}
+            data={passage}
+            t={t}
+            onPress={() => handleListItemEdit(passage)}
+            onRemove={() => handlePERemove(passage.id)}
+            onArchive={() => handleListItemArchive(passage)}
+          />
+        })}
+      </View>
+      {
+        state.devMode && 
+        <View style={{margin: 20}}>
+          <Text style={globalStyle.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
+        </View>
+      }
     </ScrollView>
     <AddressPicker visible={isAPOpen} address={selectedAddress} onCancel={handleAPCancel} onConfirm={handleAPSubmit} t={t}/>
     <PassageEditor visible={isPEOpen} passage={selectedPassage} onCancel={handlePECancel} onConfirm={handlePESubmit} onRemove={handlePERemove} t={t} />
   </View>
 }
 
-const ListItem: FC<{data: PassageModel, t:any, onPress: () => void, onEdit: () => void}> = ({data, t, onPress, onEdit}) => {
+const ListItem: FC<{
+  data: PassageModel, 
+  t:(w: WORD) => string,
+  onPress: () => void,
+  onArchive: () => void
+  onRemove: () => void
+}> = ({data, t, onPress, onArchive, onRemove}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
+  const renderLeftActions = (progress:Animated.AnimatedInterpolation<string | number>, dragX:Animated.AnimatedInterpolation<string | number>) => {
+    
+    return <Animated.View style={[
+      {
+        ...listStyle.swipeableAnimatedView,
+      },
+    ]}>
+      <Button title={t("Archive")} onPress={onArchive} />
+    </Animated.View>
+  }
+  const renderRightActions = (progress:Animated.AnimatedInterpolation<string | number>, dragX:Animated.AnimatedInterpolation<string | number>) => {
+    return <Animated.View style={[
+      {
+        ...listStyle.swipeableAnimatedView,
+      },
+    ]}>
+      <Button title={t("Remove")} onPress={onRemove} color="red" />
+    </Animated.View>
+  }
   return <Pressable onPress={onPress}>
-    <View style={listStyle.listItemView}>
-      <Text style={listStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
-      <Text style={{...listStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
-      {data.isCollapsed && <Button title={t("Edit")} onPress={onEdit} />}
-    </View>
+    <Swipeable
+    friction={2}
+    overshootFriction={10}
+    renderLeftActions={renderLeftActions}
+    renderRightActions={renderRightActions}>
+      <View style={listStyle.listItemView}>
+        <Text style={listStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
+        <Text style={{...listStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
+      </View>
+    </Swipeable> 
   </Pressable>
 }
 
@@ -165,5 +210,9 @@ const listStyle = StyleSheet.create({
   listItemText: {
     color: COLOR.textSecond,
     fontSize: 16
+  },
+  swipeableAnimatedView:{
+    justifyContent: "center",
+    height: "100%"
   }
 });

@@ -25,6 +25,7 @@ export const ua: typeof en = {
   Reset: "Заново",
   Level: "Рівень",
   AddPassages: "Додати вірші",
+  Close: "Закрити",
 
   //titles
   listScreenTitle: "Список віршів",
@@ -45,8 +46,10 @@ export const ua: typeof en = {
   LanguagePickerSubtextSecond: "Рівень зміниться наступного разу",
   TestsAddPassagesToTest: "Додай тексти у список щоб мати змогу їх вчити",
   version: "Веріся",
-  TestsCompleted: "Звадань завершено",
+  TestsCompleted: "Завдань завершено",
   ErrorsMade: "Помилок зроблено",
+  NumberOfPassages: "Кількість текстів",
+  NumberOfVerses: "Кількість віршів",
 
   bGenShrt:"Бут",
   bGenLong: "Буття",

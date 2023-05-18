@@ -21,8 +21,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
             <Stack.Navigator
                 screenOptions={{
                     headerShown: false,
-                    animationEnabled: true,
-                    gestureEnabled: true,
+                    gestureEnabled: false,
                     presentation: 'modal'
                 }}
             >

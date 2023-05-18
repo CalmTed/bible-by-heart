@@ -23,6 +23,7 @@ export const en = {
   Reset: "Reset",
   Level: "Level",
   AddPassages: "Add passages",
+  Close: "Close",
   //titles
   listScreenTitle: "Passages list",
   APSelectBook: "Select book",
@@ -44,7 +45,8 @@ export const en = {
   version: "Version",
   TestsCompleted: "Tests completed",
   ErrorsMade: "Errors made",
-
+  NumberOfPassages: "Number of passages",
+  NumberOfVerses: "Number of verses", 
   bGenShrt:"Gen",
   bGenLong: "Genesis",
 

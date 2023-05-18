@@ -89,7 +89,8 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const handleAddressCancel = () => {
     setAPVisible(false);
   }
-  const targetPassage = state.passages.find(p => p.id === test.passageId)
+  const targetPassage = state.passages.find(p => p.id === test.passageId);
+  const levelFinished = !!test.dateFinished;
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
       <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{targetPassage?.verseText}</Text>
@@ -100,24 +101,25 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         type="outline"
         color="green"
         onPress={() => setAPVisible(true)}
+        disabled={levelFinished}
       />
       <Button
         title={t("Submit")}
         type="main"
         color={!!selectedAddress ? "green" : "gray"}
-        disabled={!selectedAddress}
+        disabled={!selectedAddress || levelFinished}
         onPress={() => selectedAddress ? handleTestSubmit(selectedAddress) : null}
       />
-      {test.errorNumber || 0 > 3 && !hintShown &&
+      {(test.errorNumber || 0) > 3 && !hintShown &&
       <Button
         title={t("ShowAnswer")}
         type="secondary"
         color="gray"
         onPress={() => setHistShown(true)}
       />}
-      {hintShown && targetPassage &&
+      {!!hintShown && !!targetPassage &&
       <Text style={{...levelComponentStyle.hintText}}>
-        ({addressToString(targetPassage.address, t)})
+        {addressToString(targetPassage.address, t)}
       </Text>}
     </View>
     <AddressPicker visible={APVisible} onCancel={handleAddressCancel} onConfirm={handleAddressSelect} t={t}/>
@@ -157,6 +159,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   if(!targetPassage){
     return <View></View>;
   }
+  const levelFinished = !!test.dateFinished;
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <View style={{...levelComponentStyle.addressTextView}}>
       <Text
@@ -166,7 +169,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       </Text>
     </View>
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
-      <View>
+      <View style={{gap: 10}}>
         {
           passagesOptions.map(p => {
             const passageText = p.verseText.length < 50 ? p.verseText : p.verseText.trim().replace(/(.|,)$/g,"").slice(0,50) + "..."
@@ -177,6 +180,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
               textStyle={{textTransform: "none"}}
               title={passageText}
               onPress={() => handleTestSubmit(p.id)}
+              disabled={levelFinished}
             />
           })
         }

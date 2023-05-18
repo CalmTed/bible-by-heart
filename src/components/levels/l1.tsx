@@ -73,6 +73,7 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       }})
     }
   }
+  const levelFinished = !!test.dateFinished;
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
       <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{state.passages.find(p => p.id === test.passageId)?.verseText}</Text>
@@ -80,7 +81,14 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
       { 
       test.testData.addressOptions && test.testData.addressOptions.map(op => {
-        return <Button key={JSON.stringify(op)} title={addressToString(op,t)} type="outline" color="green" onPress={() => handleTestSubmit(op)}/>
+        return <Button
+          key={JSON.stringify(op)}
+          title={addressToString(op,t)}
+          type="outline"
+          color="green"
+          onPress={() => handleTestSubmit(op)}
+          disabled={levelFinished}
+        />
       })}
     </View>
   </View>
@@ -113,6 +121,7 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   if(!targetPassage){
     return <View></View>;
   }
+  const levelFinished = !!test.dateFinished;
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <View style={{...levelComponentStyle.addressTextView}}>
       <Text
@@ -132,6 +141,7 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           color="green"
           textStyle={{textTransform: "none"}}
           onPress={() => handleTestSubmit(op.id)}
+          disabled={levelFinished}
           />
       }) 
     }
