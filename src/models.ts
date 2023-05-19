@@ -63,6 +63,7 @@ export interface TestModel {
               | 'wrongVerseToAddress'
               | 'wrongWord'
               | 'wrongFirstWord'
+              | 'moreThenOneCharacter'
               | 'other'
           )
         | null;

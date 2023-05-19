@@ -91,7 +91,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         <View style={PEstyle.bodyTop}>
           {/* TODO:change address on click */}
           <Pressable onPress={() => setAPVisible(true)}>
-            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{!!tempPassage.versesNumber ? `(${tempPassage.versesNumber})` : `(${getVersesNumber(tempPassage.address)})`}</Text>
+            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{`(${getVersesNumber(tempPassage.address)})`}</Text>
           </Pressable>
           <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/>
         </View>
@@ -127,7 +127,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         </View>
       </ScrollView>
     </View>
-    <AddressPicker visible={isAPVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
+    <AddressPicker visible={isAPVisible} address={tempPassage.address} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
   </Modal>
 }
 

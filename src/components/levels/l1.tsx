@@ -33,7 +33,7 @@ const levelComponentStyle = StyleSheet.create({
   addressTextView: {
     alignContent: "center",
     justifyContent: "center",
-    height: 200,
+    maxHeight: 200,
   },
   addressText: {
     fontSize: 22,

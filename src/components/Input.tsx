@@ -18,9 +18,29 @@ interface InputModel {
   multiline?: boolean
   numberOfLines?: number
   selectTextOnFocus?: boolean
+  autoComplete?:'birthdate-day'|'birthdate-full'|'birthdate-month'|'birthdate-year'|'cc-csc'|'cc-exp'|'cc-exp-day'|'cc-exp-month'|'cc-exp-year'|'cc-number'|'email'|'gender'|'name'|'name-family'|'name-given'|'name-middle'|'name-middle-initial'|'name-prefix'|'name-suffix'|'password'|'password-new'|'postal-address'|'postal-address-country'|'postal-address-extended'|'postal-address-extended-postal-code'|'postal-address-locality'|'postal-address-region'|'postal-code'|'street-address'|'sms-otp'|'tel'|'tel-country-code'|'tel-national'|'tel-device'|'username'|'username-new'|'off';
+  autoCapitalize?: "none" | "words" | "sentences" | "characters"
+  autoCorrect?: boolean
 }
 
-export const Input: FC<InputModel> = ({value, placeholder, style, textStyle, onSubmit, onChange, disabled, type = "secondary", icon, color = "gray", multiline = false, numberOfLines = 1, selectTextOnFocus}) => {
+export const Input: FC<InputModel> = ({
+  value, 
+  placeholder, 
+  style, 
+  onSubmit, 
+  onChange, 
+  disabled, 
+  type = "secondary", 
+  icon, 
+  color = "gray", 
+  multiline = false, 
+  numberOfLines = 1, 
+  selectTextOnFocus, 
+  autoCapitalize = "none",
+  autoCorrect=true,
+  autoComplete,
+  textStyle
+}) => {
   const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [COLOR.bgSecond, COLOR.bgSecond] : color === "green" ? [COLOR.gradient1, COLOR.gradient2] : [COLOR.redGradient1, COLOR.redGradient2]
   return   <View style={{...InputStyles.touch}}>
   <View style={{...InputStyles.touch , opacity: disabled ? 0.5 : 1}} >
@@ -35,19 +55,22 @@ export const Input: FC<InputModel> = ({value, placeholder, style, textStyle, onS
             ...style
           }}
         >
-          <View style={{...InputStyles.inner, ...(!["main", "transparent"].includes(type) ? InputStyles.innerShown : InputStyles.innerHidden)}}>
+          <View style={{...InputStyles.inner, ...(!["main", "transparent"].includes(type) ? InputStyles.innerShown : InputStyles.innerHidden), ...style}}>
             {icon && <Icon iconName={icon} color={color}/>}
             <TextInput
-              style={{...InputStyles.InputText}}
+              style={{...InputStyles.InputText, ...textStyle}}
               value={value} 
               onChangeText={onChange}
               placeholder={placeholder}
               onSubmitEditing={(e) => onSubmit(e.currentTarget.toString())}
               editable={!disabled}
-              selectTextOnFocus={true}
+              selectTextOnFocus={selectTextOnFocus}
               placeholderTextColor={COLOR.textSecond}
               multiline={multiline}
               numberOfLines={numberOfLines}
+              autoComplete={autoComplete}
+              autoCapitalize={autoCapitalize}
+              autoCorrect={autoCorrect}
             />
           </View>
         </LinearGradient>

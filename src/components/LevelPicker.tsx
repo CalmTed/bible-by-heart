@@ -16,11 +16,12 @@ interface LevelPickerModel {
   t: (w: WORD) => string
   state?: AppStateModel
   activeTestObj?: TestModel
+  handleRestart?: () => void
 }
 
 const levelPickerStyles = StyleSheet.create({
   levelPickerView: {
-    justifyContent: "center",
+    justifyContent: "flex-start"
   },
   headerText: {
     color: COLOR.text,
@@ -48,8 +49,7 @@ const levelPickerStyles = StyleSheet.create({
   }
 })
 
-export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange, handleOpen, state, activeTestObj}) => {
-  console.log("rerendering LP")
+export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange, handleOpen, state, activeTestObj, handleRestart}) => {
   const [levelPickerShown, setLevelPickerShown] = useState(false)
   const closeLevelPicker = () => {
     setLevelPickerShown(false)
@@ -67,8 +67,7 @@ export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange
     <Text style={levelPickerStyles.headerText}>{t("LanguagePickerHeading")}</Text>
     <View style={levelPickerStyles.buttonsView}>
       {[
-        PassageLevel.l1,PassageLevel.l2,PassageLevel.l3,
-        // PassageLevel.l4,PassageLevel.l5
+        PassageLevel.l1,PassageLevel.l2,PassageLevel.l3,PassageLevel.l4,PassageLevel.l5
       ].map(n => {
         const color = targetPassage.selectedLevel === n ? "green" : "gray"
         const disabled = n > targetPassage.maxLevel
@@ -85,10 +84,11 @@ export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange
     </View>
     {state && activeTestObj && targetPassage.selectedLevel.toString() === activeTestObj.level.toString().slice(0,1) && targetPassage.selectedLevel === targetPassage.maxLevel
     && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}  ({getPerfectTestsNumber(state.testsHistory,targetPassage)}/{PERFECT_TESTS_TO_PRCEED})</Text>}
-    {activeTestObj && targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 
+    {state && activeTestObj && targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 
     && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtextSecond")}</Text>}
-
-    <Button color="green" type="outline" title={t("Close")} onPress={closeLevelPicker}/>
+    {activeTestObj && handleRestart && targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 
+    && <Button title={t("RestartTests")} onPress={() => {closeLevelPicker();handleRestart()}}/>}
+    <Button color="green" type="outline" title={t("Close")} onPress={() => closeLevelPicker()}/>
   </MiniModal>
 </View>
 }

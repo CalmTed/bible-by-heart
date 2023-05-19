@@ -17,6 +17,8 @@ import { L10, L11 } from "../components/levels/l1"
 import { L20, L21 } from "../components/levels/l2"
 import { L30 } from "../components/levels/l3"
 import { LevelPicker } from "../components/LevelPicker"
+import { L40 } from "../components/levels/l4"
+import { L50 } from "../components/levels/l5"
 
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -171,12 +173,15 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
         activeTestObj={activeTestObj}
         handleChange={handleLevelChange}
         handleOpen={handleLevelPickerOpen}
+        handleRestart={handleReset}
       />
       { activeTestObj?.level === TestLevel.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
       { activeTestObj?.level === TestLevel.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TestLevel.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TestLevel.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TestLevel.l30 && <L30 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TestLevel.l40 && <L40 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TestLevel.l50 && <L50 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { state.devMode && <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
     </View>
   </View>

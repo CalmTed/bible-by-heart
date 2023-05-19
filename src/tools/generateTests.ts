@@ -3,6 +3,7 @@ import { TEST_LIST_NUMBER, TestLevel } from "../constants";
 import { createTest } from "../initials";
 import { AddressType, PassageModel, TestModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
+import { getSimularity } from "./getSimularity";
 
 //if no passages
 //if not many passages(1-10) > not manu tests (even one) + say "you probably should add more passages ;)"
@@ -41,8 +42,8 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
         [TestLevel.l20]: createL20Test,
         [TestLevel.l21]: createL21Test,
         [TestLevel.l30]: createL30Test,
-        [TestLevel.l40]: createL10Test,
-        [TestLevel.l50]: createL10Test,
+        [TestLevel.l40]: createL40Test,
+        [TestLevel.l50]: createL50Test,
       }
       return testCreationList[testTenghtSafeTest.level]({initialTest: testTenghtSafeTest, passages, passageHistory: history})
     })
@@ -170,7 +171,7 @@ const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHis
     missingWords = words
       .map((w,i) => i)
       .sort(() => Math.random() > 0.5 ? -1 : 1)
-      .slice(0, Math.max(1,Math.floor(words.length * 0.15)))
+      .slice(0, Math.max(1,Math.floor(words.length * 0.20)))
       .map((w) => w)
   }else if(successStroke < 2){
     //many words: 50%
@@ -179,7 +180,7 @@ const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHis
     //from errors
     //select next acconding to current list
     const whileFallBack = 1000;
-    const targetListLength = Math.max(1,Math.floor(words.length * 0.5))
+    const targetListLength = Math.max(1,Math.floor(words.length * 0.7))
     let i = 0;
     while(i<whileFallBack && missingWords.length < targetListLength){
       if(Math.random() > 0.5){
@@ -233,7 +234,17 @@ const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHis
   }}
 }
 
+const createL40Test: CreateTestMethodModel = ({initialTest}) => {
+  return {
+    ...initialTest,
+    testData: {
+      ...initialTest.testData,
+      showAddressOrFirstWords: Math.random() > 0.5
+    }
+  } as TestModel
+}
 
+const createL50Test: CreateTestMethodModel = createL40Test
 
 //TOOLS
 
@@ -258,31 +269,4 @@ const addressDistance: (address1: AddressType, address2: AddressType) => number 
   return (Math.abs(address2.bookIndex - address1.bookIndex) * 100)
           + (Math.abs(address2.startChapterNum - address1.startChapterNum) * 10)
           + Math.abs(address2.startVerseNum - address1.startVerseNum);
-}
-
-const getSimularity: (w1: string, w2:string) => number = (w1,w2) => {
-  //returns (0-1]
-  if(w1 === w2){
-    return 1;
-  }
-  const maxLength = Math.max(w1.length, w2.length)
-  const w1Array = w1.split("")
-  const w2Array = w2.split("")
-  const letters = new Set()
-  w1Array.map(l1 => {
-    w2Array.map(l2 => {
-      if(l1 === l2){
-        letters.add(l1)
-      }
-    })
-
-  })
-  const totalCharsNumber = letters.size
-  const mapRange = (value: number, a:number, b:number, c:number, d:number) => {
-    value = (value - a) / (b - a);
-    return c + value * (d - c);
-  }
-  const charSimularity = mapRange(totalCharsNumber, maxLength, 0, 0.5, 0)
-  const lengthSimularity = mapRange(Math.abs(w1.length - w2.length), 0, maxLength, 0.5, 0)
-  return charSimularity + lengthSimularity;
 }

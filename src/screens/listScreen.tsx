@@ -1,6 +1,6 @@
-import React, { Component, FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated } from "react-native"
-import { storageName, globalStyle, COLOR, archivedName } from "../constants"
+import React, { FC, useEffect, useState } from "react"
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated, Vibration } from "react-native"
+import { storageName, globalStyle, COLOR, archivedName, PassageLevel } from "../constants"
 import { ActionName, AddressType, AppStateModel, PassageModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -90,10 +90,23 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       ...passage, tags: [...passage.tags, archivedName]
     })    
   }
+  const handleListItemLongPress = (passage: PassageModel) => {
+    Vibration.vibrate(30)
+    handlePESubmit({
+      ...passage, isCollapsed: !passage.isCollapsed
+    })    
+  }
   const sortedPassages = state.passages.sort((a, b) => {
-    const sumA = a.address.bookIndex + a.address.startChapterNum + a.address.startVerseNum;
-    const sumB = b.address.bookIndex + b.address.startChapterNum + b.address.startVerseNum;
-    return sumA - sumB 
+    if(a.address.bookIndex !== b.address.bookIndex){
+      return a.address.bookIndex - b.address.bookIndex
+    }
+    if(a.address.startChapterNum !== b.address.startChapterNum){
+      return a.address.startChapterNum - b.address.startChapterNum
+    }
+    if(a.address.startVerseNum !== b.address.startVerseNum){
+      return a.address.startVerseNum - b.address.startVerseNum
+    }
+    return 0
   })
   const filteredPassages = sortedPassages.filter(p => 
     p.verseText.toLowerCase().includes(searchText.toLowerCase())
@@ -120,14 +133,20 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
             onPress={() => handleListItemEdit(passage)}
             onRemove={() => handlePERemove(passage.id)}
             onArchive={() => handleListItemArchive(passage)}
+            onLongPress={() => handleListItemLongPress(passage)}
           />
         })}
       </View>
       {
         state.devMode && 
         <View style={{margin: 20}}>
-          <Text style={globalStyle.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
           <Text style={globalStyle.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 1}: {state.passages.filter(p => p.maxLevel === PassageLevel.l1).length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 2}: {state.passages.filter(p => p.maxLevel === PassageLevel.l2).length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 3}: {state.passages.filter(p => p.maxLevel === PassageLevel.l3).length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 4}: {state.passages.filter(p => p.maxLevel === PassageLevel.l4).length}</Text>
+          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 5}: {state.passages.filter(p => p.maxLevel === PassageLevel.l5).length}</Text>
         </View>
       }
     </ScrollView>
@@ -142,7 +161,8 @@ const ListItem: FC<{
   onPress: () => void,
   onArchive: () => void
   onRemove: () => void
-}> = ({data, t, onPress, onArchive, onRemove}) => {
+  onLongPress: () => void
+}> = ({data, t, onPress, onArchive, onRemove, onLongPress}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
   const renderLeftActions = (progress:Animated.AnimatedInterpolation<string | number>, dragX:Animated.AnimatedInterpolation<string | number>) => {
     
@@ -163,7 +183,7 @@ const ListItem: FC<{
       <Button title={t("Remove")} onPress={onRemove} color="red" />
     </Animated.View>
   }
-  return <Pressable onPress={onPress}>
+  return <Pressable onPress={onPress} onLongPress={onLongPress}>
     <Swipeable
     friction={2}
     overshootFriction={10}

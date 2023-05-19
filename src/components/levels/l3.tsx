@@ -13,11 +13,10 @@ const levelComponentStyle = StyleSheet.create({
     flex: 1
   },
   passageTextView: {
-    maxHeight: "50%",
-    height: "auto",
+    maxHeight: "30%",
+    flex: 1,
     backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
-    
     margin: 10,
   },
   passageText: {

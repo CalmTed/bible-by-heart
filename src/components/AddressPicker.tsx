@@ -19,16 +19,20 @@ interface AddressPickerModel{
 const bookList = bibleReference.map(book => book.titleShort);
 
 export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCancel, onConfirm, t}) => {
-  const isAddressProvided = !!address
-  const defaultAddress = address || createAddress()
+  const isNoAddress = !address;
+  const isAddressNull = address?.bookIndex === null || address?.startChapterNum  === null  || address?.startVerseNum  === null;
+  const isAddressNaN = !isNoAddress && (isNaN(address.bookIndex) || isNaN(address.startChapterNum) || isNaN(address.startVerseNum))
+  const isAddressProvided = !isNoAddress && !isAddressNull && !isAddressNaN
+  const [tempAddres, setAddress] = useState(isAddressProvided ? address : createAddress());
+  const [addresPart, setAddressPart] = useState(isAddressProvided ? Object.keys(tempAddres)[Object.keys(tempAddres).length-1] : Object.keys(tempAddres)[0]);
   useEffect(() => {
     setAddressPart(isAddressProvided ? 
-      Object.keys(defaultAddress)[Object.keys(defaultAddress).length-1] :
-      Object.keys(defaultAddress)[0]);
-    setAddress(defaultAddress);
+      Object.keys(tempAddres)[Object.keys(tempAddres).length-1] :
+      Object.keys(tempAddres)[0]);
+    setAddress(isAddressProvided ? 
+      address :
+      createAddress());
   },[visible])
-  const [tempAddres, setAddress] = useState(defaultAddress);
-  const [addresPart, setAddressPart] = useState(Object.keys(defaultAddress)[0]);
   const chaptersNumber = bibleReference[tempAddres.bookIndex]?.chapters.length
   const versesNumber = bibleReference[tempAddres.bookIndex]?.chapters[tempAddres[addresPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"]]
   const handleBack = () => {
@@ -41,7 +45,11 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
       break;
       default:
         setAddress(prv => {
-          return {...prv, [Object.keys(tempAddres)[curPartIndex - 1]]: NaN}
+          return {
+            ...prv,
+            [Object.keys(tempAddres)[curPartIndex - 1]]: NaN,
+            [Object.keys(tempAddres)[curPartIndex]]: NaN
+          }
         });
         setAddressPart(Object.keys(tempAddres)[curPartIndex - 1]);
     }
@@ -62,12 +70,14 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
       default: setAddressPart(Object.keys(tempAddres)[curPartIndex + 1]);
     }
   }
+  const isDoneDisabled = (isNaN(tempAddres.bookIndex) || isNaN(tempAddres.startChapterNum) || isNaN(tempAddres.startVerseNum) ) ||
+    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum))
   return <Modal visible={visible}>
     {/* HEADER */}
     <View style={APstyle.headerView}>
       <IconButton  style={APstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
       <Text style={APstyle.headerTitle}>{ addresPart === "bookIndex" ? t("APSelectBook") : `${t(bibleReference[tempAddres.bookIndex]?.longTitle as WORD)} ${((tempAddres.startChapterNum) + 1) || " _ "}:${((tempAddres.startVerseNum) + 1) || " _ "}-${((tempAddres.endChapterNum) + 1) || " _ "}:${((tempAddres.endVerseNum) + 1) || " _ "}`}</Text>
-      <IconButton  style={APstyle.headerBotton} icon={IconName.done} onPress={() => {onConfirm(tempAddres)}} disabled={isNaN(tempAddres.bookIndex) || isNaN(tempAddres.startChapterNum) || isNaN(tempAddres.startVerseNum)} />
+      <IconButton  style={APstyle.headerBotton} icon={IconName.done} onPress={() => {onConfirm(tempAddres)}} disabled={isDoneDisabled} />
     </View>
     {/* LIST */}
       <View style={APstyle.listView}>

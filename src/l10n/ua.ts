@@ -26,6 +26,8 @@ export const ua: typeof en = {
   Level: "Рівень",
   AddPassages: "Додати вірші",
   Close: "Закрити",
+  RestartTests: "Почати все заново",
+  CheckText: "Перевірити текст",
 
   //titles
   listScreenTitle: "Список віршів",
@@ -42,6 +44,7 @@ export const ua: typeof en = {
   AddTag: "Додати категорію...",
   LevelSelectAddress: "Обери адресу",
   LevelStartWritingPassage: "Напиши перші слова",
+  LevelWritePassageText: "Напиши текст вірша",
   LanguagePickerSubtext: "Потренуйте цей текст тричі без помилок поспіль щоб відкрити наступний рівень",
   LanguagePickerSubtextSecond: "Рівень зміниться наступного разу",
   TestsAddPassagesToTest: "Додай тексти у список щоб мати змогу їх вчити",
@@ -49,7 +52,11 @@ export const ua: typeof en = {
   TestsCompleted: "Завдань завершено",
   ErrorsMade: "Помилок зроблено",
   NumberOfPassages: "Кількість текстів",
-  NumberOfVerses: "Кількість віршів",
+  NumberOfVerses: "Кількість віршів", 
+  FinishPassage: "Заверши цей вірш щоб ввести адресу",
+  FinishPassageL5: "Заверши цей вірш без жодного автодоповнення",
+  LevelL40Hint: "Тисни Enter для швидкого обрання першого варіанту зі списку автодоповнення",
+  LevelL50Warning: "Введено більше одного символа за раз. Наступного разу це вважатиметься помилкою",
 
   bGenShrt:"Бут",
   bGenLong: "Буття",

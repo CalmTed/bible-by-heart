@@ -24,6 +24,8 @@ export const en = {
   Level: "Level",
   AddPassages: "Add passages",
   Close: "Close",
+  RestartTests: "Restart tests",
+  CheckText: "Check text",
   //titles
   listScreenTitle: "Passages list",
   APSelectBook: "Select book",
@@ -39,6 +41,7 @@ export const en = {
   AddTag: "Add tag...",
   LevelSelectAddress: "Select address",
   LevelStartWritingPassage: "Start writing passage",
+  LevelWritePassageText: "Write passage text",
   LanguagePickerSubtext: "Train this 3 times without an error to open next level",
   LanguagePickerSubtextSecond: "Level will change next time",
   TestsAddPassagesToTest: "Add some passages to list to be able to test them",
@@ -47,6 +50,11 @@ export const en = {
   ErrorsMade: "Errors made",
   NumberOfPassages: "Number of passages",
   NumberOfVerses: "Number of verses", 
+  FinishPassage: "Finish writing passage",
+  FinishPassageL5: "Finish writing passage without any autocomplete",
+  LevelL40Hint: "Press Enter to select first autocomplete option from list",
+  LevelL50Warning: "Entered more then one character. Warning, next one will set an error",
+
   bGenShrt:"Gen",
   bGenLong: "Genesis",
 

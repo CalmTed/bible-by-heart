@@ -1,8 +1,8 @@
 {
     "expo": {
-        "name": "bible-by-heart",
+        "name": "Bible by heart",
         "slug": "bible-by-heart",
-        "version": "0.0.4",
+        "version": "0.0.5",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "userInterfaceStyle": "dark",

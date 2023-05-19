@@ -35,11 +35,13 @@ Roadmap
 - [x] address testing view (generate tests, get answers, float wrong answers to the end, result screen) v0.0.4
 - [ ] more levels, open level by learning, level select v0.0.5
   - [x] l1, l2, progressing, level switcher
-  - [ ] l3, l4, l5
+  - [x] l3, l4, l5
 - [ ] save stats (tests result, stroke, weekly progress) v0.0.6
   - [ ] stroke counter
   - [ ] weekly proggress
 - [ ] app settings (language, theme, bible translation, notifications, lists(categories) to hide from tests) v0.0.7
+  - [ ] adding passages from prepared list in the most popular translations
+  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, tags includex, excluded)
 - [ ] customizable daily reminder v0.0.8
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
 - [ ] sync + custom sync(without need for registration) v1.0.0

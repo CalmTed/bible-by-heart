@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { AddressType, AppStateModel, PassageModel, TestModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView, TextInput } from "react-native"
 import { COLOR, globalStyle } from "../../constants";
@@ -20,7 +20,8 @@ const levelComponentStyle = StyleSheet.create({
   passageText: {
     fontSize: 18,
     letterSpacing: 0.5,
-    margin: 20,
+    marginHorizontal: 20,
+    marginVertical: 10,
     backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
     padding: 10
@@ -28,7 +29,7 @@ const levelComponentStyle = StyleSheet.create({
   addressTextView: {
     alignContent: "center",
     justifyContent: "center",
-    height: 200,
+    maxHeight: 100,
   },
   addressText: {
     fontSize: 22,

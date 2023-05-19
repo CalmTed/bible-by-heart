@@ -43,6 +43,7 @@ export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disab
           <View style={{
             ...buttonStyles.inner,
             ...(!["main", "transparent"].includes(type) ? buttonStyles.innerShown : buttonStyles.innerHidden),
+            ...style
             }}>
             {icon && <Icon iconName={icon}/>}
             {title && <Text style={{...buttonStyles.buttonText, ...textStyle, color: textColor}}>{title}</Text>}
