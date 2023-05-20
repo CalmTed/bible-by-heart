@@ -1,7 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet, ScrollView, ToastAndroid } from "react-native"
 import { storageName, globalStyle, SCREEN, LANGCODE, alowedStateVersions, VERSION } from "../constants"
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { ActionName, AppStateModel, exportingModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { createAppState } from "../initials"
@@ -13,11 +12,7 @@ import { Header } from "../components/Header"
 import { IconName } from "../components/Icon"
 import { Input } from "../components/Input"
 import timeToString from "../tools/timeToString"
-
-export interface ScreenModel {
-  route: any
-  navigation: StackNavigationHelpers
-}
+import { ScreenModel } from "./homeScreen"
 
 export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;

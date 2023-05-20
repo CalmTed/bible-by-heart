@@ -30,7 +30,7 @@ export default function App() {
 
     return (
         <>
-            {isReady && <Navigator state={state} />}
+            {isReady && <Navigator state={state}/>}
             <StatusBar style="light" />
         </>
     );

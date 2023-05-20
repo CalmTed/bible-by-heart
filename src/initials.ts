@@ -3,9 +3,11 @@ import { bibleReference } from './bibleReference';
 import {
     API_VERSION,
     LANGCODE,
-    PassageLevel,
-    TestLevel,
-    VERSION
+    PASSAGE_LEVEL,
+    SORTING_OPTION,
+    TEST_LEVEL,
+    VERSION,
+    archivedName
 } from './constants';
 import { AddressType, AppStateModel, PassageModel, TestModel } from './models';
 
@@ -30,7 +32,12 @@ export const createAppState: () => AppStateModel = () => {
         testsHistory: [],
         reminderTimes: [],
         userId: null,
-        devMode: false
+        devMode: false,
+        filters: {
+            categories: [archivedName],
+            selectedLevels: [],
+        },
+        sort: SORTING_OPTION.adress
     };
 };
 
@@ -94,8 +101,8 @@ export const createPassage: (
         dateEdited: new Date().getTime(),
         dateTested: 0,
         minIntervalDaysNum: null,
-        selectedLevel: PassageLevel.l1,
-        maxLevel: PassageLevel.l1,
+        selectedLevel: PASSAGE_LEVEL.l1,
+        maxLevel: PASSAGE_LEVEL.l1,
         isNewLevelAwalible: false,
         tags: [],
         isReminderOn: false,
@@ -106,21 +113,21 @@ export const createPassage: (
 export const createTest: (
     sessionId: number,
     passageId: number,
-    level: PassageLevel,
+    level: PASSAGE_LEVEL,
     userId?: number
 ) => TestModel = (sessionId, passageId, level, userId) => {
-    const selectedLevel = (level: PassageLevel) => {
+    const selectedLevel = (level: PASSAGE_LEVEL) => {
         switch (level) {
-            case PassageLevel.l1:
-                return Math.random() > 0.5 ? TestLevel.l10 : TestLevel.l11;
-            case PassageLevel.l2:
-                return Math.random() > 0.5 ? TestLevel.l20 : TestLevel.l21;
-            case PassageLevel.l3:
-                return TestLevel.l30;
-            case PassageLevel.l4:
-                return TestLevel.l40;
-            case PassageLevel.l5:
-                return TestLevel.l50;
+            case PASSAGE_LEVEL.l1:
+                return Math.random() > 0.5 ? TEST_LEVEL.l10 : TEST_LEVEL.l11;
+            case PASSAGE_LEVEL.l2:
+                return Math.random() > 0.5 ? TEST_LEVEL.l20 : TEST_LEVEL.l21;
+            case PASSAGE_LEVEL.l3:
+                return TEST_LEVEL.l30;
+            case PASSAGE_LEVEL.l4:
+                return TEST_LEVEL.l40;
+            case PASSAGE_LEVEL.l5:
+                return TEST_LEVEL.l50;
         }
     };
     return {

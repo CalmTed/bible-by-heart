@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { storageName, globalStyle, TestLevel, COLOR, PassageLevel } from "../constants"
+import { storageName, globalStyle, TEST_LEVEL, COLOR, PASSAGE_LEVEL } from "../constants"
 import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -97,7 +97,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
       }) || prv
     })
     }
-  const handleLevelChange = (level: PassageLevel, passageId: number) => {
+  const handleLevelChange = (level: PASSAGE_LEVEL, passageId: number) => {
     setState((prv) => {
       return reduce(prv, {
         name: ActionName.setPassageLevel,
@@ -137,7 +137,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   return <View style={{...globalStyle.screen}}>
     <View style={{
       ...globalStyle.view,
-      ...(!state.testsActive.filter(t => !t.dateFinished).length ? testsStyle.viewHidden : {})
+      ...!state.testsActive.filter(t => !t.dateFinished).length ? testsStyle.viewHidden : {}
       }}>
       <Header navigation={navigation} showBackButton={false} alignChildren="flex-start" additionalChildren={[
         <IconButton icon={IconName.cross} onPress={exitTests} />,
@@ -175,13 +175,13 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
         handleOpen={handleLevelPickerOpen}
         handleRestart={handleReset}
       />
-      { activeTestObj?.level === TestLevel.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
-      { activeTestObj?.level === TestLevel.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TestLevel.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TestLevel.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TestLevel.l30 && <L30 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TestLevel.l40 && <L40 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TestLevel.l50 && <L50 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
+      { activeTestObj?.level === TEST_LEVEL.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l30 && <L30 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l40 && <L40 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l50 && <L50 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { state.devMode && <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
     </View>
   </View>

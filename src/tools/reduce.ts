@@ -1,4 +1,4 @@
-import { PERFECT_TESTS_TO_PRCEED, PassageLevel } from "../constants";
+import { PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL } from "../constants";
 import { ActionModel, ActionName, AppStateModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
 
@@ -82,13 +82,13 @@ export const reduce: (
             const perfectTestsNumber = getPerfectTestsNumber(newHistory, p);
             const hasErrorFromLastThreeTests = perfectTestsNumber !== PERFECT_TESTS_TO_PRCEED;
             const nextLevel = {
-                [PassageLevel.l1]: PassageLevel.l2,
-                [PassageLevel.l2]: PassageLevel.l3,
-                [PassageLevel.l3]: PassageLevel.l4,
-                [PassageLevel.l4]: PassageLevel.l5,
+                [PASSAGE_LEVEL.l1]: PASSAGE_LEVEL.l2,
+                [PASSAGE_LEVEL.l2]: PASSAGE_LEVEL.l3,
+                [PASSAGE_LEVEL.l3]: PASSAGE_LEVEL.l4,
+                [PASSAGE_LEVEL.l4]: PASSAGE_LEVEL.l5,
             }
             //if has 3 perfect test stroke and not l5
-            const level = !hasErrorFromLastThreeTests && p.maxLevel !== PassageLevel.l5 ? nextLevel[p.maxLevel] : p.maxLevel;
+            const level = !hasErrorFromLastThreeTests && p.maxLevel !== PASSAGE_LEVEL.l5 ? nextLevel[p.maxLevel] : p.maxLevel;
             //if new max level is not the current one
             const flag = level !== p.maxLevel;
             const lastTest = action.payload.tests.find(t => t.passageId === p.id)
@@ -108,6 +108,23 @@ export const reduce: (
       break;
       case ActionName.disableNewLevelFlag:
         changedState = {...state, passages: state.passages.map(p => p.id === action.payload ? {...p, isNewLevelAwalible: false} : p)}
+      break;
+      case ActionName.setSorting:
+        changedState = {...state, sort: action.payload}
+      break;
+      case ActionName.toggleFilter:
+        //id existed add or remove from list
+        const newCategories = action.payload.category ?
+            state.filters.categories.includes(action.payload.category) ?
+                state.filters.categories.filter(c => c === action.payload.category) :
+                [...state.filters.categories, action.payload.category] :
+            state.filters.categories;
+        const newSelectedLevels = action.payload.selectedLevel ?
+            state.filters.selectedLevels.includes(action.payload.selectedLevel) ?
+                state.filters.selectedLevels.filter(c => c === action.payload.selectedLevel) :
+                [...state.filters.selectedLevels, action.payload.selectedLevel] :
+            state.filters.selectedLevels;
+        changedState = {...state, filters: {categories: newCategories, selectedLevels: newSelectedLevels}}
       break;
   }
   if (changedState) {

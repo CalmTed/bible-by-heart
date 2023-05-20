@@ -1,3 +1,4 @@
+import { SORTING_OPTION } from "../constants";
 import { en } from "./en";
 
 export const ua: typeof en = {
@@ -28,6 +29,11 @@ export const ua: typeof en = {
   Close: "Закрити",
   RestartTests: "Почати все заново",
   CheckText: "Перевірити текст",
+  [SORTING_OPTION.adress]: "Адреса",
+  [SORTING_OPTION.selectedLevel]: "Обраний рівень", 
+  [SORTING_OPTION.maxLevel]: "Доступний рівень", 
+  [SORTING_OPTION.oldestToTrain]: "Треновані найдавніше", 
+  [SORTING_OPTION.resentlyCreated]: "Нещодавно додані", 
 
   //titles
   listScreenTitle: "Список віршів",
@@ -36,6 +42,8 @@ export const ua: typeof en = {
   titleWelldone: "Чудова робота!",
   LanguagePickerHeading: "Оберіть рівень",
   settingsScreenTitle: "Налаштування",
+  TitleSort: "Сортування",
+  TitleFilters: "Фільтрування",
 
   //sub texts
   DateCreated: "Додано",

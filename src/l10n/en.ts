@@ -1,3 +1,5 @@
+import { SORTING_OPTION } from "../constants";
+
 export const en = {
   name: "English",
   flag: "🇺🇸",
@@ -26,6 +28,11 @@ export const en = {
   Close: "Close",
   RestartTests: "Restart tests",
   CheckText: "Check text",
+  [SORTING_OPTION.adress]: "Addres", 
+  [SORTING_OPTION.selectedLevel]: "Selected level", 
+  [SORTING_OPTION.maxLevel]: "Max level", 
+  [SORTING_OPTION.oldestToTrain]: "Oldest to train", 
+  [SORTING_OPTION.resentlyCreated]: "Resently created", 
   //titles
   listScreenTitle: "Passages list",
   APSelectBook: "Select book",
@@ -33,6 +40,8 @@ export const en = {
   titleWelldone: "Well done",
   LanguagePickerHeading: "Select level",
   settingsScreenTitle: "Settings",
+  TitleSort: "Sorting",
+  TitleFilters: "Filters",
   
   //subtexts
   DateCreated: "Date created",

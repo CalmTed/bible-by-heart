@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient"
 import { FC, useState } from "react"
 import { View, StyleSheet, Pressable, Text } from "react-native"
-import { COLOR, PERFECT_TESTS_TO_PRCEED, PassageLevel } from "../constants"
+import { COLOR, PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL } from "../constants"
 import { WORD } from "../l10n"
 import { AppStateModel, PassageModel, TestModel } from "../models"
 import { MiniModal } from "./miniModal"
@@ -11,7 +11,7 @@ import { getPerfectTestsNumber } from "../tools/getPerfectTests"
 
 interface LevelPickerModel {
   targetPassage: PassageModel
-  handleChange: (level: PassageLevel, passageId: number) => void
+  handleChange: (level: PASSAGE_LEVEL, passageId: number) => void
   handleOpen: (passageId: number) => void
   t: (w: WORD) => string
   state?: AppStateModel
@@ -67,7 +67,7 @@ export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange
     <Text style={levelPickerStyles.headerText}>{t("LanguagePickerHeading")}</Text>
     <View style={levelPickerStyles.buttonsView}>
       {[
-        PassageLevel.l1,PassageLevel.l2,PassageLevel.l3,PassageLevel.l4,PassageLevel.l5
+        PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5
       ].map(n => {
         const color = targetPassage.selectedLevel === n ? "green" : "gray"
         const disabled = n > targetPassage.maxLevel

@@ -1,18 +1,14 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
 import { storageName, globalStyle, SCREEN} from "../constants"
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { AppStateModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { createT } from "../l10n"
 import { Button } from "../components/Button"
 import storage from "../storage"
 import { FinishCupSVG } from "../svg/finishCup"
+import { ScreenModel } from "./homeScreen"
 
-export interface ScreenModel {
-  route: any
-  navigation: StackNavigationHelpers
-}
 
 export const FinishScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;

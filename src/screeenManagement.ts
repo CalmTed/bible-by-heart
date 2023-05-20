@@ -1,5 +1,5 @@
 import { StackNavigationHelpers } from '@react-navigation/stack/src/types';
-import { ActionModel, ActionName, AppStateModel } from './models';
+import { ActionModel, AppStateModel } from './models';
 import { SCREEN } from './constants';
 import { reduce } from './tools/reduce';
 

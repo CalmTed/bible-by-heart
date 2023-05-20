@@ -1,5 +1,5 @@
 import { bibleReference } from "../bibleReference";
-import { TEST_LIST_NUMBER, TestLevel } from "../constants";
+import { TEST_LIST_NUMBER, TEST_LEVEL } from "../constants";
 import { createTest } from "../initials";
 import { AddressType, PassageModel, TestModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
@@ -34,16 +34,16 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
     .map(p => {
       const initialTest = createTest(sessionId, p.id, p.selectedLevel)
       //l11 can't be done without 4 passages min
-      const testTenghtSafeTest = passages.length > 3 ? initialTest : initialTest.level === TestLevel.l11 ? {...initialTest, level: TestLevel.l10} : initialTest;
+      const testTenghtSafeTest = passages.length > 3 ? initialTest : initialTest.level === TEST_LEVEL.l11 ? {...initialTest, level: TEST_LEVEL.l10} : initialTest;
       //filling test data here
       const testCreationList = {
-        [TestLevel.l10]: createL10Test,
-        [TestLevel.l11]: createL11Test,
-        [TestLevel.l20]: createL20Test,
-        [TestLevel.l21]: createL21Test,
-        [TestLevel.l30]: createL30Test,
-        [TestLevel.l40]: createL40Test,
-        [TestLevel.l50]: createL50Test,
+        [TEST_LEVEL.l10]: createL10Test,
+        [TEST_LEVEL.l11]: createL11Test,
+        [TEST_LEVEL.l20]: createL20Test,
+        [TEST_LEVEL.l21]: createL21Test,
+        [TEST_LEVEL.l30]: createL30Test,
+        [TEST_LEVEL.l40]: createL40Test,
+        [TEST_LEVEL.l50]: createL50Test,
       }
       return testCreationList[testTenghtSafeTest.level]({initialTest: testTenghtSafeTest, passages, passageHistory: history})
     })

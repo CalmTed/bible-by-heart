@@ -42,3 +42,8 @@ export const iconBellGradient = `<svg width="19" height="21" viewBox="0 0 19 21"
 </linearGradient>
 </defs>
 </svg>`
+
+
+export const iconSort = `<svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1.5 8H13.5M1.5 1.5H16.5M1.5 14.5H10" stroke="#A0A0A0" stroke-width="2" stroke-linecap="round"/>
+</svg>`;

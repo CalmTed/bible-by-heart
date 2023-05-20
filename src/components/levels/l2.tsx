@@ -1,6 +1,6 @@
-import { FC, useEffect, useState } from "react";
-import { AddressType, AppStateModel, PassageModel, TestModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView, TextInput } from "react-native"
+import { FC, useState } from "react";
+import { AddressType, PassageModel } from "../../models";
+import { View, Text, StyleSheet, ScrollView } from "react-native"
 import { COLOR, globalStyle } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
@@ -29,7 +29,7 @@ const levelComponentStyle = StyleSheet.create({
   addressTextView: {
     alignContent: "center",
     justifyContent: "center",
-    maxHeight: 100,
+    maxHeight: 200,
   },
   addressText: {
     fontSize: 22,

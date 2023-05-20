@@ -1,4 +1,4 @@
-import { LANGCODE, PassageLevel, TestLevel } from './constants';
+import { LANGCODE, PASSAGE_LEVEL, SORTING_OPTION, TEST_LEVEL } from './constants';
 
 export interface AppStateModel {
     version: string;
@@ -15,6 +15,11 @@ export interface AppStateModel {
     reminderTimes: number[];
     userId: number | null;
     devMode: boolean;
+    filters: {
+        categories: string[],
+        selectedLevels: PASSAGE_LEVEL[]
+    },
+    sort: SORTING_OPTION
 }
 
 export interface PassageModel {
@@ -28,8 +33,8 @@ export interface PassageModel {
     dateEdited: number;
     dateTested: number;
     minIntervalDaysNum: number | null;
-    selectedLevel: PassageLevel;
-    maxLevel: PassageLevel; //set on end by a history of tests
+    selectedLevel: PASSAGE_LEVEL;
+    maxLevel: PASSAGE_LEVEL; //set on end by a history of tests
     isNewLevelAwalible: boolean;
     tags: string[]; //archive and custom
     isReminderOn: boolean;
@@ -49,7 +54,7 @@ export interface TestModel {
     userId: number | null;
     dateStarted: number;
     dateFinished: number;
-    level: TestLevel;
+    level: TEST_LEVEL;
     testData: {
         addressOptions?: AddressType[];
         passagesOptions?: PassageModel[];
@@ -90,7 +95,9 @@ export enum ActionName {
     finishTesting = 'finishTesting',
     setPassageLevel = 'setPassageLevel',
     disableNewLevelFlag = 'disableNewLevelFlag',
-    setDevMode = 'setDevMode'
+    setDevMode = 'setDevMode',
+    setSorting = 'setSorting',
+    toggleFilter = 'toggleFilter'
 }
 export type ActionModel =
     | {
@@ -130,7 +137,7 @@ export type ActionModel =
           name: ActionName.setPassageLevel;
           payload: {
               passageId: number;
-              level: PassageLevel;
+              level: PASSAGE_LEVEL;
           };
       }
     | {
@@ -138,6 +145,17 @@ export type ActionModel =
           payload: number;
       }
     | {
-          name: ActionName.setDevMode;
-          payload: boolean;
-      };
+        name: ActionName.setDevMode;
+        payload: boolean;
+    }
+    | {
+            name: ActionName.setSorting;
+            payload: SORTING_OPTION
+        }
+    | {
+        name: ActionName.toggleFilter;
+        payload: {
+            category?: string
+            selectedLevel?: PASSAGE_LEVEL
+        }
+    };

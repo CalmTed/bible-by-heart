@@ -32,6 +32,15 @@ export enum LANGCODE {
     ua = 'ua'
 }
 
+export enum SORTING_OPTION {
+        //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
+    adress = 'address',
+    resentlyCreated = 'resentlyCreated',
+    oldestToTrain = 'oldestToTrain',
+    selectedLevel = 'selectedLevel',
+    maxLevel = 'maxLevel'
+}
+
 export const COLOR = {
     bg: '#272A27',
     bgBackdrop: '#272A2799',
@@ -62,9 +71,15 @@ export const globalStyle = StyleSheet.create({
     },
     text: {
         color: COLOR.text
+    },
+    headerText: {
+        color: COLOR.text,
+        fontSize: 20,
+        fontWeight: "500",
+        textTransform: "uppercase"
     }
 });
-export enum TestLevel {
+export enum TEST_LEVEL {
     l10 = 10,
     l11 = 11,
     l20 = 20,
@@ -73,7 +88,7 @@ export enum TestLevel {
     l40 = 40,
     l50 = 50
 }
-export enum PassageLevel {
+export enum PASSAGE_LEVEL {
     l1 = 1,
     l2 = 2,
     l3 = 3,

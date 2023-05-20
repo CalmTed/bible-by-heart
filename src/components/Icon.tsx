@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { iconAdd, iconBack, iconBellGradient, iconBellOutline, iconCross, iconDone, iconFilter, iconSearch, iconSelectArrow } from "./icondata";
+import { iconAdd, iconBack, iconBellGradient, iconBellOutline, iconCross, iconDone, iconFilter, iconSearch, iconSelectArrow, iconSort } from "./icondata";
 import { SvgXml } from "react-native-svg";
 
 export enum IconName {
@@ -11,7 +11,8 @@ export enum IconName {
   selectArrow = "iconSelectArrow",
   bellOutline = "iconBellOutline",
   bellGradient = "iconBellGradient",
-  cross = "iconCross"
+  cross = "iconCross",
+  sort = "iconSort"
 }
 
 const IconData = {
@@ -23,7 +24,8 @@ const IconData = {
   [IconName.selectArrow]: iconSelectArrow,
   [IconName.bellOutline]: iconBellOutline,
   [IconName.bellGradient]: iconBellGradient,
-  [IconName.cross]: iconCross
+  [IconName.cross]: iconCross,
+  [IconName.sort]: iconSort
 }
 
 export const Icon: FC<{iconName: IconName, color?: string}> = ({iconName, color}) => {
