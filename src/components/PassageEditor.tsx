@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react"
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
-import { COLOR, PassageLevel, archivedName, globalStyle } from "../constants"
+import { COLOR, PASSAGE_LEVEL, archivedName, globalStyle } from "../constants"
 import { AddressType, PassageModel } from "../models"
 import { Button, IconButton } from "./Button"
 import { IconName } from "./Icon"
@@ -74,7 +74,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       return {...prv, isNewLevelAwalible: false}
     })
   }
-  const handleLevelChange = (level: PassageLevel) => {
+  const handleLevelChange = (level: PASSAGE_LEVEL) => {
     setPassage(prv => {
       return {...prv, selectedLevel: level}
     })
@@ -106,7 +106,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         <View style={PEstyle.tagItemListBlock}>
           
           <View style={PEstyle.tagItemList}>
-            {tempPassage.tags.map(p => <TagItem key={p} title={p === archivedName ? t("Archived") : p} onRemove={() => handleTagRemove(p)}/>)}
+            {tempPassage.tags.map(p => <TagItem key={p} title={p === archivedName ? t("Archived") : p.slice(0,20)} onRemove={() => handleTagRemove(p)}/>)}
           </View>
           <TextInput placeholderTextColor={COLOR.textSecond} style={PEstyle.tagListInput} placeholder={t("AddTag")} maxLength={15} onSubmitEditing={newVal => handleTagAdd(newVal.nativeEvent.text.trim())}></TextInput>
         </View>

@@ -114,17 +114,22 @@ export const reduce: (
       break;
       case ActionName.toggleFilter:
         //id existed add or remove from list
-        const newCategories = action.payload.category ?
-            state.filters.categories.includes(action.payload.category) ?
-                state.filters.categories.filter(c => c === action.payload.category) :
-                [...state.filters.categories, action.payload.category] :
-            state.filters.categories;
+        const newTags = action.payload.tag ?
+            state.filters.tags.includes(action.payload.tag) ?
+                state.filters.tags.filter(c => c !== action.payload.tag) :
+                [...state.filters.tags, action.payload.tag] :
+            state.filters.tags;
         const newSelectedLevels = action.payload.selectedLevel ?
             state.filters.selectedLevels.includes(action.payload.selectedLevel) ?
-                state.filters.selectedLevels.filter(c => c === action.payload.selectedLevel) :
+                state.filters.selectedLevels.filter(c => c !== action.payload.selectedLevel) :
                 [...state.filters.selectedLevels, action.payload.selectedLevel] :
             state.filters.selectedLevels;
-        changedState = {...state, filters: {categories: newCategories, selectedLevels: newSelectedLevels}}
+        const newMaxLevels = action.payload.maxLevel ?
+            state.filters.maxLevels.includes(action.payload.maxLevel) ?
+                state.filters.maxLevels.filter(c => c !== action.payload.maxLevel) :
+                [...state.filters.maxLevels, action.payload.maxLevel] :
+            state.filters.maxLevels;
+        changedState = {...state, filters: {tags: newTags, selectedLevels: newSelectedLevels, maxLevels: newMaxLevels}}
       break;
   }
   if (changedState) {

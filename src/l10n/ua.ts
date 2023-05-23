@@ -25,6 +25,8 @@ export const ua: typeof en = {
   ShowAnswer: "Підказка",
   Reset: "Заново",
   Level: "Рівень",
+  MaxLevel: "Доступний рівень",
+  SelectedLevel: "Обраний рівень",
   AddPassages: "Додати вірші",
   Close: "Закрити",
   RestartTests: "Почати все заново",
@@ -65,6 +67,7 @@ export const ua: typeof en = {
   FinishPassageL5: "Заверши цей вірш без жодного автодоповнення",
   LevelL40Hint: "Тисни Enter для швидкого обрання першого варіанту зі списку автодоповнення",
   LevelL50Warning: "Введено більше одного символа за раз. Наступного разу це вважатиметься помилкою",
+  PassagesHidden: "Текстів приховано",
 
   bGenShrt:"Бут",
   bGenLong: "Буття",

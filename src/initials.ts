@@ -34,8 +34,9 @@ export const createAppState: () => AppStateModel = () => {
         userId: null,
         devMode: false,
         filters: {
-            categories: [archivedName],
+            tags: [archivedName],
             selectedLevels: [],
+            maxLevels: [],
         },
         sort: SORTING_OPTION.adress
     };

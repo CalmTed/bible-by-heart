@@ -16,8 +16,9 @@ export interface AppStateModel {
     userId: number | null;
     devMode: boolean;
     filters: {
-        categories: string[],
-        selectedLevels: PASSAGE_LEVEL[]
+        tags: string[],
+        selectedLevels: PASSAGE_LEVEL[],
+        maxLevels: PASSAGE_LEVEL[]
     },
     sort: SORTING_OPTION
 }
@@ -155,7 +156,8 @@ export type ActionModel =
     | {
         name: ActionName.toggleFilter;
         payload: {
-            category?: string
+            tag?: string
             selectedLevel?: PASSAGE_LEVEL
+            maxLevel?: PASSAGE_LEVEL
         }
     };

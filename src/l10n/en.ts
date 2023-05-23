@@ -24,6 +24,8 @@ export const en = {
   ShowAnswer: "Show answer",
   Reset: "Reset",
   Level: "Level",
+  MaxLevel: "Max level",
+  SelectedLevel: "Selected level",
   AddPassages: "Add passages",
   Close: "Close",
   RestartTests: "Restart tests",
@@ -63,6 +65,7 @@ export const en = {
   FinishPassageL5: "Finish writing passage without any autocomplete",
   LevelL40Hint: "Press Enter to select first autocomplete option from list",
   LevelL50Warning: "Entered more then one character. Warning, next one will set an error",
+  PassagesHidden: "Passages hidden",
 
   bGenShrt:"Gen",
   bGenLong: "Genesis",

@@ -56,7 +56,6 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     setAPOpen(false);
     setSelectedPassage(createPassage(address, ""));
     setPEOpen(true);
-    //validate address copy start to end if one verse selected 
   }
   const handlePECancel = () => {
     setPEOpen(false);
@@ -109,40 +108,56 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       return newState ? newState : prv;
     })
   }
-  const handleFilterChange:(arg: {category?: string, selectedLevel?: PASSAGE_LEVEL}) => void = ({category, selectedLevel}) => {
+  const handleFilterChange:(arg: {tag?: string, selectedLevel?: PASSAGE_LEVEL, maxLevel?: PASSAGE_LEVEL}) => void = ({tag, selectedLevel, maxLevel}) => {
     setState((prv) => {
       const newState = reduce(prv, {
         name: ActionName.toggleFilter,
         payload: {
-          category: category,
-          selectedLevel: selectedLevel
+          tag: tag,
+          selectedLevel: selectedLevel,
+          maxLevel: maxLevel
         }
       });
       return newState ? newState : prv;
     })
   }
 
-
-  const filteredPassages = state.passages.filter(p => 
-    p.verseText.toLowerCase().includes(searchText.toLowerCase())
-    || addressToString(p.address, t).toLowerCase().includes(searchText.toLowerCase())
-    || p.tags.join("").toLowerCase().includes(searchText.toLowerCase())
-  )
+  const allTags = state.passages.map(p => p.tags).flat().filter((v,i,arr) => !arr.slice(0,i).includes(v))
+  const filteredPassages = state.passages.filter(p => {
+    //way1 if passage have tags:[archive, favorite] and we filter archive it showld be hidden
+    //way2 it shuold be shown only if all rules are met
+      //so we filter all values that are in state.filter data
+    //+ we apply search filter is filter is not empty
+    const invertedTags = allTags.filter(at => !state.filters.tags.includes(at))
+    const isTagFinteringNedded = invertedTags.length > 0
+    const isTagFilteringShown = isTagFinteringNedded ?
+      JSON.stringify(invertedTags) === JSON.stringify(p.tags) : 
+      true;
+    const isSelectedLevelFilteringShown = state.filters.selectedLevels.filter(SLFilter => p.selectedLevel === SLFilter).length === 0
+    const isMaxLevelFilteringShown = state.filters.maxLevels.filter(SLFilter => p.maxLevel === SLFilter).length === 0
+    const isSearchMetFilteringNeeded = !!searchText.length
+    const isSearchFilteringShown = isSearchMetFilteringNeeded ?
+      p.verseText.toLowerCase().includes(searchText.toLowerCase())
+      || addressToString(p.address, t).toLowerCase().includes(searchText.toLowerCase())
+      || p.tags.join("").toLowerCase().includes(searchText.toLowerCase()) :
+      true;
+    return isTagFilteringShown && isSearchFilteringShown && isMaxLevelFilteringShown && isSearchFilteringShown
+  })
   const sortedPassages = filteredPassages.sort((a, b) => {
-    const getAddressDifference = (a: PassageModel, b: PassageModel) => {
-      if(a.address.bookIndex !== b.address.bookIndex){
-        return a.address.bookIndex - b.address.bookIndex
-      }
-      if(a.address.startChapterNum !== b.address.startChapterNum){
-        return a.address.startChapterNum - b.address.startChapterNum
-      }
-      if(a.address.startVerseNum !== b.address.startVerseNum){
-        return a.address.startVerseNum - b.address.startVerseNum
-      }
-      return 0
-    }
     switch(state.sort){
       case SORTING_OPTION.adress:
+        const getAddressDifference = (a: PassageModel, b: PassageModel) => {
+          if(a.address.bookIndex !== b.address.bookIndex){
+            return a.address.bookIndex - b.address.bookIndex
+          }
+          if(a.address.startChapterNum !== b.address.startChapterNum){
+            return a.address.startChapterNum - b.address.startChapterNum
+          }
+          if(a.address.startVerseNum !== b.address.startVerseNum){
+            return a.address.startVerseNum - b.address.startVerseNum
+          }
+          return 0
+        }
         return getAddressDifference(a,b);
       case SORTING_OPTION.maxLevel:
         return b.maxLevel - a.maxLevel;
@@ -156,8 +171,6 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         return 0;
     }
   })
-  
-  // const secondaryText = 
   return <View style={{...globalStyle.screen,...globalStyle.view}}>
     <Header navigation={navigation} showBackButton={false} title={t("listScreenTitle")} additionalChildren={[
       <IconButton icon={IconName.add} onPress={handleAPOpen} />,
@@ -186,6 +199,10 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         })}
       </View>
       {
+        state.passages.length > sortedPassages.length &&
+        <Text style={{...globalStyle.subText,textAlign: "center", paddingVertical: 10}}>{`${t("PassagesHidden")} ${state.passages.length - sortedPassages.length}`}</Text>
+      }
+      {
         state.devMode && 
         <View style={{margin: 20}}>
           <Text style={globalStyle.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
@@ -207,6 +224,41 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     </MiniModal>
     <MiniModal shown={isFiltersOpen} handleClose={() => setOpenFilters(false)}>
       <Text  style={globalStyle.headerText}>{t("TitleFilters")}</Text>
+      <ScrollView>
+      {allTags.map(option => 
+        <Button
+          key={option}
+          type="outline"
+          color={state.filters.tags.includes(option) ? "gray" : "green"}
+          title={option === archivedName ? t("Archived") : option.slice(0,20)}
+          onPress={() => handleFilterChange({tag: option})}
+        />
+      )}
+      <Text style={{...globalStyle.text}}>{t("SelectedLevel")}</Text>
+      <View style={{...globalStyle.rowView}}>
+        {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(sl => 
+          <Button
+            key={sl}
+            type="outline"
+            color={state.filters.selectedLevels.includes(sl) ? "gray" : "green"}
+            title={sl.toString()}
+            onPress={() => handleFilterChange({selectedLevel: sl})}
+          />
+        )}
+      </View>
+      <Text style={{...globalStyle.text}}>{t("MaxLevel")}</Text>
+      <View style={{...globalStyle.rowView}}>
+        {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(ml => 
+          <Button
+            key={ml}
+            type="outline"
+            color={state.filters.maxLevels.includes(ml) ? "gray" : "green"}
+            title={ml.toString()}
+            onPress={() => handleFilterChange({maxLevel: ml})}
+          />
+        )}
+      </View>
+      </ScrollView>
       <Button title={t("Close")} onPress={() => setOpenFilters(false)}/>
     </MiniModal>
     <AddressPicker visible={isAPOpen} address={selectedAddress} onCancel={handleAPCancel} onConfirm={handleAPSubmit} t={t}/>
@@ -224,7 +276,7 @@ const ListItem: FC<{
   sort: SORTING_OPTION
 }> = ({data, t, onPress, onArchive, onRemove, onLongPress, sort}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
-  const renderLeftActions = (progress:Animated.AnimatedInterpolation<string | number>, dragX:Animated.AnimatedInterpolation<string | number>) => {
+  const renderLeftActions = () => {
     
     return <Animated.View style={[
       {
@@ -234,7 +286,7 @@ const ListItem: FC<{
       <Button title={t("Archive")} onPress={onArchive} />
     </Animated.View>
   }
-  const renderRightActions = (progress:Animated.AnimatedInterpolation<string | number>, dragX:Animated.AnimatedInterpolation<string | number>) => {
+  const renderRightActions = () => {
     return <Animated.View style={[
       {
         ...listStyle.swipeableAnimatedView,
@@ -246,13 +298,15 @@ const ListItem: FC<{
   const getSecondaryOptions = (sort: SORTING_OPTION, passage: PassageModel) => {
     switch(sort) {
       case SORTING_OPTION.maxLevel:
-        return passage.maxLevel;
+        return `${t("MaxLevel")} ${passage.maxLevel}`;
       case SORTING_OPTION.selectedLevel:
-        return passage.selectedLevel;
+        return `${t("SelectedLevel")} ${passage.selectedLevel}`;
       case SORTING_OPTION.resentlyCreated:
-        return timeToString(passage.dateCreated);
+        // return `${t("DateCreated")} ${timeToString(passage.dateCreated)}`;
+        return `${timeToString(passage.dateCreated)}`;
       case SORTING_OPTION.oldestToTrain:
-        return timeToString(passage.dateTested);
+        // return `${t("DateTested")} ${timeToString(passage.dateTested)}`;
+        return `${timeToString(passage.dateTested)}`;
     }
   }
   return <Pressable onPress={onPress} onLongPress={onLongPress}>
@@ -268,7 +322,7 @@ const ListItem: FC<{
         </View>
         <Text style={{...listStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
       </View>
-    </Swipeable> 
+    </Swipeable>
   </Pressable>
 }
 

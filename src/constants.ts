@@ -72,11 +72,19 @@ export const globalStyle = StyleSheet.create({
     text: {
         color: COLOR.text
     },
+    subText: {
+        color: COLOR.textSecond,
+        fontSize: 18
+    },
     headerText: {
         color: COLOR.text,
         fontSize: 20,
         fontWeight: "500",
         textTransform: "uppercase"
+    },
+    rowView: {
+        flexDirection: "row",
+        flexWrap: "wrap"
     }
 });
 export enum TEST_LEVEL {

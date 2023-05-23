@@ -171,7 +171,7 @@ const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHis
     missingWords = words
       .map((w,i) => i)
       .sort(() => Math.random() > 0.5 ? -1 : 1)
-      .slice(0, Math.max(1,Math.floor(words.length * 0.20)))
+      .slice(0, Math.max(3,Math.floor(words.length * 0.20)))
       .map((w) => w)
   }else if(successStroke < 2){
     //many words: 50%

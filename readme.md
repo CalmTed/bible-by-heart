@@ -42,11 +42,18 @@ Roadmap
   - [ ] weekly progress
 - [ ] app settings (language, theme, bible translation, notifications, lists(categories) to hide from tests) v0.0.7
   - [ ] adding passages from prepared list in the most popular translations
-  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, tags includex, excluded)
+  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, tags included/excluded)
 - [ ] customizable daily reminder v0.0.8
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
 - [ ] sync + custom sync(without need for registration) v1.0.0
   - [ ] feedback form for authorirized users
+  - [ ] about page and donate button
+
+Other ideas:
+- detailed test results information
+- accomplishments
+- friends feature / feed
+- groups functionality(group stats, group passages, group quests)
  
 Dev. rules
 ---
@@ -56,8 +63,8 @@ Dev. rules
 
 Using
 ---
-*Installing:*
-- android sdk
+*Installing requirements:*
+-  android sdk
 - expo tools and packages from package.json
 
 *Running:*
