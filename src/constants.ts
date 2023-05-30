@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native';
 
-export const VERSION = '0.0.5';
+export const VERSION = '0.0.6';
 
-export const alowedStateVersions = ['0.0.4', VERSION]; //make translators for imported data
+export const alowedStateVersions = ['0.0.4', '0.0.5', VERSION]; //make translators for imported data
 
 export const API_VERSION = '0.0.1';
 //cant sync with oudated version

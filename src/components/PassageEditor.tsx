@@ -47,10 +47,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
 
   const handleTagAdd = (tag: string) => {
     setPassage(prv => {
-      if(tag === t("Archive") || !tag || prv.tags.includes(tag)){
+      if(tag === t("Archive") || !tag || (tag !== archivedName && prv.tags.includes(tag))){
         return prv;
       }
-      return {...prv, tags: [...prv.tags, tag]}
+      const newTags = tag === archivedName && prv.tags.includes(archivedName) ? prv.tags.filter(t => t !== archivedName) : [...prv.tags, tag]
+      return {...prv, tags: newTags}
     })
   }
   const handleTagRemove = (tag: string) => {
@@ -89,11 +90,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
     <View style={PEstyle.listView}>
       <ScrollView>
         <View style={PEstyle.bodyTop}>
-          {/* TODO:change address on click */}
           <Pressable onPress={() => setAPVisible(true)}>
             <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{`(${getVersesNumber(tempPassage.address)})`}</Text>
           </Pressable>
-          <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/>
+          {/* <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/> */}
         </View>
         <View style={PEstyle.bodyText}>
           <TextInput
@@ -122,7 +122,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
           handleOpen={handleLevelPickerOpen}
         />
         <View style={PEstyle.bodyButtons}>
-          <Button title={t("Archive")} onPress={() => handleTagAdd(archivedName)} disabled={tempPassage.tags.includes(archivedName)}/>
+          <Button title={tempPassage.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={() => handleTagAdd(archivedName)}/>
           <Button title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
         </View>
       </ScrollView>

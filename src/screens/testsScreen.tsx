@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { storageName, globalStyle, TEST_LEVEL, COLOR, PASSAGE_LEVEL } from "../constants"
+import { storageName, globalStyle, TEST_LEVEL, COLOR, PASSAGE_LEVEL, archivedName } from "../constants"
 import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -51,7 +51,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
     setState(prevState => {
       const newState = reduce(prevState, {
         name: ActionName.setActiveTests,
-        payload: generateTests(state.passages, state.testsHistory)
+        payload: generateTests(state.passages.filter(p => !p.tags.includes(archivedName)), state.testsHistory)
       })
       return newState ? newState : prevState
     })

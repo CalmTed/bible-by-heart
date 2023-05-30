@@ -1,3 +1,4 @@
+import { FC } from 'react';
 import { SvgXml } from 'react-native-svg';
 const xmlData = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -48,5 +49,5 @@ const xmlData2 = `
 </g>
 </svg>`;
 
-export const DaggerLogoSVG = () => 
-  <SvgXml xml={xmlData} width="255" height="160"/>;
+export const DaggerLogoSVG: FC<{isOutline?: boolean}> = ({isOutline}) => 
+  <SvgXml xml={isOutline ? xmlData : xmlData2} width="255" height="160"/>;

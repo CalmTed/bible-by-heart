@@ -86,11 +86,9 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     setPEOpen(true);
   } 
   const handleListItemArchive = (passage: PassageModel) => {
-    if(passage.tags.includes(archivedName)){
-      return;
-    }
+    const newTags = passage.tags.includes(archivedName) ? passage.tags.filter(t => t !== archivedName) : [...passage.tags, archivedName]
     handlePESubmit({
-      ...passage, tags: [...passage.tags, archivedName]
+      ...passage, tags: newTags
     })    
   }
   const handleListItemLongPress = (passage: PassageModel) => {
@@ -124,15 +122,15 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
 
   const allTags = state.passages.map(p => p.tags).flat().filter((v,i,arr) => !arr.slice(0,i).includes(v))
   const filteredPassages = state.passages.filter(p => {
-    //way1 if passage have tags:[archive, favorite] and we filter archive it showld be hidden
-    //way2 it shuold be shown only if all rules are met
-      //so we filter all values that are in state.filter data
-    //+ we apply search filter is filter is not empty
+    //strat 1: JSON.stringify(invertedTags) === JSON.stringify(p.tags)
+    //strat 2: p.tags.includes(at least one of invertedTags[]) exept Archived
     const invertedTags = allTags.filter(at => !state.filters.tags.includes(at))
-    const isTagFinteringNedded = invertedTags.length > 0
-    const isTagFilteringShown = isTagFinteringNedded ?
-      JSON.stringify(invertedTags) === JSON.stringify(p.tags) : 
-      true;
+    // const isTagFilteringShown = JSON.stringify(invertedTags) === JSON.stringify(p.tags)
+    const isTagFilteringShown = invertedTags.length > 0 ?
+      invertedTags.find(it => p.tags.includes(it)) :
+      state.filters.tags.length === allTags.length ?
+        !p.tags.includes(archivedName) :
+        true
     const isSelectedLevelFilteringShown = state.filters.selectedLevels.filter(SLFilter => p.selectedLevel === SLFilter).length === 0
     const isMaxLevelFilteringShown = state.filters.maxLevels.filter(SLFilter => p.maxLevel === SLFilter).length === 0
     const isSearchMetFilteringNeeded = !!searchText.length
@@ -141,7 +139,7 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       || addressToString(p.address, t).toLowerCase().includes(searchText.toLowerCase())
       || p.tags.join("").toLowerCase().includes(searchText.toLowerCase()) :
       true;
-    return isTagFilteringShown && isSearchFilteringShown && isMaxLevelFilteringShown && isSearchFilteringShown
+    return isTagFilteringShown && isSearchFilteringShown && isSelectedLevelFilteringShown && isMaxLevelFilteringShown
   })
   const sortedPassages = filteredPassages.sort((a, b) => {
     switch(state.sort){
@@ -224,18 +222,10 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     </MiniModal>
     <MiniModal shown={isFiltersOpen} handleClose={() => setOpenFilters(false)}>
       <Text  style={globalStyle.headerText}>{t("TitleFilters")}</Text>
-      <ScrollView>
-      {allTags.map(option => 
-        <Button
-          key={option}
-          type="outline"
-          color={state.filters.tags.includes(option) ? "gray" : "green"}
-          title={option === archivedName ? t("Archived") : option.slice(0,20)}
-          onPress={() => handleFilterChange({tag: option})}
-        />
-      )}
-      <Text style={{...globalStyle.text}}>{t("SelectedLevel")}</Text>
-      <View style={{...globalStyle.rowView}}>
+      <ScrollView style={{
+      }}>
+      <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("SelectedLevel")}</Text>
+      <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
         {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(sl => 
           <Button
             key={sl}
@@ -246,8 +236,8 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
           />
         )}
       </View>
-      <Text style={{...globalStyle.text}}>{t("MaxLevel")}</Text>
-      <View style={{...globalStyle.rowView}}>
+      <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("MaxLevel")}</Text>
+      <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
         {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(ml => 
           <Button
             key={ml}
@@ -258,6 +248,24 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
           />
         )}
       </View>
+      {!!allTags.length &&
+      <View>
+        <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("Tags")}</Text>
+        <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
+          {allTags.map(option => 
+            <Button
+              key={option}
+              type="outline"
+              color={option === archivedName && state.filters.tags.length === allTags.length ? "red" : state.filters.tags.includes(option) ? "gray" : "green"}
+              title={option === archivedName ? t("Archived") : option.slice(0,20)}
+              onPress={() => handleFilterChange({tag: option})}
+            />
+          )}
+        </View>
+      </View>}
+      {!allTags.length && 
+        <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("NoTagsFound")}</Text>
+      }
       </ScrollView>
       <Button title={t("Close")} onPress={() => setOpenFilters(false)}/>
     </MiniModal>
@@ -283,7 +291,7 @@ const ListItem: FC<{
         ...listStyle.swipeableAnimatedView,
       },
     ]}>
-      <Button title={t("Archive")} onPress={onArchive} />
+      <Button title={data.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={onArchive} />
     </Animated.View>
   }
   const renderRightActions = () => {

@@ -23,6 +23,8 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
     console.log("there are no passages to create tests");
     return [];
   }
+  //TODO all due to (one if one left), other only if there are no passages due ot
+  //TODO make getDueTo as a separate method
   const sessionId = Math.round(Math.random() * 10000000)
   //sort for oldest tested
   //TODO add some randomness 

@@ -8,6 +8,8 @@ import { createT } from "../l10n"
 import { Button } from "../components/Button"
 import { DaggerLogoSVG } from "../svg/daggetLogo"
 import storage from "../storage"
+import { getStroke, getWeeklyStats } from "../tools/getStats"
+import { WeekActivityComponent } from "../components/weekActivityComponent"
 
 export interface ScreenModel {
   route: any
@@ -31,13 +33,16 @@ export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
   }, [JSON.stringify(state)]);
 
   const errorNumber = state.testsHistory.map(t => t.errorNumber || 0).reduce((partialSum, a) => partialSum + a, 0);
+  const strokeData = getStroke(state.testsHistory)
   return <View style={{...globalStyle.screen,...globalStyle.view}}>
     <View style={homeStyle.logoView}>
-      <DaggerLogoSVG/>
+      <DaggerLogoSVG isOutline={strokeData.today}/>
       <Text style={homeStyle.titleText}>{t("appName")}</Text>
-      <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("TestsCompleted")}: {state.testsHistory.length}</Text>
-      <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("ErrorsMade")}: {errorNumber}</Text>
+      <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("DaysStroke")}: {strokeData.length}</Text>
+      {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("TestsCompleted")}: {state.testsHistory.length}</Text> */}
+      {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("ErrorsMade")}: {errorNumber}</Text> */}
     </View>
+    <WeekActivityComponent state={state} t={t}></WeekActivityComponent>
     <View style={homeStyle.buttonView}>
       <Button type="main" color="green" title={t("homePractice")} onPress={() => navigateWithState({navigation, screen: SCREEN.test, state: state})} />
       <Button title={t("homeList")} onPress={() => navigateWithState({navigation, screen: SCREEN.listPassage, state: state})}></Button>
