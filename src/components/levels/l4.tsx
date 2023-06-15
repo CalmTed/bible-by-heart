@@ -14,12 +14,25 @@ const levelComponentStyle = StyleSheet.create({
     width: "100%",
     flex: 1
   },
+  addressTextView: {
+    alignContent: "flex-start",
+    justifyContent: "center",
+    marginVertical: 10,
+    paddingHorizontal: 20,
+  },
+  addressText: {
+    fontSize: 22,
+    textTransform: "uppercase",
+    fontWeight: "500",
+    textAlign: "center",
+    color: COLOR.text
+  },
   passageTextView: {
     maxHeight: "30%",
     height: "auto",
     borderRadius: 10,
-    
     margin: 10,
+    paddingHorizontal: 10
   },
   passageText: {
     alignContent: "center",
@@ -30,31 +43,6 @@ const levelComponentStyle = StyleSheet.create({
     color: COLOR.text,
     fontSize: 18,
     fontWeight: "500"
-  },
-  addressTextView: {
-    alignContent: "flex-start",
-    justifyContent: "center",
-    marginVertical: 10
-  },
-  addressText: {
-    fontSize: 22,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    textAlign: "center",
-    color: COLOR.text
-  },
-  fixedWord: {
-    paddingHorizontal: 2,
-    padding: 4,
-  },
-  variableWord: {
-    marginHorizontal: 2,
-    margin: 4,
-    borderBottomWidth: 2,
-    borderBottomColor: COLOR.text,
-  },
-  nextUnselected:{
-    borderBottomColor: COLOR.mainColor,
   },
   wordText:{
     color: COLOR.text,
@@ -142,7 +130,13 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const handleWordSelect = (text:string, word: string) => {
     //replace last unfinished word with the word provided
     const passageWords = text.split(" ")
-    const newPassageText = [...passageWords.slice(0,-1), word, ""].join(" ")
+    const nextWord = targetWords[passageWords.length];
+    const nextWordIfNeeded = 
+      word === targetWords[passageWords.length - 1] &&
+      ["–", "-", ":", ";", ".", ","].includes(nextWord) ?
+        nextWord + " " : // adding one more space here for a reason
+        ""
+    const newPassageText = [...passageWords.slice(0,-1), word, nextWordIfNeeded].join(" ")
     setPassageText(newPassageText)
   }
   if(!targetPassage){
@@ -167,7 +161,6 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     )
     //not randomly because of reactivness
     .sort((a,b) => getSimularity(currentLastWord, b) - getSimularity(currentLastWord, a))
-  // console.log(`"${currentLastWord}"`, curentLastIndex, targetLastWord)
 
   const isCorrect = targetPassage.verseText.trim().startsWith(passageText.trim()) ||
    targetPassage.verseText === passageText
@@ -175,17 +168,17 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const levelFinished = !!test.dateFinished;
   const isAddressProvided = test.testData.showAddressOrFirstWords
   return <View style={levelComponentStyle.levelComponentView}>
+    <View style={levelComponentStyle.addressTextView}>
+      {isAddressProvided &&
+        <Text style={levelComponentStyle.addressText}>{addressToString(targetPassage.address, t)}</Text>
+      }
+      {!isAddressProvided &&
+        <Text style={levelComponentStyle.passageText}>{t("FinishPassage")}</Text>
+      }
+      </View>
     <ScrollView style={{
       ...levelComponentStyle.passageTextView,
     }}>
-      <View style={levelComponentStyle.addressTextView}>
-        {isAddressProvided &&
-          <Text style={levelComponentStyle.addressText}>{addressToString(targetPassage.address, t)}</Text>
-        }
-        {!isAddressProvided &&
-          <Text style={levelComponentStyle.passageText}>{t("FinishPassage")}</Text>
-        }
-        </View>
       <Input
         multiline
         disabled={levelFinished}

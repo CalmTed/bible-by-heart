@@ -13,12 +13,20 @@ const levelComponentStyle = StyleSheet.create({
     width: "100%",
     flex: 1
   },
+  addressTextView: {
+    alignContent: "flex-start",
+    justifyContent: "center",
+    marginVertical: 10,
+  },
+  addressText: {
+    fontSize: 22,
+    textTransform: "uppercase",
+    fontWeight: "500",
+    textAlign: "center",
+    color: COLOR.text
+  },
   passageTextView: {
-    maxHeight: "50%",
-    height: "auto",
-    borderRadius: 10,
-    
-    margin: 10,
+    padding: 10,
   },
   passageText: {
     alignContent: "center",
@@ -31,42 +39,6 @@ const levelComponentStyle = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center"
   },
-  addressTextView: {
-    alignContent: "flex-start",
-    justifyContent: "center",
-    marginVertical: 10
-  },
-  addressText: {
-    fontSize: 22,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    textAlign: "center",
-    color: COLOR.text
-  },
-  fixedWord: {
-    paddingHorizontal: 2,
-    padding: 4,
-  },
-  variableWord: {
-    marginHorizontal: 2,
-    margin: 4,
-    borderBottomWidth: 2,
-    borderBottomColor: COLOR.text,
-  },
-  nextUnselected:{
-    borderBottomColor: COLOR.mainColor,
-  },
-  wordText:{
-    color: COLOR.text,
-    fontSize: 18
-  },
-  hiddenWordText: {
-    color: "transparent"
-  },
-  optionButtonsScrollWrapper:{
-    flex: 1,
-    width: "100%",
-  },
   optionButtonsWrapper: {
     flex: 1,
     paddingHorizontal: 20, 
@@ -74,7 +46,8 @@ const levelComponentStyle = StyleSheet.create({
     gap: 10,
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingVertical: 10
+    paddingVertical: 10,
+    alignItems: "flex-start",
   },
   inputSubtext: {
     color: COLOR.textDanger,
@@ -87,12 +60,20 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const [APVisible, setAPVisible] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState(null as null | AddressType);
   const targetPassage = state.passages.find(p => p.id === test.passageId)
-  //showAddressOrFirstWords: true is address false is first words
-  const initialValue = test.testData.showAddressOrFirstWords ? "" : (targetPassage?.verseText || "").split(" ").slice(0,4).join(" ") + " ";
-  const [passageText, setPassageText] = useState(initialValue)
+  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse"
+  //showAddressOrFirstWords: true if address OR false if just first words
+  const initialEnteredText = 
+  lastErrorIsWrongAddress?
+    targetPassage?.verseText || "":
+    test.testData.showAddressOrFirstWords ? 
+      "" :
+      (targetPassage?.verseText || "").split(" ").slice(0,4).join(" ") + " "
+  const [passageText, setPassageText] = useState(initialEnteredText)
   const [tries, setTries] = useState(MAX_L50_TRIES)
-  const [isCorrect, setIsCorrect] = useState(false)
+  const [isCorrect, setIsCorrect] = useState(lastErrorIsWrongAddress ? true : false)
   const [aucompleteWarn, setAucompleteWarn] = useState(false)
+  const [wrongAddress, setWrongAddress] = useState(null as AddressType | null)
+
   useEffect(() => {
     resetForm()
   },[test.id])
@@ -100,14 +81,25 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const resetForm = () => {
     setAPVisible(false)
     setSelectedAddress(null)
-    setPassageText(initialValue)
+    setPassageText(initialEnteredText)
     setAucompleteWarn(false)
-    setIsCorrect(false)
+    setIsCorrect(lastErrorIsWrongAddress ? true : false)
     setTries(MAX_L50_TRIES)
+    setWrongAddress(null)
   }
 
 
-  const handleTestSubmit = (value: AddressType) => {
+  const handleErrorSubmit = (value: AddressType) => {
+    submitTest({isRight: false, modifiedTest: {
+      ...test,
+      errorNumber: (test.errorNumber || 0) + 1,
+      errorType: "wrongAddressToVerse",
+      wrongAddress: [...test.wrongAddress, value]
+    }})
+    resetForm();
+  } 
+
+  const handleAddressSubmit = (value: AddressType) => {
     const targetPassage = state.passages.find(p => p.id === test.passageId)
     if(!targetPassage){
       return;
@@ -118,15 +110,8 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         dateFinished: new Date().getTime()
       }})
     }else{
-      //add error
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
-      }})
+      setWrongAddress(value)
     }
-    resetForm()
   }
   const handleAddressSelect = (address: AddressType) => {
     setAPVisible(false)
@@ -137,7 +122,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     const simplifyString: (arg: string) => string = (input) => {
-      const output = input.trim().toLocaleLowerCase().replace(/[,|.|-|:|;|!|?|'|"]/g, "")
+      const output = input.trim().toLowerCase().replace(/[,|.|-|:|;|!|?|'|"]/g, "")
       return output;
     }
     if(simplifyString(passageText) === simplifyString(targetPassage.verseText)){
@@ -148,6 +133,15 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     }else{
       if(tries > 1){
         setTries(prv => prv-1)
+        const enteredTextArray = passageText.split("");
+        const rightPart = targetPassage.verseText.split("").filter((targetChar, i, wholeString) => {
+          if(!i){
+            return enteredTextArray[i] === targetChar
+          }else{
+            return enteredTextArray.slice(0,i).join("") === wholeString.slice(0,i).join("")
+          }
+        }).join("");
+        setPassageText(rightPart);
       }else{
         submitTest({isRight: false, modifiedTest: {
           ...test,
@@ -195,52 +189,94 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         <Text style={levelComponentStyle.inputSubtext}>{t("LevelL50Warning")}</Text>
       }
     </View>
-    <ScrollView style={{
-      ...levelComponentStyle.passageTextView,
-    }}>
+    <View style={levelComponentStyle.passageTextView}>
       <Input
         multiline
-        disabled={levelFinished}
+        disabled={levelFinished || !!wrongAddress}
         value={passageText}
         placeholder={t("LevelWritePassageText")}
         onSubmit={() => {}}
-        color={"green"}
+        color={isCorrect ? "green": "gray"}
         onChange={handleTextChange}
         style={{width: "100%"}}
         autoCorrect={false}
         textStyle={{fontWeight: "normal"}}
       />
-    </ScrollView>
-      <View style={levelComponentStyle.optionButtonsWrapper}>
-        {isCorrect &&!isAddressProvided && 
+    </View>
+    <View style={levelComponentStyle.optionButtonsWrapper}>
+      {/* text is not entered */}
+      {
+        !isCorrect &&
+        <Button
+          type="main"
+          color="green"
+          title={`${t("CheckText")} (${tries}/${MAX_L50_TRIES})`}
+          onPress={() => handleTextSubmit()}
+          disabled={levelFinished}
+        />
+      }
+      {/* text entered and no address needed */}
+      {
+        isCorrect && isAddressProvided &&
+        <Button
+          type="main"
+          color="green"
+          title={t("Submit")}
+          onPress={() => handleAddressSubmit(targetPassage.address)}
+          disabled={levelFinished}
+        />
+      }
+      {/* text entered but address needed and address not checked as wrong */}
+      {
+        isCorrect && !isAddressProvided && !wrongAddress &&
+        [
           <Button
+            key="addresPicker"
             type="outline"
             color="green"
             title={selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
             onPress={() => setAPVisible(true)}
             disabled={levelFinished}
-          />
-        }
-        {isCorrect && 
+          />,
           <Button
+            key="submitButton"
             type="main"
             color="green"
             title={t("Submit")}
-            onPress={() => handleTestSubmit(selectedAddress || targetPassage.address)}
-            disabled={((!selectedAddress && !isAddressProvided) || (!isCorrect && isAddressProvided)) || levelFinished}
+            onPress={() => selectedAddress ? handleAddressSubmit(selectedAddress) : {}}
+            disabled={!selectedAddress || levelFinished}
           />
-        }
-        {
-          !isCorrect &&
+        ]
+      }
+      {
+        isCorrect && !isAddressProvided && selectedAddress && wrongAddress && [
           <Button
+            key="rightAnswer"
+            type="outline"
+            color="green"
+            title={addressToString(targetPassage.address, t)}
+            onPress={() => {}}
+            disabled={levelFinished}
+          />,
+          <Button
+            key="wrongAnswer"
+            type="outline"
+            color="red"
+            title={addressToString(selectedAddress, t)}
+            onPress={() => {}}
+            disabled={levelFinished}
+          />,
+          <Button
+            key="nextTest"
             type="main"
             color="green"
-            title={`${t("CheckText")} (${tries}/${MAX_L50_TRIES})`}
-            onPress={() => handleTextSubmit()}
+            title={t("ButtonContinue")}
+            onPress={() => handleErrorSubmit(selectedAddress)}
             disabled={levelFinished}
           />
-        }
-      </View>
-      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+        ]
+      }
+    </View>
+    <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
   </View>
 }

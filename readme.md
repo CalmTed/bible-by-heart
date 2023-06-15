@@ -10,7 +10,7 @@ Whats different from analogus apps:
 - address learning tests for black box learning method
 - ukrainian interface language (add your if you want)
 - customizable Bible translation
-- fully offline and free (syncying options might need some payment in future)
+- fully offline and free (syncying options might be paid in future to support work)
 
 Whats the same:
 ---
@@ -40,17 +40,40 @@ Roadmap
 - [x] save stats (tests result, stroke, weekly progress) v0.0.6
   - [x] stroke counter
   - [x] weekly progress
-- [ ] app settings (language, theme, bible translation, notifications, lists(categories) to hide from tests) v0.0.7
-  - [ ] adding passages from prepared list in the most popular translations
-  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, tags included/excluded)
-- [ ] customizable daily reminder v0.0.8
+- [ ] settings v0.0.7
+  - [+] level 3 fix(sort,skip button, save right words)
+  - [+] show wrong answer (l1, l2, l4, l5)
+  - [ ] settings layout (app/user settings)
+  - [ ] app settings: language, reminders(enabled, auto, same time, list), theme, haptic, about, legal, feedback, devmode, train modes, compress old stats(>3month), leftSwipeTag
+  - [ ] user settings:  translations array(and default one), name, email, timezone, sessions, request data removal, remove local data
+  - [ ] adding passages from prepared list in the most popular translations(ESV,UBT)
+    - [ ] copyright page in settings
+    - [ ] limit length to 500 verses per passage
+  - [ ] edit passage translation (custom with autocomplete from other passages data)
+  - [ ] filter by translation (if there are several different)
+  - [ ] state converter from v0.0.6
+- [ ] customizable daily reminder, more stats v0.0.8
+  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
+  - [ ] export to csv, import from share(parse), or from other data types
+  - [ ] all tests list, grouping by date and session
+  - [ ] statistics:
+    - [ ] overal learned
+    - [ ] global progress (learned passages score versesNumber*level)
+    - [ ] relative progress (score relative to last month)
+    - [ ] show different stats on home screen
+      - [ ] stroke first two weeks
+      - [ ] general progress 2 weeks to 1 month
+      - [ ] relative progress is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
+      - different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
-- [ ] sync + custom sync(without need for registration) v1.0.0
   - [ ] feedback form for authorirized users
+  - [ ] change data safety settings and privacy pilicy
+- [ ] sync + custom sync(without need for registration) v1.0.0
+  - [ ] custom sync and documentation web page for it
   - [ ] about page and donate button
 
 Other ideas:
-- detailed test results information
+- show most common errors for the given passage
 - accomplishments
 - friends feature / feed
 - groups functionality(group stats, group passages, group quests)

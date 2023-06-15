@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { AddressType, PassageModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView } from "react-native"
 import { COLOR, globalStyle } from "../../constants";
@@ -53,75 +53,106 @@ const levelComponentStyle = StyleSheet.create({
 export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const [APVisible, setAPVisible] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState(null as null | AddressType);
-  const [hintShown, setHistShown] = useState(false)
+  const [errorValue, setErrorValue] = useState(null as AddressType | null)
+
+  useEffect(() => {
+    resetForm()
+  },[test.id])
 
   const resetForm = () => {
     setAPVisible(false)
     setSelectedAddress(null)
-    setHistShown(false)
+    setErrorValue(null)
   }
 
-  const handleTestSubmit = (value: AddressType) => {
-    const rightPassage = state.passages.find(p => p.id === test.passageId)
-    if(!rightPassage){
-      return;
-    }
-    if(JSON.stringify(rightPassage.address) === JSON.stringify(value)){
-      //set right: error: 0
-      submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
-      }})
-    }else{
-      //add error
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
-      }}) 
-    }
+  const handleErrorSubmit = (value: AddressType) => {
+    submitTest({isRight: false, modifiedTest: {
+      ...test,
+      errorNumber: (test.errorNumber || 0) + 1,
+      errorType: "wrongAddressToVerse",
+      wrongAddress: [...test.wrongAddress, value]
+    }}) 
     resetForm()
   }
   const handleAddressSelect = (value: AddressType) => {
     setAPVisible(false);
     setSelectedAddress(value);
   }
+  const handleAddressCheck = (value: AddressType) => {
+    const rightPassage = state.passages.find(p => p.id === test.passageId)
+    if(!rightPassage){
+      return;
+    }
+    if(JSON.stringify(rightPassage.address) === JSON.stringify(value)){
+      submitTest({isRight: true, modifiedTest: {
+        ...test,
+        dateFinished: new Date().getTime()
+      }})
+    }else{
+      setErrorValue(selectedAddress)
+    }
+  }
   const handleAddressCancel = () => {
     setAPVisible(false);
   }
   const targetPassage = state.passages.find(p => p.id === test.passageId);
+  if(!targetPassage){
+    return <View></View>;
+  }
   const levelFinished = !!test.dateFinished;
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
       <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{targetPassage?.verseText}</Text>
     </ScrollView>
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
-      <Button
-        title={!!selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
-        type="outline"
-        color="green"
-        onPress={() => setAPVisible(true)}
-        disabled={levelFinished}
-      />
-      <Button
-        title={t("Submit")}
-        type="main"
-        color={!!selectedAddress ? "green" : "gray"}
-        disabled={!selectedAddress || levelFinished}
-        onPress={() => selectedAddress ? handleTestSubmit(selectedAddress) : null}
-      />
-      {(test.errorNumber || 0) > 3 && !hintShown &&
-      <Button
-        title={t("ShowAnswer")}
-        type="secondary"
-        color="gray"
-        onPress={() => setHistShown(true)}
-      />}
-      {!!hintShown && !!targetPassage &&
-      <Text style={{...levelComponentStyle.hintText}}>
-        {addressToString(targetPassage.address, t)}
-      </Text>}
+      {
+        !!errorValue && 
+        [
+          <Button
+            key="right"
+            title={addressToString(targetPassage.address, t)}
+            type="outline"
+            color="green"
+            onPress={() => {}}
+          />,
+          <Button
+            key="wrong"
+            title={addressToString(errorValue, t)}
+            type="outline"
+            color="red"
+            onPress={() => {}}
+          />,
+          <Button
+            key="continue"
+            title={t("ButtonContinue")}
+            type="main"
+            color={"green"}
+            disabled={levelFinished}
+            onPress={() => handleErrorSubmit(errorValue)}
+          />
+        ]
+      }
+      {
+      !errorValue &&
+      [
+        <Button
+          key="address"
+          title={!!selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
+          type="outline"
+          color={!errorValue ? "green" : "red"}
+          onPress={() => setAPVisible(true)}
+          disabled={levelFinished || !!errorValue}
+        />,
+        <Button
+          key="submit"
+          title={t("Submit")}
+          type="main"
+          color={!!selectedAddress ? "green" : "gray"}
+          disabled={!selectedAddress || levelFinished}
+          onPress={() => selectedAddress ? handleAddressCheck(selectedAddress) : null}
+        />
+      ]
+      }
     </View>
     <AddressPicker visible={APVisible} onCancel={handleAddressCancel} onConfirm={handleAddressSelect} t={t}/>
   </View>
@@ -130,12 +161,31 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
 //start writing text with passage autocomplete
 export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const [passagesOptions, setPassageOptions] = useState([] as PassageModel[])
-  const handleTestSubmit = (value: number) => {
+  const [errorValue, setErrorValue] = useState(null as number | null)
+
+  useEffect(() => {
+    resetForm()
+  },[test.id])
+
+  const resetForm = () => {
+    setPassageOptions([])
+    setErrorValue(null)
+  }
+
+  const handleErrorSubmit = (value: number) => {
+    submitTest({isRight: false, modifiedTest: {
+      ...test,
+      errorNumber: (test.errorNumber || 0) + 1,
+      errorType: "wrongVerseToAddress",
+      wrongPassagesId: [...test.wrongPassagesId, value]
+    }})
+    resetForm()
+  }
+  const handlePassageCheck = (value: number) => {
     const passage = state.passages.find(p => p.id === test.passageId)
     if(!passage){
       return;
     }
-    
     if(passage.id === value){
       //set right: error: 0
       submitTest({isRight: true, modifiedTest: {
@@ -143,13 +193,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         dateFinished: new Date().getTime()
       }})
     }else{
-      //add error
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongVerseToAddress",
-        wrongPassagesId: [...test.wrongPassagesId, value]
-      }})
+      setErrorValue(value)
     }
   }
   const handleSearchPassages = (value: string) => {
@@ -172,7 +216,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
       <View style={{gap: 10}}>
         {
-          passagesOptions.map(p => {
+          !errorValue && passagesOptions.map(p => {
             const passageText = p.verseText.length < 50 ? p.verseText : p.verseText.trim().replace(/(.|,)$/g,"").slice(0,50) + "..."
             return <Button
               key={p.id}
@@ -180,17 +224,45 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
               color="green"
               textStyle={{textTransform: "none"}}
               title={passageText}
-              onPress={() => handleTestSubmit(p.id)}
+              onPress={() => handlePassageCheck(p.id)}
               disabled={levelFinished}
             />
           })
         }
+        {
+          !!errorValue && 
+          [state.passages
+          .filter(p => [targetPassage.id, errorValue].includes(p.id))
+          .map(p => {
+            const passageText = p.verseText.length < 50 ? p.verseText : p.verseText.trim().replace(/(.|,)$/g,"").slice(0,50) + "..."
+            return <Button
+              key={p.id}
+              type="outline"
+              color={p.id === targetPassage.id ? "green" : "red"}
+              textStyle={{textTransform: "none"}}
+              title={passageText}
+              onPress={() => {}}
+              disabled={levelFinished}
+            />
+          }),
+          <Button
+            key="continue"
+            title={t("ButtonContinue")}
+            type="main"
+            color={"green"}
+            disabled={levelFinished}
+            onPress={() => handleErrorSubmit(errorValue)}
+          />
+          ]
+        }
       </View>
-      <Input
+      {
+        !errorValue && <Input
         placeholder={t("LevelStartWritingPassage")}
         onChange={(value) => handleSearchPassages(value)}
         onSubmit={() => {}}
       />
+      }
     </View>
   </View>
 }

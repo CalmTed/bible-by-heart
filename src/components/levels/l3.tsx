@@ -1,6 +1,6 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Pressable, Vibration } from "react-native"
 import { COLOR } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
@@ -14,10 +14,11 @@ const levelComponentStyle = StyleSheet.create({
   },
   passageTextView: {
     maxHeight: "30%",
-    flex: 1,
+    height: "auto",
     backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
     margin: 10,
+    paddingHorizontal: 10,
   },
   passageText: {
     alignContent: "center",
@@ -65,16 +66,53 @@ const levelComponentStyle = StyleSheet.create({
 export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const [APVisible, setAPVisible] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState(null as null | AddressType);
-  const [selectedWords, setSelectedWords] = useState([] as number[])
+
+  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse"
+  const alreadyEnteredUntill = 
+    test.wrongWords.length > 0 ?
+      test.wrongWords.sort((a,b) => b[0] - a[0])[0][0] :
+      null;
+  const targetPassage = state.passages.find(p => p.id === test.passageId)
+  const missingWords = test.testData.missingWords || []
+  if(!targetPassage || !missingWords){
+    submitTest({isRight: true, modifiedTest: test});
+    return <View></View>;
+  }
+  const words = targetPassage.verseText.split(" ");
+  const defaultSelectedWords:number[] = 
+    lastErrorIsWrongAddress?
+    words.map((w,i) => i) :
+    alreadyEnteredUntill ?
+      words.map((w,i) => i).slice(0, alreadyEnteredUntill) :
+      [];
+  const [selectedWords, setSelectedWords] = useState(defaultSelectedWords)
+  const [errorIndex, setErrorIndex] = useState(null as number | null);
+  const [wrongAddress, setWrongAddress] = useState(null as AddressType | null);
+
+  useEffect(() => {
+    //reset list if same level but different test/passage
+    resetForm()
+    setSelectedWords(defaultSelectedWords)
+  }, [test.id])
 
   const resetForm = () => {
     setAPVisible(false)
     setSelectedAddress(null)
-    setSelectedWords([])
+    setErrorIndex(null)
+    setWrongAddress(null)
   }
 
 
-  const handleTestSubmit = (value: AddressType) => {
+  const handleErrorSubmit = (value: AddressType) => {
+    submitTest({isRight: false, modifiedTest: {
+      ...test,
+      errorNumber: (test.errorNumber || 0) + 1,
+      errorType: "wrongAddressToVerse",
+      wrongAddress: [...test.wrongAddress, value]
+    }})    
+    resetForm()
+  }
+  const handleAdressCheck = (value: AddressType) => {
     const targetPassage = state.passages.find(p => p.id === test.passageId)
     if(!targetPassage){
       return;
@@ -85,115 +123,160 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         dateFinished: new Date().getTime()
       }})
     }else{
-      //add error
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
-      }})
+      setWrongAddress(value);
     }
-    resetForm()
   }
-  const handleWordSelect = (value: string) => {
-    const independentMisingWords = [...missingWords]
-    const nextUnselectedIndexes = independentMisingWords
-      .sort((a,b) => a - b)
-      .filter(mw => !selectedWords.includes(mw))
-    const neededWord = words[nextUnselectedIndexes[0]]
-    if(neededWord && value === neededWord){
+  const handleWordSelect = (nextUnselectedIndex: number, selectedMissingWord: number) => {
+    const neededWord = words[nextUnselectedIndex];
+    const selectedWord = words[selectedMissingWord];
+    Vibration.vibrate(15);
+    if(neededWord && selectedWord === neededWord){
       setSelectedWords(prv => 
-        [...prv, nextUnselectedIndexes[0]]
+        [...prv, nextUnselectedIndex]
         )
     }else{
       //handle error
-      resetForm()
-      submitTest({isRight: false, modifiedTest: {
-        ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongWord",
-        wrongWords: [...test.wrongWords, [nextUnselectedIndexes[0],value]]
-      }})
+      setErrorIndex(selectedMissingWord)
     }
   }
-  const handleWordCancel = (index: number) => {
-    setSelectedWords(prv => 
-      [...prv.filter(w => w != index)]
-    )
+  const conformWrongWordError: (rightIndex: number, wrongWord: string) => void = (rightIndex, wrongWord) => {
+    resetForm()
+    submitTest({isRight: false, modifiedTest: {
+      ...test,
+      errorNumber: (test.errorNumber || 0) + 1,
+      errorType: "wrongWord",
+      wrongWords: [...test.wrongWords, [rightIndex,wrongWord]]
+    }})
   }
   const handleAddressSelect = (address: AddressType) => {
     setAPVisible(false)
     setSelectedAddress(address)
   }
-  const targetPassage = state.passages.find(p => p.id === test.passageId)
-  const missingWords = test.testData.missingWords || []
-  if(!targetPassage || !missingWords){
-    return <View></View>
-  }
-  const words = targetPassage.verseText.split(" ");
+
+
   const levelFinished = !!test.dateFinished;
+  const nextUnselectedIndex = [...missingWords]
+    .sort((a,b) => a - b)
+    .filter(mw => !selectedWords.includes(mw))[0];
+  const unselectedWords = missingWords.filter((mwi,i) => !selectedWords.includes(mwi));
   return <View style={levelComponentStyle.levelComponentView}>
     <ScrollView style={levelComponentStyle.passageTextView}>
       <View style={levelComponentStyle.passageText}>
         {words.map((w,i) => {
-          const nextUnselectedIndex = [...missingWords]
-            .sort((a,b) => a - b)
-            .filter(mw => !selectedWords.includes(mw))[0] === i
           return <View key={`${w}${i}`}
             style={{
               ...missingWords.includes(i) ? levelComponentStyle.variableWord : levelComponentStyle.fixedWord,
-              ...nextUnselectedIndex ? levelComponentStyle.nextUnselected : {}
+              ...!levelFinished && nextUnselectedIndex === i ? levelComponentStyle.nextUnselected : {}
             }}
           >
-            <Pressable onPress={() => handleWordCancel(i)} disabled={levelFinished}>
-              <Text style={{
+            <Text style={{
                 ...levelComponentStyle.wordText,
-                ...selectedWords.includes(i) || !missingWords.includes(i) ? {} : levelComponentStyle.hiddenWordText
+                ...levelFinished || selectedWords.includes(i) || !missingWords.includes(i) ? {} : levelComponentStyle.hiddenWordText
               }}
               >{w}</Text>
-            </Pressable>
           </View>
         }
         )}
       </View>
     </ScrollView>
-      {missingWords.length === selectedWords.length && <View style={levelComponentStyle.optionButtonsWrapper}>
-          <Button
+    {/* fi there are some missig words or error with them*/}
+    {
+      (!!unselectedWords.length || !!errorIndex) &&
+      <ScrollView style={{...levelComponentStyle.optionButtonsScrollWrapper}}>
+        <View style={{...levelComponentStyle.optionButtonsWrapper}}>
+          {
+          // if no error and not finished yet
+          !errorIndex && !levelFinished &&
+          unselectedWords
+          .map((mwi,i) => {
+            return <Button
+              type="outline"
+              key={`${words[mwi]}-${mwi}`}
+              title={words[mwi]}
+              onPress={() => handleWordSelect(nextUnselectedIndex, mwi)}
+              style={{padding: 0}}
+              textStyle={{fontSize: 16, textTransform: "none"}}
+              disabled={levelFinished}
+            />
+          })
+          }
+          {
+          // if there is an error and not finished yet
+          !!errorIndex &&
+          [...missingWords
+          .filter((mwi,i) => mwi === nextUnselectedIndex || mwi === errorIndex)
+          .map((mwi,i) => {
+            return <Button
+              type="main"
+              key={`${mwi}-${i}`}
+              title={words[mwi]}
+              onPress={() => {}}
+              style={{padding: 0}}
+              textStyle={{fontSize: 16, textTransform: "none"}}
+              color={mwi === nextUnselectedIndex ? "green" : "red"}
+            />
+          }),
+          <Button 
+            key="nextButton"
             type="outline"
             color="green"
-            title={selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
-            onPress={() => setAPVisible(true)}
-            disabled={levelFinished}
-          />
-          <Button
-            type="main"
-            color="green"
-            title={t("Submit")}
-            onPress={() => selectedAddress ? handleTestSubmit(selectedAddress) : null}
-            disabled={!selectedAddress || levelFinished}
-          />
-      </View>
-      }
-      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
-    
-    <ScrollView style={{...levelComponentStyle.optionButtonsScrollWrapper}}>
-      <View style={{...levelComponentStyle.optionButtonsWrapper}}>
-      {
-        missingWords
-        .filter((w,i) => !selectedWords.includes(w))
-        .map((w,i) => 
-        <Button 
+            title={t("ButtonContinue")}
+            onPress={() => conformWrongWordError(nextUnselectedIndex, words[errorIndex])}
+            />
+          ]
+          }
+        </View>
+      </ScrollView>
+    }
+    {/* if no missing words and no error with them and addres is not wrong */}
+    {
+      !unselectedWords.length && !errorIndex && !wrongAddress && 
+      <View style={levelComponentStyle.optionButtonsWrapper}>
+        <Button
           type="outline"
-          key={`${words[w]}-${w}`}
-          title={words[w]}
-          onPress={() => handleWordSelect(words[w])}
-          style={{padding: 0}}
-          textStyle={{fontSize: 16, textTransform: "none"}}
+          color="green"
+          title={selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
+          onPress={() => setAPVisible(true)}
           disabled={levelFinished}
         />
-        )
-      }
+        <Button
+          type="main"
+          color="green"
+          title={t("Submit")}
+          onPress={() => selectedAddress ? handleAdressCheck(selectedAddress) : null}
+          disabled={!selectedAddress || levelFinished}
+        />
+      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
       </View>
-    </ScrollView>
+    }
+    {/* if no missing words but wrong address */}
+    {
+      !unselectedWords.length && !errorIndex && wrongAddress && 
+      <View style={levelComponentStyle.optionButtonsWrapper}>
+        <Button
+          type="outline"
+          color="green"
+          title={addressToString(targetPassage.address, t)}
+          onPress={() => {}}
+          disabled={levelFinished}
+        />
+        <Button
+          type="outline"
+          color="red"
+          title={selectedAddress ? addressToString(selectedAddress, t) : ""}
+          onPress={() => {}}
+          disabled={levelFinished}
+        />
+        <Button
+          type="main"
+          color="green"
+          title={t("ButtonContinue")}
+          onPress={() => handleErrorSubmit(wrongAddress)}
+          disabled={levelFinished}
+        />
+      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+    </View>
+    }
+
   </View>
 }

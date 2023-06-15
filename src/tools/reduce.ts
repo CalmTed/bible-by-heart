@@ -63,10 +63,11 @@ export const reduce: (
             }
             return action.payload.test
         }).sort((a) => action.payload.isRight ? 0 : a.id === action.payload.test.id ? 1 : -1)
+        //sorting active tests to float last wrong one to the end
         const sortedTests = action.payload.isRight ? updatedTests : [
-            ...updatedTests.filter(t => !!t.dateFinished),
-            ...updatedTests.filter(t => !t.dateFinished && !t.errorNumber),
-            ...updatedTests.filter(t => !t.dateFinished && !!t.errorNumber)
+            ...updatedTests.filter(t => !!t.dateFinished),//finished
+            ...updatedTests.filter(t => !t.dateFinished && !t.errorNumber),//unfinished without error
+            ...updatedTests.filter(t => !t.dateFinished && !!t.errorNumber)//unfinished with error
         ]
         changedState = {...state, testsActive: sortedTests}
         break;

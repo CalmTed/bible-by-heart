@@ -23,7 +23,8 @@ import { L50 } from "../components/levels/l5"
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
   const [state, setState] = useState(oldState);
-  const [activeTestIndex, setActiveTest] = useState(0)
+  const nextUnfinishedTestIndex = state.testsActive.indexOf(state.testsActive.filter(t => !t.dateFinished)[0])
+  const [activeTestIndex, setActiveTest] = useState(nextUnfinishedTestIndex !== -1 ? nextUnfinishedTestIndex : 0)
   const t = createT(state.langCode);
   useEffect(() => {//updating state on component mounting
     if(oldState.lastChange > state.lastChange){
@@ -68,9 +69,10 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   }
   const handleTestSubmit: (data: {isRight:boolean, modifiedTest: TestModel}) => void = ({isRight, modifiedTest}) => {
     if(isRight && activeTestIndex < state.testsActive.length-1){
+      //if right but not last
       setActiveTest(prv => prv + 1);
     }else if(isRight){
-      //if last test and right
+      //if last test and right then finish
       const newState = reduce(state, {
         name: ActionName.finishTesting,
         payload: {

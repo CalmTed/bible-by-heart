@@ -1,5 +1,5 @@
 import { bibleReference } from "../bibleReference";
-import { TEST_LIST_NUMBER, TEST_LEVEL } from "../constants";
+import { TEST_LIST_NUMBER, TEST_LEVEL, PASSAGE_LEVEL } from "../constants";
 import { createTest } from "../initials";
 import { AddressType, PassageModel, TestModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
@@ -18,6 +18,10 @@ import { getSimularity } from "./getSimularity";
     //passages to address: erros, other passages(random weight from address distance)
     //hidden words: random word, common errors(by word index), common errors from next levels
 
+//for debugging
+let onlyLevel:TEST_LEVEL | null = null;//TEST_LEVEL.l30;
+let listLength:  number | null = null;//3
+
 export const generateTests: (passages: PassageModel[], history: TestModel[]) => TestModel[] = (passages, history) => {
   if(!passages.length){
     console.log("there are no passages to create tests");
@@ -31,7 +35,7 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
   const tests: TestModel[] = passages
     // .sort((a,b) => b.dateTested - a.dateTested)//hack for debugging
     .sort((a,b) => a.dateTested - b.dateTested)//getting oldest to test
-    .slice(0,Math.min(passages.length, TEST_LIST_NUMBER))//limiting max number
+    .slice(0,Math.min(passages.length, listLength || TEST_LIST_NUMBER))//limiting max number
     .sort(() => Math.random() > 0.5 ? -1 : 1)//shuffling
     .map(p => {
       const initialTest = createTest(sessionId, p.id, p.selectedLevel)
@@ -47,6 +51,9 @@ export const generateTests: (passages: PassageModel[], history: TestModel[]) => 
         [TEST_LEVEL.l40]: createL40Test,
         [TEST_LEVEL.l50]: createL50Test,
       }
+      if(onlyLevel){
+        return testCreationList[onlyLevel]({initialTest: {...initialTest, level: onlyLevel}, passages, passageHistory: history})
+      }
       return testCreationList[testTenghtSafeTest.level]({initialTest: testTenghtSafeTest, passages, passageHistory: history})
     })
   return tests;
@@ -60,10 +67,11 @@ interface CreateTestInputModel {
 type CreateTestMethodModel = (data: CreateTestInputModel) => TestModel
 
 const createL10Test: CreateTestMethodModel = ({initialTest, passages, passageHistory}) => {
-  const p = passages.find(p => p.id === initialTest.passageId)
+  const p = passages.find(p => p.id === initialTest.passageId)//aka targetPassage
   if(!p){
     return initialTest
   }
+  const successStroke = getPerfectTestsNumber(passageHistory, p);
   const getRandomAddress = () => {
     //1 same book diff address
     const sameBookAddresses = passages.filter(n => n.address.bookIndex === p.address.bookIndex && n.address !== p.address).map(n => n.address);
@@ -99,7 +107,11 @@ const createL10Test: CreateTestMethodModel = ({initialTest, passages, passageHis
     }
     //4 from errors
     const wrongAdressesWithSamePassage = passageHistory.filter(ph => ph.passageId === p.id).map(p => p.wrongAddress).flat()
-    return randomItem([...sameBookAddresses, ...justRandomOtherNeigborAddresses, ...wrongAdressesWithSamePassage, justRandomAddress]) as AddressType
+    if(successStroke > 2 && wrongAdressesWithSamePassage.length > 4){
+      return randomItem([...justRandomOtherNeigborAddresses, ...wrongAdressesWithSamePassage]) as AddressType
+    }else{
+      return randomItem([...sameBookAddresses, ...justRandomOtherNeigborAddresses, ...wrongAdressesWithSamePassage, justRandomAddress]) as AddressType
+    }
   }
   const addressOptions:AddressType[] = [p.address]//adding right answer
   let iteration = 0
@@ -232,7 +244,7 @@ const createL30Test: CreateTestMethodModel = ({initialTest, passages, passageHis
   }
   return {...initialTest, testData: {
     ...initialTest.testData,
-    missingWords: missingWords.sort(() => Math.random() > 0.5 ? -1: 1)
+    missingWords: missingWords.sort((a,b) => ('' + words[a]).localeCompare(words[b]))//sort alphabeticaly
   }}
 }
 
