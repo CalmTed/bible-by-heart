@@ -11,8 +11,11 @@ export const reduce: (
 
   switch (action.name) {
       case ActionName.setLang:
-          changedState = { ...state, langCode: action.payload };
+          changedState = { ...state, settings: {...state.settings, langCode: action.payload} };
           break;
+      case ActionName.setTheme:
+        changedState = { ...state, settings: {...state.settings, theme: action.payload} };
+      break;
       case ActionName.setPassage:
           if (state.passages.find((p) => p.id === action.payload.id)) {
               const changedPassages = state.passages.map((p) =>
@@ -40,7 +43,10 @@ export const reduce: (
       case ActionName.setDevMode: 
            changedState = {
                 ...state,
-                devMode: action.payload
+                settings: {
+                    ...state.settings,
+                    devMode: action.payload
+                }
            }
            break;
       case ActionName.removePassage:

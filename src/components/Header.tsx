@@ -1,10 +1,9 @@
 import { FC } from "react"
 import { StyleSheet, View, Text, Vibration } from "react-native"
-import { COLOR, globalStyle } from "../constants"
-// import { IconButton } from "./button"
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { IconButton } from "./Button"
 import { IconName } from "./Icon"
+import { ThemeAndColorsModel } from "../tools/getTheme"
 
 interface HeaderModel{
   navigation: StackNavigationHelpers
@@ -13,18 +12,19 @@ interface HeaderModel{
   additionalChild?: React.ReactNode
   additionalChildren?: React.ReactNode[]
   alignChildren?: "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
+  theme: ThemeAndColorsModel
 }
 
 
-export const Header: FC<HeaderModel> = ({navigation,title, showBackButton, additionalChild, additionalChildren, alignChildren}) => {
+export const Header: FC<HeaderModel> = ({theme, navigation,title, showBackButton, additionalChild, additionalChildren, alignChildren}) => {
   const handleBack = () => {
     navigation.goBack();
   }
   return (
   <View style={{...headerStyle.view, justifyContent: alignChildren || "flex-end"}}>
-    {showBackButton && <IconButton onPress={handleBack} icon={IconName.back}></IconButton>}
+    {showBackButton && <IconButton theme={theme} onPress={handleBack} icon={IconName.back}></IconButton>}
     {title && <View style={headerStyle.textView}>
-      {title && <Text style={headerStyle.text}>{title}</Text>}
+      {title && <Text style={{...headerStyle.text, color: theme.colors.text}}>{title}</Text>}
     </View>}
     {additionalChild}
     {additionalChildren && additionalChildren.map((child, i) => {
@@ -47,7 +47,6 @@ const headerStyle = StyleSheet.create({
     flex: 1
   },
   text: {
-    color: globalStyle.text.color,
     fontSize: 18,
     fontWeight: "500",
     textTransform: "uppercase"

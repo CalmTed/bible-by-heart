@@ -8,6 +8,7 @@ import { ListScreen } from './screens/listScreen';
 import { TestsScreen } from './screens/testsScreen';
 import { FinishScreen } from './screens/finishScreen';
 import { SettingsScreen } from './screens/settingsScreen';
+import { StatusBar } from 'expo-status-bar';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,11 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
                     presentation: 'modal'
                 }}
             >
+                <Stack.Screen
+                    name={SCREEN.settings}
+                    component={SettingsScreen}
+                    initialParams={{ ...state }}
+                />
                 <Stack.Screen
                     name={SCREEN.home}
                     component={HomeScreen}
@@ -45,12 +51,8 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
                     component={FinishScreen}
                     initialParams={{ ...state }}
                 />
-                <Stack.Screen
-                    name={SCREEN.settings}
-                    component={SettingsScreen}
-                    initialParams={{ ...state }}
-                />
             </Stack.Navigator>
         </NavigationContainer>
+
     );
 };

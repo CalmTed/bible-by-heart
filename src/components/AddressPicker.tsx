@@ -1,24 +1,25 @@
 import { FC, useEffect, useState } from "react"
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { COLOR, globalStyle } from "../constants"
 import { AddressType } from "../models"
 import { IconButton } from "./Button"
 import { IconName } from "./Icon"
 import { WORD } from "../l10n"
 import { bibleReference } from "../bibleReference"
 import { createAddress } from "../initials"
+import { ThemeAndColorsModel } from "../tools/getTheme"
 
 interface AddressPickerModel{
   visible: boolean
   onCancel: () => void
   onConfirm: (address: AddressType) => void
   t: (w: WORD) => string
-  address?: AddressType
+  address?: AddressType, 
+  theme: ThemeAndColorsModel
 }
 
 const bookList = bibleReference.map(book => book.titleShort);
 
-export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCancel, onConfirm, t}) => {
+export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCancel, onConfirm, t, theme}) => {
   const isNoAddress = !address;
   const isAddressNull = address?.bookIndex === null || address?.startChapterNum  === null  || address?.startVerseNum  === null;
   const isAddressNaN = !isNoAddress && (isNaN(address.bookIndex) || isNaN(address.startChapterNum) || isNaN(address.startVerseNum))
@@ -71,43 +72,43 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
     }
   }
   const isDoneDisabled = (isNaN(tempAddres.bookIndex) || isNaN(tempAddres.startChapterNum) || isNaN(tempAddres.startVerseNum) ) ||
-    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum))
+    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum));
   return <Modal visible={visible}>
     {/* HEADER */}
-    <View style={APstyle.headerView}>
-      <IconButton  style={APstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
-      <Text style={APstyle.headerTitle}>{ addresPart === "bookIndex" ? t("APSelectBook") : `${t(bibleReference[tempAddres.bookIndex]?.longTitle as WORD)} ${((tempAddres.startChapterNum) + 1) || " _ "}:${((tempAddres.startVerseNum) + 1) || " _ "}-${((tempAddres.endChapterNum) + 1) || " _ "}:${((tempAddres.endVerseNum) + 1) || " _ "}`}</Text>
-      <IconButton  style={APstyle.headerBotton} icon={IconName.done} onPress={() => {onConfirm(tempAddres)}} disabled={isDoneDisabled} />
+    <View style={{...theme.theme.view,...APstyle.headerView}}>
+      <IconButton theme={theme} style={APstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
+      <Text style={{...APstyle.headerTitle, color: theme.colors.text}}>{ addresPart === "bookIndex" ? t("APSelectBook") : `${t(bibleReference[tempAddres.bookIndex]?.longTitle as WORD)} ${((tempAddres.startChapterNum) + 1) || " _ "}:${((tempAddres.startVerseNum) + 1) || " _ "}-${((tempAddres.endChapterNum) + 1) || " _ "}:${((tempAddres.endVerseNum) + 1) || " _ "}`}</Text>
+      <IconButton theme={theme} style={APstyle.headerBotton} icon={IconName.done} onPress={() => {onConfirm(tempAddres)}} disabled={isDoneDisabled} />
     </View>
     {/* LIST */}
-      <View style={APstyle.listView}>
+      <View style={{...APstyle.listView, backgroundColor: theme.colors.bgSecond}}>
       <ScrollView>
       <View style={APstyle.listView}>
       {addresPart === "bookIndex" && bookList.map((bookItem, i) => {
         const title = bookItem as WORD;
-        return <ListButton key={title} title={t(title)} onPress={() => handleListButtonPress(i)}/>
+        return <ListButton key={title} title={t(title)} onPress={() => handleListButtonPress(i)} theme={theme}/>
       })}
       {["startChapterNum"].includes(addresPart) && Array.from({length: chaptersNumber}, (v, i) => i).map((chapter, i) => {
         const title = (chapter + 1).toString();
-        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}/>
+        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)} theme={theme}/>
       })}
       {["endChapterNum"].includes(addresPart) && Array.from({length: chaptersNumber}, (v, i) => i).map((chapter, i) => {
         const title = (chapter + 1).toString();
         if(i < tempAddres.startChapterNum){
           return;
         }
-        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}/>
+        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)} theme={theme}/>
       })}
       {["startVerseNum"].includes(addresPart) && Array.from({length: versesNumber}, (v, i) => i).map((verse, i) => {
         const title = (verse + 1).toString();
-        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}/>
+        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}  theme={theme}/>
       })}
       {[ "endVerseNum"].includes(addresPart) && Array.from({length: versesNumber}, (v, i) => i).map((verse, i) => {
         const title = (verse + 1).toString();
         if(tempAddres.startChapterNum === tempAddres.endChapterNum && i < tempAddres.startVerseNum){
           return;
         }
-        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)}/>
+        return <ListButton key={title} title={title} onPress={() => handleListButtonPress(i)} theme={theme}/>
       })}
       </View>
       </ScrollView>
@@ -115,17 +116,15 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
   </Modal>
 }
 
-const ListButton: FC<{title: string, onPress: () => void}> = ({title, onPress}) => {
+const ListButton: FC<{title: string, onPress: () => void, theme: ThemeAndColorsModel}> = ({title, onPress, theme}) => {
   return <TouchableOpacity onPress={onPress}>
       <View style={APstyle.listButton}>
-        <Text style={APstyle.listButtonLabel}>{title}</Text>
+        <Text style={{...APstyle.listButtonLabel, color: theme.colors.text}}>{title}</Text>
       </View>
   </TouchableOpacity> 
 }
-
 const APstyle = StyleSheet.create({
   headerView:{
-    ...globalStyle.view,
     height: 60,
     alignContent: "center",
     width: "100%",
@@ -134,7 +133,6 @@ const APstyle = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: COLOR.text,
     fontSize: 18,
     textTransform: "uppercase",
     fontWeight: "500",
@@ -145,7 +143,6 @@ const APstyle = StyleSheet.create({
     aspectRatio: 1,
   },
   listView: {
-    backgroundColor: COLOR.bgSecond,
     height: "93%",
     width: "100%",
     flexDirection: "row",
@@ -160,7 +157,6 @@ const APstyle = StyleSheet.create({
     aspectRatio: 1
   },
   listButtonLabel: {
-    color: COLOR.text,
     textTransform: "capitalize",
     fontSize: 15
   }

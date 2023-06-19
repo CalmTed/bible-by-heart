@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated, Vibration } from "react-native"
-import { storageName, globalStyle, COLOR, archivedName, PASSAGE_LEVEL, SORTING_OPTION } from "../constants"
+import { storageName, archivedName, PASSAGE_LEVEL, SORTING_OPTION } from "../constants"
 import { ActionName, AddressType, AppStateModel, PassageModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -18,6 +18,7 @@ import { Swipeable } from "react-native-gesture-handler"
 import { reduce } from "../tools/reduce"
 import { MiniModal } from "../components/miniModal"
 import timeToString from "../tools/timeToString"
+import { ThemeAndColorsModel, getTheme } from "../tools/getTheme"
 
 export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -32,7 +33,7 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   const [isFiltersOpen, setOpenFilters] = useState(false)
   const [isSortingOpen, setOpenSorting] = useState(false)
 
-  const t = createT(state.langCode);
+  const t = createT(state.settings.langCode);
   useEffect(() => {
     setState(oldState);
   }, [JSON.stringify(oldState)]);
@@ -169,22 +170,41 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         return 0;
     }
   })
-  return <View style={{...globalStyle.screen,...globalStyle.view}}>
-    <Header navigation={navigation} showBackButton={false} title={t("listScreenTitle")} additionalChildren={[
-      <IconButton icon={IconName.add} onPress={handleAPOpen} />,
-      <IconButton icon={IconName.done} onPress={() => navigateWithState({navigation, screen: SCREEN.home, state})} />
+  const theme = getTheme(state.settings.theme);
+  const listStyle = StyleSheet.create({
+    searchView: {
+      flexDirection: "row",
+      paddingHorizontal: 20,
+      alignItems: "center",
+      height: 50
+    },
+    searchTextInput: {
+      flex: 1,
+      color: theme.colors.text,
+      paddingHorizontal: 20,
+      fontSize: 16
+    },
+    listView: {
+      width: "100%",
+    },
+  });
+  return <View style={{...theme.theme.screen,...theme.theme.view}}>
+    <Header theme={theme} navigation={navigation} showBackButton={false} title={t("listScreenTitle")} additionalChildren={[
+      <IconButton theme={theme} icon={IconName.add} onPress={handleAPOpen} />,
+      <IconButton theme={theme} icon={IconName.done} onPress={() => navigateWithState({navigation, screen: SCREEN.home, state})} />
     ]} />
     <ScrollView style={listStyle.listView}>
       <View style={listStyle.searchView}>
-        <Icon iconName={IconName.search} />
+        <Icon color={theme.colors.textSecond} iconName={IconName.search} />
         <TextInput style={listStyle.searchTextInput} value={searchText} onChangeText={(newVal) => setSearch(newVal)}/>
-        {!!searchText.length && <IconButton icon={IconName.cross} onPress={() => setSearch("")}/>}
-        <IconButton icon={IconName.sort} onPress={() => setOpenSorting(true)}/>
-        <IconButton icon={IconName.filter} onPress={() => setOpenFilters(true)}/>
+        {!!searchText.length && <IconButton theme={theme} icon={IconName.cross} onPress={() => setSearch("")}/>}
+        <IconButton theme={theme} icon={IconName.sort} onPress={() => setOpenSorting(true)} color={theme.colors.textSecond}/>
+        <IconButton theme={theme} icon={IconName.filter} onPress={() => setOpenFilters(true)} color={theme.colors.textSecond}/>
       </View>
       <View>
         {sortedPassages.map(passage => {
           return <ListItem
+            theme={theme}
             key={passage.id}
             data={passage}
             sort={state.sort}
@@ -198,36 +218,37 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       </View>
       {
         state.passages.length > sortedPassages.length &&
-        <Text style={{...globalStyle.subText,textAlign: "center", paddingVertical: 10}}>{`${t("PassagesHidden")} ${state.passages.length - sortedPassages.length}`}</Text>
+        <Text style={{...theme.theme.subText,textAlign: "center", paddingVertical: 10}}>{`${t("PassagesHidden")} ${state.passages.length - sortedPassages.length}`}</Text>
       }
       {
-        state.devMode && 
+        state.settings.devMode && 
         <View style={{margin: 20}}>
-          <Text style={globalStyle.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 1}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l1).length}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 2}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l2).length}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 3}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l3).length}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 4}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l4).length}</Text>
-          <Text style={globalStyle.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 5}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l5).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 1}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l1).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 2}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l2).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 3}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l3).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 4}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l4).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 5}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l5).length}</Text>
         </View>
       }
     </ScrollView>
-    <MiniModal shown={isSortingOpen} handleClose={() => setOpenSorting(false)}>
-      <Text style={globalStyle.headerText}>{t("TitleSort")}</Text>
+    <MiniModal theme={theme} shown={isSortingOpen} handleClose={() => setOpenSorting(false)}>
+      <Text style={theme.theme.headerText}>{t("TitleSort")}</Text>
       {Object.values(SORTING_OPTION).map(option => 
-        <Button key={option} type="outline" color={option === state.sort ? "green" : "gray"} title={t(option)} onPress={() => handleSortChange(option)}/>
+        <Button theme={theme} key={option} type="outline" color={option === state.sort ? "green" : "gray"} title={t(option)} onPress={() => handleSortChange(option)}/>
       )}
-      <Button title={t("Close")} onPress={() => setOpenSorting(false)}/>
+      <Button theme={theme} title={t("Close")} onPress={() => setOpenSorting(false)}/>
     </MiniModal>
-    <MiniModal shown={isFiltersOpen} handleClose={() => setOpenFilters(false)}>
-      <Text  style={globalStyle.headerText}>{t("TitleFilters")}</Text>
+    <MiniModal theme={theme} shown={isFiltersOpen} handleClose={() => setOpenFilters(false)}>
+      <Text  style={theme.theme.headerText}>{t("TitleFilters")}</Text>
       <ScrollView style={{
       }}>
-      <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("SelectedLevel")}</Text>
-      <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
+      <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("SelectedLevel")}</Text>
+      <View style={{...theme.theme.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
         {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(sl => 
           <Button
+            theme={theme}
             key={sl}
             type="outline"
             color={state.filters.selectedLevels.includes(sl) ? "gray" : "green"}
@@ -236,10 +257,11 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
           />
         )}
       </View>
-      <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("MaxLevel")}</Text>
-      <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
+      <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("MaxLevel")}</Text>
+      <View style={{...theme.theme.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
         {[PASSAGE_LEVEL.l1,PASSAGE_LEVEL.l2,PASSAGE_LEVEL.l3,PASSAGE_LEVEL.l4,PASSAGE_LEVEL.l5].map(ml => 
           <Button
+            theme={theme}
             key={ml}
             type="outline"
             color={state.filters.maxLevels.includes(ml) ? "gray" : "green"}
@@ -250,10 +272,11 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       </View>
       {!!allTags.length &&
       <View>
-        <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("Tags")}</Text>
-        <View style={{...globalStyle.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
+        <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("Tags")}</Text>
+        <View style={{...theme.theme.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
           {allTags.map(option => 
             <Button
+              theme={theme}
               key={option}
               type="outline"
               color={option === archivedName && state.filters.tags.length === allTags.length ? "red" : state.filters.tags.includes(option) ? "gray" : "green"}
@@ -264,13 +287,13 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         </View>
       </View>}
       {!allTags.length && 
-        <Text style={{...globalStyle.text, marginTop: 20, marginBottom: 10}}>{t("NoTagsFound")}</Text>
+        <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("NoTagsFound")}</Text>
       }
       </ScrollView>
-      <Button title={t("Close")} onPress={() => setOpenFilters(false)}/>
+      <Button theme={theme} title={t("Close")} onPress={() => setOpenFilters(false)}/>
     </MiniModal>
-    <AddressPicker visible={isAPOpen} address={selectedAddress} onCancel={handleAPCancel} onConfirm={handleAPSubmit} t={t}/>
-    <PassageEditor visible={isPEOpen} passage={selectedPassage} onCancel={handlePECancel} onConfirm={handlePESubmit} onRemove={handlePERemove} t={t} />
+    <AddressPicker theme={theme} visible={isAPOpen} address={selectedAddress} onCancel={handleAPCancel} onConfirm={handleAPSubmit} t={t}/>
+    <PassageEditor state={state} visible={isPEOpen} passage={selectedPassage} onCancel={handlePECancel} onConfirm={handlePESubmit} onRemove={handlePERemove} t={t} />
   </View>
 }
 
@@ -282,25 +305,61 @@ const ListItem: FC<{
   onRemove: () => void
   onLongPress: () => void
   sort: SORTING_OPTION
-}> = ({data, t, onPress, onArchive, onRemove, onLongPress, sort}) => {
+  theme: ThemeAndColorsModel
+}> = ({data, t, onPress, onArchive, onRemove, onLongPress, sort, theme}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
+  const listItemStyle = StyleSheet.create({
+    listItemAddress: {
+      color: theme.colors.text,
+      textTransform: "uppercase",
+      fontSize: 18,
+      fontWeight: "500"
+    },
+    secondaryHeader: {
+      color: theme.colors.textSecond,
+      fontSize: 16,
+    },
+    listItemText: {
+      color: theme.colors.textSecond,
+      fontSize: 16
+    },
+    swipeableAnimatedView:{
+      justifyContent: "center",
+      height: "100%"
+    },
+    listItemView: {
+      backgroundColor: theme.colors.bgSecond,
+      paddingVertical: 15,
+      paddingHorizontal: 15,
+      marginHorizontal: 10,
+      borderRadius: 10,
+      marginVertical: 5
+    },
+    headerGroup: {
+      flex: 1,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingRight: 10
+    },
+  })
   const renderLeftActions = () => {
     
     return <Animated.View style={[
       {
-        ...listStyle.swipeableAnimatedView,
+        ...listItemStyle.swipeableAnimatedView,
       },
     ]}>
-      <Button title={data.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={onArchive} />
+      <Button theme={theme} title={data.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={onArchive} />
     </Animated.View>
   }
   const renderRightActions = () => {
     return <Animated.View style={[
       {
-        ...listStyle.swipeableAnimatedView,
+        ...listItemStyle.swipeableAnimatedView,
       },
     ]}>
-      <Button title={t("Remove")} onPress={onRemove} color="red" />
+      <Button theme={theme} title={t("Remove")} onPress={onRemove} color="red" />
     </Animated.View>
   }
   const getSecondaryOptions = (sort: SORTING_OPTION, passage: PassageModel) => {
@@ -323,64 +382,13 @@ const ListItem: FC<{
     overshootFriction={10}
     renderLeftActions={renderLeftActions}
     renderRightActions={renderRightActions}>
-      <View style={listStyle.listItemView}>
-        <View style={listStyle.headerGroup}>
-          <Text style={listStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
-          <Text style={listStyle.secondaryHeader}>{getSecondaryOptions(sort, data)}</Text>
+      <View style={listItemStyle.listItemView}>
+        <View style={listItemStyle.headerGroup}>
+          <Text style={listItemStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
+          <Text style={listItemStyle.secondaryHeader}>{getSecondaryOptions(sort, data)}</Text>
         </View>
-        <Text style={{...listStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
+        <Text style={{...listItemStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>
       </View>
     </Swipeable>
   </Pressable>
 }
-
-const listStyle = StyleSheet.create({
-  searchView: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    alignItems: "center",
-    height: 50
-  },
-  searchTextInput: {
-    flex: 1,
-    color: COLOR.text,
-    paddingHorizontal: 20,
-    fontSize: 16
-  },
-  listView: {
-    width: "100%",
-  },
-  listItemView: {
-    backgroundColor: COLOR.bgSecond,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    marginHorizontal: 10,
-    borderRadius: 10,
-    marginVertical: 5
-  },
-  headerGroup: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingRight: 10
-  },
-  listItemAddress: {
-    color: COLOR.text,
-    textTransform: "uppercase",
-    fontSize: 18,
-    fontWeight: "500"
-  },
-  secondaryHeader: {
-    color: COLOR.textSecond,
-    fontSize: 16,
-  },
-  listItemText: {
-    color: COLOR.textSecond,
-    fontSize: 16
-  },
-  swipeableAnimatedView:{
-    justifyContent: "center",
-    height: "100%"
-  }
-});

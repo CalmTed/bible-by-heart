@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { storageName, globalStyle, SCREEN} from "../constants"
+import { storageName, SCREEN} from "../constants"
 import { AppStateModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { createT } from "../l10n"
@@ -8,12 +8,13 @@ import { Button } from "../components/Button"
 import storage from "../storage"
 import { FinishCupSVG } from "../svg/finishCup"
 import { ScreenModel } from "./homeScreen"
+import { getTheme } from "../tools/getTheme"
 
 
 export const FinishScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
   const [state, setState] = useState(oldState);
-  const t = createT(state.langCode);
+  const t = createT(state.settings.langCode);
   useEffect(() => {
     setState(oldState);
   }, [JSON.stringify(oldState)]);
@@ -25,14 +26,15 @@ export const FinishScreen: FC<ScreenModel> = ({route, navigation}) => {
     }).then((e) => {
     })
   }, [JSON.stringify(state)]);
-
-  return <View style={{...globalStyle.screen,...globalStyle.view, ...finishStyle.screen}}>
+  const theme = getTheme(state.settings.theme)
+  return <View style={{...theme.theme.screen,...theme.theme.view, ...finishStyle.screen}}>
     <View style={finishStyle.logoView}>
       <FinishCupSVG/>
-      <Text style={finishStyle.titleText}>{t("titleWelldone")}</Text>
+      <Text style={{...finishStyle.titleText,...theme.theme.text}}>{t("titleWelldone")}</Text>
     </View>
     <View style={finishStyle.buttonView}>
       <Button
+        theme={theme}
         type="main"
         title={t("Continue")}
         onPress={() => navigateWithState({navigation, screen: SCREEN.home, state: state})} 
@@ -52,7 +54,6 @@ const finishStyle = StyleSheet.create({
     flex: 4
   },
   titleText: {
-    ...globalStyle.text,
     fontSize: 35,
     fontWeight: "700",
     textTransform: "uppercase"

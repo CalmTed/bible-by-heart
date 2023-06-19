@@ -1,10 +1,12 @@
 import { FC, ReactElement } from "react"
 import { StyleSheet, Text, View, Pressable } from "react-native"
-import { COLOR } from "../constants"
 import { LinearGradient } from "expo-linear-gradient"
 import { Icon, IconName } from "./Icon"
+import { ThemeAndColorsModel, getTheme } from "src/tools/getTheme"
+
 
 interface ButtonModel {
+  theme: ThemeAndColorsModel
   onPress: () => void
   style?: StyleSheet.NamedStyles<{}>
   textStyle?: StyleSheet.NamedStyles<{}>
@@ -12,19 +14,20 @@ interface ButtonModel {
   disabled?: boolean
   type?: "main" | "outline" | "secondary" | "transparent"
   icon?: IconName
+  iconColor?: string
   color?: "green" | "red" | "gray"
 }
 
-export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disabled, type = "transparent", icon, color = "gray"}) => {
-  const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [COLOR.bgSecond, COLOR.bgSecond] : color === "green" ? [COLOR.gradient1, COLOR.gradient2] : [COLOR.redGradient1, COLOR.redGradient2]
-  const textColor = type === "transparent" ? color === "red" ? COLOR.textDanger : color === "gray" ? COLOR.text : COLOR.mainColor : COLOR.text;
+export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disabled, type = "transparent", icon, color = "gray", theme, iconColor}) => {
+  const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [theme.colors.bgSecond, theme.colors.bgSecond] : color === "green" ? [theme.colors.gradient1, theme.colors.gradient2] : [theme.colors.redGradient1, theme.colors.redGradient2]
+  const textColor = type === "transparent" ? color === "red" ? theme.colors.textDanger : color === "gray" ? theme.colors.text : theme.colors.mainColor : theme.colors.text;
   return   <View style={{...buttonStyles.touch}}>
   <Pressable
     style={{...buttonStyles.touch , opacity: disabled ? 0.5 : 1}}
     onPress={onPress}
     disabled={disabled}
     android_ripple={{
-      color: COLOR.bgBackdrop,
+      color: theme.colors.bgBackdrop,
       foreground: true
     }}
   >
@@ -42,11 +45,11 @@ export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disab
         >
           <View style={{
             ...buttonStyles.inner,
-            ...(!["main", "transparent"].includes(type) ? buttonStyles.innerShown : buttonStyles.innerHidden),
+            ...(!["main", "transparent"].includes(type) ? {backgroundColor: theme.colors.bgSecond} : buttonStyles.innerHidden),
             ...style
             }}>
-            {icon && <Icon iconName={icon}/>}
-            {title && <Text style={{...buttonStyles.buttonText, ...textStyle, color: textColor}}>{title}</Text>}
+            {icon && <Icon iconName={icon} color={iconColor || theme.colors.text}/>}
+            {title && <Text style={{...buttonStyles.buttonText, ...textStyle, ...{color: theme.colors.text}, color: textColor}}>{title}</Text>}
           </View>
         </LinearGradient>
       }
@@ -57,13 +60,14 @@ export const Button: FC<ButtonModel> = ({title, style, textStyle, onPress, disab
 interface IconButtonModel{
   icon: IconName
   onPress: () => void
+  theme: ThemeAndColorsModel
   style?: StyleSheet.NamedStyles<{}>
   disabled?: boolean
-  color?: "green" | "red" | "gray"
+  color?: string
 }
 
-export const IconButton: FC<IconButtonModel> = ({icon, onPress, style, disabled, color}) => {
-  return <Button icon={icon} onPress={onPress} style={{...buttonStyles.iconButton, ...style}} disabled={disabled} color={color}/>
+export const IconButton: FC<IconButtonModel> = ({theme, icon, onPress, style, disabled, color}) => {
+  return <Button theme={theme} icon={icon} onPress={onPress} style={{...buttonStyles.iconButton, ...style}} disabled={disabled} iconColor={color}/>
 }
 
 const buttonStyles = StyleSheet.create({
@@ -96,14 +100,10 @@ const buttonStyles = StyleSheet.create({
     paddingRight: 28,
     paddingVertical: 14,
   },
-  innerShown: {
-    backgroundColor: COLOR.bgSecond,
-  },
   innerHidden: {
     backgroundColor: "transparent"
   },
   buttonText: {
-    color: COLOR.text,
     textTransform: "uppercase",
     fontSize: 18,
     fontWeight: "500",

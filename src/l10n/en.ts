@@ -1,4 +1,4 @@
-import { SORTING_OPTION } from "../constants";
+import { SORTING_OPTION, THEME_TYPE } from "../constants";
 
 export const en = {
   name: "English",
@@ -8,13 +8,6 @@ export const en = {
   homePractice: "Practice",
   homeList: "List",
   homeSettings: "Settings",
-  settingsChangeLang: "Change Language",
-  settingsExport: "Export passages",
-  settingsImport: "Import passages",
-  settingsToggleDevMode: "Dev mode",
-  settingsClearHistory: "Clear history",
-  settingsClearPassages: "Clear passages",
-  settingsClearData: "Reset all data",
   Archive: "Archive",
   Unrchive: "Unrchive",
   Archived: "Archived",
@@ -38,6 +31,10 @@ export const en = {
   [SORTING_OPTION.maxLevel]: "Max level", 
   [SORTING_OPTION.oldestToTrain]: "Oldest to train", 
   [SORTING_OPTION.resentlyCreated]: "Recently created", 
+
+  [THEME_TYPE.auto]: "System default",
+  [THEME_TYPE.dark]: "Dark",
+  [THEME_TYPE.light]: "Light",
   //titles
   listScreenTitle: "Passages list",
   APSelectBook: "Select book",
@@ -72,6 +69,16 @@ export const en = {
   DaysStroke: "Days stroke",
   NoTagsFound: "Add tags to passages to add them here",
   Tags: "Tags",
+  //settings lables, headers and subtexts
+  settsLabelMain: "Main",
+  settsChangeTheme: "Change color theme",
+  settsChangeLang: "Change Language",
+  settingsExport: "Export passages",
+  settingsImport: "Import passages",
+  settingsToggleDevMode: "Dev mode",
+  settingsClearHistory: "Clear history",
+  settingsClearPassages: "Clear passages",
+  settingsClearData: "Reset all data",
 
   dayMO: "Mo",
   dayTU: "Tu",

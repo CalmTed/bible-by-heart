@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { storageName, globalStyle, TEST_LEVEL, COLOR, PASSAGE_LEVEL, archivedName } from "../constants"
+import { storageName, TEST_LEVEL, PASSAGE_LEVEL, archivedName } from "../constants"
 import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -19,13 +19,14 @@ import { L30 } from "../components/levels/l3"
 import { LevelPicker } from "../components/LevelPicker"
 import { L40 } from "../components/levels/l4"
 import { L50 } from "../components/levels/l5"
+import { getTheme } from "../tools/getTheme"
 
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
   const [state, setState] = useState(oldState);
   const nextUnfinishedTestIndex = state.testsActive.indexOf(state.testsActive.filter(t => !t.dateFinished)[0])
   const [activeTestIndex, setActiveTest] = useState(nextUnfinishedTestIndex !== -1 ? nextUnfinishedTestIndex : 0)
-  const t = createT(state.langCode);
+  const t = createT(state.settings.langCode);
   useEffect(() => {//updating state on component mounting
     if(oldState.lastChange > state.lastChange){
       setState(oldState);
@@ -111,21 +112,50 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
     });
   }
 
-  if(!state.passages.length){
-    return <View style={{...globalStyle.screen}}>
-      <Header navigation={navigation} showBackButton={true} alignChildren="flex-start"/>
+  const theme = getTheme(state.settings.theme)
+
+  const testsStyle = StyleSheet.create({
+
+    viewHidden: {
+      display: "none"
+    },
+    testNav: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      flex: 1,
+      height: "100%",
+      overflow: "scroll"
+    },
+    centeredView: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 30
+    },
+    subText: {
+      color: theme.colors.text,
+      fontSize: 20,
+      textAlign: "center",
+      marginHorizontal: 20
+    },
+  });
+
+  if(!state.passages.filter(passage => !passage.tags.includes(archivedName)).length){
+    return <View style={{...theme.theme.screen}}>
+      <Header theme={theme} navigation={navigation} showBackButton={true} alignChildren="flex-start"/>
       <View style={testsStyle.centeredView}>
         <Text style={testsStyle.subText}>
           {t("TestsAddPassagesToTest")}
         </Text>
-        <Button type="main" title={t("AddPassages")} onPress={() => navigateWithState({screen: SCREEN.listPassage, state, navigation})}/>
+        <Button theme={theme} type="main" title={t("AddPassages")} onPress={() => navigateWithState({screen: SCREEN.listPassage, state, navigation})}/>
       </View>
     </View>
   }
   //if no active tests > create them
   if(!state.testsActive.length){
     activateTests();
-    return <View style={{...globalStyle.screen}}></View>
+    return <View style={{...theme.theme.screen}}></View>
   }
   const activeTestObj = {
     ...state.testsActive[activeTestIndex],
@@ -134,15 +164,15 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const targetPassage = state.passages.find(p => p.id === activeTestObj.passageId) as PassageModel
   if(!targetPassage){//if passages from old tests left in state
     activateTests();
-    return <View style={{...globalStyle.screen}}></View>
+    return <View style={{...theme.theme.screen}}></View>
   }
-  return <View style={{...globalStyle.screen}}>
+  return <View style={{...theme.theme.screen}}>
     <View style={{
-      ...globalStyle.view,
+      ...theme.theme.view,
       ...!state.testsActive.filter(t => !t.dateFinished).length ? testsStyle.viewHidden : {}
       }}>
-      <Header navigation={navigation} showBackButton={false} alignChildren="flex-start" additionalChildren={[
-        <IconButton icon={IconName.cross} onPress={exitTests} />,
+      <Header theme={theme} navigation={navigation} showBackButton={false} alignChildren="flex-start" additionalChildren={[
+        <IconButton theme={theme} icon={IconName.cross} onPress={exitTests} />,
         <View style={{...testsStyle.testNav}}>
           {state.testsActive.map((t, i) => {
             const isFinished = !!state.testsActive[i].dateFinished
@@ -160,6 +190,7 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
                   "text" :
                   "gray";
             return <TestNavDott
+              theme={theme}
               key={t.id}
               isCurrent={activeTestIndex === i}
               color={color}
@@ -184,35 +215,8 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
       { activeTestObj?.level === TEST_LEVEL.l30 && <L30 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TEST_LEVEL.l40 && <L40 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
       { activeTestObj?.level === TEST_LEVEL.l50 && <L50 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { state.devMode && <Button type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
+      { state.settings.devMode && <Button theme={theme} type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
     </View>
   </View>
 }
-
-const testsStyle = StyleSheet.create({
-
-  viewHidden: {
-    display: "none"
-  },
-  testNav: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
-    height: "100%",
-    overflow: "scroll"
-  },
-  centeredView: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 30
-  },
-  subText: {
-    color: COLOR.text,
-    fontSize: 20,
-    textAlign: "center",
-    marginHorizontal: 20
-  },
-});
 

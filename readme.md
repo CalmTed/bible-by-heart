@@ -41,17 +41,28 @@ Roadmap
   - [x] stroke counter
   - [x] weekly progress
 - [ ] settings v0.0.7
-  - [+] level 3 fix(sort,skip button, save right words)
-  - [+] show wrong answer (l1, l2, l4, l5)
+  - [x] level 3 fix(sort,skip button, save right words)
+  - [x] show wrong answer (l1, l2, l4, l5)
+  - [x] state converter from v0.0.6 to v0.0.7
   - [ ] settings layout (app/user settings)
-  - [ ] app settings: language, reminders(enabled, auto, same time, list), theme, haptic, about, legal, feedback, devmode, train modes, compress old stats(>3month), leftSwipeTag
-  - [ ] user settings:  translations array(and default one), name, email, timezone, sessions, request data removal, remove local data
+    - [x] components: top user data
+    - [x] settings menu item
+      - [ ] checkbox
+      - [x] select
+      - [ ] open modal
+      - [ ] text input
+    - [ ] settings modal
+      - [ ] menu list 
+      - [ ] just text
+      - [ ] items list
+  - [ ] app settings: - [x] language, - [ ] reminders(enabled, auto, same time, list), - [x] theme, - [ ] haptic, - [ ]  about, - [ ] legal, - [ ] feedback, - [ ] devmode, - [ ] train modes, - [ ] compress old stats(>3month), - [ ] leftSwipeTag
+  - [ ] user settings:  - [ ] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), - [ ] request data removal, - [ ] remove local data
+  - [ ] edit passage translation (custom with autocomplete from other passages data)
+  - [ ] filter by translation (if there are several different)
   - [ ] adding passages from prepared list in the most popular translations(ESV,UBT)
     - [ ] copyright page in settings
     - [ ] limit length to 500 verses per passage
-  - [ ] edit passage translation (custom with autocomplete from other passages data)
-  - [ ] filter by translation (if there are several different)
-  - [ ] state converter from v0.0.6
+  - [ ] delete tests history after deleting passage 
 - [ ] customizable daily reminder, more stats v0.0.8
   - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
   - [ ] export to csv, import from share(parse), or from other data types
@@ -66,9 +77,10 @@ Roadmap
       - [ ] relative progress is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
       - different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
-  - [ ] feedback form for authorirized users
-  - [ ] change data safety settings and privacy pilicy
+  - [ ] feedback form for authorirized users or telegram bot
+  - [ ] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0
+  - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
   - [ ] about page and donate button
 

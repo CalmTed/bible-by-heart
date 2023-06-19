@@ -5,7 +5,7 @@
         "version": "0.0.6",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
-        "userInterfaceStyle": "light",
+        "userInterfaceStyle": "automatic",
         "primaryColor": "#1A9E37",
         "backgroundColor": "#272A27",
         "splash": {

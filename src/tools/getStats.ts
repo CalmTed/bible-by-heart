@@ -1,3 +1,4 @@
+import { getCalendars, getLocales } from "expo-localization"
 import { getVersesNumber } from "../initials"
 import { PassageModel, TestModel } from "../models"
 import addZero from "./addZero"
@@ -47,7 +48,8 @@ const daysLabels = [
 
 export const getWeeklyStats: (passages: PassageModel[], testHistory: TestModel[]) => weeklyStatsModel = (passages, testHistory) => {
   const d = new Date()
-  const todayWeekDay = d.getUTCDay() - 1
+  const day = new Date().getDay()
+  const todayWeekDay = !!day ? day - 1 : 6;//[0-6], 6 is sunday
   const weekStats = new Array(7).fill(0).map((v,i) => {
     const selectedDay =  new Date(
         (d.getTime() - (dayInMs * (todayWeekDay - i)))

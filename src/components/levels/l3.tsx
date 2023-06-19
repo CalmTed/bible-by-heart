@@ -1,11 +1,11 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Pressable, Vibration } from "react-native"
-import { COLOR } from "../../constants";
+import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native"
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
+import { getTheme } from "../../tools/getTheme";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -15,7 +15,6 @@ const levelComponentStyle = StyleSheet.create({
   passageTextView: {
     maxHeight: "30%",
     height: "auto",
-    backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
     margin: 10,
     paddingHorizontal: 10,
@@ -35,14 +34,6 @@ const levelComponentStyle = StyleSheet.create({
     marginHorizontal: 2,
     margin: 4,
     borderBottomWidth: 2,
-    borderBottomColor: COLOR.text,
-  },
-  nextUnselected:{
-    borderBottomColor: COLOR.mainColor,
-  },
-  wordText:{
-    color: COLOR.text,
-    fontSize: 18
   },
   hiddenWordText: {
     color: "transparent"
@@ -159,18 +150,19 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     .sort((a,b) => a - b)
     .filter(mw => !selectedWords.includes(mw))[0];
   const unselectedWords = missingWords.filter((mwi,i) => !selectedWords.includes(mwi));
+  const theme = getTheme(state.settings.theme);
   return <View style={levelComponentStyle.levelComponentView}>
-    <ScrollView style={levelComponentStyle.passageTextView}>
+    <ScrollView style={{...levelComponentStyle.passageTextView, backgroundColor: theme.colors.bgSecond}}>
       <View style={levelComponentStyle.passageText}>
         {words.map((w,i) => {
           return <View key={`${w}${i}`}
             style={{
-              ...missingWords.includes(i) ? levelComponentStyle.variableWord : levelComponentStyle.fixedWord,
-              ...!levelFinished && nextUnselectedIndex === i ? levelComponentStyle.nextUnselected : {}
+              ...missingWords.includes(i) ? {...levelComponentStyle.variableWord, borderBottomColor: theme.colors.text} : levelComponentStyle.fixedWord,
+              ...!levelFinished && nextUnselectedIndex === i ? {borderBottomColor: theme.colors.mainColor} : {}
             }}
           >
             <Text style={{
-                ...levelComponentStyle.wordText,
+                ...{color: theme.colors.text, fontSize: 18},
                 ...levelFinished || selectedWords.includes(i) || !missingWords.includes(i) ? {} : levelComponentStyle.hiddenWordText
               }}
               >{w}</Text>
@@ -190,6 +182,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           unselectedWords
           .map((mwi,i) => {
             return <Button
+              theme={theme}
               type="outline"
               key={`${words[mwi]}-${mwi}`}
               title={words[mwi]}
@@ -207,6 +200,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           .filter((mwi,i) => mwi === nextUnselectedIndex || mwi === errorIndex)
           .map((mwi,i) => {
             return <Button
+              theme={theme}
               type="main"
               key={`${mwi}-${i}`}
               title={words[mwi]}
@@ -217,6 +211,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             />
           }),
           <Button 
+            theme={theme}
             key="nextButton"
             type="outline"
             color="green"
@@ -233,6 +228,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       !unselectedWords.length && !errorIndex && !wrongAddress && 
       <View style={levelComponentStyle.optionButtonsWrapper}>
         <Button
+          theme={theme}
           type="outline"
           color="green"
           title={selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
@@ -240,13 +236,14 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           disabled={levelFinished}
         />
         <Button
+          theme={theme}
           type="main"
           color="green"
           title={t("Submit")}
           onPress={() => selectedAddress ? handleAdressCheck(selectedAddress) : null}
           disabled={!selectedAddress || levelFinished}
         />
-      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+      <AddressPicker  theme={theme} visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
       </View>
     }
     {/* if no missing words but wrong address */}
@@ -254,6 +251,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       !unselectedWords.length && !errorIndex && wrongAddress && 
       <View style={levelComponentStyle.optionButtonsWrapper}>
         <Button
+          theme={theme}
           type="outline"
           color="green"
           title={addressToString(targetPassage.address, t)}
@@ -261,6 +259,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           disabled={levelFinished}
         />
         <Button
+          theme={theme}
           type="outline"
           color="red"
           title={selectedAddress ? addressToString(selectedAddress, t) : ""}
@@ -268,13 +267,14 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           disabled={levelFinished}
         />
         <Button
+          theme={theme}
           type="main"
           color="green"
           title={t("ButtonContinue")}
           onPress={() => handleErrorSubmit(wrongAddress)}
           disabled={levelFinished}
         />
-      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+      <AddressPicker  theme={theme} visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
     </View>
     }
 

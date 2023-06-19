@@ -1,12 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { COLOR, MAX_L50_TRIES } from "../../constants";
+import { View, Text, StyleSheet } from "react-native"
+import { MAX_L50_TRIES } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
+import { getTheme } from "../../tools/getTheme";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -23,7 +24,6 @@ const levelComponentStyle = StyleSheet.create({
     textTransform: "uppercase",
     fontWeight: "500",
     textAlign: "center",
-    color: COLOR.text
   },
   passageTextView: {
     padding: 10,
@@ -34,7 +34,6 @@ const levelComponentStyle = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     padding: 10,
-    color: COLOR.text,
     fontSize: 18,
     fontWeight: "500",
     textAlign: "center"
@@ -50,7 +49,6 @@ const levelComponentStyle = StyleSheet.create({
     alignItems: "flex-start",
   },
   inputSubtext: {
-    color: COLOR.textDanger,
     textAlign: "center",
     fontSize: 12,
   }
@@ -175,22 +173,24 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   }
 
   const levelFinished = !!test.dateFinished;
-  const isAddressProvided = test.testData.showAddressOrFirstWords
+  const isAddressProvided = test.testData.showAddressOrFirstWords;
+  const theme = getTheme(state.settings.theme);
   return <View style={levelComponentStyle.levelComponentView}>
     <View style={levelComponentStyle.addressTextView}>
       {isAddressProvided &&
-        <Text style={levelComponentStyle.addressText}>{addressToString(targetPassage.address, t)}</Text>
+        <Text style={{...levelComponentStyle.addressText, color: theme.colors.text}}>{addressToString(targetPassage.address, t)}</Text>
       }
       {!isAddressProvided &&
-        <Text style={levelComponentStyle.passageText}>{t("FinishPassageL5")}</Text>
+        <Text style={{...levelComponentStyle.passageText, color: theme.colors.text}}>{t("FinishPassageL5")}</Text>
       }
       {
         !!aucompleteWarn &&
-        <Text style={levelComponentStyle.inputSubtext}>{t("LevelL50Warning")}</Text>
+        <Text style={{...levelComponentStyle.inputSubtext, color: theme.colors.textDanger}}>{t("LevelL50Warning")}</Text>
       }
     </View>
     <View style={levelComponentStyle.passageTextView}>
       <Input
+        theme={theme}
         multiline
         disabled={levelFinished || !!wrongAddress}
         value={passageText}
@@ -208,6 +208,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       {
         !isCorrect &&
         <Button
+          theme={theme}
           type="main"
           color="green"
           title={`${t("CheckText")} (${tries}/${MAX_L50_TRIES})`}
@@ -219,6 +220,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       {
         isCorrect && isAddressProvided &&
         <Button
+          theme={theme}
           type="main"
           color="green"
           title={t("Submit")}
@@ -231,6 +233,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         isCorrect && !isAddressProvided && !wrongAddress &&
         [
           <Button
+            theme={theme}
             key="addresPicker"
             type="outline"
             color="green"
@@ -239,6 +242,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             disabled={levelFinished}
           />,
           <Button
+            theme={theme}
             key="submitButton"
             type="main"
             color="green"
@@ -251,6 +255,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       {
         isCorrect && !isAddressProvided && selectedAddress && wrongAddress && [
           <Button
+            theme={theme}
             key="rightAnswer"
             type="outline"
             color="green"
@@ -259,6 +264,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             disabled={levelFinished}
           />,
           <Button
+            theme={theme}
             key="wrongAnswer"
             type="outline"
             color="red"
@@ -267,6 +273,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             disabled={levelFinished}
           />,
           <Button
+            theme={theme}
             key="nextTest"
             type="main"
             color="green"
@@ -277,6 +284,6 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         ]
       }
     </View>
-    <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+    <AddressPicker theme={theme} visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
   </View>
 }

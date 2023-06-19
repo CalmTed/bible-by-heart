@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react"
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
-import { COLOR, PASSAGE_LEVEL, archivedName, globalStyle } from "../constants"
-import { AddressType, PassageModel } from "../models"
+import { PASSAGE_LEVEL, archivedName } from "../constants"
+import { AddressType, AppStateModel, PassageModel } from "../models"
 import { Button, IconButton } from "./Button"
 import { IconName } from "./Icon"
 import { WORD } from "../l10n"
@@ -11,6 +11,7 @@ import timeToString from "../tools/timeToString"
 import { getVersesNumber } from "../initials"
 import { AddressPicker } from "./AddressPicker"
 import { LevelPicker } from "./LevelPicker"
+import { ThemeAndColorsModel, getTheme } from "../tools/getTheme"
 
 interface PassageEditorModel{
   visible: boolean
@@ -19,9 +20,10 @@ interface PassageEditorModel{
   onConfirm: (passage: PassageModel) => void
   onRemove: (arg: number) => void
   t: (w: WORD) => string
+  state: AppStateModel
 }
 
-export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCancel, onConfirm, onRemove, t}) => {
+export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCancel, onConfirm, onRemove, t, state}) => {
   const [isAPVisible, setAPVisible] = useState(false)
   const [tempPassage, setPassage] = useState(passage);
 
@@ -38,7 +40,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
   }
   const handleTextChange = (newVal: string) => {
     setPassage(prv => {
-      return {...prv, verseText: newVal}
+      return {...prv, verseText: newVal.trim()}
     })
   }
   const handleRemove = (id: number) => {
@@ -80,11 +82,100 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       return {...prv, selectedLevel: level}
     })
   }
+  const theme = getTheme(state.settings.theme);
+  const PEstyle = StyleSheet.create({
+    //top
+    headerView:{
+      height: 60,
+      alignContent: "center",
+      width: "100%",
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    headerTitle: {
+      flex: 1,
+      color: theme.colors.text,
+      fontSize: 18,
+      textTransform: "uppercase",
+      fontWeight: "500",
+      paddingHorizontal: 10
+    },
+    headerBotton: {
+      height: "100%",
+      aspectRatio: 1,
+    },
+    listView: {
+      backgroundColor: theme.colors.bg,
+      height: "93%",
+      width: "100%",
+      flexDirection: "row",
+      flexWrap: "wrap",
+      alignContent: "stretch",
+      justifyContent: "space-evenly"
+    },
+    bodyTop: {
+      width: "100%",
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+      flexDirection: "row",
+      height: 60,
+      justifyContent: "space-between",
+      alignItem: "center"
+    },
+    //address
+    bodyTopAddress: {
+      color: theme.colors.text,
+      textTransform: "uppercase",
+      fontSize: 20,
+      fontWeight: "500",
+      alignItems: "flex-start",
+      marginLeft: 5
+    },
+    //text
+    bodyText: {
+      marginHorizontal: 20,
+      marginVertical: 0
+    },
+    bodyTextInput: {
+      backgroundColor: theme.colors.bgSecond,
+      paddingHorizontal: 10,
+      paddingVertical: 10,
+      color: theme.colors.text,
+      fontSize: 16,
+      borderRadius: 10,
+      textAlignVertical:"top"
+    },
+    //meta
+    tagItemListBlock: {
+      padding: 5,
+      marginHorizontal: 15
+    },
+    tagItemList: {
+      flexDirection: "row",
+      flexWrap: "wrap"
+    },
+    tagListInput: {
+      color: theme.colors.text,
+      
+    },
+    bodyMeta: {
+      padding: 20,
+      paddingVertical: 10,
+      width: "100%",
+    },
+    bodyMetaText: {
+      color: theme.colors.textSecond
+    },
+    bodyButtons: {
+      width: "100%",
+      flexDirection: "row"
+    }
+  });
   return <Modal visible={visible}>
-    <View style={PEstyle.headerView}>
-      <IconButton  style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
+    <View style={{ ...theme.theme.view,...PEstyle.headerView}}>
+      <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
       <Text style={PEstyle.headerTitle}>{ t("EditPassageTitle") }</Text>
-      <IconButton  style={PEstyle.headerBotton} icon={IconName.done} onPress={handleConfirm} />
+      <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.done} onPress={handleConfirm} />
     </View>
 
     <View style={PEstyle.listView}>
@@ -106,9 +197,9 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
         <View style={PEstyle.tagItemListBlock}>
           
           <View style={PEstyle.tagItemList}>
-            {tempPassage.tags.map(p => <TagItem key={p} title={p === archivedName ? t("Archived") : p.slice(0,20)} onRemove={() => handleTagRemove(p)}/>)}
+            {tempPassage.tags.map(p => <TagItem key={p}  theme={theme} title={p === archivedName ? t("Archived") : p.slice(0,20)} onRemove={() => handleTagRemove(p)}/>)}
           </View>
-          <TextInput placeholderTextColor={COLOR.textSecond} style={PEstyle.tagListInput} placeholder={t("AddTag")} maxLength={15} onSubmitEditing={newVal => handleTagAdd(newVal.nativeEvent.text.trim())}></TextInput>
+          <TextInput placeholderTextColor={theme.colors.textSecond} style={PEstyle.tagListInput} placeholder={t("AddTag")} maxLength={15} onSubmitEditing={newVal => handleTagAdd(newVal.nativeEvent.text.trim())}></TextInput>
         </View>
         <View style={PEstyle.bodyMeta}>
           <Text style={PEstyle.bodyMetaText}>{t("DateCreated")}: {timeToString(tempPassage.dateCreated)}</Text>
@@ -120,124 +211,37 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
           targetPassage={tempPassage}
           handleChange={handleLevelChange}
           handleOpen={handleLevelPickerOpen}
+          state={state}
         />
         <View style={PEstyle.bodyButtons}>
-          <Button title={tempPassage.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={() => handleTagAdd(archivedName)}/>
-          <Button title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
+          <Button theme={theme} title={tempPassage.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={() => handleTagAdd(archivedName)}/>
+          <Button theme={theme} title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
         </View>
       </ScrollView>
     </View>
-    <AddressPicker visible={isAPVisible} address={tempPassage.address} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
+    <AddressPicker theme={theme} visible={isAPVisible} address={tempPassage.address} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
   </Modal>
 }
 
-const TagItem: FC<{title: string, onRemove: () => void}> = ({title, onRemove}) => {
-  return <View style={PEstyle.tagItemView}>
-    <Text  style={PEstyle.tagItemText}>{title}</Text>
-    <IconButton icon={IconName.cross} onPress={onRemove}/>
+const TagItem: FC<{title: string, onRemove: () => void, theme: ThemeAndColorsModel}> = ({title, onRemove, theme}) => {
+  const tagItemStyles = StyleSheet.create({
+    tagItemView: {
+      borderRadius: 50,
+      paddingLeft: 15,
+      margin: 3,
+      flexDirection: "row",
+      height: 40,
+      alignItems: "center",
+      borderColor: theme.colors.mainColor,
+      borderWidth: 2,
+    },
+    tagItemText: {
+      color: theme.colors.text,
+      fontSize: 16
+    }
+  })
+  return <View style={tagItemStyles.tagItemView}>
+    <Text  style={tagItemStyles.tagItemText}>{title}</Text>
+    <IconButton theme={theme} icon={IconName.cross} onPress={onRemove}/>
   </View>
 }
-
-const PEstyle = StyleSheet.create({
-  //top
-  headerView:{
-    ...globalStyle.view,
-    height: 60,
-    alignContent: "center",
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  headerTitle: {
-    flex: 1,
-    color: COLOR.text,
-    fontSize: 18,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    paddingHorizontal: 10
-  },
-  headerBotton: {
-    height: "100%",
-    aspectRatio: 1,
-  },
-  listView: {
-    backgroundColor: COLOR.bg,
-    height: "93%",
-    width: "100%",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignContent: "stretch",
-    justifyContent: "space-evenly"
-  },
-  bodyTop: {
-    width: "100%",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    flexDirection: "row",
-    height: 60,
-    justifyContent: "space-between",
-    alignItem: "center"
-  },
-  //address
-  bodyTopAddress: {
-    color: COLOR.text,
-    textTransform: "uppercase",
-    fontSize: 20,
-    fontWeight: "500",
-    alignItems: "flex-start",
-    marginLeft: 5
-  },
-  //text
-  bodyText: {
-    marginHorizontal: 20,
-    marginVertical: 0
-  },
-  bodyTextInput: {
-    backgroundColor: COLOR.bgSecond,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    color: COLOR.text,
-    fontSize: 16,
-    borderRadius: 10,
-    textAlignVertical:"top"
-  },
-  //meta
-  tagItemListBlock: {
-    padding: 5,
-    marginHorizontal: 15
-  },
-  tagItemList: {
-    flexDirection: "row",
-    flexWrap: "wrap"
-  },
-  tagItemView: {
-    borderRadius: 50,
-    paddingLeft: 15,
-    margin: 3,
-    flexDirection: "row",
-    height: 40,
-    alignItems: "center",
-    borderColor: COLOR.mainColor,
-    borderWidth: 2,
-  },
-  tagItemText: {
-    color: COLOR.text,
-    fontSize: 16
-  },
-  tagListInput: {
-    color: COLOR.text,
-    
-  },
-  bodyMeta: {
-    padding: 20,
-    paddingVertical: 10,
-    width: "100%",
-  },
-  bodyMetaText: {
-    color: COLOR.textSecond
-  },
-  bodyButtons: {
-    width: "100%",
-    flexDirection: "row"
-  }
-});

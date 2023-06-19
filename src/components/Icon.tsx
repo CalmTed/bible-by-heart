@@ -28,7 +28,7 @@ const IconData = {
   [IconName.sort]: iconSort
 }
 
-export const Icon: FC<{iconName: IconName, color?: string}> = ({iconName, color}) => {
-
-  return <SvgXml xml={IconData[iconName]} width="18" height="18" stroke={color}/>;
+export const Icon: FC<{iconName: IconName, color?: string}> = ({iconName, color = "#ECECEC"}) => {
+  
+  return <SvgXml xml={IconData[iconName].replace(/#ECECEC/gi, color)} width="18" height="18" stroke={color}/>;
 }

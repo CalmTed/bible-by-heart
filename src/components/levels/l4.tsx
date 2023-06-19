@@ -1,13 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { COLOR } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../tools/getSimularity";
+import { getTheme } from "../../tools/getTheme";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -24,8 +24,7 @@ const levelComponentStyle = StyleSheet.create({
     fontSize: 22,
     textTransform: "uppercase",
     fontWeight: "500",
-    textAlign: "center",
-    color: COLOR.text
+    textAlign: "center"
   },
   passageTextView: {
     maxHeight: "30%",
@@ -40,16 +39,8 @@ const levelComponentStyle = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     padding: 10,
-    color: COLOR.text,
     fontSize: 18,
     fontWeight: "500"
-  },
-  wordText:{
-    color: COLOR.text,
-    fontSize: 18
-  },
-  hiddenWordText: {
-    color: "transparent"
   },
   optionButtonsScrollWrapper:{
     flex: 1,
@@ -65,7 +56,6 @@ const levelComponentStyle = StyleSheet.create({
     paddingVertical: 10
   },
   inputSubtext: {
-    color: COLOR.textSecond,
     textAlign: "center",
     fontSize: 12,
   }
@@ -166,20 +156,22 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
    targetPassage.verseText === passageText
 
   const levelFinished = !!test.dateFinished;
-  const isAddressProvided = test.testData.showAddressOrFirstWords
+  const isAddressProvided = test.testData.showAddressOrFirstWords;
+  const theme = getTheme(state.settings.theme);
   return <View style={levelComponentStyle.levelComponentView}>
     <View style={levelComponentStyle.addressTextView}>
       {isAddressProvided &&
-        <Text style={levelComponentStyle.addressText}>{addressToString(targetPassage.address, t)}</Text>
+        <Text style={{...levelComponentStyle.addressText, color: theme.colors.text}}>{addressToString(targetPassage.address, t)}</Text>
       }
       {!isAddressProvided &&
-        <Text style={levelComponentStyle.passageText}>{t("FinishPassage")}</Text>
+        <Text style={{...levelComponentStyle.passageText, color: theme.colors.text}}>{t("FinishPassage")}</Text>
       }
       </View>
     <ScrollView style={{
       ...levelComponentStyle.passageTextView,
     }}>
       <Input
+        theme={theme}
         multiline
         disabled={levelFinished}
         value={passageText}
@@ -191,7 +183,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       />
       {
         !!wordOptions.length &&
-        <Text style={levelComponentStyle.inputSubtext}>{t("LevelL40Hint")}</Text>
+        <Text style={{...levelComponentStyle.inputSubtext, color: theme.colors.textSecond}}>{t("LevelL40Hint")}</Text>
       }
     </ScrollView>
       {passageText.length >= targetPassage.verseText.length && isCorrect && 
@@ -199,6 +191,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           {
           !isAddressProvided && 
           <Button
+            theme={theme}
             type="outline"
             color="green"
             title={selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
@@ -207,6 +200,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           />
           }
           <Button
+            theme={theme}
             type="main"
             color="green"
             title={t("Submit")}
@@ -215,7 +209,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           />
         </View>
       }
-      <AddressPicker visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
+      <AddressPicker theme={theme} visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
     
     <ScrollView style={{...levelComponentStyle.optionButtonsScrollWrapper}}>
       <View style={{...levelComponentStyle.optionButtonsWrapper}}>
@@ -223,6 +217,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         wordOptions
         .map((w,i) => 
         <Button 
+          theme={theme}
           type="outline"
           key={`${w}-${i}`}
           title={w}

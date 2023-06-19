@@ -1,4 +1,4 @@
-import { SORTING_OPTION } from "../constants";
+import { SORTING_OPTION, THEME_TYPE } from "../constants";
 import { en } from "./en";
 
 export const ua: typeof en = {
@@ -9,13 +9,6 @@ export const ua: typeof en = {
   homePractice: "Практика",
   homeList: "Список",
   homeSettings: "Налаштування",
-  settingsChangeLang: "Змінити мову",
-  settingsToggleDevMode: "Режим розробника",
-  settingsExport: "Експортувати вірші",
-  settingsImport: "Імпортувати вірші",
-  settingsClearHistory: "Видалити історію",
-  settingsClearPassages: "Видалити список віршів",
-  settingsClearData: "Видалити всі дані",
   Archive: "Архівувати",
   Unrchive: "Розархівувати",
   Archived: "Архівовано",
@@ -40,6 +33,10 @@ export const ua: typeof en = {
   [SORTING_OPTION.oldestToTrain]: "Треновані найдавніше", 
   [SORTING_OPTION.resentlyCreated]: "Нещодавно додані", 
 
+
+  [THEME_TYPE.auto]: "Системна",
+  [THEME_TYPE.dark]: "Темна",
+  [THEME_TYPE.light]: "Світла",
   //titles
   listScreenTitle: "Список віршів",
   APSelectBook: "Оберіть книгу",
@@ -74,6 +71,17 @@ export const ua: typeof en = {
   DaysStroke: "Днів поспіль",
   NoTagsFound: "Додай категорії текстам, щоби вони відображались тут",
   Tags: "Категорії",
+
+  //settings lables, headers and subtexts
+  settsLabelMain: "Головне",
+  settsChangeTheme: "Змінити кольорову тему",
+  settsChangeLang: "Змінити мову",
+  settingsToggleDevMode: "Режим розробника",
+  settingsExport: "Експортувати вірші",
+  settingsImport: "Імпортувати вірші",
+  settingsClearHistory: "Видалити історію",
+  settingsClearPassages: "Видалити список віршів",
+  settingsClearData: "Видалити всі дані",
 
   dayMO: "Пн",
   dayTU: "Вт",

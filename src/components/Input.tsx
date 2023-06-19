@@ -1,13 +1,14 @@
 import { FC } from "react"
 import { StyleSheet, View, TextInput } from "react-native"
-import { COLOR } from "../constants"
 import { LinearGradient } from "expo-linear-gradient"
 import { Icon, IconName } from "./Icon"
+import { ThemeAndColorsModel } from "src/tools/getTheme"
 
 interface InputModel {
   onChange: (value: string) => void
   onSubmit: (value: string) => void
   placeholder: string
+  theme: ThemeAndColorsModel
   value?: string
   disabled?: boolean
   type?: "main" | "outline" | "secondary" | "transparent"
@@ -26,6 +27,7 @@ interface InputModel {
 export const Input: FC<InputModel> = ({
   value, 
   placeholder, 
+  theme,
   style, 
   onSubmit, 
   onChange, 
@@ -41,7 +43,40 @@ export const Input: FC<InputModel> = ({
   autoComplete,
   textStyle
 }) => {
-  const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [COLOR.bgSecond, COLOR.bgSecond] : color === "green" ? [COLOR.gradient1, COLOR.gradient2] : [COLOR.redGradient1, COLOR.redGradient2]
+  const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [theme.colors.bgSecond, theme.colors.bgSecond] : color === "green" ? [theme.colors.gradient1, theme.colors.gradient2] : [theme.colors.redGradient1, theme.colors.redGradient2]
+  const InputStyles = StyleSheet.create({
+    touch: {
+      flexDirection: "row",
+    },
+    InputStyle: {
+      borderRadius: 22,
+      alignItems: "center",
+      padding: 2,
+      justifyContent: "center",
+    },
+    inner: {
+      borderRadius: 21,
+      justifyContent: "center",
+      alignContent: "center",
+    },
+    innerShown: {
+      backgroundColor: theme.colors.bgSecond,
+    },
+    innerHidden: {
+      backgroundColor: "transparent"
+    },
+    InputText: {
+      color: theme.colors.text,
+      fontSize: 18,
+      paddingHorizontal: 28,
+      paddingVertical: 14,
+      fontWeight: "500"
+    },
+    iconInput:{
+      height: "100%",
+      aspectRatio: 1,
+    }
+  });
   return   <View style={{...InputStyles.touch}}>
   <View style={{...InputStyles.touch , opacity: disabled ? 0.5 : 1}} >
     {
@@ -65,7 +100,7 @@ export const Input: FC<InputModel> = ({
               onSubmitEditing={(e) => onSubmit(e.currentTarget.toString())}
               editable={!disabled}
               selectTextOnFocus={selectTextOnFocus}
-              placeholderTextColor={COLOR.textSecond}
+              placeholderTextColor={theme.colors.textSecond}
               multiline={multiline}
               numberOfLines={numberOfLines}
               autoComplete={autoComplete}
@@ -78,38 +113,3 @@ export const Input: FC<InputModel> = ({
     </View>
   </View>
 }
-
-
-const InputStyles = StyleSheet.create({
-  touch: {
-    flexDirection: "row",
-  },
-  InputStyle: {
-    borderRadius: 22,
-    alignItems: "center",
-    padding: 2,
-    justifyContent: "center",
-  },
-  inner: {
-    borderRadius: 21,
-    justifyContent: "center",
-    alignContent: "center",
-  },
-  innerShown: {
-    backgroundColor: COLOR.bgSecond,
-  },
-  innerHidden: {
-    backgroundColor: "transparent"
-  },
-  InputText: {
-    color: COLOR.text,
-    fontSize: 18,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    fontWeight: "500"
-  },
-  iconInput:{
-    height: "100%",
-    aspectRatio: 1,
-  }
-});

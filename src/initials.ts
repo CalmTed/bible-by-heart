@@ -4,43 +4,61 @@ import {
     API_VERSION,
     LANGCODE,
     PASSAGE_LEVEL,
+    SETTINGS,
     SORTING_OPTION,
     TEST_LEVEL,
+    THEME_TYPE,
     VERSION,
-    archivedName
+    archivedName,
+    defaultTranslations
 } from './constants';
-import { AddressType, AppStateModel, PassageModel, TestModel } from './models';
+import { AddressType, AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, PassageModel, TestModel } from './models';
 
 const genId: () => number = () => {
     return Math.round(Math.random() * 1000000000);
 };
 
-export const createAppState: () => AppStateModel = () => {
+export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
     const phoneLangCode = getLocales()[0].languageCode;
     const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
     return {
         version: VERSION,
         lastChange: 0,
-        langCode: langCode,
         dateSyncTry: 0,
         dateSyncSuccess: 0,
-        theme: 'auto',
         apiVersion: API_VERSION,
-        chapterNumbering: 'vestern',
         passages: [],
         testsActive: [],
         testsHistory: [],
-        reminderTimes: [],
         userId: null,
-        devMode: false,
         filters: {
             tags: [archivedName],
             selectedLevels: [],
             maxLevels: [],
         },
-        sort: SORTING_OPTION.adress
+        sort: SORTING_OPTION.adress,
+        settings: {
+            [SETTINGS.langCode]: langCode,
+            [SETTINGS.theme]: THEME_TYPE.auto,
+            [SETTINGS.devMode]: false,
+            [SETTINGS.chapterNumbering]: 'vestern',
+            [SETTINGS.hapticsEnabled]: true,
+            [SETTINGS.soundsEnabled]: true,
+            [SETTINGS.compressOldTestsData]: true,
+            [SETTINGS.autoIncreeseLevel]: false,
+            [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
+        
+            [SETTINGS.remindersEnabled]: true,
+            [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
+            [SETTINGS.remindersList]: [],
+
+            [SETTINGS.translations]: defaultTranslations,//dont need id for now, just user provided name
+            [SETTINGS.homeScreenStatsType]: 'auto'//dont need id for now, just user provided name
+        }
     };
 };
+
+export const createAppState: () => AppStateModel = createAppState0_0_7;
 
 export const getVersesNumber: (adress: AddressType) => number = (address) => {
     //if one verse (end == null || edn == start)
@@ -107,7 +125,8 @@ export const createPassage: (
         isNewLevelAwalible: false,
         tags: [],
         isReminderOn: false,
-        isCollapsed: false
+        isCollapsed: false,
+        translation: null,//>=0.0.7
     };
 };
 
@@ -155,5 +174,35 @@ export const createAddress: () => AddressType = () => {
         startVerseNum: NaN,
         endChapterNum: NaN,
         endVerseNum: NaN
+    };
+};
+
+
+/* initials archive */
+
+export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
+    const phoneLangCode = getLocales()[0].languageCode;
+    const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
+    return {
+        version: VERSION,
+        lastChange: 0,
+        langCode: langCode,
+        dateSyncTry: 0,
+        dateSyncSuccess: 0,
+        theme: 'auto',
+        apiVersion: API_VERSION,
+        chapterNumbering: 'vestern',
+        passages: [],
+        testsActive: [],
+        testsHistory: [],
+        reminderTimes: [],
+        userId: null,
+        devMode: false,
+        filters: {
+            tags: [archivedName],
+            selectedLevels: [],
+            maxLevels: [],
+        },
+        sort: SORTING_OPTION.adress
     };
 };

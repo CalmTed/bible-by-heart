@@ -1,12 +1,12 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType, PassageModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { COLOR, globalStyle } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
+import { getTheme } from "../../tools/getTheme";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -22,7 +22,6 @@ const levelComponentStyle = StyleSheet.create({
     letterSpacing: 0.5,
     marginHorizontal: 20,
     marginVertical: 10,
-    backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
     padding: 10
   },
@@ -44,9 +43,6 @@ const levelComponentStyle = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     paddingHorizontal: 20
-  },
-  hintText: {
-    color: COLOR.text
   }
 })
 
@@ -100,15 +96,21 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     return <View></View>;
   }
   const levelFinished = !!test.dateFinished;
+  const theme = getTheme(state.settings.theme);
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
-      <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{targetPassage?.verseText}</Text>
+      <Text style={{
+        ...theme.theme.text,
+        ...levelComponentStyle.passageText,
+        backgroundColor: theme.colors.bgSecond
+        }}>{targetPassage?.verseText}</Text>
     </ScrollView>
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
       {
         !!errorValue && 
         [
           <Button
+            theme={theme}
             key="right"
             title={addressToString(targetPassage.address, t)}
             type="outline"
@@ -116,6 +118,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             onPress={() => {}}
           />,
           <Button
+            theme={theme}
             key="wrong"
             title={addressToString(errorValue, t)}
             type="outline"
@@ -123,6 +126,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             onPress={() => {}}
           />,
           <Button
+            theme={theme}
             key="continue"
             title={t("ButtonContinue")}
             type="main"
@@ -136,6 +140,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       !errorValue &&
       [
         <Button
+          theme={theme}
           key="address"
           title={!!selectedAddress ? addressToString(selectedAddress, t) : t("LevelSelectAddress")}
           type="outline"
@@ -144,6 +149,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           disabled={levelFinished || !!errorValue}
         />,
         <Button
+          theme={theme}
           key="submit"
           title={t("Submit")}
           type="main"
@@ -154,7 +160,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       ]
       }
     </View>
-    <AddressPicker visible={APVisible} onCancel={handleAddressCancel} onConfirm={handleAddressSelect} t={t}/>
+    <AddressPicker theme={theme} visible={APVisible} onCancel={handleAddressCancel} onConfirm={handleAddressSelect} t={t}/>
   </View>
 }
 
@@ -205,10 +211,11 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     return <View></View>;
   }
   const levelFinished = !!test.dateFinished;
+  const theme = getTheme(state.settings.theme);
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <View style={{...levelComponentStyle.addressTextView}}>
       <Text
-        style={{...globalStyle.text, ...levelComponentStyle.addressText}}
+        style={{...theme.theme.text, ...levelComponentStyle.addressText}}
       >
         {addressToString(targetPassage.address,t)}
       </Text>
@@ -219,6 +226,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           !errorValue && passagesOptions.map(p => {
             const passageText = p.verseText.length < 50 ? p.verseText : p.verseText.trim().replace(/(.|,)$/g,"").slice(0,50) + "..."
             return <Button
+              theme={theme}
               key={p.id}
               type="outline"
               color="green"
@@ -236,6 +244,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           .map(p => {
             const passageText = p.verseText.length < 50 ? p.verseText : p.verseText.trim().replace(/(.|,)$/g,"").slice(0,50) + "..."
             return <Button
+              theme={theme}
               key={p.id}
               type="outline"
               color={p.id === targetPassage.id ? "green" : "red"}
@@ -246,6 +255,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
             />
           }),
           <Button
+            theme={theme}
             key="continue"
             title={t("ButtonContinue")}
             type="main"
@@ -258,6 +268,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       </View>
       {
         !errorValue && <Input
+        theme={theme}
         placeholder={t("LevelStartWritingPassage")}
         onChange={(value) => handleSearchPassages(value)}
         onSubmit={() => {}}

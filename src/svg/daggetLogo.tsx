@@ -3,7 +3,7 @@ import { SvgXml } from 'react-native-svg';
 const xmlData = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="mask0_34_1458" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="213" height="134">
-<rect width="213" height="134" fill="#D9D9D9"/>
+<rect width="213" height="134" fill="#ECECED"/>
 </mask>
 <g mask="url(#mask0_34_1458)">
 <path d="M117.809 29.8019C103.671 45.0413 92.3238 67.4363 85.3999 77.3248L100.523 87.9144C107.447 78.0259 124.733 59.7894 133.514 40.7988C139.367 28.1408 145.502 7.58367 145.502 7.58367C145.502 7.58367 127.827 19.9779 117.809 29.8019Z" fill="url(#paint0_linear_34_1458)"/>
@@ -39,7 +39,7 @@ const xmlData = `
 const xmlData2 = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="mask0_34_1460" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="213" height="134">
-<rect width="213" height="134" fill="#D9D9D9"/>
+<rect width="213" height="134" fill="#ECECED"/>
 </mask>
 <g mask="url(#mask0_34_1460)">
 <path d="M117.809 29.8019C103.671 45.0413 92.3238 67.4363 85.3999 77.3248L100.523 87.9144C107.447 78.0259 124.733 59.7894 133.514 40.7988C139.367 28.1408 145.502 7.58367 145.502 7.58367C145.502 7.58367 127.827 19.9779 117.809 29.8019Z" stroke="#ECECEC" stroke-width="2"/>
@@ -49,5 +49,7 @@ const xmlData2 = `
 </g>
 </svg>`;
 
-export const DaggerLogoSVG: FC<{isOutline?: boolean}> = ({isOutline}) => 
-  <SvgXml xml={isOutline ? xmlData : xmlData2} width="255" height="160"/>;
+export const DaggerLogoSVG: FC<{isOutline?: boolean, color: string}> = ({isOutline, color ="#ECECEC"}) => {
+  const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color)
+  return <SvgXml xml={data} width="255" height="160"/>;
+}

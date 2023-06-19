@@ -1,26 +1,46 @@
-import { LANGCODE, PASSAGE_LEVEL, SORTING_OPTION, TEST_LEVEL } from './constants';
+import { LANGCODE, PASSAGE_LEVEL, SETTINGS, SORTING_OPTION, TEST_LEVEL, THEME_TYPE } from './constants';
 
-export interface AppStateModel {
+export type AppStateModel = AppStateModel0_0_7
+
+export interface AppStateModel0_0_7{
     version: string;
+    apiVersion: string;
     lastChange: number;
-    langCode: LANGCODE;
     dateSyncTry: number;
     dateSyncSuccess: number;
-    theme: 'dark' | 'light' | 'auto';
-    apiVersion: string;
-    chapterNumbering: 'eastern' | 'vestern';
     passages: PassageModel[];
     testsActive: TestModel[];
     testsHistory: TestModel[];
-    reminderTimes: number[];
+    // langCode: LANGCODE;
+    // theme: 'dark' | 'light' | 'auto';
+    // chapterNumbering: 'eastern' | 'vestern';
+    // devMode: boolean;
+    // reminderTimes: number[];
     userId: number | null;
-    devMode: boolean;
     filters: {
         tags: string[],
         selectedLevels: PASSAGE_LEVEL[],
         maxLevels: PASSAGE_LEVEL[]
     },
-    sort: SORTING_OPTION
+    sort: SORTING_OPTION,
+    settings: {
+        [SETTINGS.langCode]: LANGCODE
+        [SETTINGS.theme]: THEME_TYPE
+        [SETTINGS.devMode]: boolean
+        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern'
+        [SETTINGS.hapticsEnabled]: boolean
+        [SETTINGS.soundsEnabled]: boolean
+        [SETTINGS.compressOldTestsData]: boolean
+        [SETTINGS.autoIncreeseLevel]: boolean
+        [SETTINGS.leftSwipeTag]: string // options from existring tags, archive by default  TODO check on tag removing
+    
+        [SETTINGS.remindersEnabled]: boolean
+        [SETTINGS.remindersSmartTime]: boolean // based on last month of tests history
+        [SETTINGS.remindersList]: ReminderModel[]
+
+        [SETTINGS.translations]: TranslationModel[]//dont need id for now, just user provided name
+        [SETTINGS.homeScreenStatsType]: 'auto' | 'dayStreak' | 'absoluteProgress' | 'monthProgress'
+    }
 }
 
 export interface PassageModel {
@@ -40,6 +60,7 @@ export interface PassageModel {
     tags: string[]; //archive and custom
     isReminderOn: boolean;
     isCollapsed: boolean;
+    translation: string | null;//>=0.0.7 option from settings
 }
 
 export interface exportingModel {
@@ -78,6 +99,43 @@ export interface TestModel {
     wrongWords: [number, string][]; //word index, wrong word string
 }
 
+export interface ReminderModel{//>=0.0.7
+    id: number
+    enabled: boolean
+    timeInSec: number //in seconds from midnight
+    days: {
+        mo: boolean;
+        tu: boolean;
+        we: boolean;
+        th: boolean;
+        fr: boolean;
+        sa: boolean;
+        su: boolean;
+    }
+}
+export interface TranslationModel{//>=0.0.7
+    id: number
+    editable: boolean
+    name: string
+    addressLanguage: LANGCODE
+}
+export interface TrainModeModel{//>=0.0.7
+    id: number
+    editable: boolean//aka removable
+    name: string
+    enabled: boolean
+    length: number //5-20,all
+    translation: LANGCODE
+    includeTags: string[]
+    excludeTags: string[]
+    sort: SORTING_OPTION
+} 
+
+export interface OptionModel{
+    value: string// no numbers for now
+    label: string// not WORD because it could be user provided value
+}
+
 export interface AddressType {
     bookIndex: number;
     startChapterNum: number;
@@ -88,6 +146,7 @@ export interface AddressType {
 
 export enum ActionName {
     setLang = 'setLang',
+    setTheme = 'setTheme',
     setPassage = 'setPassage',
     setPassagesList = 'setPassagesList',
     removePassage = 'removePassage',
@@ -101,10 +160,14 @@ export enum ActionName {
     toggleFilter = 'toggleFilter'
 }
 export type ActionModel =
-    | {
+    {
           name: ActionName.setLang;
           payload: LANGCODE;
       }
+    | {
+        name: ActionName.setTheme;
+        payload: THEME_TYPE;
+    }
     | {
           name: ActionName.setPassage;
           payload: PassageModel;
@@ -161,3 +224,32 @@ export type ActionModel =
             maxLevel?: PASSAGE_LEVEL
         }
     };
+
+
+
+
+
+
+/* state archive */
+export interface AppStateModel0_0_6{
+    version: string;
+    apiVersion: string;
+    lastChange: number;
+    dateSyncTry: number;
+    dateSyncSuccess: number;
+    passages: PassageModel[];
+    testsActive: TestModel[];
+    testsHistory: TestModel[];
+    langCode: LANGCODE;
+    theme: 'dark' | 'light' | 'auto';
+    chapterNumbering: 'eastern' | 'vestern';
+    devMode: boolean;
+    reminderTimes: number[];
+    userId: number | null;
+    filters: {
+        tags: string[],
+        selectedLevels: PASSAGE_LEVEL[],
+        maxLevels: PASSAGE_LEVEL[]
+    },
+    sort: SORTING_OPTION
+}

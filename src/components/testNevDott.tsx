@@ -1,38 +1,23 @@
 import { LinearGradient } from "expo-linear-gradient"
 import { FC } from "react"
 import { View, StyleSheet, Pressable} from "react-native"
-import { COLOR } from "../constants"
+import { ThemeAndColorsModel } from "src/tools/getTheme"
 
 interface TestNavDottModel{
   isCurrent: boolean
   color: "red" | "green" | "gray" | "text"
+  theme: ThemeAndColorsModel
   onPress?: () => void
 }
 
-export const TestNavDott: FC<TestNavDottModel> = ({isCurrent, color, onPress}) => {
+export const TestNavDott: FC<TestNavDottModel> = ({isCurrent, color, onPress, theme}) => {
   const colors = color === "gray" ?
-    [COLOR.textSecond, COLOR.textSecond] :
+    [theme.colors.textSecond, theme.colors.textSecond] :
     color === "red" ?
-      [COLOR.redGradient1, COLOR.redGradient2] :
+      [theme.colors.redGradient1, theme.colors.redGradient2] :
       color === "text" ?
-        [COLOR.text, COLOR.textSecond] :
-        [COLOR.gradient1, COLOR.gradient2]
-  return <View style={testNavDottStyles.wrapper}>
-    <Pressable onPress={() => onPress ? onPress() : null}>
-    <LinearGradient
-        colors={colors}
-        start={{ x: 0.0, y: 0 }}
-        end={{ x: 0.0, y: 1.0 }}
-        locations={[0, 1]}
-        style={testNavDottStyles.gradientView}
-      >
-          
-      {!isCurrent && <View style={testNavDottStyles.inner}></View>}
-    </LinearGradient>
-    </Pressable>
-  </View>
-}
-
+        [theme.colors.text, theme.colors.textSecond] :
+        [theme.colors.gradient1, theme.colors.gradient2];  
 const testNavDottStyles = StyleSheet.create({
   wrapper: {
     width: 18,
@@ -49,9 +34,24 @@ const testNavDottStyles = StyleSheet.create({
     justifyContent: "center"
   },
   inner: {
-    backgroundColor: COLOR.bg,
+    backgroundColor: theme.colors.bg,
     width: 13,
     borderRadius: 100,
     aspectRatio: 1
   }
 })
+  return <View style={testNavDottStyles.wrapper}>
+    <Pressable onPress={() => onPress ? onPress() : null}>
+    <LinearGradient
+        colors={colors}
+        start={{ x: 0.0, y: 0 }}
+        end={{ x: 0.0, y: 1.0 }}
+        locations={[0, 1]}
+        style={testNavDottStyles.gradientView}
+      >
+          
+      {!isCurrent && <View style={testNavDottStyles.inner}></View>}
+    </LinearGradient>
+    </Pressable>
+  </View>
+}

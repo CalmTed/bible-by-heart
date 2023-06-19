@@ -2,9 +2,9 @@ import { FC, useEffect, useState } from "react";
 import { WORD } from "../../l10n";
 import { AddressType, AppStateModel, TestModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView } from "react-native"
-import { COLOR, globalStyle } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
+import { getTheme } from "../../tools/getTheme";
 
 export interface LevelComponentModel {
   test: TestModel
@@ -26,7 +26,6 @@ const levelComponentStyle = StyleSheet.create({
     fontSize: 18,
     letterSpacing: 0.5,
     margin: 20,
-    backgroundColor: COLOR.bgSecond,
     borderRadius: 10,
     padding: 10
   },
@@ -80,15 +79,21 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     }
   }
   const levelFinished = !!test.dateFinished;
+  const theme = getTheme(state.settings.theme)
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
-      <Text style={{...globalStyle.text, ...levelComponentStyle.passageText}}>{state.passages.find(p => p.id === test.passageId)?.verseText}</Text>
+      <Text style={{
+        ...theme.theme.text,
+        ...levelComponentStyle.passageText,
+        backgroundColor: theme.colors.bgSecond
+      }}>{state.passages.find(p => p.id === test.passageId)?.verseText}</Text>
     </ScrollView>
     <View style={{...levelComponentStyle.optionButtonsWrapper}}>
       { 
       test.testData.addressOptions && test.testData.addressOptions.map(op => {
         if(!errorValue){
           return <Button
+            theme={theme}
             key={JSON.stringify(op)}
             title={addressToString(op,t)}
             type="outline"
@@ -105,6 +110,7 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           const isRightAddress = JSON.stringify(op) === JSON.stringify(rightPassage.address)
           const isErroredAddress = JSON.stringify(op) === JSON.stringify(errorValue)
           return <Button
+            theme={theme}
             key={JSON.stringify(op)}
             title={addressToString(op,t)}
             type="outline"
@@ -116,6 +122,7 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       })}{
         !!errorValue && 
         <Button
+          theme={theme}
           title={t("ButtonContinue")}
           type="main"
           color="green"
@@ -160,10 +167,11 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     return <View></View>;
   }
   const levelFinished = !!test.dateFinished;
+  const theme = getTheme(state.settings.theme);
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <View style={{...levelComponentStyle.addressTextView}}>
       <Text
-        style={{...globalStyle.text, ...levelComponentStyle.addressText}}
+        style={{...theme.theme.text, ...levelComponentStyle.addressText}}
       >
         {addressToString(targetPassage.address,t)}
       </Text>
@@ -174,6 +182,7 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         const title =  op.verseText.length < 50 ? op.verseText : op.verseText.slice(0,50).trim().replace(/(.|,)$/,"") + "...";
         if(!errorValue){
           return <Button
+            theme={theme}
             key={op.id}
             title={title}
             type="outline"
@@ -186,6 +195,7 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           const isRight = targetPassage.id === op.id;
           const isWrong = errorValue === op.id
           return <Button
+            theme={theme}
             key={op.id}
             title={title}
             type="outline"
@@ -199,11 +209,12 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     }{
       !!errorValue && 
       <Button
-          title={t("ButtonContinue")}
-          type="main"
-          color="green"
-          onPress={() => handleErrorSubmit(errorValue)}
-        />
+        theme={theme}
+        title={t("ButtonContinue")}
+        type="main"
+        color="green"
+        onPress={() => handleErrorSubmit(errorValue)}
+      />
     }
     </View>
   </View>
