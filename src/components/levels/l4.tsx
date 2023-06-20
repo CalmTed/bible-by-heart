@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native"
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
@@ -8,6 +8,7 @@ import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../tools/getSimularity";
 import { getTheme } from "../../tools/getTheme";
+import { VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -85,11 +86,13 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       //add error
       submitTest({isRight: false, modifiedTest: {
         ...test,
@@ -125,7 +128,8 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       word === targetWords[passageWords.length - 1] &&
       ["–", "-", ":", ";", ".", ","].includes(nextWord) ?
         nextWord + " " : // adding one more space here for a reason
-        ""
+        "";
+    state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.wordClick) : null;
     const newPassageText = [...passageWords.slice(0,-1), word, nextWordIfNeeded].join(" ")
     setPassageText(newPassageText)
   }

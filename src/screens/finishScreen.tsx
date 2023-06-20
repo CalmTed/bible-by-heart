@@ -30,7 +30,7 @@ export const FinishScreen: FC<ScreenModel> = ({route, navigation}) => {
   return <View style={{...theme.theme.screen,...theme.theme.view, ...finishStyle.screen}}>
     <View style={finishStyle.logoView}>
       <FinishCupSVG/>
-      <Text style={{...finishStyle.titleText,...theme.theme.text}}>{t("titleWelldone")}</Text>
+      <Text style={{...theme.theme.text, ...finishStyle.titleText}}>{t("titleWelldone")}</Text>
     </View>
     <View style={finishStyle.buttonView}>
       <Button

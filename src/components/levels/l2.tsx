@@ -1,12 +1,13 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType, PassageModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native"
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../tools/getTheme";
+import { VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -80,11 +81,13 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(JSON.stringify(rightPassage.address) === JSON.stringify(value)){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setErrorValue(selectedAddress)
     }
   }
@@ -193,12 +196,13 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(passage.id === value){
-      //set right: error: 0
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setErrorValue(value)
     }
   }

@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet } from "react-native"
-import { MAX_L50_TRIES } from "../../constants";
+import { View, Text, StyleSheet, Vibration } from "react-native"
+import { MAX_L50_TRIES, VIBRATION_PATTERNS } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
@@ -103,11 +103,13 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setWrongAddress(value)
     }
   }
@@ -141,6 +143,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         }).join("");
         setPassageText(rightPart);
       }else{
+        state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
         submitTest({isRight: false, modifiedTest: {
           ...test,
           errorNumber: (test.errorNumber || 0) + 1,
@@ -159,6 +162,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       if(!aucompleteWarn){
         setAucompleteWarn(true)
       }else{
+        state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
         submitTest({isRight: false, modifiedTest: {
           ...test,
           errorNumber: (test.errorNumber || 0) + 1,

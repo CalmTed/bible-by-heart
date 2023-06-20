@@ -1,10 +1,11 @@
 import { FC, useEffect, useState } from "react";
 import { WORD } from "../../l10n";
 import { AddressType, AppStateModel, TestModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native"
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
 import { getTheme } from "../../tools/getTheme";
+import { VIBRATION_PATTERNS } from "../../constants";
 
 export interface LevelComponentModel {
   test: TestModel
@@ -70,11 +71,13 @@ export const L10: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(JSON.stringify(rightPassage.address) === JSON.stringify(value)){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setErrorValue(value)
     }
   }
@@ -154,11 +157,13 @@ export const L11: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(targetPassage.id === value){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setErrorValue(value);
     }
   } 

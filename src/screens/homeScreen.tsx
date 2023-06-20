@@ -39,7 +39,7 @@ export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
   return <View style={{...theme.theme.screen,...theme.theme.view}}>
     <View style={homeStyle.logoView}>
       <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text}/>
-      <Text style={{...homeStyle.titleText, ...theme.theme.text}}>{t("appName")}</Text>
+      <Text style={{...theme.theme.text, ...homeStyle.titleText}}>{t("appName")}</Text>
       <Text style={{...theme.theme.text, color: theme.colors.textSecond}}>{t("DaysStroke")}: {strokeData.length}</Text>
       {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("TestsCompleted")}: {state.testsHistory.length}</Text> */}
       {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("ErrorsMade")}: {errorNumber}</Text> */}

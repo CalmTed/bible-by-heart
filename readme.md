@@ -47,15 +47,14 @@ Roadmap
   - [ ] settings layout (app/user settings)
     - [x] components: top user data
     - [x] settings menu item
-      - [ ] checkbox
+      - [x] checkbox
       - [x] select
-      - [ ] open modal
-      - [ ] text input
+      - [x] open modal
     - [ ] settings modal
-      - [ ] menu list 
-      - [ ] just text
+      - [x] menu list 
+      - [x] just text
       - [ ] items list
-  - [ ] app settings: - [x] language, - [ ] reminders(enabled, auto, same time, list), - [x] theme, - [ ] haptic, - [ ]  about, - [ ] legal, - [ ] feedback, - [ ] devmode, - [ ] train modes, - [ ] compress old stats(>3month), - [ ] leftSwipeTag
+  - [ ] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x]  about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
   - [ ] user settings:  - [ ] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), - [ ] request data removal, - [ ] remove local data
   - [ ] edit passage translation (custom with autocomplete from other passages data)
   - [ ] filter by translation (if there are several different)
@@ -63,6 +62,7 @@ Roadmap
     - [ ] copyright page in settings
     - [ ] limit length to 500 verses per passage
   - [ ] delete tests history after deleting passage 
+  - [ ] add tag to filter on adding to passage, remove if it was last
 - [ ] customizable daily reminder, more stats v0.0.8
   - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
   - [ ] export to csv, import from share(parse), or from other data types

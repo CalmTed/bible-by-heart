@@ -11,7 +11,7 @@ export const getStroke = (testHistory: TestModel[]) => {
     const d = new Date(t.dateFinished)
     return `${addZero(d.getFullYear(), 4)}-${addZero(d.getMonth() + 1 )}-${addZero(d.getDate())}`
   })
-  const uniqueDays = allDays.filter((v,i,arr) => !arr.slice(0,i).includes(v))
+  const uniqueDays = allDays.filter((v,i,arr) => !arr.slice(0,i).includes(v))//unique
   const isToday = nowD - (new Date(uniqueDays[0]).getTime()) < dayInMs;
   const isYesterday = !isToday && nowD - (new Date(uniqueDays[0]).getTime()) < dayInMs * 2;
   const unbrokenSeries = uniqueDays.map((v,i,arr) => {

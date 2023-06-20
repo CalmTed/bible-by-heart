@@ -16,6 +16,12 @@ export const reduce: (
       case ActionName.setTheme:
         changedState = { ...state, settings: {...state.settings, theme: action.payload} };
       break;
+      case ActionName.setLeftSwipeTag:
+        changedState = { ...state, settings: {...state.settings, leftSwipeTag: action.payload} };
+      break;
+      case ActionName.setSettingsParam:
+        changedState = { ...state, settings: {...state.settings, [action.payload.param]: action.payload.value} };
+      break;
       case ActionName.setPassage:
           if (state.passages.find((p) => p.id === action.payload.id)) {
               const changedPassages = state.passages.map((p) =>
@@ -103,6 +109,7 @@ export const reduce: (
             return {
                 ...p,
                 maxLevel: level,
+                selectedLevel: state.settings.autoIncreeseLevel && level !== p.selectedLevel ? level : p.selectedLevel,
                 isNewLevelAwalible: flag,
                 dateTested: lastTestedTime
             }

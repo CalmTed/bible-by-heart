@@ -86,8 +86,10 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     setSelectedPassage(passage);
     setPEOpen(true);
   } 
-  const handleListItemArchive = (passage: PassageModel) => {
-    const newTags = passage.tags.includes(archivedName) ? passage.tags.filter(t => t !== archivedName) : [...passage.tags, archivedName]
+  const handleListItemToggleTag = (passage: PassageModel, tag: string) => {
+    const newTags = passage.tags.includes(tag) ?
+      passage.tags.filter(t => t !== tag) :
+      [...passage.tags, tag]
     handlePESubmit({
       ...passage, tags: newTags
     })    
@@ -204,6 +206,7 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       <View>
         {sortedPassages.map(passage => {
           return <ListItem
+            leftSwipeTag={state.settings.leftSwipeTag}
             theme={theme}
             key={passage.id}
             data={passage}
@@ -211,7 +214,7 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
             t={t}
             onPress={() => handleListItemEdit(passage)}
             onRemove={() => handlePERemove(passage.id)}
-            onArchive={() => handleListItemArchive(passage)}
+            onToggleTag={() => handleListItemToggleTag(passage, state.settings.leftSwipeTag)}
             onLongPress={() => handleListItemLongPress(passage)}
           />
         })}
@@ -299,14 +302,15 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
 
 const ListItem: FC<{
   data: PassageModel, 
+  leftSwipeTag: string
   t:(w: WORD) => string,
   onPress: () => void,
-  onArchive: () => void
+  onToggleTag: () => void
   onRemove: () => void
   onLongPress: () => void
   sort: SORTING_OPTION
   theme: ThemeAndColorsModel
-}> = ({data, t, onPress, onArchive, onRemove, onLongPress, sort, theme}) => {
+}> = ({data,leftSwipeTag, t, onPress, onToggleTag, onRemove, onLongPress, sort, theme}) => {
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
   const listItemStyle = StyleSheet.create({
     listItemAddress: {
@@ -343,6 +347,13 @@ const ListItem: FC<{
       paddingRight: 10
     },
   })
+  const limitLegth = (inWord: string) => {
+    const maxLength = 15
+    return inWord.length > maxLength ? `${inWord.substring(0,maxLength - 3)}...` : inWord
+  }
+  const tagName = leftSwipeTag === archivedName ?
+    data.tags.includes(archivedName) ? t("Unrchive") : t("Archive") :
+    data.tags.includes(leftSwipeTag) ? limitLegth(`${t("Add")} ${leftSwipeTag}`) : limitLegth(`${t("Remove")}  ${leftSwipeTag}`);
   const renderLeftActions = () => {
     
     return <Animated.View style={[
@@ -350,7 +361,11 @@ const ListItem: FC<{
         ...listItemStyle.swipeableAnimatedView,
       },
     ]}>
-      <Button theme={theme} title={data.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={onArchive} />
+      <Button
+        theme={theme}
+        title={tagName}
+        onPress={onToggleTag}
+      />
     </Animated.View>
   }
   const renderRightActions = () => {

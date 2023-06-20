@@ -84,8 +84,13 @@ export const LevelPicker:FC<LevelPickerModel> = ({targetPassage, t, handleChange
         />
       })}
     </View>
-    {activeTestObj && targetPassage.selectedLevel.toString() === activeTestObj.level.toString().slice(0,1) && targetPassage.selectedLevel === targetPassage.maxLevel
-    && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}  ({getPerfectTestsNumber(state.testsHistory,targetPassage)}/{PERFECT_TESTS_TO_PRCEED})</Text>}
+    {
+      activeTestObj &&
+      targetPassage.selectedLevel.toString() === activeTestObj.level.toString().slice(0,1) &&
+      targetPassage.selectedLevel === targetPassage.maxLevel &&
+      targetPassage.selectedLevel !== PASSAGE_LEVEL.l5 &&
+        <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtext")}  ({getPerfectTestsNumber(state.testsHistory,targetPassage)}/{PERFECT_TESTS_TO_PRCEED})</Text>
+    }
     {activeTestObj && targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 
     && <Text style={levelPickerStyles.subText}>{t("LanguagePickerSubtextSecond")}</Text>}
     {activeTestObj && handleRestart && targetPassage.selectedLevel.toString() !== activeTestObj.level.toString().slice(0,1) 

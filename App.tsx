@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { VERSION, storageName } from './src/constants';
+import { THEME_TYPE, VERSION, storageName } from './src/constants';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { AppStateModel } from './src/models';
 import { Navigator } from './src/navigator';
@@ -59,6 +59,7 @@ export default function App() {
     return (
         <>
             {isReady && <Navigator state={state}/>}
+
         </>
     );
 }

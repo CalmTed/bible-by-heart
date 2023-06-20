@@ -6,6 +6,7 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { getTheme } from "../../tools/getTheme";
+import { VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -109,23 +110,26 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       return;
     }
     if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
         ...test,
         dateFinished: new Date().getTime()
       }})
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setWrongAddress(value);
     }
   }
   const handleWordSelect = (nextUnselectedIndex: number, selectedMissingWord: number) => {
     const neededWord = words[nextUnselectedIndex];
     const selectedWord = words[selectedMissingWord];
-    Vibration.vibrate(15);
+    state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.wordClick) : null;
     if(neededWord && selectedWord === neededWord){
       setSelectedWords(prv => 
         [...prv, nextUnselectedIndex]
         )
     }else{
+      state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       //handle error
       setErrorIndex(selectedMissingWord)
     }

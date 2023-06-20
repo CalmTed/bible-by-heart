@@ -67,6 +67,12 @@ export enum THEME_TYPE{
     light = "light"
 }
 
+export const VIBRATION_PATTERNS = {
+    testRight: [0,50,100,40],
+    testWrong: [0,200],
+    wordClick: 15
+}
+
 export const COLOR_DARK = {
     bg: '#272A27',
     bgBackdrop: '#272A2799',
@@ -89,8 +95,8 @@ export const COLOR_LIGHT = {
     textSecond: '#898989',
     textDanger: '#E49278',
     mainColor: '#7FDE34',
-    gradient1: '#7FDE34',
-    gradient2: '#E7DF0B',
+    gradient1: '#E7DF0B',
+    gradient2: '#7FDE34',
     redGradient1: '#E77D7B',
     redGradient2: '#E49278'
 };
@@ -110,7 +116,8 @@ export const THEME_DARK = StyleSheet.create({
         alignItems: 'center'
     },
     text: {
-        color: COLOR_DARK.text
+        color: COLOR_DARK.text,
+        fontSize: 14
     },
     subText: {
         color: COLOR_DARK.textSecond,
@@ -118,8 +125,8 @@ export const THEME_DARK = StyleSheet.create({
     },
     headerText: {
         color: COLOR_DARK.text,
-        fontSize: 20,
-        fontWeight: "500",
+        fontSize: 21,
+        fontWeight: "700",
         textTransform: "uppercase"
     },
     rowView: {
@@ -138,6 +145,7 @@ export const THEME_LIGHT: typeof THEME_DARK = {
         backgroundColor: COLOR_LIGHT.bg,
     },
     text: {
+        ...THEME_DARK.text,
         color: COLOR_LIGHT.text
     },
     subText: {

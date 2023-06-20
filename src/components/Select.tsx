@@ -3,6 +3,7 @@ import { MiniModal } from "./miniModal"
 import { OptionModel } from "../models"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { ThemeAndColorsModel } from "src/tools/getTheme"
+import { Button } from "./Button"
 
 interface SelectModel{
   isShown: boolean
@@ -26,14 +27,14 @@ export const Select: FC<SelectModel> = ({isShown, options, selectedIndex, onSele
       paddingHorizontal: 15,
       paddingVertical: 10 
     },
-    selectedItemView: {
-  
-    },
     itemLabel: {
       color: theme.colors.text,
       fontSize: 20,
       textTransform: "uppercase",
       fontWeight: "600"
+    },
+    selectedItemLabel: {
+      color: theme.colors.mainColor
     },
     titleView: {
     }, 
@@ -52,16 +53,14 @@ export const Select: FC<SelectModel> = ({isShown, options, selectedIndex, onSele
     <View style={selectStyles.list}>
     {
     options.map((option, i) => 
-      <Pressable
+      <Button
         key={option.value}
+        theme={theme}
+        color={selectedIndex === i ? "green" : "gray"}
+        type={selectedIndex === i ? "outline" : "outline"}
         onPress={() => onSelect(option.value)}
-        style={{
-          ...selectStyles.itemView,
-          ...(selectedIndex === i ? selectStyles.selectedItemView : {})
-        }}
-      >
-        <Text style={selectStyles.itemLabel}>{option.label}</Text>
-      </Pressable>  
+        title={option.label}
+      />
     )}
     </View>
   </MiniModal>

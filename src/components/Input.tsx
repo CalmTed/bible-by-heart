@@ -22,6 +22,7 @@ interface InputModel {
   autoComplete?:'birthdate-day'|'birthdate-full'|'birthdate-month'|'birthdate-year'|'cc-csc'|'cc-exp'|'cc-exp-day'|'cc-exp-month'|'cc-exp-year'|'cc-number'|'email'|'gender'|'name'|'name-family'|'name-given'|'name-middle'|'name-middle-initial'|'name-prefix'|'name-suffix'|'password'|'password-new'|'postal-address'|'postal-address-country'|'postal-address-extended'|'postal-address-extended-postal-code'|'postal-address-locality'|'postal-address-region'|'postal-code'|'street-address'|'sms-otp'|'tel'|'tel-country-code'|'tel-national'|'tel-device'|'username'|'username-new'|'off';
   autoCapitalize?: "none" | "words" | "sentences" | "characters"
   autoCorrect?: boolean
+  inputMode?: 'decimal' | 'email' | 'none' | 'numeric' | 'search' | 'tel' | 'text' | 'url'
 }
 
 export const Input: FC<InputModel> = ({
@@ -41,7 +42,8 @@ export const Input: FC<InputModel> = ({
   autoCapitalize = "none",
   autoCorrect=true,
   autoComplete,
-  textStyle
+  textStyle,
+  inputMode
 }) => {
   const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [theme.colors.bgSecond, theme.colors.bgSecond] : color === "green" ? [theme.colors.gradient1, theme.colors.gradient2] : [theme.colors.redGradient1, theme.colors.redGradient2]
   const InputStyles = StyleSheet.create({
@@ -68,9 +70,10 @@ export const Input: FC<InputModel> = ({
     InputText: {
       color: theme.colors.text,
       fontSize: 18,
-      paddingHorizontal: 28,
-      paddingVertical: 14,
-      fontWeight: "500"
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      fontWeight: "500",
+      minWidth: 100
     },
     iconInput:{
       height: "100%",
@@ -97,7 +100,7 @@ export const Input: FC<InputModel> = ({
               value={value} 
               onChangeText={onChange}
               placeholder={placeholder}
-              onSubmitEditing={(e) => onSubmit(e.currentTarget.toString())}
+              onSubmitEditing={(e) => onSubmit(e.nativeEvent.text || "")}
               editable={!disabled}
               selectTextOnFocus={selectTextOnFocus}
               placeholderTextColor={theme.colors.textSecond}
@@ -106,6 +109,8 @@ export const Input: FC<InputModel> = ({
               autoComplete={autoComplete}
               autoCapitalize={autoCapitalize}
               autoCorrect={autoCorrect}
+              cursorColor={theme.colors.mainColor} 
+              inputMode={inputMode} 
             />
           </View>
         </LinearGradient>

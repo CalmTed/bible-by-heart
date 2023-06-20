@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, StyleSheet, Vibration } from "react-native"
 import { storageName, TEST_LEVEL, PASSAGE_LEVEL, archivedName } from "../constants"
 import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"

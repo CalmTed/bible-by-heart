@@ -148,6 +148,7 @@ export enum ActionName {
     setLang = 'setLang',
     setTheme = 'setTheme',
     setPassage = 'setPassage',
+    setLeftSwipeTag = 'setLeftSwipeTag',
     setPassagesList = 'setPassagesList',
     removePassage = 'removePassage',
     setActiveTests = 'setActiveTests',
@@ -157,7 +158,8 @@ export enum ActionName {
     disableNewLevelFlag = 'disableNewLevelFlag',
     setDevMode = 'setDevMode',
     setSorting = 'setSorting',
-    toggleFilter = 'toggleFilter'
+    toggleFilter = 'toggleFilter',
+    setSettingsParam = 'setSettingsParam',
 }
 export type ActionModel =
     {
@@ -172,6 +174,17 @@ export type ActionModel =
           name: ActionName.setPassage;
           payload: PassageModel;
       }
+    | {
+        name: ActionName.setLeftSwipeTag;
+        payload: string;
+    }
+    | {
+        name: ActionName.setSettingsParam
+        payload: {
+            param: SETTINGS,
+            value: boolean
+        }
+    }
     | {
           name: ActionName.setPassagesList;
           payload: PassageModel[];
