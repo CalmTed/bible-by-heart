@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet, ScrollView, ToastAndroid } from "react-native"
 import { storageName, SCREEN, LANGCODE, alowedStateVersions, VERSION, THEME_TYPE, archivedName, SETTINGS } from "../constants"
-import { ActionName, AppStateModel, exportingModel } from "../models"
+import { ActionName, AppStateModel, ReminderModel, TrainModeModel, TranslationModel, exportingModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { createT } from "../l10n"
 import { Button, IconButton } from "../components/Button"
@@ -15,6 +15,8 @@ import { getTheme } from "../tools/getTheme"
 import { StatusBar } from "expo-status-bar"
 import { MiniModal } from "../components/miniModal"
 import { Input } from "../components/Input"
+import { createAppState } from "../initials"
+import { SettingsListWrapper } from "../components/settingsListWrapper"
 
 export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -24,6 +26,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const [isAboutModalShown,setIsAboutModalShown] = useState(false)
   const [isLegalModalShown,setIsLegalModalShown] = useState(false)
   const [isStateViewerModalOpen,setIsStateViewerModalOpen] = useState(false)
+  const [isTranslationsListShown, setTranslationsListShown] = useState(false)
   const getPassword = () => {
     return Math.round(Math.random() * 10000)
   }
@@ -110,6 +113,8 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
         
       </View> */}
       <View style={settingsStyle.menuItemsListView}>
+
+        {/* MAIN */}
         <SettingsMenuItem
           theme={theme}
           header={t("settsLabelMain")}
@@ -158,6 +163,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
             )
           }}
         />
+        {/* LISTS */}
         <SettingsMenuItem
           theme={theme}
           header={t("settsLabelList")}
@@ -166,7 +172,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
         <SettingsMenuItem
           theme={theme}
           header={t("settsLeftSwipeTag")}
-          subtext={state.settings.leftSwipeTag === archivedName ? t(archivedName) : state.settings.leftSwipeTag}
+          subtext={`"${state.settings.leftSwipeTag === archivedName ? t(archivedName) : state.settings.leftSwipeTag}"`}
           type="select"
           options={allTags.map((v) => {
             return {
@@ -184,6 +190,26 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
             )
           }}
         />
+        <SettingsMenuItem
+          theme={theme}
+          type="action"
+          header={t("settsTranslationsListHeader")}
+          subtext={t("settsTranslationsListSubtext")}
+          actionCallBack={() => setTranslationsListShown(true)}
+        />
+        <SettingsListWrapper
+          theme={theme}
+          shown={isTranslationsListShown}
+          handleClose={ () => setTranslationsListShown(false) }
+          header={t("settsTranslationsListHeader")}
+          handleAddNew={ () => { console.log("adding new")} }
+          handleRemove={ (changedItem) => {} }
+          handleItemChange={ (changedItem) => {} }
+          items={state.settings.translations}
+          renderListItem={(item) => <Text style={theme.theme.headerText}>{(item as TranslationModel).name}</Text> }
+          renderEditItem={(item, handleChange ) => <Text>{(item as TrainModeModel).id}</Text>}
+        />
+        {/* TESTS */}
         <SettingsMenuItem
           theme={theme}
           header={t("settsLabelTests")}
@@ -225,7 +251,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
             )
           }}
         />
-        
+        {/* ABOUT */}
         <SettingsMenuItem
           theme={theme}
           header={t("settsLabelAbout")}
@@ -235,7 +261,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           theme={theme}
           type="action"
           header={t("settsAboutHeader")}
-          subtext={t("settsAboutSubtext")}
+          subtext={`${t("settsAboutSubtext")}: ${VERSION}`}
           actionCallBack={() => {
             setIsAboutModalShown(true)
           }}
@@ -295,9 +321,10 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           <Text style={{color: theme.colors.text, fontSize: 16}}>{t("settsDevPasswordHeader")}: {devModeKey}</Text>
           <Input theme={theme} placeholder={t("settsDevPasswordPlaceholder")} onChange={() => {}} onSubmit={handleCheckDevPassword} inputMode="numeric"></Input>
         </MiniModal>
+        {/* DEV MODE SETTINGS */}
         {state.settings.devMode && <View style={{flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap"}}>
           <Text style={{color: theme.colors.text, fontSize: 16}}>{t("settsGetDevAnswer")}:</Text>
-          <Input inputMode="numeric" theme={theme} onSubmit={(text) => {ToastAndroid.show(`${parseInt(text) * 2 % 9}`, 1000)}} placeholder="" onChange={() => {}}></Input>  
+          <Input inputMode="numeric" theme={theme} onSubmit={(text) => {ToastAndroid.show(`${parseInt(text) * 2 % 9}`, 1000)}} placeholder="1234" onChange={() => {}}></Input>  
         </View>}
         {state.settings.devMode && <View>
           <SettingsMenuItem
@@ -315,38 +342,26 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           handleClose={() => setIsStateViewerModalOpen(false)}
         >
           <ScrollView>
-            <Text style={theme.theme.text}>{JSON.stringify(state,null, 2)}</Text>
+            <Text style={theme.theme.text}>{JSON.stringify(state, null , "_ ")}</Text>
           </ScrollView>
         </MiniModal>
         </View>
         }
+        {state.settings.devMode && <View>
+          <SettingsMenuItem theme={theme} type="action" subtext={t("settsOneWayDoor")} header={t("settsClearHistory")} actionCallBack={() => setState(prv => {return {...prv, testsHistory: []}})}/>
+          <SettingsMenuItem theme={theme} type="action" subtext={t("settsOneWayDoor")} header={t("settsClearPassages")} actionCallBack={() => setState(prv => {return {...prv, passages: []}})}/>
+          <SettingsMenuItem theme={theme} type="action" subtext={t("settsOneWayDoor")} header={t("settsClearData")} actionCallBack={() => setState(() => {return createAppState()})}/>
+        </View>
+        }
       </View>
-    {/* <View style={settingsStyle.groupView}>
-      <Button type="secondary" title={`${t("settingsChangeLang")} ${t("flag")}`} onPress={() => setState(st => reduce(st, {name: ActionName.setLang, payload: st.settings.langCode === LANGCODE.en ? LANGCODE.ua : LANGCODE.en}) || st)} />
-    </View>
-      <View style={settingsStyle.groupView}>
-        <Button type="outline" color={state.settings.devMode ? "green" : "gray"} title={`${t("settingsToggleDevMode")} ${state.settings.devMode ? "on" : "off"}`} onPress={() => setState(st => reduce(st, {name: ActionName.setDevMode, payload: !state.settings.devMode}) || st)} />
-        <Text style={globalStyle.text}>{}</Text>
-      </View>
-      
-      {!!state.settings.devMode && <View>
-        <View style={settingsStyle.groupView}>
+        {/* <View style={settingsStyle.groupView}>
           <Button type="outline" color="gray" title={t("settingsExport")} onPress={() => handleExportData(state)} />
           <Input style={settingsStyle.textarea} placeholder="" value={exportedText} multiline numberOfLines={1} disabled={false} onChange={()=>{setExportedText(exportedText)}} onSubmit={() => {}}/>
         </View>
         <View style={settingsStyle.groupView}>
           <Button type="outline" color="gray" title={t("settingsImport")} onPress={() => handleImportData(importedText)} disabled={!importedText.length} />
           <Input style={settingsStyle.textarea} value={importedText} multiline numberOfLines={1} onChange={(newVal) => setImportedText(newVal)} onSubmit={(newVal) => handleImportData(newVal)} placeholder="" />
-        </View>
-        <View style={settingsStyle.groupView}>
-          <Button title={t("settingsClearHistory")} onPress={() => setState(prv => {return {...prv, testsHistory: []}})} type="outline" color="red" />
-          <Button title={t("settingsClearPassages")} onPress={() => setState(prv => {return {...prv, passages: []}})} type="outline" color="red" />
-          <Button title={t("settingsClearData")} onPress={() => setState(() => {return createAppState()})} type="outline" color="red" />
-        </View>
-        <Text style={globalStyle.text}>{t("DateEdited")}: {timeToString(state.lastChange)}</Text>
-      </View>}
-      <Text style={globalStyle.text}>{t("version")}: {VERSION}/{state.version}</Text> 
-      <Text style={globalStyle.text}>{JSON.stringify(state)}</Text> */}
+        </View> */}
     </ScrollView>
     <StatusBar style={state.settings.theme === THEME_TYPE.light ? "dark" : "light"} />
   </View>

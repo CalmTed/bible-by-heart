@@ -44,16 +44,16 @@ Roadmap
   - [x] level 3 fix(sort,skip button, save right words)
   - [x] show wrong answer (l1, l2, l4, l5)
   - [x] state converter from v0.0.6 to v0.0.7
-  - [ ] settings layout (app/user settings)
+  - [x] settings layout (app/user settings)
     - [x] components: top user data
     - [x] settings menu item
       - [x] checkbox
       - [x] select
       - [x] open modal
-    - [ ] settings modal
+    - [x] settings modal
       - [x] menu list 
       - [x] just text
-      - [ ] items list
+      - [x] items list
   - [ ] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x]  about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
   - [ ] user settings:  - [ ] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), - [ ] request data removal, - [ ] remove local data
   - [ ] edit passage translation (custom with autocomplete from other passages data)
@@ -74,8 +74,8 @@ Roadmap
     - [ ] show different stats on home screen
       - [ ] stroke first two weeks
       - [ ] general progress 2 weeks to 1 month
-      - [ ] relative progress is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
-      - different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
+      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
+      - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
   - [ ] feedback form for authorirized users or telegram bot
   - [ ] change data safety settings and privacy policy

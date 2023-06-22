@@ -102,11 +102,14 @@ export const ua: typeof en = {
   settsShowStateSubtext: "Показати текст стану додатка",
   settingsExport: "Експортувати вірші",
   settingsImport: "Імпортувати вірші",
-  settingsClearHistory: "Видалити історію",
-  settingsClearPassages: "Видалити список віршів",
-  settingsClearData: "Видалити всі дані",
+  settsClearHistory: "Видалити історію",
+  settsClearPassages: "Видалити список віршів",
+  settsClearData: "Видалити всі дані",
+  settsOneWayDoor: "⚠️ Данні буде втрачано без можливості відновлення",
   settsEnabled: "Увімкнено",
   settsDisabled: "Вимкнено",
+  settsTranslationsListHeader: "Список перекладів",
+  settsTranslationsListSubtext: "Редагувати список перекладів Біблії",
 
 
   dayMO: "Пн",
