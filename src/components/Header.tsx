@@ -21,7 +21,7 @@ export const Header: FC<HeaderModel> = ({theme, navigation,title, showBackButton
     navigation.goBack();
   }
   return (
-  <View style={{...headerStyle.view, justifyContent: alignChildren || "flex-end"}}>
+  <View style={{...headerStyle.view, justifyContent: alignChildren || "flex-end", alignItems: "center"}}>
     {showBackButton && <IconButton theme={theme} onPress={handleBack} icon={IconName.back}></IconButton>}
     {title && <View style={headerStyle.textView}>
       {title && <Text style={{...headerStyle.text, color: theme.colors.text}}>{title}</Text>}

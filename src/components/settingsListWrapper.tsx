@@ -18,7 +18,11 @@ interface SettingsListWrapperModel{
   handleItemChange: (changedItem: ListItemType) => void
   items: ListItemType[]
   renderListItem: (item: ListItemType, handleChange: (changedItem: ListItemType) => void) => ReactElement
-  renderEditItem: (item: ListItemType, handleChange: (changedItem: ListItemType) => void) => ReactElement
+  renderEditItem: (
+    item: ListItemType,
+    handleChange: (changedItem: ListItemType) => void,
+    handleRemove: (changedItem: ListItemType) => void
+  ) => ReactElement
 }
 
 export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
@@ -33,7 +37,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
   renderListItem,
   renderEditItem,
 }) => {
-  const [itemSelected, setItemSelected] = useState(null as ListItemType | null);
+  const [itemSelectedID, setItemSelected] = useState(null as number | null);
 
   const settingsListWrapperStyle = StyleSheet.create({
     headerView: {
@@ -44,10 +48,13 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
       justifyContent: "space-between"
     },
     itemsListView: {
-
+      width: "100%",
+      gap: 5
     },
     itemView: {
-
+      width: "100%",
+      paddingHorizontal: 20,
+      paddingVertical: 15
     },
     minimodalHeaderView: {
       height: 60,
@@ -57,14 +64,16 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
       justifyContent: "space-between"
     },
     minimodalContentsView: {
+      width: "100%",
 
     }
   })
-
+  const itemSelected = items.find(i => i.id == itemSelectedID)
   return <MiniModal
     theme={theme}
     shown={shown}
     handleClose={handleClose}
+    style={{width: "100%"}}
   >
     <View style={settingsListWrapperStyle.headerView}>
       <IconButton theme={theme} icon={IconName.back} onPress={handleClose} color={theme.colors.text}/>
@@ -76,7 +85,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
       <Pressable
         key={item.id}
         style={settingsListWrapperStyle.itemView}
-        onPress={() => setItemSelected(item)}
+        onPress={() => setItemSelected(item.id)}
       >
         {renderListItem(item, handleItemChange)}
       </Pressable>)}
@@ -87,17 +96,16 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
       handleClose={() => setItemSelected(null)}
     >
       {itemSelected && 
-        <View>
+        <View style={{width: "100%"}}>
           <View style={settingsListWrapperStyle.minimodalHeaderView}>
             <IconButton theme={theme} icon={IconName.back} onPress={() => setItemSelected(null)} color={theme.colors.text}/>
-            <Text  style={theme.theme.headerText}>{(itemSelected as TrainModeModel | TranslationModel)?.name || (itemSelected as ReminderModel)?.timeInSec}</Text>
+            <Text  style={{...theme.theme.headerText, flex: 1}}>{(itemSelected as TrainModeModel | TranslationModel)?.name || (itemSelected as ReminderModel)?.timeInSec}</Text>
           </View>
           <ScrollView style={settingsListWrapperStyle.minimodalContentsView}>
-            <Text style={theme.theme.text}>{JSON.stringify(itemSelected as TranslationModel)}</Text>
+            {renderEditItem(itemSelected, handleItemChange, handleRemove)}
           </ScrollView>
         </View>
       }
-      {itemSelected ? renderEditItem(itemSelected, handleItemChange) : null}
     </MiniModal>
   </MiniModal>
 }

@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {Modal, StyleSheet, View} from 'react-native';
+import {Modal, Pressable, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import { ThemeAndColorsModel } from 'src/tools/getTheme';
 
 interface MiniModalModel {
@@ -7,9 +7,10 @@ interface MiniModalModel {
   handleClose: () => void
   theme: ThemeAndColorsModel
   children?: React.ReactNode
+  style?: StyleSheet.NamedStyles<{}>
 }
 
-export const MiniModal:FC<MiniModalModel> = ({shown, children, handleClose, theme}) => {
+export const MiniModal:FC<MiniModalModel> = ({shown, children, handleClose, theme, style: customStyles}) => {
   const styles = StyleSheet.create({
     centeredView: {
       flex: 1,
@@ -42,11 +43,11 @@ export const MiniModal:FC<MiniModalModel> = ({shown, children, handleClose, them
       transparent={true}
       visible={shown}
       onRequestClose={handleClose}>
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
+      <Pressable style={styles.centeredView} onPress={() =>{ /* haven't make closing handler b.c. any modal press triggers it */ }}>
+        <View style={{...styles.modalView, ...customStyles}}>
           {children}
         </View>
-      </View>
+      </Pressable>
     </Modal>
   );
 };

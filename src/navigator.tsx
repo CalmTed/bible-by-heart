@@ -17,7 +17,6 @@ interface NavigatorModel {
 }
 
 export const Navigator: FC<NavigatorModel> = ({ state }) => {
-    console.log("TODO: moved homescreen on top so it would open first")
     return (
         <NavigationContainer>
             <Stack.Navigator
@@ -28,13 +27,13 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
                 }}
             >
                 <Stack.Screen
-                    name={SCREEN.settings}
-                    component={SettingsScreen}
+                    name={SCREEN.home}
+                    component={HomeScreen}
                     initialParams={{ ...state }}
                 />
                 <Stack.Screen
-                    name={SCREEN.home}
-                    component={HomeScreen}
+                    name={SCREEN.settings}
+                    component={SettingsScreen}
                     initialParams={{ ...state }}
                 />
                 <Stack.Screen

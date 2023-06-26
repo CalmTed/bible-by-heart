@@ -6,13 +6,14 @@ import {
     PASSAGE_LEVEL,
     SETTINGS,
     SORTING_OPTION,
+    STATS_METRICS,
     TEST_LEVEL,
     THEME_TYPE,
     VERSION,
     archivedName,
-    defaultTranslations
+    getDefaultTranslations
 } from './constants';
-import { AddressType, AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, PassageModel, TestModel } from './models';
+import { AddressType, AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, PassageModel, TestModel, TranslationModel } from './models';
 
 const genId: () => number = () => {
     return Math.round(Math.random() * 1000000000);
@@ -35,8 +36,9 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
             tags: [archivedName],
             selectedLevels: [],
             maxLevels: [],
+            translations: []
         },
-        sort: SORTING_OPTION.adress,
+        sort: SORTING_OPTION.address,
         settings: {
             [SETTINGS.langCode]: langCode,
             [SETTINGS.theme]: THEME_TYPE.auto,
@@ -52,8 +54,9 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
             [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
             [SETTINGS.remindersList]: [],
 
-            [SETTINGS.translations]: defaultTranslations,//dont need id for now, just user provided name
-            [SETTINGS.homeScreenStatsType]: 'auto'//dont need id for now, just user provided name
+            [SETTINGS.translations]: getDefaultTranslations(langCode),//dont need id for now, just user provided name
+            [SETTINGS.homeScreenStatsType]: 'auto',//dont need id for now, just user provided name
+            [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses
         }
     };
 };
@@ -106,7 +109,7 @@ export const getVersesNumber: (adress: AddressType) => number = (address) => {
 export const createPassage: (
     address: AddressType,
     text: string,
-    translation?: string,
+    translation?: number,
     ownnerId?: number
 ) => PassageModel = (address, text, translation, ownerId) => {
     return {
@@ -125,8 +128,7 @@ export const createPassage: (
         isNewLevelAwalible: false,
         tags: [],
         isReminderOn: false,
-        isCollapsed: false,
-        translation: null,//>=0.0.7
+        isCollapsed: false
     };
 };
 
@@ -155,8 +157,8 @@ export const createTest: (
         sessionId,
         passageId,
         userId: userId || null,
-        dateStarted: 0,
-        dateFinished: 0,
+        triesDuration: [],
+        isFinished: false,
         level: selectedLevel(level),
         testData: {},
         errorNumber: null,
@@ -177,6 +179,15 @@ export const createAddress: () => AddressType = () => {
     };
 };
 
+export const createTranslation: (lang?: LANGCODE) => TranslationModel = (lang = LANGCODE.en) => {
+    return {
+        id: genId(),
+        addressLanguage: lang,
+        name: "---",
+        editable: true,
+        isDefault: false
+    }
+}
 
 /* initials archive */
 
@@ -203,6 +214,6 @@ export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
             selectedLevels: [],
             maxLevels: [],
         },
-        sort: SORTING_OPTION.adress
+        sort: SORTING_OPTION.address
     };
 };

@@ -1,4 +1,4 @@
-import { LANGCODE, PASSAGE_LEVEL, SETTINGS, SORTING_OPTION, TEST_LEVEL, THEME_TYPE } from './constants';
+import { LANGCODE, PASSAGE_LEVEL, SETTINGS, SORTING_OPTION, STATS_METRICS, TEST_LEVEL, THEME_TYPE } from './constants';
 
 export type AppStateModel = AppStateModel0_0_7
 
@@ -9,8 +9,8 @@ export interface AppStateModel0_0_7{
     dateSyncTry: number;
     dateSyncSuccess: number;
     passages: PassageModel[];
-    testsActive: TestModel[];
-    testsHistory: TestModel[];
+    testsActive: TestModel0_0_7[];
+    testsHistory: TestModel0_0_7[];
     // langCode: LANGCODE;
     // theme: 'dark' | 'light' | 'auto';
     // chapterNumbering: 'eastern' | 'vestern';
@@ -21,6 +21,7 @@ export interface AppStateModel0_0_7{
         tags: string[],
         selectedLevels: PASSAGE_LEVEL[],
         maxLevels: PASSAGE_LEVEL[]
+        translations: number[]
     },
     sort: SORTING_OPTION,
     settings: {
@@ -40,6 +41,7 @@ export interface AppStateModel0_0_7{
 
         [SETTINGS.translations]: TranslationModel[]//dont need id for now, just user provided name
         [SETTINGS.homeScreenStatsType]: 'auto' | 'dayStreak' | 'absoluteProgress' | 'monthProgress'
+        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS
     }
 }
 
@@ -49,7 +51,7 @@ export interface PassageModel {
     address: AddressType;
     versesNumber: number;
     verseText: string;
-    verseTranslation: string | null;
+    verseTranslation: number | null; //item id from settings.translation
     dateCreated: number;
     dateEdited: number;
     dateTested: number;
@@ -60,7 +62,6 @@ export interface PassageModel {
     tags: string[]; //archive and custom
     isReminderOn: boolean;
     isCollapsed: boolean;
-    translation: string | null;//>=0.0.7 option from settings
 }
 
 export interface exportingModel {
@@ -68,14 +69,16 @@ export interface exportingModel {
     passages: PassageModel[];
 }
 
-export interface TestModel {
+export type TestModel = TestModel0_0_7
+
+export interface TestModel0_0_7 {
     //for every passage every practice session
     id: number;
     sessionId: number; //tests are created before every session and deleted if not finished
     passageId: number;
     userId: number | null;
-    dateStarted: number;
-    dateFinished: number;
+    triesDuration: number[][]// start and finish
+    isFinished: boolean
     level: TEST_LEVEL;
     testData: {
         addressOptions?: AddressType[];
@@ -116,6 +119,7 @@ export interface ReminderModel{//>=0.0.7
 export interface TranslationModel{//>=0.0.7
     id: number
     editable: boolean
+    isDefault: boolean
     name: string
     addressLanguage: LANGCODE
 }
@@ -160,6 +164,7 @@ export enum ActionName {
     setSorting = 'setSorting',
     toggleFilter = 'toggleFilter',
     setSettingsParam = 'setSettingsParam',
+    setTranslationsList = 'setTranslationsList'
 }
 export type ActionModel =
     {
@@ -182,7 +187,7 @@ export type ActionModel =
         name: ActionName.setSettingsParam
         payload: {
             param: SETTINGS,
-            value: boolean
+            value: boolean | string
         }
     }
     | {
@@ -235,8 +240,13 @@ export type ActionModel =
             tag?: string
             selectedLevel?: PASSAGE_LEVEL
             maxLevel?: PASSAGE_LEVEL
+            translationId?: number
         }
-    };
+    }
+    | {
+        name: ActionName.setTranslationsList
+        payload: TranslationModel[]
+    }
 
 
 
@@ -251,8 +261,8 @@ export interface AppStateModel0_0_6{
     dateSyncTry: number;
     dateSyncSuccess: number;
     passages: PassageModel[];
-    testsActive: TestModel[];
-    testsHistory: TestModel[];
+    testsActive: TestModel0_0_6[];
+    testsHistory: TestModel0_0_6[];
     langCode: LANGCODE;
     theme: 'dark' | 'light' | 'auto';
     chapterNumbering: 'eastern' | 'vestern';
@@ -265,4 +275,36 @@ export interface AppStateModel0_0_6{
         maxLevels: PASSAGE_LEVEL[]
     },
     sort: SORTING_OPTION
+}
+
+export interface TestModel0_0_6 {
+    //for every passage every practice session
+    id: number;
+    sessionId: number; //tests are created before every session and deleted if not finished
+    passageId: number;
+    userId: number | null;
+    // triesDuration: [number, number][]// start and finish
+    dateStarted: number;//was non array in <0.0.7
+    dateFinished: number;//was non array in <0.0.7
+    level: TEST_LEVEL;
+    testData: {
+        addressOptions?: AddressType[];
+        passagesOptions?: PassageModel[];
+        missingWords?: number[]; //word index
+        showAddressOrFirstWords?: boolean;
+    };
+    errorNumber: number | null; // 0 if passed without error
+    errorType:
+        | (
+              | 'wrongAddressToVerse'
+              | 'wrongVerseToAddress'
+              | 'wrongWord'
+              | 'wrongFirstWord'
+              | 'moreThenOneCharacter'
+              | 'other'
+          )
+        | null;
+    wrongAddress: AddressType[];
+    wrongPassagesId: number[];
+    wrongWords: [number, string][]; //word index, wrong word string
 }

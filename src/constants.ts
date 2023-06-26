@@ -1,11 +1,9 @@
-import { ImageStyle, StyleSheet, TextStyle, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { TranslationModel } from './models';
 
 export const VERSION = '0.0.7';
 
 export const alowedStateVersions = ['0.0.4', '0.0.5', '0.0.6', VERSION]; //make translators for imported data
-
-
 
 export const API_VERSION = '0.0.1';
 //cant sync with oudated version
@@ -21,18 +19,20 @@ export const storageName = 'data';
 
 export const archivedName = 'Archived';
 
-export const defaultTranslations: TranslationModel[] = [
-    {
-        id: 0,
-        editable: false,
-        name: "ESV",
-        addressLanguage: LANGCODE.en
-    },
+export const getDefaultTranslations: (lang: LANGCODE) =>  TranslationModel[] = (lang) => [
     {
         id: 1,
         editable: false,
-        name: "УБТ",
-        addressLanguage: LANGCODE.ua
+        name: "ESV",
+        addressLanguage: LANGCODE.en,
+        isDefault: lang === LANGCODE.en
+    },
+    {
+        id: 2,
+        editable: false,
+        name: "UCVNTR",
+        addressLanguage: LANGCODE.ua,
+        isDefault: lang === LANGCODE.ua
     },
 ]
 
@@ -54,11 +54,17 @@ export enum SCREEN {
 
 export enum SORTING_OPTION {
         //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
-    adress = 'address',
+    address = 'address',
     resentlyCreated = 'resentlyCreated',
     oldestToTrain = 'oldestToTrain',
     selectedLevel = 'selectedLevel',
     maxLevel = 'maxLevel'
+}
+
+export enum STATS_METRICS {
+    minutes = 'minutes',
+    sesstions = 'sessions',
+    verses = 'verses'
 }
 
 export enum THEME_TYPE{
@@ -195,5 +201,7 @@ export enum SETTINGS{
     autoIncreeseLevel = "autoIncreeseLevel",
 
     translations = "translations",  
-    homeScreenStatsType = "homeScreenStatsType"
-}   
+    homeScreenStatsType = "homeScreenStatsType",
+    homeScreenWeeklyMetric = "homeScreenWeeklyMetric"
+}
+

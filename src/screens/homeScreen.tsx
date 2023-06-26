@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
 import { View, Text, StyleSheet } from "react-native"
-import { storageName, SCREEN, LANGCODE } from "../constants"
+import { storageName, SCREEN, LANGCODE, THEME_TYPE } from "../constants"
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
 import { AppStateModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
@@ -11,6 +11,7 @@ import storage from "../storage"
 import { getStroke } from "../tools/getStats"
 import { WeekActivityComponent } from "../components/weekActivityComponent"
 import { getTheme } from "../tools/getTheme"
+import { StatusBar } from "expo-status-bar"
 
 export interface ScreenModel {
   route: any
@@ -50,6 +51,7 @@ export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
       <Button theme={theme} title={t("homeList")} onPress={() => navigateWithState({navigation, screen: SCREEN.listPassage, state: state})}></Button>
       <Button theme={theme} title={t("homeSettings")} onPress={() => navigateWithState({navigation, screen: SCREEN.settings, state: state})}></Button>
     </View>
+    <StatusBar style={state.settings.theme === THEME_TYPE.light ? "dark" : "light"} />
   </View>
 }
 

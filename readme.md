@@ -54,15 +54,17 @@ Roadmap
       - [x] menu list 
       - [x] just text
       - [x] items list
-  - [ ] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x]  about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
-  - [ ] user settings:  - [ ] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), - [ ] request data removal, - [ ] remove local data
-  - [ ] edit passage translation (custom with autocomplete from other passages data)
-  - [ ] filter by translation (if there are several different)
+  - [x] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x]  about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
+  - [x] user settings:  - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
+  - [x] edit passage translation (custom with autocomplete from other passages data)
+  - [x] filter by translation (if there are several different)
   - [ ] adding passages from prepared list in the most popular translations(ESV,UBT)
-    - [ ] copyright page in settings
-    - [ ] limit length to 500 verses per passage
-  - [ ] delete tests history after deleting passage 
-  - [ ] add tag to filter on adding to passage, remove if it was last
+    - [x] copyright page in settings
+    - [x] limit length to 500 verses per passage
+  - [x] delete tests history after deleting passage
+  - [x] update all passages with translation that was deleted to "other/null"
+  - [x] add tag to filter on adding to passage, remove if it was last
+  - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
 - [ ] customizable daily reminder, more stats v0.0.8
   - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
   - [ ] export to csv, import from share(parse), or from other data types

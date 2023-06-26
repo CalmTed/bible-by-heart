@@ -112,8 +112,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
+        ...test
       }})
     }else{
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
@@ -149,7 +148,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   }
 
 
-  const levelFinished = !!test.dateFinished;
+  const levelFinished = test.isFinished;
   const nextUnselectedIndex = [...missingWords]
     .sort((a,b) => a - b)
     .filter(mw => !selectedWords.includes(mw))[0];
@@ -201,6 +200,7 @@ export const L30: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           // if there is an error and not finished yet
           !!errorIndex &&
           [...missingWords
+          //filter for only wrong index and right one
           .filter((mwi,i) => mwi === nextUnselectedIndex || mwi === errorIndex)
           .map((mwi,i) => {
             return <Button

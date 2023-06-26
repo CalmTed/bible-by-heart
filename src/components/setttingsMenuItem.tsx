@@ -1,7 +1,7 @@
 import { FC, useState } from "react"
 import { StyleSheet, View, Text, Pressable } from "react-native"
 import { OptionModel } from "../models"
-import { Select } from "./Select"
+import { SelectModal } from "./SelectModal"
 import { ThemeAndColorsModel } from "../tools/getTheme"
 import { LinearGradient } from "expo-linear-gradient"
 
@@ -146,14 +146,14 @@ export const SettingsMenuItem: FC<settingsMenuItemModel> = (data) => {
           <Text style={settingsMenuItemStyles.header}>{data.header}</Text>
           <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
         </Pressable>
-          <Select
+          <SelectModal
             theme={data.theme}
             isShown={selectOpen}
             options={data.options}
             selectedIndex={data.selectedIndex}
             onSelect={handleOptionSelect}
             onCancel={() => setSelectOpen(false)}
-          ></Select>
+          />
       </View>
     }
   </View>

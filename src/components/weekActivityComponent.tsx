@@ -11,8 +11,8 @@ export const WeekActivityComponent: FC<{
   t: (w: WORD) => string 
   theme: ThemeAndColorsModel
   }> = ({state, t, theme}) => {
-  const weekActivityData = getWeeklyStats(state.passages,state.testsHistory)
-  const maxValue = Math.max(...weekActivityData.map(d => d.verses))
+  const weekActivityData = getWeeklyStats(state)
+  const maxValue = Math.max(...weekActivityData.map(d => d.number))
   const day = new Date().getDay()
   const weekActivityStyles = StyleSheet.create({
     wrapper: {
@@ -28,7 +28,7 @@ export const WeekActivityComponent: FC<{
       return <DayActivityBar
         theme={theme}
         key={data.label}
-        value={data.verses}
+        value={data.number}
         maxValue={maxValue}
         label={t(data.label as WORD)}
         isToday={ (!!day ? day - 1 : 6) === i }//[0-6], 6 is sunday

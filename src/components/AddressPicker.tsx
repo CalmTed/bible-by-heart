@@ -5,7 +5,7 @@ import { IconButton } from "./Button"
 import { IconName } from "./Icon"
 import { WORD } from "../l10n"
 import { bibleReference } from "../bibleReference"
-import { createAddress } from "../initials"
+import { createAddress, getVersesNumber } from "../initials"
 import { ThemeAndColorsModel } from "../tools/getTheme"
 
 interface AddressPickerModel{
@@ -66,13 +66,25 @@ export const AddressPicker: FC<AddressPickerModel> = ({visible, address, onCance
       break;
       case Object.keys(tempAddres).length - 1:
         //auto confirming address
-        onConfirm({...tempAddres,[addresPart]: index})
+        !isDoneDisabled ? onConfirm({...tempAddres,[addresPart]: index}): null;
       break;
       default: setAddressPart(Object.keys(tempAddres)[curPartIndex + 1]);
     }
   }
-  const isDoneDisabled = (isNaN(tempAddres.bookIndex) || isNaN(tempAddres.startChapterNum) || isNaN(tempAddres.startVerseNum) ) ||
-    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum));
+  const allBookAddress:AddressType = {
+    bookIndex: tempAddres.bookIndex,
+    startChapterNum: 0,
+    startVerseNum: 0,
+    endChapterNum: chaptersNumber,
+    endVerseNum: bibleReference[tempAddres.bookIndex]?.chapters[chaptersNumber - 1]
+  }
+  const isDoneDisabled = (isNaN(tempAddres.bookIndex) ||
+    isNaN(tempAddres.startChapterNum) ||
+    isNaN(tempAddres.startVerseNum) ) ||
+    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum)) ||
+    getVersesNumber(tempAddres) > 500 ||
+    //if more then one chapter and more then half of the book
+    (tempAddres.endChapterNum !== tempAddres.startChapterNum && getVersesNumber(tempAddres) > getVersesNumber(allBookAddress) / 2);
   return <Modal visible={visible}>
     {/* HEADER */}
     <View style={{...theme.theme.view,...APstyle.headerView}}>

@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, ToastAndroid } from "react-native"
-import { storageName, SCREEN, LANGCODE, alowedStateVersions, VERSION, THEME_TYPE, archivedName, SETTINGS } from "../constants"
-import { ActionName, AppStateModel, ReminderModel, TrainModeModel, TranslationModel, exportingModel } from "../models"
+import { View, Text, StyleSheet, ScrollView, ToastAndroid, TextInput } from "react-native"
+import { storageName, SCREEN, LANGCODE, VERSION, THEME_TYPE, archivedName, SETTINGS, STATS_METRICS } from "../constants"
+import { ActionName, AppStateModel, TranslationModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { createT } from "../l10n"
 import { Button, IconButton } from "../components/Button"
@@ -15,8 +15,9 @@ import { getTheme } from "../tools/getTheme"
 import { StatusBar } from "expo-status-bar"
 import { MiniModal } from "../components/miniModal"
 import { Input } from "../components/Input"
-import { createAppState } from "../initials"
+import { createAppState, createTranslation } from "../initials"
 import { SettingsListWrapper } from "../components/settingsListWrapper"
+import { Select } from "../components/Select"
 
 export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -99,10 +100,18 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
   ].filter((v,i,arr) => 
     !arr.slice(0,i).includes(v)
   )//get unique tags
+  const languageOptions = Object.entries(LANGCODE).map(([k,v]) => {
+    const customT = createT(v)
+    return {
+      value: k,
+      label: `${customT("name")} ${customT("flag")}`
+    }
+  })
   return <View style={{...theme.theme.screen,...theme.theme.view}}>
-    <Header theme={theme} navigation={navigation} showBackButton={false} title={t("settingsScreenTitle")} additionalChild={
-      <IconButton theme={theme} icon={IconName.done} onPress={() => navigateWithState({screen: SCREEN.home, state, navigation})}/>
-    } />
+    <Header theme={theme} navigation={navigation} showBackButton={false} alignChildren="flex-start" additionalChildren={[
+      <IconButton theme={theme} icon={IconName.back} onPress={() => navigateWithState({screen: SCREEN.home, state, navigation})}/>,
+      <Text style={theme.theme.headerText}>{t("settingsScreenTitle")}</Text>]}
+    />
     <ScrollView style={settingsStyle.scrollView}>
       {/* <View style={settingsStyle.topUserDataView}>
         <View style={{...settingsStyle.userImageView, backgroundColor: theme.colors.textSecond}}>
@@ -125,13 +134,7 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           header={t("settsChangeLang")}
           subtext={`${t("name")} ${t("flag")}`}
           type="select"
-          options={Object.entries(LANGCODE).map(([k,v]) => {
-            const customT = createT(v)
-            return {
-              value: k,
-              label: `${customT("name")} ${customT("flag")}`
-            }
-          })}
+          options={languageOptions}
           selectedIndex={Object.keys(LANGCODE).indexOf(state.settings.langCode)}
           onSelect={(value) => {
             setState(st => 
@@ -202,12 +205,72 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           shown={isTranslationsListShown}
           handleClose={ () => setTranslationsListShown(false) }
           header={t("settsTranslationsListHeader")}
-          handleAddNew={ () => { console.log("adding new")} }
-          handleRemove={ (changedItem) => {} }
-          handleItemChange={ (changedItem) => {} }
+          handleAddNew={ () =>
+            setState(st => 
+              reduce(st, {
+                name: ActionName.setTranslationsList,
+                payload: [...state.settings.translations, createTranslation(state.settings.langCode)]
+              }) || st
+            ) }
+          handleRemove={changedItem =>
+            setState(st => 
+              reduce(st, {
+                name: ActionName.setTranslationsList,
+                payload: state.settings.translations.filter(t => t.id !== changedItem.id)
+              }) || st
+          )}
+          handleItemChange={ changedItem =>
+            setState(st => 
+              reduce(st, {
+                name: ActionName.setTranslationsList,
+                payload: state.settings.translations.map(t => t.id === changedItem.id ? changedItem as TranslationModel : t)
+              }) || st
+            ) }
           items={state.settings.translations}
-          renderListItem={(item) => <Text style={theme.theme.headerText}>{(item as TranslationModel).name}</Text> }
-          renderEditItem={(item, handleChange ) => <Text>{(item as TrainModeModel).id}</Text>}
+          renderListItem={(item) => 
+            <Text style={theme.theme.headerText}>
+              {`${(item as TranslationModel).name} ${(item as TranslationModel).isDefault ? "*" : ""}`}
+            </Text>
+          }
+          renderEditItem={(item, handleChange, handleRemove ) => {
+            const translationItem = item as TranslationModel;
+            return <View style={{gap: 20}}>
+              {/* name */}
+              <Text style={theme.theme.text}>{t("settsTranslationItemName")}:</Text>
+              <Input
+                value={translationItem.name}
+                onChange={value => handleChange({...item, name: value})}
+                onSubmit={value => handleChange({...item, name: value})}
+                placeholder={t("settsTranslationItemName")}
+                theme={theme}
+                disabled={!translationItem.editable}
+                maxLength={20}
+              />
+              {/* language */}
+              <Text style={theme.theme.text}>{t("settsTranslationItemLanguage")}:</Text>
+              <Select
+                options={languageOptions}
+                selectedIndex={languageOptions.map(o => o.value).indexOf(translationItem.addressLanguage)}
+                onSelect={ value => handleChange({...item, addressLanguage: value as LANGCODE})}
+                theme={theme}
+                disabled={!translationItem.editable}
+                />
+              {/* remove */}
+              <Button theme={theme} 
+                onPress={() => setState(st => 
+                  reduce(st, {
+                    name: ActionName.setTranslationsList,
+                    payload: state.settings.translations.map(t => t.id === translationItem.id ? {...translationItem, isDefault: true} : {...t, isDefault: false})
+                  }) || st
+                )}
+                type={!translationItem.isDefault ? "outline": "transparent"}
+                disabled={translationItem.isDefault}
+                title={t("TranslationSetDefault")}
+              />
+              <Button theme={theme} onPress={() => handleRemove(translationItem)} type={translationItem.editable ? "outline": "transparent"} color="red" title={t("Remove")} disabled={!translationItem.editable}/>
+            </View>
+          }
+          }
         />
         {/* TESTS */}
         <SettingsMenuItem
@@ -246,6 +309,36 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
                 payload: {
                   param: SETTINGS.autoIncreeseLevel,
                   value: value
+                }
+              }) || st
+            )
+          }}
+        />
+        {/* STATS */}
+        <SettingsMenuItem
+          theme={theme}
+          header={t("settsLabelStats")}
+          type="label"
+        />
+        <SettingsMenuItem
+          theme={theme}
+          header={t("settsWeeklyMetrics")}
+          subtext={`${t(state.settings.homeScreenWeeklyMetric)}`}
+          type="select"
+          options={Object.values(STATS_METRICS).map((v) => {
+            return {
+              value: v,
+              label: t(v)
+            }
+          })}
+          selectedIndex={Object.values(STATS_METRICS).indexOf(state.settings.homeScreenWeeklyMetric)}
+          onSelect={(value) => {
+            setState(st => 
+              reduce(st, {
+                name: ActionName.setSettingsParam,
+                payload: {
+                  param: SETTINGS.homeScreenWeeklyMetric,
+                  value
                 }
               }) || st
             )
@@ -340,9 +433,10 @@ export const SettingsScreen: FC<ScreenModel> = ({route, navigation}) => {
           theme={theme}
           shown={isStateViewerModalOpen}
           handleClose={() => setIsStateViewerModalOpen(false)}
+          style={{width: "100%"}}
         >
-          <ScrollView>
-            <Text style={theme.theme.text}>{JSON.stringify(state, null , "_ ")}</Text>
+          <ScrollView style={{width: "100%"}}>
+            <TextInput style={{...theme.theme.text,width: "100%"}} multiline={true} >{JSON.stringify(state, null , "_ ")}</TextInput>
           </ScrollView>
         </MiniModal>
         </View>

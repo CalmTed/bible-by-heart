@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from "react"
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native"
-import { PASSAGE_LEVEL, archivedName } from "../constants"
+import { LANGCODE, PASSAGE_LEVEL, archivedName } from "../constants"
 import { AddressType, AppStateModel, PassageModel } from "../models"
 import { Button, IconButton } from "./Button"
 import { IconName } from "./Icon"
-import { WORD } from "../l10n"
+import { WORD, createT } from "../l10n"
 import addressToString from "../tools/addressToString"
 import { TextInput } from "react-native-gesture-handler"
 import timeToString from "../tools/timeToString"
@@ -12,6 +12,8 @@ import { getVersesNumber } from "../initials"
 import { AddressPicker } from "./AddressPicker"
 import { LevelPicker } from "./LevelPicker"
 import { ThemeAndColorsModel, getTheme } from "../tools/getTheme"
+import { Select } from "./Select"
+import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses"
 
 interface PassageEditorModel{
   visible: boolean
@@ -40,7 +42,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
   }
   const handleTextChange = (newVal: string) => {
     setPassage(prv => {
-      return {...prv, verseText: newVal.trim()}
+      return {...prv, verseText: newVal.replace(/  /g," ").trim()}
     })
   }
   const handleRemove = (id: number) => {
@@ -67,9 +69,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
     })
   }
   const handleAddresChange = (newAdress: AddressType) => {
-    setPassage(prv => {
-      return {...prv, address: newAdress}
-    })
+    const versesInEnglish = getNumberOfVersesInEnglish(state.settings.translations, state.passages.map(p => p.id === tempPassage.id ? tempPassage : p)) 
+    if(versesInEnglish <= 500){
+      setPassage(prv => {
+        return {...prv, address: newAdress, versesNumber: getVersesNumber(newAdress)}
+      })
+    }
     setAPVisible(false);
   }
   const handleLevelPickerOpen = () => {
@@ -82,6 +87,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       return {...prv, selectedLevel: level}
     })
   }
+  const handleTranslationChange = (value: string) => {
+    setPassage(prv => {
+      return {...prv, verseTranslation: value === "null" ? null : parseInt(value)}
+    })
+  } 
   const theme = getTheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
@@ -171,18 +181,19 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
       flexDirection: "row"
     }
   });
+  const tempT = createT(state.settings.translations.find(t => t.id === tempPassage.verseTranslation)?.addressLanguage || state.settings.langCode);
   return <Modal visible={visible}>
     <View style={{ ...theme.theme.view,...PEstyle.headerView}}>
-      <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} />
+      <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.back} onPress={handleConfirm} />
+      {/* <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} /> */}
       <Text style={PEstyle.headerTitle}>{ t("EditPassageTitle") }</Text>
-      <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.done} onPress={handleConfirm} />
     </View>
 
     <View style={PEstyle.listView}>
       <ScrollView>
         <View style={PEstyle.bodyTop}>
           <Pressable onPress={() => setAPVisible(true)}>
-            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, t)}{`(${getVersesNumber(tempPassage.address)})`}</Text>
+            <Text style={PEstyle.bodyTopAddress}>{addressToString(tempPassage.address, tempT)}{`(${getVersesNumber(tempPassage.address)})`}</Text>
           </Pressable>
           {/* <IconButton onPress={handleReminderToggle} icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/> */}
         </View>
@@ -206,20 +217,33 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
           <Text style={PEstyle.bodyMetaText}>{t("DateEdited")}: {timeToString(tempPassage.dateEdited)}</Text>
           <Text style={PEstyle.bodyMetaText}>{tempPassage.dateTested ? t("DateTested") + ": "+ timeToString(tempPassage.dateTested) : ""}</Text>
         </View>
-        <LevelPicker 
-          t={t}
-          targetPassage={tempPassage}
-          handleChange={handleLevelChange}
-          handleOpen={handleLevelPickerOpen}
-          state={state}
-        />
+        <View style={{flexDirection: "row", width: "100%", justifyContent: "space-evenly", alignItems: "center"}}>
+          <Select
+            theme={theme}
+            options={[
+              {label: t("TranslationOther"), value: "null"},
+              ...state.settings.translations.map(t => {
+                return {label: t.name, value: t.id.toString()}
+              })
+            ]}
+            selectedIndex={state.settings.translations.map(t => t.id).indexOf(tempPassage.verseTranslation || -1) + 1}
+            onSelect={handleTranslationChange}            
+          />
+          <LevelPicker 
+            t={t}
+            targetPassage={tempPassage}
+            handleChange={handleLevelChange}
+            handleOpen={handleLevelPickerOpen}
+            state={state}
+          />
+          </View>
         <View style={PEstyle.bodyButtons}>
           <Button theme={theme} title={tempPassage.tags.includes(archivedName) ? t("Unrchive") : t("Archive")} onPress={() => handleTagAdd(archivedName)}/>
           <Button theme={theme} title={t("Remove")} onPress={() => handleRemove(tempPassage.id)} color="red"/>
         </View>
       </ScrollView>
     </View>
-    <AddressPicker theme={theme} visible={isAPVisible} address={tempPassage.address} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={t}/>
+    <AddressPicker theme={theme} visible={isAPVisible} address={tempPassage.address} onCancel={() => setAPVisible(false)} onConfirm={handleAddresChange} t={tempT}/>
   </Modal>
 }
 

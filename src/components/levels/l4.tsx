@@ -88,8 +88,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     if(JSON.stringify(targetPassage.address) === JSON.stringify(value)){
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
+        ...test
       }})
     }else{
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
@@ -159,7 +158,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const isCorrect = targetPassage.verseText.trim().startsWith(passageText.trim()) ||
    targetPassage.verseText === passageText
 
-  const levelFinished = !!test.dateFinished;
+  const levelFinished = test.isFinished;
   const isAddressProvided = test.testData.showAddressOrFirstWords;
   const theme = getTheme(state.settings.theme);
   return <View style={levelComponentStyle.levelComponentView}>

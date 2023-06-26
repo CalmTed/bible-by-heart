@@ -83,9 +83,8 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     if(JSON.stringify(rightPassage.address) === JSON.stringify(value)){
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
-      }})
+        ...test
+      }})//adding finish date and isFifish on reducer
     }else{
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
       setErrorValue(selectedAddress)
@@ -98,7 +97,7 @@ export const L20: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   if(!targetPassage){
     return <View></View>;
   }
-  const levelFinished = !!test.dateFinished;
+  const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <ScrollView style={{...levelComponentStyle.passageTextView}}>
@@ -198,8 +197,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     if(passage.id === value){
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testRight) : null;
       submitTest({isRight: true, modifiedTest: {
-        ...test,
-        dateFinished: new Date().getTime()
+        ...test
       }})
     }else{
       state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.testWrong) : null;
@@ -214,7 +212,7 @@ export const L21: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   if(!targetPassage){
     return <View></View>;
   }
-  const levelFinished = !!test.dateFinished;
+  const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
   return <View style={{...levelComponentStyle.levelComponentView}}>
     <View style={{...levelComponentStyle.addressTextView}}>

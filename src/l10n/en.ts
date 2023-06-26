@@ -1,4 +1,4 @@
-import { SORTING_OPTION, THEME_TYPE } from "../constants";
+import { SORTING_OPTION, STATS_METRICS, THEME_TYPE } from "../constants";
 
 export const en = {
   name: "English",
@@ -32,21 +32,26 @@ export const en = {
   CheckText: "Check text",
   LevelSkip: "Skip level",
   ButtonContinue: "Contunue",
-  [SORTING_OPTION.adress]: "Address", 
+  [SORTING_OPTION.address]: "Address", 
   [SORTING_OPTION.selectedLevel]: "Selected level", 
   [SORTING_OPTION.maxLevel]: "Max level", 
   [SORTING_OPTION.oldestToTrain]: "Oldest to train", 
   [SORTING_OPTION.resentlyCreated]: "Recently created", 
+  TranslationSetDefault: "Set as default",
 
   [THEME_TYPE.auto]: "System default",
   [THEME_TYPE.dark]: "Dark",
   [THEME_TYPE.light]: "Light",
+
+  [STATS_METRICS.minutes]: "Minutes",
+  [STATS_METRICS.verses]: "Sum of verses",
+  [STATS_METRICS.sesstions]: "Sessions",
   //titles
   listScreenTitle: "Passages list",
   APSelectBook: "Select book",
   EditPassageTitle: "Edit passage",
   titleWelldone: "Well done",
-  LanguagePickerHeading: "Select level",
+  LevelPickerHeading: "Select level",
   settingsScreenTitle: "Settings",
   TitleSort: "Sorting",
   TitleFilters: "Filters",
@@ -59,14 +64,17 @@ export const en = {
   LevelSelectAddress: "Select address",
   LevelStartWritingPassage: "Start writing passage",
   LevelWritePassageText: "Write passage text",
-  LanguagePickerSubtext: "Train this passage 3 times without an error to open next level",
-  LanguagePickerSubtextSecond: "Level will change next time",
+  LevelPickerSubtext: "Train this passage 3 times without an error to open next level",
+  LevelPickerSubtextSecond: "Level will change next time",
+  LevelPickerSubtextL5: "Perfect stroke",
   TestsAddPassagesToTest: "Add some passages to list to be able to test them",
   version: "Version",
   TestsCompleted: "Tests completed",
   ErrorsMade: "Errors made",
   NumberOfPassages: "Number of passages",
   NumberOfVerses: "Number of verses", 
+  NumberOfVersesLeanredAddress: "Verses with address learned",
+  NumberOfVersesLeanredText: "Verses with text learned",
   FinishPassage: "Finish writing passage",
   FinishPassageL5: "Finish writing passage without any autocomplete",
   LevelL40Hint: "Press Enter to select first autocomplete option from list",
@@ -75,6 +83,7 @@ export const en = {
   DaysStroke: "Days stroke",
   NoTagsFound: "Add tags to passages to add them here",
   Tags: "Tags",
+  Translations: "Translations",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",
@@ -105,6 +114,13 @@ export const en = {
   settsDisabled: "Disabled",
   settsTranslationsListHeader: "Translations list",
   settsTranslationsListSubtext: "Edit list of passage Bible translations",
+  settsTranslationItemName: "Translation name/code",
+  settsTranslationItemLanguage: "Translation language",
+  settsLabelStats: "Statistics",
+  settsWeeklyMetrics: "Weekly metrics",
+  TranslationOther: "Other",
+
+  ErrorCantAddMoreEngVerses: "Can't add more then 500 verses in English",
 
   dayMO: "Mo",
   dayTU: "Tu",

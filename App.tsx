@@ -1,5 +1,4 @@
-import { StatusBar } from 'expo-status-bar';
-import { THEME_TYPE, VERSION, storageName } from './src/constants';
+import { VERSION, storageName } from './src/constants';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { AppStateModel } from './src/models';
 import { Navigator } from './src/navigator';
@@ -41,9 +40,9 @@ export default function App() {
                             setReady(true);
                         }else{
                             //if it is not possible to convert create new one with backup
-                                ToastAndroid.show("Error with convering app state. Backup saved.", 10000)
-                                setState(createAppState);
-                                setReady(true);
+                            ToastAndroid.show("Error with convering app state. Backup saved.", 10000)
+                            setState(createAppState);
+                            setReady(true);
                         }
                     })
                     }
@@ -54,12 +53,9 @@ export default function App() {
             });
     });
 
-
-
     return (
         <>
             {isReady && <Navigator state={state}/>}
-
         </>
     );
 }

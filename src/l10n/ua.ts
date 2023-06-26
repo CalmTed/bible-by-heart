@@ -1,4 +1,4 @@
-import { SORTING_OPTION, THEME_TYPE } from "../constants";
+import { SORTING_OPTION, STATS_METRICS, THEME_TYPE } from "../constants";
 import { en } from "./en";
 
 export const ua: typeof en = {
@@ -35,22 +35,26 @@ export const ua: typeof en = {
   CheckText: "Перевірити текст",
   LevelSkip: "Пропустити рівень",
   ButtonContinue: "Продовжити",
-  [SORTING_OPTION.adress]: "Адреса",
+  [SORTING_OPTION.address]: "Адреса",
   [SORTING_OPTION.selectedLevel]: "Обраний рівень", 
   [SORTING_OPTION.maxLevel]: "Доступний рівень", 
   [SORTING_OPTION.oldestToTrain]: "Треновані найдавніше", 
   [SORTING_OPTION.resentlyCreated]: "Нещодавно додані", 
-
+  TranslationSetDefault: "Поставити за замовченням",
 
   [THEME_TYPE.auto]: "Системна",
   [THEME_TYPE.dark]: "Темна",
   [THEME_TYPE.light]: "Світла",
+  
+  [STATS_METRICS.minutes]: "Хвилини",
+  [STATS_METRICS.verses]: "Кількість віршів",
+  [STATS_METRICS.sesstions]: "Підходи",
   //titles
   listScreenTitle: "Список віршів",
   APSelectBook: "Оберіть книгу",
   EditPassageTitle: "Редагування тексту",
   titleWelldone: "Чудова робота!",
-  LanguagePickerHeading: "Оберіть рівень",
+  LevelPickerHeading: "Оберіть рівень",
   settingsScreenTitle: "Налаштування",
   TitleSort: "Сортування",
   TitleFilters: "Фільтрування",
@@ -63,14 +67,17 @@ export const ua: typeof en = {
   LevelSelectAddress: "Обери адресу",
   LevelStartWritingPassage: "Напиши перші слова",
   LevelWritePassageText: "Напиши текст вірша",
-  LanguagePickerSubtext: "Пройди цей рівень тричі без помилок, щоби відкрити наступний рівень",
-  LanguagePickerSubtextSecond: "Рівень зміниться наступного разу",
+  LevelPickerSubtext: "Пройди цей рівень тричі без помилок, щоби відкрити наступний рівень",
+  LevelPickerSubtextSecond: "Рівень зміниться наступного разу",
+  LevelPickerSubtextL5: "Тестів без помилок поспіль",
   TestsAddPassagesToTest: "Додай тексти у список щоб мати змогу їх вчити",
   version: "Веріся",
   TestsCompleted: "Завдань завершено",
   ErrorsMade: "Помилок зроблено",
   NumberOfPassages: "Кількість текстів",
   NumberOfVerses: "Кількість віршів", 
+  NumberOfVersesLeanredAddress: "Віршів із вивченою адресою",
+  NumberOfVersesLeanredText: "Віршів із вивченим текстом",
   FinishPassage: "Заверши цей вірш, щоби ввести адресу",
   FinishPassageL5: "Заверши цей вірш без жодного автодоповнення",
   LevelL40Hint: "Тисни Enter для швидкого обрання першого варіанту зі списку автодоповнення",
@@ -79,7 +86,7 @@ export const ua: typeof en = {
   DaysStroke: "Днів поспіль",
   NoTagsFound: "Додай категорії текстам, щоби вони відображались тут",
   Tags: "Категорії",
-
+  Translations: "Переклади",
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",
@@ -110,7 +117,13 @@ export const ua: typeof en = {
   settsDisabled: "Вимкнено",
   settsTranslationsListHeader: "Список перекладів",
   settsTranslationsListSubtext: "Редагувати список перекладів Біблії",
+  settsTranslationItemName: "Назва перекладу",
+  settsTranslationItemLanguage: "Мова перекладу",
+  settsLabelStats: "Статистика",
+  settsWeeklyMetrics: "Тижнева статистика",
+  TranslationOther: "Інший",
 
+  ErrorCantAddMoreEngVerses: "Не можна додавати більше 500 віршів англійською",
 
   dayMO: "Пн",
   dayTU: "Вт",

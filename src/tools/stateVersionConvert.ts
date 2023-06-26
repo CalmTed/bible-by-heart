@@ -1,6 +1,6 @@
     import { SETTINGS, VERSION } from "../../src/constants"
 import { createAppState0_0_7 } from "../../src/initials"
-import { AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7 } from "../../src/models"
+import { AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, TestModel0_0_6, TestModel0_0_7 } from "../../src/models"
 
 
 type converterType = (stateFrom: any) => any
@@ -15,19 +15,25 @@ const to007: converterType = (stateFrom) => {
       devMode,
       langCode,
       chapterNumbering
+      tests.dateStarted
+      tests.dateFinished
   + added: settings object
       langCode, theme, devMode, remindersList, chapterNumbering,
       remindersEnabled, remindersSmartTime, hapticsEnabled, soundsEnabled, compressOldTestsData, leftSwipeTag, autoIncreeseLevel, translations,
+    filters.translation
+    tests.triesDuration
+
   */
   const initial0_0_7 = createAppState0_0_7();
-  console.log(from, from.langCode)
-  // console.log({
-  //   [SETTINGS.langCode]: from.langCode,
-  //   [SETTINGS.theme]: from.theme,
-  //   [SETTINGS.devMode]: from.devMode,
-  //   [SETTINGS.remindersList]: [],//there were no ways for user to edit this
-  //   [SETTINGS.chapterNumbering]: from.chapterNumbering,//this too, but who cares, right
-  // });
+  const convertTests: (arg: TestModel0_0_6[]) => TestModel0_0_7[] = (arg) => {
+    return arg.map(test => {
+      return {
+        ...test,
+        triesDuration: [[test.dateStarted, test.dateFinished]],
+        isFinished: true
+      } as TestModel0_0_7
+  })
+  };
   const to = {
     version: "0.0.7",
     lastChange: from.lastChange,
@@ -35,13 +41,14 @@ const to007: converterType = (stateFrom) => {
     dateSyncSuccess: from.dateSyncSuccess,
     apiVersion: "0.0.1",
     passages: from.passages,
-    testsActive: from.testsActive,
-    testsHistory: from.testsHistory,
+    testsActive: [],//removing active tests
+    testsHistory: convertTests(from.testsHistory),
     userId: from.userId,
     filters: {
         tags: from.filters.tags,
         selectedLevels: from.filters.selectedLevels,
         maxLevels: from.filters.maxLevels,
+        translations: []// new in 0.0.7
     },
     sort: from.sort,
     settings: {

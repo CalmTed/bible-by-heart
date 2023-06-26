@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated, Vibration } from "react-native"
-import { storageName, archivedName, PASSAGE_LEVEL, SORTING_OPTION } from "../constants"
+import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, StyleProp, TextStyle, Animated, Vibration, ToastAndroid } from "react-native"
+import { storageName, archivedName, PASSAGE_LEVEL, SORTING_OPTION, LANGCODE } from "../constants"
 import { ActionName, AddressType, AppStateModel, PassageModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
 import { SCREEN } from "../constants";
@@ -18,7 +18,8 @@ import { Swipeable } from "react-native-gesture-handler"
 import { reduce } from "../tools/reduce"
 import { MiniModal } from "../components/miniModal"
 import timeToString from "../tools/timeToString"
-import { ThemeAndColorsModel, getTheme } from "../tools/getTheme"
+import { getTheme } from "../tools/getTheme"
+import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses"
 
 export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
@@ -26,8 +27,8 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   const [isAPOpen, setAPOpen] = useState(false);
   
   const [isPEOpen, setPEOpen] = useState(false);
-  const [selectedPassage, setSelectedPassage] = useState(createPassage(createAddress(), ""));
   const [state, setState] = useState(oldState);
+  const [selectedPassage, setSelectedPassage] = useState(createPassage(createAddress(), "", state.settings.translations.find(t => t.isDefault)?.id));
 
   const [searchText, setSearch] = useState("");
   const [isFiltersOpen, setOpenFilters] = useState(false)
@@ -55,8 +56,14 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
   }
   const handleAPSubmit = (address: AddressType) => {
     setAPOpen(false);
-    setSelectedPassage(createPassage(address, ""));
-    setPEOpen(true);
+    const newPassage = createPassage(address, "", state.settings.translations.find(t => t.isDefault)?.id)
+    const versesInEnglish = getNumberOfVersesInEnglish(state.settings.translations, [...state.passages, newPassage]);
+    if(versesInEnglish < 500){
+      setSelectedPassage(newPassage);
+      setPEOpen(true);
+    }else{
+      ToastAndroid.show(t("ErrorCantAddMoreEngVerses"), 10000)
+    }
   }
   const handlePECancel = () => {
     setPEOpen(false);
@@ -109,14 +116,15 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       return newState ? newState : prv;
     })
   }
-  const handleFilterChange:(arg: {tag?: string, selectedLevel?: PASSAGE_LEVEL, maxLevel?: PASSAGE_LEVEL}) => void = ({tag, selectedLevel, maxLevel}) => {
+  const handleFilterChange:(arg: {tag?: string, selectedLevel?: PASSAGE_LEVEL, maxLevel?: PASSAGE_LEVEL, translation?: number}) => void = ({tag, selectedLevel, maxLevel, translation}) => {
     setState((prv) => {
       const newState = reduce(prv, {
         name: ActionName.toggleFilter,
         payload: {
           tag: tag,
           selectedLevel: selectedLevel,
-          maxLevel: maxLevel
+          maxLevel: maxLevel,
+          translationId: translation
         }
       });
       return newState ? newState : prv;
@@ -135,18 +143,19 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
         !p.tags.includes(archivedName) :
         true
     const isSelectedLevelFilteringShown = state.filters.selectedLevels.filter(SLFilter => p.selectedLevel === SLFilter).length === 0
-    const isMaxLevelFilteringShown = state.filters.maxLevels.filter(SLFilter => p.maxLevel === SLFilter).length === 0
+    const isMaxLevelFilteringShown = state.filters.maxLevels.filter(MLFilter => p.maxLevel === MLFilter).length === 0
+    const isTranslationsFilteringShown = state.filters.translations.filter(TFilter => p.verseTranslation === TFilter).length === 0
     const isSearchMetFilteringNeeded = !!searchText.length
     const isSearchFilteringShown = isSearchMetFilteringNeeded ?
       p.verseText.toLowerCase().includes(searchText.toLowerCase())
       || addressToString(p.address, t).toLowerCase().includes(searchText.toLowerCase())
       || p.tags.join("").toLowerCase().includes(searchText.toLowerCase()) :
       true;
-    return isTagFilteringShown && isSearchFilteringShown && isSelectedLevelFilteringShown && isMaxLevelFilteringShown
+    return isTagFilteringShown && isSearchFilteringShown && isSelectedLevelFilteringShown && isMaxLevelFilteringShown && isTranslationsFilteringShown
   })
   const sortedPassages = filteredPassages.sort((a, b) => {
     switch(state.sort){
-      case SORTING_OPTION.adress:
+      case SORTING_OPTION.address:
         const getAddressDifference = (a: PassageModel, b: PassageModel) => {
           if(a.address.bookIndex !== b.address.bookIndex){
             return a.address.bookIndex - b.address.bookIndex
@@ -191,9 +200,10 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
     },
   });
   return <View style={{...theme.theme.screen,...theme.theme.view}}>
-    <Header theme={theme} navigation={navigation} showBackButton={false} title={t("listScreenTitle")} additionalChildren={[
-      <IconButton theme={theme} icon={IconName.add} onPress={handleAPOpen} />,
-      <IconButton theme={theme} icon={IconName.done} onPress={() => navigateWithState({navigation, screen: SCREEN.home, state})} />
+    <Header theme={theme} navigation={navigation} showBackButton={false} alignChildren="space-between" additionalChildren={[
+      <IconButton theme={theme} icon={IconName.back} onPress={() => navigateWithState({navigation, screen: SCREEN.home, state})} />,
+      <Text style={theme.theme.headerText}>{t("listScreenTitle")}</Text>,
+      <IconButton theme={theme} icon={IconName.add} onPress={handleAPOpen} />
     ]} />
     <ScrollView style={listStyle.listView}>
       <View style={listStyle.searchView}>
@@ -206,11 +216,9 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       <View>
         {sortedPassages.map(passage => {
           return <ListItem
-            leftSwipeTag={state.settings.leftSwipeTag}
-            theme={theme}
+            state={state}
             key={passage.id}
             data={passage}
-            sort={state.sort}
             t={t}
             onPress={() => handleListItemEdit(passage)}
             onRemove={() => handlePERemove(passage.id)}
@@ -226,13 +234,26 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       {
         state.settings.devMode && 
         <View style={{margin: 20}}>
-          <Text style={theme.theme.text}>{t("NumberOfVerses")}: {state.passages.map(p => getVersesNumber(p.address)).reduce((partialSum, a) => partialSum + a, 0)}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages")}: {state.passages.length}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 1}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l1).length}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 2}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l2).length}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 3}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l3).length}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 4}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l4).length}</Text>
-          <Text style={theme.theme.text}>{t("NumberOfPassages") + " " + t("Level") + " " + 5}: {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l5).length}</Text>
+          <Text style={theme.theme.text}>{t("NumberOfPassages")}: {state.passages.length} {"( "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l1).length} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l2).length} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l3).length} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l4).length} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l5).length} {")"}
+          </Text>
+          <Text style={theme.theme.text}>{t("NumberOfVerses")}: {state.passages.reduce((ps, p) => ps + p.versesNumber, 0)} {"( "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l1).reduce((ps,p) => ps + p.versesNumber ,0)} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l2).reduce((ps,p) => ps + p.versesNumber ,0)} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l3).reduce((ps,p) => ps + p.versesNumber ,0)} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l4).reduce((ps,p) => ps + p.versesNumber ,0)} {", "}
+            {state.passages.filter(p => p.maxLevel === PASSAGE_LEVEL.l5).reduce((ps,p) => ps + p.versesNumber ,0)} {")"}
+          </Text>
+          <Text style={theme.theme.text}>{t("NumberOfVersesLeanredAddress")}{": "} 
+            {state.passages.filter(p => [PASSAGE_LEVEL.l3, PASSAGE_LEVEL.l4, PASSAGE_LEVEL.l5].includes(p.maxLevel)).reduce((ps,p) => ps + p.versesNumber ,0)}
+          </Text>
+          <Text style={theme.theme.text}>{t("NumberOfVersesLeanredText")}{": "}
+            {state.passages.filter(p => [PASSAGE_LEVEL.l5].includes(p.maxLevel)).reduce((ps,p) => ps + p.versesNumber ,0)}
+          </Text>
         </View>
       }
     </ScrollView>
@@ -292,6 +313,21 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
       {!allTags.length && 
         <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("NoTagsFound")}</Text>
       }
+      <View>
+        <Text style={{...theme.theme.text, marginTop: 20, marginBottom: 10}}>{t("Translations")}</Text>
+        <View style={{...theme.theme.rowView, flexDirection: "row", flexWrap: "wrap", gap: 10}}>
+          {state.settings.translations.map(option => 
+            <Button
+              theme={theme}
+              key={option.id}
+              type="outline"
+              color={state.filters.translations.includes(option.id) ? "gray" : "green"}
+              title={option.name.slice(0,20)}
+              onPress={() => handleFilterChange({translation: option.id})}
+            />
+          )}
+        </View>
+      </View>
       </ScrollView>
       <Button theme={theme} title={t("Close")} onPress={() => setOpenFilters(false)}/>
     </MiniModal>
@@ -301,16 +337,17 @@ export const ListScreen: FC<ScreenModel> = ({route, navigation}) => {
 }
 
 const ListItem: FC<{
-  data: PassageModel, 
-  leftSwipeTag: string
+  data: PassageModel,
   t:(w: WORD) => string,
   onPress: () => void,
   onToggleTag: () => void
   onRemove: () => void
   onLongPress: () => void
-  sort: SORTING_OPTION
-  theme: ThemeAndColorsModel
-}> = ({data,leftSwipeTag, t, onPress, onToggleTag, onRemove, onLongPress, sort, theme}) => {
+  state: AppStateModel
+}> = ({data, t, onPress, onToggleTag, onRemove, onLongPress, state}) => {
+  const sort = state.sort
+  const theme = getTheme(state.settings.theme)
+  const leftSwipeTag = state.settings.leftSwipeTag
   const additionalStyles = (data.isCollapsed ? {overflow: "visible"} : {overflow: "hidden", height: 22})
   const listItemStyle = StyleSheet.create({
     listItemAddress: {
@@ -353,7 +390,7 @@ const ListItem: FC<{
   }
   const tagName = leftSwipeTag === archivedName ?
     data.tags.includes(archivedName) ? t("Unrchive") : t("Archive") :
-    data.tags.includes(leftSwipeTag) ? limitLegth(`${t("Add")} ${leftSwipeTag}`) : limitLegth(`${t("Remove")}  ${leftSwipeTag}`);
+    data.tags.includes(leftSwipeTag) ? limitLegth(`${t("Remove")}  ${leftSwipeTag}`) : limitLegth(`${t("Add")} ${leftSwipeTag}`);
   const renderLeftActions = () => {
     
     return <Animated.View style={[
@@ -391,6 +428,7 @@ const ListItem: FC<{
         return `${timeToString(passage.dateTested)}`;
     }
   }
+  const customT = createT(state.settings.translations.find(t => t.id === data.verseTranslation)?.addressLanguage || state.settings.langCode)
   return <Pressable onPress={onPress} onLongPress={onLongPress}>
     <Swipeable
     friction={2}
@@ -399,7 +437,7 @@ const ListItem: FC<{
     renderRightActions={renderRightActions}>
       <View style={listItemStyle.listItemView}>
         <View style={listItemStyle.headerGroup}>
-          <Text style={listItemStyle.listItemAddress}>{addressToString(data.address,t)}</Text>
+          <Text style={listItemStyle.listItemAddress}>{addressToString(data.address, customT)}</Text>
           <Text style={listItemStyle.secondaryHeader}>{getSecondaryOptions(sort, data)}</Text>
         </View>
         <Text style={{...listItemStyle.listItemText, ...additionalStyles} as StyleProp<TextStyle>}>{data.verseText}</Text>

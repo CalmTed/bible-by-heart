@@ -23,6 +23,7 @@ interface InputModel {
   autoCapitalize?: "none" | "words" | "sentences" | "characters"
   autoCorrect?: boolean
   inputMode?: 'decimal' | 'email' | 'none' | 'numeric' | 'search' | 'tel' | 'text' | 'url'
+  maxLength?: number
 }
 
 export const Input: FC<InputModel> = ({
@@ -43,7 +44,8 @@ export const Input: FC<InputModel> = ({
   autoCorrect=true,
   autoComplete,
   textStyle,
-  inputMode
+  inputMode,
+  maxLength
 }) => {
   const gradientColors = type === "transparent" ? ["transparent", "transparent"] : color === "gray" ? [theme.colors.bgSecond, theme.colors.bgSecond] : color === "green" ? [theme.colors.gradient1, theme.colors.gradient2] : [theme.colors.redGradient1, theme.colors.redGradient2]
   const InputStyles = StyleSheet.create({
@@ -111,6 +113,7 @@ export const Input: FC<InputModel> = ({
               autoCorrect={autoCorrect}
               cursorColor={theme.colors.mainColor} 
               inputMode={inputMode} 
+              maxLength={maxLength}
             />
           </View>
         </LinearGradient>

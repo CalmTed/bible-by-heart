@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet, Vibration } from "react-native"
+import { View, Text, StyleSheet } from "react-native"
 import { storageName, TEST_LEVEL, PASSAGE_LEVEL, archivedName } from "../constants"
 import { ActionName, AppStateModel, PassageModel, TestModel } from "../models"
 import { navigateWithState } from "../screeenManagement"
@@ -24,7 +24,9 @@ import { getTheme } from "../tools/getTheme"
 export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
   const oldState = route.params as AppStateModel;
   const [state, setState] = useState(oldState);
-  const nextUnfinishedTestIndex = state.testsActive.indexOf(state.testsActive.filter(t => !t.dateFinished)[0])
+  const nextUnfinishedTestIndex = state.testsActive.indexOf(state.testsActive.filter(t =>
+    !t.isFinished
+  )[0])
   const [activeTestIndex, setActiveTest] = useState(nextUnfinishedTestIndex !== -1 ? nextUnfinishedTestIndex : 0)
   const t = createT(state.settings.langCode);
   useEffect(() => {//updating state on component mounting
@@ -157,31 +159,37 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
     activateTests();
     return <View style={{...theme.theme.screen}}></View>
   }
-  const activeTestObj = {
+  const activeTestObj: TestModel = {
     ...state.testsActive[activeTestIndex],
-    dateStarted: !!state.testsActive[activeTestIndex]?.dateStarted ? state.testsActive[activeTestIndex]?.dateStarted : new Date().getTime()
+    triesDuration: state.testsActive[activeTestIndex]?.triesDuration?.filter(t => t.length === 1).length > 0 ?
+      state.testsActive[activeTestIndex]?.triesDuration.map(t => t.length === 1 ? [...t, new Date().getTime()] : t) :
+      [...state.testsActive[activeTestIndex]?.triesDuration || [], [new Date().getTime()]]
   }
-  const targetPassage = state.passages.find(p => p.id === activeTestObj.passageId) as PassageModel
+  const targetPassage:PassageModel = state.passages.find(p => p.id === activeTestObj.passageId) as PassageModel
   if(!targetPassage){//if passages from old tests left in state
     activateTests();
     return <View style={{...theme.theme.screen}}></View>
   }
+  const tempT = createT(state.settings.translations.find(t => t.id === targetPassage.verseTranslation)?.addressLanguage || state.settings.langCode);
   return <View style={{...theme.theme.screen}}>
     <View style={{
       ...theme.theme.view,
-      ...!state.testsActive.filter(t => !t.dateFinished).length ? testsStyle.viewHidden : {}
+      //if there are any unfinished tests
+      ...state.testsActive?.filter(t => !t.isFinished)?.length === 0 ?
+        testsStyle.viewHidden :
+        {}
       }}>
       <Header theme={theme} navigation={navigation} showBackButton={false} alignChildren="flex-start" additionalChildren={[
         <IconButton theme={theme} icon={IconName.cross} onPress={exitTests} />,
         <View style={{...testsStyle.testNav}}>
           {state.testsActive.map((t, i) => {
-            const isFinished = !!state.testsActive[i].dateFinished
+            const isFinished = state.testsActive[i].isFinished;
             const hasErrors = !!state.testsActive[i].errorNumber
             const isFirst = i === 0
             //if it first and unfinished
             //or if not finished and previus is finished
             const isNextUnfinished = (isFirst && !isFinished) ||
-               (!isFinished && !!state.testsActive[i - 1]?.dateFinished);
+               (!isFinished && state.testsActive[i - 1]?.triesDuration.filter(td => td.length === 1).length === 0);
             const color = (isFinished || (activeTestIndex === i && !hasErrors) ) ? 
               "green" :
               hasErrors ?
@@ -208,13 +216,13 @@ export const TestsScreen: FC<ScreenModel> = ({route, navigation}) => {
         handleOpen={handleLevelPickerOpen}
         handleRestart={handleReset}
       />
-      { activeTestObj?.level === TEST_LEVEL.l10 && <L10 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit}/> }
-      { activeTestObj?.level === TEST_LEVEL.l11 && <L11 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TEST_LEVEL.l20 && <L20 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TEST_LEVEL.l21 && <L21 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TEST_LEVEL.l30 && <L30 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TEST_LEVEL.l40 && <L40 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
-      { activeTestObj?.level === TEST_LEVEL.l50 && <L50 test={activeTestObj} state={state} t={t} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l10 && <L10 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit}/> }
+      { activeTestObj?.level === TEST_LEVEL.l11 && <L11 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l20 && <L20 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l21 && <L21 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l30 && <L30 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l40 && <L40 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
+      { activeTestObj?.level === TEST_LEVEL.l50 && <L50 test={activeTestObj} state={state} t={tempT} submitTest={handleTestSubmit} /> }
       { state.settings.devMode && <Button theme={theme} type="main" color="gray" title={t("Reset")} onPress={handleReset}></Button> }
     </View>
   </View>

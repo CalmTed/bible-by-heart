@@ -1,6 +1,8 @@
-import { PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL } from "../constants";
+import { getVersesNumber } from "../initials";
+import { PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL, LANGCODE } from "../constants";
 import { ActionModel, ActionName, AppStateModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
+import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 
 
 export const reduce: (
@@ -23,6 +25,9 @@ export const reduce: (
         changedState = { ...state, settings: {...state.settings, [action.payload.param]: action.payload.value} };
       break;
       case ActionName.setPassage:
+          //check number of verses, not just esv but others too
+          
+          //check is exists
           if (state.passages.find((p) => p.id === action.payload.id)) {
               const changedPassages = state.passages.map((p) =>
                   p.id === action.payload.id
@@ -32,7 +37,17 @@ export const reduce: (
                         }
                       : p
               );
-              changedState = { ...state, passages: changedPassages };
+              //if tags changed add to filter new ones
+              const allTagsBefore = state.passages.map(p => p.tags).flat().filter((v,i,arr) => !arr.slice(0,i).includes(v))
+              const allTagsAfter = changedPassages.map(p => p.tags).flat().filter((v,i,arr) => !arr.slice(0,i).includes(v))
+              //add new tags
+              //we do not remove old ones b.c. user might be using them
+              const newTags = allTagsAfter.filter(t => !allTagsBefore.includes(t))
+              //blocking to add more then 500 verses on english
+              if(getNumberOfVersesInEnglish(state.settings.translations, changedPassages) > 500){
+                return state
+              }
+              changedState = { ...state, passages: changedPassages, filters: {...state.filters, tags: [...state.filters.tags, ...newTags]} };
           } else {
               changedState = {
                   ...state,
@@ -58,6 +73,7 @@ export const reduce: (
       case ActionName.removePassage:
           changedState = {
               ...state,
+              testsHistory: state.testsHistory.filter( t => t.passageId !== action.payload),
               passages: state.passages.filter((p) => p.id !== action.payload)
           };
           break;
@@ -70,25 +86,34 @@ export const reduce: (
           break;
       case ActionName.updateTest:
         const updatedTests = state.testsActive.map(t => {
-            if(t.id !== action.payload.test.id){
-                return t;
+            if(t.id === action.payload.test.id){
+                return {
+                  ...action.payload.test,
+                  isFinished: action.payload.isRight ? true : t.isFinished,
+                  triesDuration: action.payload.test.triesDuration.map((td,i,a) => i === a.length -1 ? [...td, new Date().getTime()] : td)
+                };
             }
-            return action.payload.test
+            return t
         }).sort((a) => action.payload.isRight ? 0 : a.id === action.payload.test.id ? 1 : -1)
         //sorting active tests to float last wrong one to the end
         const sortedTests = action.payload.isRight ? updatedTests : [
-            ...updatedTests.filter(t => !!t.dateFinished),//finished
-            ...updatedTests.filter(t => !t.dateFinished && !t.errorNumber),//unfinished without error
-            ...updatedTests.filter(t => !t.dateFinished && !!t.errorNumber)//unfinished with error
+            ...updatedTests.filter(t => !!t.isFinished),//finished
+            ...updatedTests.filter(t => !t.isFinished && !t.errorNumber),//unfinished without error
+            ...updatedTests.filter(t => !t.isFinished && !!t.errorNumber)//unfinished with error
         ]
         changedState = {...state, testsActive: sortedTests}
         break;
       case ActionName.finishTesting:
-
-        //+clear active tests
+        //updating last test finish time is finished flag
+        const testsWithUpdatedLastTest = action.payload.tests.map(t => {
+          return {
+            ...t,
+            triesDuration: t.triesDuration.map(td => td.length === 1 ? [...td, new Date().getTime()] : td),
+            isFinished: true
+          }
+        })
         //+update history
-        //+update passages last tested time
-        const newHistory = [...state.testsHistory, ...action.payload.tests];
+        const newHistory = [...state.testsHistory, ...testsWithUpdatedLastTest];
         const newPassages = state.passages.map(p => {
             //+update passages max level
             //+update passages new level awalible
@@ -104,8 +129,9 @@ export const reduce: (
             const level = !hasErrorFromLastThreeTests && p.maxLevel !== PASSAGE_LEVEL.l5 ? nextLevel[p.maxLevel] : p.maxLevel;
             //if new max level is not the current one
             const flag = level !== p.maxLevel;
-            const lastTest = action.payload.tests.find(t => t.passageId === p.id)
-            const lastTestedTime = lastTest ? lastTest.dateFinished : p.dateTested
+            const lastTest = testsWithUpdatedLastTest.find(t => t.passageId === p.id)
+            //update passages last tested time
+            const lastTestedTime = lastTest ? lastTest.triesDuration[lastTest.triesDuration.length -1]?.[1] : p.dateTested
             return {
                 ...p,
                 maxLevel: level,
@@ -114,6 +140,7 @@ export const reduce: (
                 dateTested: lastTestedTime
             }
         })
+        //clear active tests
         changedState = {...state, testsActive: [], testsHistory: newHistory, passages: newPassages}
         break;
       case ActionName.setPassageLevel: 
@@ -143,7 +170,27 @@ export const reduce: (
                 state.filters.maxLevels.filter(c => c !== action.payload.maxLevel) :
                 [...state.filters.maxLevels, action.payload.maxLevel] :
             state.filters.maxLevels;
-        changedState = {...state, filters: {tags: newTags, selectedLevels: newSelectedLevels, maxLevels: newMaxLevels}}
+        const newTranslationFilters = action.payload.translationId ?
+          state.filters.translations.includes(action.payload.translationId) ?
+            state.filters.translations.filter(c => c !== action.payload.translationId) :
+            [...state.filters.translations, action.payload.translationId] :
+          state.filters.translations;
+        changedState = {...state, filters: {
+          tags: newTags,
+          selectedLevels: newSelectedLevels,
+          maxLevels: newMaxLevels,
+          translations: newTranslationFilters,
+        }}
+      break;
+      case ActionName.setTranslationsList:
+        //setting translation to null when deleting translation
+        const newPassagesAfterRemovingTranslation = state.settings.translations.length > action.payload.length ?
+          state.passages.map(passage => action.payload.map(t => t.id).indexOf(passage.verseTranslation || NaN) === -1 ? 
+            {...passage, translation: null} :
+            passage
+          ) : 
+          state.passages;
+        changedState = {...state, passages: newPassagesAfterRemovingTranslation, settings: {...state.settings, translations: action.payload}}
       break;
   }
   if (changedState) {
