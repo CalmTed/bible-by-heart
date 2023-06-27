@@ -14,6 +14,7 @@ import { LevelPicker } from "./LevelPicker"
 import { ThemeAndColorsModel, getTheme } from "../tools/getTheme"
 import { Select } from "./Select"
 import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses"
+import { fetchESV } from "../tools/fetchESV"
 
 interface PassageEditorModel{
   visible: boolean
@@ -31,8 +32,32 @@ export const PassageEditor: FC<PassageEditorModel> = ({visible, passage, onCance
 
   useEffect(()=>{
     setPassage(passage);
-  },[visible])
+    if(!tempPassage.verseText.length){
+      handleTextFetch();
+    }
+  },[visible]);
+
+  useEffect(()=>{
+      handleTextFetch();
+  },[JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
   
+  //on creation
+  //on address change
+  //on translation change
+  const handleTextFetch = (translation?: number) => {
+    const translationId = translation || tempPassage.verseTranslation;
+    //1 is hardwired id for ESV
+    if(translationId === 1){
+      fetchESV(tempPassage.address).then((data) => {
+        setPassage((prevPassage) => {
+          return {...prevPassage, verseText: data}
+        });
+      })
+    }else{
+      
+    }
+  }
+
   const handleBack = () => {
     //TODO: confirm if changed
     onCancel();

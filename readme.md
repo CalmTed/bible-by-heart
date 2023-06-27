@@ -58,7 +58,7 @@ Roadmap
   - [x] user settings:  - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
   - [x] edit passage translation (custom with autocomplete from other passages data)
   - [x] filter by translation (if there are several different)
-  - [ ] adding passages from prepared list in the most popular translations(ESV,UBT)
+  - [x] adding passages from prepared list in the most popular translations(ESV,UBT)
     - [x] copyright page in settings
     - [x] limit length to 500 verses per passage
   - [x] delete tests history after deleting passage

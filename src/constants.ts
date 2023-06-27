@@ -23,7 +23,7 @@ export const getDefaultTranslations: (lang: LANGCODE) =>  TranslationModel[] = (
     {
         id: 1,
         editable: false,
-        name: "ESV",
+        name: "ESV®",
         addressLanguage: LANGCODE.en,
         isDefault: lang === LANGCODE.en
     },
