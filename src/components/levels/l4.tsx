@@ -125,7 +125,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     const nextWord = targetWords[passageWords.length];
     const nextWordIfNeeded = 
       word === targetWords[passageWords.length - 1] &&
-      ["–", "-", ":", ";", ".", ","].includes(nextWord) ?
+      ["—","–", "-", ":", ";", ".", ","].includes(nextWord) ?
         nextWord + " " : // adding one more space here for a reason
         "";
     state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.wordClick) : null;

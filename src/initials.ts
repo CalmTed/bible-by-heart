@@ -13,7 +13,16 @@ import {
     archivedName,
     getDefaultTranslations
 } from './constants';
-import { AddressType, AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, PassageModel, TestModel, TranslationModel } from './models';
+import {
+    AddressType,
+    AppStateModel,
+    AppStateModel0_0_6,
+    AppStateModel0_0_7,
+    PassageModel,
+    ReminderModel,
+    TestModel,
+    TranslationModel
+} from './models';
 
 const genId: () => number = () => {
     return Math.round(Math.random() * 1000000000);
@@ -49,13 +58,15 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
             [SETTINGS.compressOldTestsData]: true,
             [SETTINGS.autoIncreeseLevel]: false,
             [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
-        
+
             [SETTINGS.remindersEnabled]: true,
             [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
             [SETTINGS.remindersList]: [],
 
-            [SETTINGS.translations]: getDefaultTranslations(langCode),//dont need id for now, just user provided name
-            [SETTINGS.homeScreenStatsType]: 'auto',//dont need id for now, just user provided name
+            [SETTINGS.trainModesList]: [],
+
+            [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+            [SETTINGS.homeScreenStatsType]: 'auto', //dont need id for now, just user provided name
             [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses
         }
     };
@@ -179,15 +190,34 @@ export const createAddress: () => AddressType = () => {
     };
 };
 
-export const createTranslation: (lang?: LANGCODE) => TranslationModel = (lang = LANGCODE.en) => {
+export const createTranslation: (lang?: LANGCODE) => TranslationModel = (
+    lang = LANGCODE.en
+) => {
     return {
         id: genId(),
         addressLanguage: lang,
-        name: "---",
+        name: '---',
         editable: true,
         isDefault: false
-    }
-}
+    };
+};
+
+export const createReminder: () => ReminderModel = () => {
+    return {
+        id: genId(),
+        days: {
+            dayMO: true,
+            dayTU: true,
+            dayWE: true,
+            dayTH: true,
+            dayFR: true,
+            daySA: true,
+            daySU: true
+        },
+        timeInSec: 28800,
+        enabled: true
+    };
+};
 
 /* initials archive */
 
@@ -212,7 +242,7 @@ export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
         filters: {
             tags: [archivedName],
             selectedLevels: [],
-            maxLevels: [],
+            maxLevels: []
         },
         sort: SORTING_OPTION.address
     };

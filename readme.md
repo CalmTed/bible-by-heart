@@ -62,11 +62,14 @@ Roadmap
     - [x] copyright page in settings
     - [x] limit length to 500 verses per passage
   - [x] delete tests history after deleting passage
-  - [x] update all passages with translation that was deleted to "other/null"
+  - [x] update all passages with translation that was deleted to "other/null" 
   - [x] add tag to filter on adding to passage, remove if it was last
   - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
 - [ ] customizable daily reminder, more stats v0.0.8
-  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
+  - [x] reminders list: time, days
+  - [ ] fix reminders permisions, fix back swipe state eracing fix all tests enabled bug
+  - [ ] different train modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
+  - [ ] edit passage due to, sort main train mode by it
   - [ ] export to csv, import from share(parse), or from other data types
   - [ ] all tests list, grouping by date and session
   - [ ] statistics:
@@ -85,6 +88,7 @@ Roadmap
   - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
   - [ ] about page and donate button
+  - [ ] screen readers labels
 
 Other ideas:
 - show most common errors for the given passage

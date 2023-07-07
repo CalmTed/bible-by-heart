@@ -19,26 +19,34 @@ export const storageName = 'data';
 
 export const archivedName = 'Archived';
 
-export const getDefaultTranslations: (lang: LANGCODE) =>  TranslationModel[] = (lang) => [
+export const backgroundNotificationName = 'backgroundNotificationName'; 
+
+export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
+    lang
+) => [
     {
         id: 1,
         editable: false,
-        name: "ESV®",
+        name: 'ESV®',
         addressLanguage: LANGCODE.en,
         isDefault: lang === LANGCODE.en
     },
     {
         id: 2,
         editable: false,
-        name: "UCVNTR",
+        name: 'UCVNTR',
         addressLanguage: LANGCODE.ua,
         isDefault: lang === LANGCODE.ua
-    },
-]
+    }
+];
 
 export const PERFECT_TESTS_TO_PRCEED = 3;
 export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5;
+
+export const MINUTE = 60;
+export const HOUR = 3600;
+export const DAY = HOUR * 24;
 
 export enum SCREEN {
     home = 'home',
@@ -50,10 +58,8 @@ export enum SCREEN {
     settings = 'settings'
 }
 
-
-
 export enum SORTING_OPTION {
-        //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
+    //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
     address = 'address',
     resentlyCreated = 'resentlyCreated',
     oldestToTrain = 'oldestToTrain',
@@ -67,17 +73,28 @@ export enum STATS_METRICS {
     verses = 'verses'
 }
 
-export enum THEME_TYPE{
-    auto = "auto",
-    dark = "dark",
-    light = "light"
+export enum THEME_TYPE {
+    auto = 'auto',
+    dark = 'dark',
+    light = 'light'
 }
 
 export const VIBRATION_PATTERNS = {
-    testRight: [0,50,100,40],
-    testWrong: [0,200],
+    testRight: [0, 50, 100, 40],
+    testWrong: [0, 200],
     wordClick: 15
-}
+};
+
+//TODO will make it later
+// const colors = Platform.select({
+//     ios: {
+//         bgDark: "#E7DF0B",
+//         bgLight: "#7FDE34"
+//         },
+//     android: {
+//         bgDark: PlatformColor('@android:color/system_accent1_200'),
+//         bgLight: PlatformColor('@android:color/system_accent3_500'),
+//         }})
 
 export const COLOR_DARK = {
     bg: '#272A27',
@@ -132,23 +149,23 @@ export const THEME_DARK = StyleSheet.create({
     headerText: {
         color: COLOR_DARK.text,
         fontSize: 21,
-        fontWeight: "700",
-        textTransform: "uppercase"
+        fontWeight: '700',
+        textTransform: 'uppercase'
     },
     rowView: {
-        flexDirection: "row",
-        flexWrap: "wrap"
-    },
+        flexDirection: 'row',
+        flexWrap: 'wrap'
+    }
 });
 
 export const THEME_LIGHT: typeof THEME_DARK = {
     screen: {
         ...THEME_DARK.screen,
-        backgroundColor: COLOR_LIGHT.bg,
+        backgroundColor: COLOR_LIGHT.bg
     },
     view: {
         ...THEME_DARK.view,
-        backgroundColor: COLOR_LIGHT.bg,
+        backgroundColor: COLOR_LIGHT.bg
     },
     text: {
         ...THEME_DARK.text,
@@ -156,16 +173,16 @@ export const THEME_LIGHT: typeof THEME_DARK = {
     },
     subText: {
         ...THEME_DARK.subText,
-        color: COLOR_LIGHT.textSecond,
+        color: COLOR_LIGHT.textSecond
     },
     headerText: {
         ...THEME_DARK.headerText,
-        color: COLOR_LIGHT.text,
+        color: COLOR_LIGHT.text
     },
     rowView: {
-        ...THEME_DARK.rowView,
+        ...THEME_DARK.rowView
     }
-}
+};
 
 export enum TEST_LEVEL {
     l10 = 10,
@@ -184,24 +201,25 @@ export enum PASSAGE_LEVEL {
     l5 = 5
 }
 
-export enum SETTINGS{
-    langCode = "langCode",
-    theme = "theme",
-    chapterNumbering = "chapterNumbering",
-    devMode = "devMode",
+export enum SETTINGS {
+    langCode = 'langCode',
+    theme = 'theme',
+    chapterNumbering = 'chapterNumbering',
+    devMode = 'devMode',
 
-    remindersEnabled = "remindersEnabled",
-    remindersSmartTime = "remindersSmartTime",
-    remindersList = "remindersList",
-    
-    hapticsEnabled = "hapticsEnabled",
-    soundsEnabled = "soundsEnabled",
-    compressOldTestsData = "compressOldTestsData",
-    leftSwipeTag = "leftSwipeTag",
-    autoIncreeseLevel = "autoIncreeseLevel",
+    remindersEnabled = 'remindersEnabled',
+    remindersSmartTime = 'remindersSmartTime',
+    remindersList = 'remindersList',
 
-    translations = "translations",  
-    homeScreenStatsType = "homeScreenStatsType",
-    homeScreenWeeklyMetric = "homeScreenWeeklyMetric"
+    hapticsEnabled = 'hapticsEnabled',
+    soundsEnabled = 'soundsEnabled',
+    compressOldTestsData = 'compressOldTestsData',
+    leftSwipeTag = 'leftSwipeTag',
+    autoIncreeseLevel = 'autoIncreeseLevel',
+
+    translations = 'translations',
+    homeScreenStatsType = 'homeScreenStatsType',
+    homeScreenWeeklyMetric = 'homeScreenWeeklyMetric',
+
+    trainModesList = 'trainModesList'
 }
-

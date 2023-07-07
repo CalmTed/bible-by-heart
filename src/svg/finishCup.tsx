@@ -27,8 +27,8 @@ const xmlData = `<svg width="141" height="130" viewBox="0 0 141 130" fill="none"
 <stop offset="1" stop-color="#211A0A"/>
 </linearGradient>
 </defs>
-</svg>`
+</svg>`;
 
-
-export const FinishCupSVG = () => 
-  <SvgXml xml={xmlData} width="195" height="187"/>;
+export const FinishCupSVG = () => (
+    <SvgXml xml={xmlData} width="195" height="187" />
+);
