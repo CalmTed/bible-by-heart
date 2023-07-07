@@ -1,14 +1,13 @@
-import { StyleSheet } from 'react-native';
-import { TranslationModel } from './models';
+import { StyleSheet } from 'react-native';;
 
-export const VERSION = '0.0.7';
+export const VERSION = '0.0.8';
 
-export const alowedStateVersions = ['0.0.4', '0.0.5', '0.0.6', VERSION]; //make translators for imported data
+export const alowedStateVersions = ['0.0.4', '0.0.5', '0.0.6','0.0.7' ,VERSION]; //make translators for imported data
 
 export const API_VERSION = '0.0.1';
 //cant sync with oudated version
 //can convert one stare version to the new one
-//recreate the state if version is outdated
+//convert the state if version is outdated
 
 export enum LANGCODE {
     en = 'en',
@@ -19,26 +18,16 @@ export const storageName = 'data';
 
 export const archivedName = 'Archived';
 
-export const getDefaultTranslations: (lang: LANGCODE) =>  TranslationModel[] = (lang) => [
-    {
-        id: 1,
-        editable: false,
-        name: "ESV®",
-        addressLanguage: LANGCODE.en,
-        isDefault: lang === LANGCODE.en
-    },
-    {
-        id: 2,
-        editable: false,
-        name: "UCVNTR",
-        addressLanguage: LANGCODE.ua,
-        isDefault: lang === LANGCODE.ua
-    },
-]
+export const backgroundNotificationName = 'backgroundNotificationName'; 
 
-export const PERFECT_TESTS_TO_PRCEED = 3;
+
+export const PERFECT_TESTS_TO_PRCEED = 4;
 export const TEST_LIST_NUMBER = 10;
-export const MAX_L50_TRIES = 5;
+export const MAX_L50_TRIES = 5;//with bonus for a long passage
+
+export const MINUTE = 60;
+export const HOUR = 3600;
+export const DAY = HOUR * 24;
 
 export enum SCREEN {
     home = 'home',
@@ -50,10 +39,8 @@ export enum SCREEN {
     settings = 'settings'
 }
 
-
-
 export enum SORTING_OPTION {
-        //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
+    //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
     address = 'address',
     resentlyCreated = 'resentlyCreated',
     oldestToTrain = 'oldestToTrain',
@@ -67,17 +54,28 @@ export enum STATS_METRICS {
     verses = 'verses'
 }
 
-export enum THEME_TYPE{
-    auto = "auto",
-    dark = "dark",
-    light = "light"
+export enum THEME_TYPE {
+    auto = 'auto',
+    dark = 'dark',
+    light = 'light'
 }
 
 export const VIBRATION_PATTERNS = {
-    testRight: [0,50,100,40],
-    testWrong: [0,200],
+    testRight: [0, 50, 100, 40],
+    testWrong: [0, 200],
     wordClick: 15
-}
+};
+
+//TODO will make it later
+// const colors = Platform.select({
+//     ios: {
+//         bgDark: "#E7DF0B",
+//         bgLight: "#7FDE34"
+//         },
+//     android: {
+//         bgDark: PlatformColor('@android:color/system_accent1_200'),
+//         bgLight: PlatformColor('@android:color/system_accent3_500'),
+//         }})
 
 export const COLOR_DARK = {
     bg: '#272A27',
@@ -132,23 +130,23 @@ export const THEME_DARK = StyleSheet.create({
     headerText: {
         color: COLOR_DARK.text,
         fontSize: 21,
-        fontWeight: "700",
-        textTransform: "uppercase"
+        fontWeight: '700',
+        textTransform: 'uppercase'
     },
     rowView: {
-        flexDirection: "row",
-        flexWrap: "wrap"
-    },
+        flexDirection: 'row',
+        flexWrap: 'wrap'
+    }
 });
 
 export const THEME_LIGHT: typeof THEME_DARK = {
     screen: {
         ...THEME_DARK.screen,
-        backgroundColor: COLOR_LIGHT.bg,
+        backgroundColor: COLOR_LIGHT.bg
     },
     view: {
         ...THEME_DARK.view,
-        backgroundColor: COLOR_LIGHT.bg,
+        backgroundColor: COLOR_LIGHT.bg
     },
     text: {
         ...THEME_DARK.text,
@@ -156,16 +154,16 @@ export const THEME_LIGHT: typeof THEME_DARK = {
     },
     subText: {
         ...THEME_DARK.subText,
-        color: COLOR_LIGHT.textSecond,
+        color: COLOR_LIGHT.textSecond
     },
     headerText: {
         ...THEME_DARK.headerText,
-        color: COLOR_LIGHT.text,
+        color: COLOR_LIGHT.text
     },
     rowView: {
-        ...THEME_DARK.rowView,
+        ...THEME_DARK.rowView
     }
-}
+};
 
 export enum TEST_LEVEL {
     l10 = 10,
@@ -184,24 +182,26 @@ export enum PASSAGE_LEVEL {
     l5 = 5
 }
 
-export enum SETTINGS{
-    langCode = "langCode",
-    theme = "theme",
-    chapterNumbering = "chapterNumbering",
-    devMode = "devMode",
+export enum SETTINGS {
+    langCode = 'langCode',
+    theme = 'theme',
+    chapterNumbering = 'chapterNumbering',
+    devMode = 'devMode',
 
-    remindersEnabled = "remindersEnabled",
-    remindersSmartTime = "remindersSmartTime",
-    remindersList = "remindersList",
-    
-    hapticsEnabled = "hapticsEnabled",
-    soundsEnabled = "soundsEnabled",
-    compressOldTestsData = "compressOldTestsData",
-    leftSwipeTag = "leftSwipeTag",
-    autoIncreeseLevel = "autoIncreeseLevel",
+    remindersEnabled = 'remindersEnabled',
+    remindersSmartTime = 'remindersSmartTime',
+    remindersList = 'remindersList',
 
-    translations = "translations",  
-    homeScreenStatsType = "homeScreenStatsType",
-    homeScreenWeeklyMetric = "homeScreenWeeklyMetric"
+    hapticsEnabled = 'hapticsEnabled',
+    soundsEnabled = 'soundsEnabled',
+    compressOldTestsData = 'compressOldTestsData',
+    leftSwipeTag = 'leftSwipeTag',
+    autoIncreeseLevel = 'autoIncreeseLevel',
+
+    translations = 'translations',
+    homeScreenStatsType = 'homeScreenStatsType',
+    homeScreenWeeklyMetric = 'homeScreenWeeklyMetric',
+
+    trainModesList = 'trainModesList',
+    activeTrainModeId = 'activeTrainModeId'
 }
-

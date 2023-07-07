@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
-import { View, Text, StyleSheet, Vibration } from "react-native"
+import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native"
 import { MAX_L50_TRIES, VIBRATION_PATTERNS } from "../../constants";
 import addressToString from "../../tools/addressToString"
 import { Button } from "../Button";
@@ -27,6 +27,8 @@ const levelComponentStyle = StyleSheet.create({
   },
   passageTextView: {
     padding: 10,
+    maxHeight:200,
+    minHeight: 50
   },
   passageText: {
     alignContent: "center",
@@ -66,8 +68,9 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     test.testData.showAddressOrFirstWords ? 
       "" :
       (targetPassage?.verseText || "").split(" ").slice(0,4).join(" ") + " "
-  const [passageText, setPassageText] = useState(initialEnteredText)
-  const [tries, setTries] = useState(MAX_L50_TRIES)
+  const [passageText, setPassageText] = useState(initialEnteredText);
+  const maxTriesBonus = targetPassage && targetPassage.versesNumber > 2 ? targetPassage.versesNumber - 2 : 0;
+  const [tries, setTries] = useState(MAX_L50_TRIES + maxTriesBonus)
   const [isCorrect, setIsCorrect] = useState(lastErrorIsWrongAddress ? true : false)
   const [aucompleteWarn, setAucompleteWarn] = useState(false)
   const [wrongAddress, setWrongAddress] = useState(null as AddressType | null)
@@ -82,7 +85,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     setPassageText(initialEnteredText)
     setAucompleteWarn(false)
     setIsCorrect(lastErrorIsWrongAddress ? true : false)
-    setTries(MAX_L50_TRIES)
+    setTries(MAX_L50_TRIES + maxTriesBonus)
     setWrongAddress(null)
   }
 
@@ -148,6 +151,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           errorNumber: (test.errorNumber || 0) + 1,
           errorType: "other"
         }})
+        resetForm();
       }
     }
   }
@@ -178,7 +182,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const levelFinished = test.isFinished;
   const isAddressProvided = test.testData.showAddressOrFirstWords;
   const theme = getTheme(state.settings.theme);
-  return <View style={levelComponentStyle.levelComponentView}>
+  return <ScrollView style={levelComponentStyle.levelComponentView}>
     <View style={levelComponentStyle.addressTextView}>
       {isAddressProvided &&
         <Text style={{...levelComponentStyle.addressText, color: theme.colors.text}}>{addressToString(targetPassage.address, t)}</Text>
@@ -201,7 +205,8 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         onSubmit={() => {}}
         color={isCorrect ? "green": "gray"}
         onChange={handleTextChange}
-        style={{width: "100%"}}
+        wrapperStyle={{width: "100%", height: "100%"}}
+        style={{width: "100%", height: "100%", justifyContent: "flex-start"}}
         autoCorrect={false}
         textStyle={{fontWeight: "normal"}}
       />
@@ -214,7 +219,7 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
           theme={theme}
           type="main"
           color="green"
-          title={`${t("CheckText")} (${tries}/${MAX_L50_TRIES})`}
+          title={`${t("CheckText")} (${tries}/${MAX_L50_TRIES + maxTriesBonus})`}
           onPress={() => handleTextSubmit()}
           disabled={levelFinished}
         />
@@ -288,5 +293,5 @@ export const L50: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       }
     </View>
     <AddressPicker theme={theme} visible={APVisible} onCancel={() => setAPVisible(false)} onConfirm={handleAddressSelect} t={t}/>
-  </View>
+  </ScrollView>
 }

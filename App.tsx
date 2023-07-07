@@ -20,42 +20,53 @@ export default function App() {
                 key: `${storageName}`
             })
             .then((data) => {
-                const dataObj:AppStateModel = data as AppStateModel
+                const dataObj: AppStateModel = data as AppStateModel;
                 //check if version is correct
-                if(dataObj.version === VERSION){
+                if (dataObj.version === VERSION) {
                     setState(data);
                     setReady(true);
-                }else{
-                    console.log(dataObj.version, VERSION)
+                } else {
                     //if versions does not match
                     //try to convert
-                    storage.save({
-                        key: `${storageName}${dataObj.version}`,
-                        data: dataObj
-                    }).then(() => {
-                        const convertedState = convertState(dataObj)
-                        if(convertedState){
-                            ToastAndroid.show(`State converted from ${dataObj.version} to ${VERSION}`, 10000);
-                            setState(convertedState);
-                            setReady(true);
-                        }else{
-                            //if it is not possible to convert create new one with backup
-                            ToastAndroid.show("Error with convering app state. Backup saved.", 10000)
-                            setState(createAppState);
-                            setReady(true);
-                        }
-                    })
-                    }
+                    storage
+                        .save({
+                            key: `${storageName}${dataObj.version}`,
+                            data: dataObj
+                        })
+                        .then(() => {
+                            const convertedState = convertState(dataObj);
+                            if (convertedState) {
+                                ToastAndroid.show(
+                                    `State converted from ${dataObj.version} to ${VERSION}`,
+                                    10000
+                                );
+                                storage
+                                    .save({
+                                        key: `${storageName}`,
+                                        data: dataObj
+                                    })
+                                    .then(() => {
+                                        setState(convertedState);
+                                        setReady(true);
+                                    });
+                            } else {
+                                //if it is not possible to convert create new one with backup
+                                ToastAndroid.show(
+                                    'Error with convering app state. Backup saved.',
+                                    10000
+                                );
+                                setState(createAppState);
+                                setReady(true);
+                            }
+                        });
+                }
             })
             .catch((e) => {
+                ToastAndroid.show(e, 10000);
                 console.error(e);
                 setReady(true);
             });
     });
 
-    return (
-        <>
-            {isReady && <Navigator state={state}/>}
-        </>
-    );
+    return <>{isReady && <Navigator state={state} />}</>;
 }

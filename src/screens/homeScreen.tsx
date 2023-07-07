@@ -1,73 +1,160 @@
-import React, { FC, useEffect, useState } from "react"
-import { View, Text, StyleSheet } from "react-native"
-import { storageName, SCREEN, LANGCODE, THEME_TYPE } from "../constants"
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types"
-import { AppStateModel } from "../models"
-import { navigateWithState } from "../screeenManagement"
-import { createT } from "../l10n"
-import { Button } from "../components/Button"
-import { DaggerLogoSVG } from "../svg/daggetLogo"
-import storage from "../storage"
-import { getStroke } from "../tools/getStats"
-import { WeekActivityComponent } from "../components/weekActivityComponent"
-import { getTheme } from "../tools/getTheme"
-import { StatusBar } from "expo-status-bar"
+import React, { FC, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { SCREEN, SETTINGS, THEME_TYPE } from '../constants';
+import { StackNavigationHelpers } from '@react-navigation/stack/src/types';
+import { navigateWithState } from '../screeenManagement';
+import { Button, IconButton } from '../components/Button';
+import { DaggerLogoSVG } from '../svg/daggetLogo';
+import { getStroke } from '../tools/getStats';
+import { WeekActivityComponent } from '../components/weekActivityComponent';
+import { StatusBar } from 'expo-status-bar';
+import { useApp } from '../tools/useApp';
+import { IconName } from '../components/Icon';
+import { SelectModal } from '../components/SelectModal';
+import { ActionName } from '../models';
+import { getPassagesByTrainMode } from '../tools/generateTests';
 
 export interface ScreenModel {
-  route: any
-  navigation: StackNavigationHelpers
+    route: any;
+    navigation: StackNavigationHelpers;
 }
 
-export const HomeScreen: FC<ScreenModel> = ({route, navigation}) => {
-  const oldState = route.params as AppStateModel;
-  const [state, setState] = useState(oldState);
-  const t = createT(state?.settings?.langCode || LANGCODE.en);
-  useEffect(() => {
-    setState(oldState);
-  }, [JSON.stringify(oldState)]);
+export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
+    const { state, t, theme } = useApp({ route, navigation });
 
-  useEffect(() => {
-    storage.save({
-      key: storageName,
-      data: {...state}
-    }).then((e) => {
-    })
-  }, [JSON.stringify(state)]);
+    const [showTrainModesList, setShowTrainModesList] = useState(false);
 
-  const errorNumber = state.testsHistory.map(t => t.errorNumber || 0).reduce((partialSum, a) => partialSum + a, 0);
-  const strokeData = getStroke(state.testsHistory)
-  const theme = getTheme(state.settings.theme);
-  return <View style={{...theme.theme.screen,...theme.theme.view}}>
-    <View style={homeStyle.logoView}>
-      <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text}/>
-      <Text style={{...theme.theme.text, ...homeStyle.titleText}}>{t("appName")}</Text>
-      <Text style={{...theme.theme.text, color: theme.colors.textSecond}}>{t("DaysStroke")}: {strokeData.length}</Text>
-      {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("TestsCompleted")}: {state.testsHistory.length}</Text> */}
-      {/* <Text style={{...globalStyle.text, color: COLOR.textSecond}}>{t("ErrorsMade")}: {errorNumber}</Text> */}
-    </View>
-    <WeekActivityComponent theme={theme} state={state} t={t}></WeekActivityComponent>
-    <View style={homeStyle.buttonView}>
-      <Button theme={theme} type="main" color="green" title={t("homePractice")} onPress={() => navigateWithState({navigation, screen: SCREEN.test, state: state})} />
-      <Button theme={theme} title={t("homeList")} onPress={() => navigateWithState({navigation, screen: SCREEN.listPassage, state: state})}></Button>
-      <Button theme={theme} title={t("homeSettings")} onPress={() => navigateWithState({navigation, screen: SCREEN.settings, state: state})}></Button>
-    </View>
-    <StatusBar style={state.settings.theme === THEME_TYPE.light ? "dark" : "light"} />
-  </View>
-}
+    const strokeData = getStroke(state.testsHistory);
+    const activeTrainModes = state.settings.trainModesList.filter(
+        (m) => m.enabled
+    );
+    return (
+        <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
+            <View style={homeStyle.logoView}>
+                <DaggerLogoSVG
+                    isOutline={strokeData.today}
+                    color={theme.colors.text}
+                />
+                <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
+                    {t('appName')}
+                </Text>
+                <Text
+                    style={{
+                        ...theme.theme.text,
+                        color: theme.colors.textSecond
+                    }}
+                >
+                    {t('DaysStroke')}: {strokeData.length}
+                </Text>
+            </View>
+            <WeekActivityComponent
+                theme={theme}
+                state={state}
+                t={t}
+            ></WeekActivityComponent>
+            <View style={homeStyle.buttonView}>
+                <Button
+                    theme={theme}
+                    type="main"
+                    color="green"
+                    title={t('homePractice')}
+                    onPress={() =>
+                        activeTrainModes.length > 1
+                            ? setShowTrainModesList(true)
+                            : navigateWithState({
+                                  navigation,
+                                  screen: SCREEN.test,
+                                  state: state
+                              })
+                    }
+                    icon={
+                        activeTrainModes.length > 1
+                            ? IconName.selectArrow
+                            : undefined
+                    }
+                    iconAlign="right"
+                />
+                <Button
+                    theme={theme}
+                    title={t('homeList')}
+                    onPress={() =>
+                        navigateWithState({
+                            navigation,
+                            screen: SCREEN.listPassage,
+                            state: state
+                        })
+                    }
+                ></Button>
+                <Button
+                    theme={theme}
+                    title={t('homeSettings')}
+                    onPress={() =>
+                        navigateWithState({
+                            navigation,
+                            screen: SCREEN.settings,
+                            state: state
+                        })
+                    }
+                ></Button>
+            </View>
+            <SelectModal
+                isShown={showTrainModesList}
+                options={activeTrainModes.map((m) => ({
+                    value: m.id.toString(),
+                    label: `${m.name} (${
+                        getPassagesByTrainMode(state, m).length
+                    })`
+                }))}
+                disabledIndexes={activeTrainModes.map((m, i) =>
+                    !getPassagesByTrainMode(state, m).length ? i : Infinity
+                )}
+                selectedIndex={activeTrainModes.indexOf(
+                    activeTrainModes.filter(
+                        (m) => m.id === state.settings.activeTrainModeId
+                    )[0]
+                )}
+                onSelect={(value) => {
+                    setShowTrainModesList(false);
+                    navigateWithState({
+                        navigation,
+                        screen: SCREEN.test,
+                        state: state,
+                        action: {
+                            name: ActionName.setSettingsParam,
+                            payload: {
+                                param: SETTINGS.activeTrainModeId,
+                                value: parseInt(value)
+                            }
+                        }
+                    });
+                }}
+                onCancel={() => {
+                    setShowTrainModesList(false);
+                }}
+                theme={theme}
+            />
+            <StatusBar
+                style={
+                    state.settings.theme === THEME_TYPE.light ? 'dark' : 'light'
+                }
+            />
+        </View>
+    );
+};
 
 const homeStyle = StyleSheet.create({
-  logoView: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1
-  },
-  titleText: {
-    fontSize: 35,
-    fontWeight: "700"
-  },
-  buttonView: {
-    flex: 1,
-    alignItems: "center",
-    gap: 10
-  }
-})
+    logoView: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1
+    },
+    titleText: {
+        fontSize: 35,
+        fontWeight: '700'
+    },
+    buttonView: {
+        flex: 1,
+        alignItems: 'center',
+        gap: 10
+    }
+});

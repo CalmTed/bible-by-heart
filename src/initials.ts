@@ -8,15 +8,71 @@ import {
     SORTING_OPTION,
     STATS_METRICS,
     TEST_LEVEL,
+    TEST_LIST_NUMBER,
     THEME_TYPE,
     VERSION,
-    archivedName,
-    getDefaultTranslations
+    archivedName
 } from './constants';
-import { AddressType, AppStateModel, AppStateModel0_0_6, AppStateModel0_0_7, PassageModel, TestModel, TranslationModel } from './models';
+import {
+    AddressType,
+    AppStateModel,
+    AppStateModel0_0_6,
+    AppStateModel0_0_7,
+    AppStateModel0_0_8,
+    PassageModel,
+    ReminderModel,
+    TestModel,
+    TrainModeModel,
+    TranslationModel
+} from './models';
+import { createT } from './l10n';
 
 const genId: () => number = () => {
     return Math.round(Math.random() * 1000000000);
+};
+
+export const createAppState0_0_8: () => AppStateModel0_0_8 = () => {
+    const phoneLangCode = getLocales()[0].languageCode;
+    const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
+    return {
+        version: VERSION,
+        lastChange: 0,
+        dateSyncTry: 0,
+        dateSyncSuccess: 0,
+        apiVersion: API_VERSION,
+        passages: [],
+        testsActive: [],
+        testsHistory: [],
+        userId: null,
+        filters: {
+            tags: [archivedName],
+            selectedLevels: [],
+            maxLevels: [],
+            translations: []
+        },
+        sort: SORTING_OPTION.address,
+        settings: {
+            [SETTINGS.langCode]: langCode,
+            [SETTINGS.theme]: THEME_TYPE.auto,
+            [SETTINGS.devMode]: false,
+            [SETTINGS.chapterNumbering]: 'vestern',
+            [SETTINGS.hapticsEnabled]: true,
+            [SETTINGS.soundsEnabled]: true,
+            [SETTINGS.compressOldTestsData]: true,
+            [SETTINGS.autoIncreeseLevel]: false,
+            [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
+
+            [SETTINGS.remindersEnabled]: true,
+            [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
+            [SETTINGS.remindersList]: [],
+
+            [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+            [SETTINGS.homeScreenStatsType]: 'auto', //dont need id for now, just user provided name
+            [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses,
+            [SETTINGS.trainModesList]: getDefaultTrainModes(langCode),
+            [SETTINGS.activeTrainModeId]: getDefaultTrainModes(langCode)[0].id
+        }
+    };
 };
 
 export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
@@ -49,19 +105,58 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
             [SETTINGS.compressOldTestsData]: true,
             [SETTINGS.autoIncreeseLevel]: false,
             [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
-        
+
             [SETTINGS.remindersEnabled]: true,
             [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
             [SETTINGS.remindersList]: [],
 
-            [SETTINGS.translations]: getDefaultTranslations(langCode),//dont need id for now, just user provided name
-            [SETTINGS.homeScreenStatsType]: 'auto',//dont need id for now, just user provided name
+            [SETTINGS.trainModesList]: [],
+
+            [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+            [SETTINGS.homeScreenStatsType]: 'auto', //dont need id for now, just user provided name
             [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses
         }
     };
 };
 
-export const createAppState: () => AppStateModel = createAppState0_0_7;
+export const createAppState: () => AppStateModel = createAppState0_0_8;
+
+export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
+    lang
+) => [
+    {
+        id: 1,
+        editable: false,
+        name: 'ESV®',
+        addressLanguage: LANGCODE.en,
+        isDefault: lang === LANGCODE.en
+    },
+    {
+        id: 2,
+        editable: false,
+        name: 'UCVNTR',
+        addressLanguage: LANGCODE.ua,
+        isDefault: lang === LANGCODE.ua
+    }
+];
+
+export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (lang) => {
+    return [
+        {
+            id: 3,
+            editable: false,
+            name: createT(lang)("DefaultTrainModeName"),
+            enabled: true,
+            length: TEST_LIST_NUMBER,
+            translation: 1,
+            includeTags: [],
+            excludeTags: [archivedName],
+            testAsLevel: null,
+            sort: SORTING_OPTION.oldestToTrain
+        }
+    ]
+}
+
 
 export const getVersesNumber: (adress: AddressType) => number = (address) => {
     //if one verse (end == null || edn == start)
@@ -179,13 +274,49 @@ export const createAddress: () => AddressType = () => {
     };
 };
 
-export const createTranslation: (lang?: LANGCODE) => TranslationModel = (lang = LANGCODE.en) => {
+export const createTranslation: (lang?: LANGCODE) => TranslationModel = (
+    lang = LANGCODE.en
+) => {
     return {
         id: genId(),
         addressLanguage: lang,
-        name: "---",
+        name: createT(lang)("NewTranslationName"),
         editable: true,
         isDefault: false
+    };
+};
+
+export const createReminder: () => ReminderModel = () => {
+    return {
+        id: genId(),
+        days: {
+            dayMO: true,
+            dayTU: true,
+            dayWE: true,
+            dayTH: true,
+            dayFR: true,
+            daySA: true,
+            daySU: true
+        },
+        timeInSec: 28800,
+        enabled: true
+    };
+};
+
+export const createTrainMode: (lang: LANGCODE,translationId?: number) => TrainModeModel = (
+    lang, translationId
+) => {
+    return {
+        id: genId(),
+        editable: true,
+        name: createT(lang)("NewTrainModeName"),
+        enabled: true,
+        length: 10,
+        translation: translationId || null,
+        includeTags: [],
+        excludeTags: [],
+        testAsLevel: null,
+        sort: SORTING_OPTION.oldestToTrain
     }
 }
 
@@ -212,7 +343,7 @@ export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
         filters: {
             tags: [archivedName],
             selectedLevels: [],
-            maxLevels: [],
+            maxLevels: []
         },
         sort: SORTING_OPTION.address
     };

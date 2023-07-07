@@ -49,7 +49,10 @@ const xmlData2 = `
 </g>
 </svg>`;
 
-export const DaggerLogoSVG: FC<{isOutline?: boolean, color: string}> = ({isOutline, color ="#ECECEC"}) => {
-  const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color)
-  return <SvgXml xml={data} width="255" height="160"/>;
-}
+export const DaggerLogoSVG: FC<{ isOutline?: boolean; color: string }> = ({
+    isOutline,
+    color = '#ECECEC'
+}) => {
+    const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
+    return <SvgXml xml={data} width="255" height="160" />;
+};

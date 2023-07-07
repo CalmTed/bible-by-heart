@@ -54,7 +54,7 @@ Roadmap
       - [x] menu list 
       - [x] just text
       - [x] items list
-  - [x] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x]  about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
+  - [x] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x] about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
   - [x] user settings:  - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
   - [x] edit passage translation (custom with autocomplete from other passages data)
   - [x] filter by translation (if there are several different)
@@ -62,11 +62,21 @@ Roadmap
     - [x] copyright page in settings
     - [x] limit length to 500 verses per passage
   - [x] delete tests history after deleting passage
-  - [x] update all passages with translation that was deleted to "other/null"
+  - [x] update all passages with translation that was deleted to "other/null" 
   - [x] add tag to filter on adding to passage, remove if it was last
   - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
 - [ ] customizable daily reminder, more stats v0.0.8
-  - [ ] different modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags, included/excluded)
+  - [x] reminders list: time, days
+  - [x] fix reminders permisions, fix back swipe state eracing, fix all tests enabled bug(fix check if all tests are finiched to finish session)
+  - [x] fix level 4 wrong scroll wrapping, fix level 5 no scroll wrapping
+  - [x] different train modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags: included/excluded)
+  - [x] state converter: 
+    - [x] change triesDuration from dateStarted and dateFinished
+    - [x] remove all testData from history
+    - [x] remove unfinished
+    - [x] remove it before finishing session
+  - [ ] publish as it is for now b.c. we dont really care about state model now, other parts will be just rendered
+  - [ ] edit passage due to, sort main train mode by it
   - [ ] export to csv, import from share(parse), or from other data types
   - [ ] all tests list, grouping by date and session
   - [ ] statistics:
@@ -78,6 +88,8 @@ Roadmap
       - [ ] general progress 2 weeks to 1 month
       - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
       - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
+  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
+  - [ ] ask to fetch translation if textfiled is not empty
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
   - [ ] feedback form for authorirized users or telegram bot
   - [ ] change data safety settings and privacy policy
@@ -85,6 +97,7 @@ Roadmap
   - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
   - [ ] about page and donate button
+  - [ ] screen readers labels
 
 Other ideas:
 - show most common errors for the given passage

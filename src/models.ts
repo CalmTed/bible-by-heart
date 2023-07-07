@@ -1,8 +1,61 @@
-import { LANGCODE, PASSAGE_LEVEL, SETTINGS, SORTING_OPTION, STATS_METRICS, TEST_LEVEL, THEME_TYPE } from './constants';
+import {
+    LANGCODE,
+    PASSAGE_LEVEL,
+    SETTINGS,
+    SORTING_OPTION,
+    STATS_METRICS,
+    TEST_LEVEL,
+    THEME_TYPE
+} from './constants';
 
-export type AppStateModel = AppStateModel0_0_7
+export type AppStateModel = AppStateModel0_0_8;
 
-export interface AppStateModel0_0_7{
+export interface AppStateModel0_0_8 {
+    version: string;
+    apiVersion: string;//not implemented yet
+    lastChange: number;
+    dateSyncTry: number;//not implemented yet
+    dateSyncSuccess: number;//not implemented yet
+    passages: PassageModel[];
+    testsActive: TestModel0_0_7[];
+    testsHistory: TestModel0_0_7[];
+    userId: number | null;//not implemented yet
+    filters: {
+        tags: string[];
+        selectedLevels: PASSAGE_LEVEL[];
+        maxLevels: PASSAGE_LEVEL[];
+        translations: number[];
+    };
+    sort: SORTING_OPTION;
+    settings: {
+        [SETTINGS.langCode]: LANGCODE;
+        [SETTINGS.theme]: THEME_TYPE;
+        [SETTINGS.devMode]: boolean;
+        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern';//not implemented yet
+        [SETTINGS.hapticsEnabled]: boolean;
+        [SETTINGS.soundsEnabled]: boolean;//not implemented yet
+        [SETTINGS.compressOldTestsData]: boolean;//not implemented yet
+        [SETTINGS.autoIncreeseLevel]: boolean;
+        [SETTINGS.leftSwipeTag]: string;
+
+        [SETTINGS.remindersEnabled]: boolean;
+        [SETTINGS.remindersSmartTime]: boolean;
+        [SETTINGS.remindersList]: ReminderModel[];
+
+        [SETTINGS.translations]: TranslationModel[];
+        [SETTINGS.homeScreenStatsType]:
+            | 'auto'
+            | 'dayStreak'
+            | 'absoluteProgress'
+            | 'monthProgress';//not implemented yet
+        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS;
+
+        [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
+        [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
+    };
+}
+
+export interface AppStateModel0_0_7 {
     version: string;
     apiVersion: string;
     lastChange: number;
@@ -11,38 +64,39 @@ export interface AppStateModel0_0_7{
     passages: PassageModel[];
     testsActive: TestModel0_0_7[];
     testsHistory: TestModel0_0_7[];
-    // langCode: LANGCODE;
-    // theme: 'dark' | 'light' | 'auto';
-    // chapterNumbering: 'eastern' | 'vestern';
-    // devMode: boolean;
-    // reminderTimes: number[];
     userId: number | null;
     filters: {
-        tags: string[],
-        selectedLevels: PASSAGE_LEVEL[],
-        maxLevels: PASSAGE_LEVEL[]
-        translations: number[]
-    },
-    sort: SORTING_OPTION,
+        tags: string[];
+        selectedLevels: PASSAGE_LEVEL[];
+        maxLevels: PASSAGE_LEVEL[];
+        translations: number[];
+    };
+    sort: SORTING_OPTION;
     settings: {
-        [SETTINGS.langCode]: LANGCODE
-        [SETTINGS.theme]: THEME_TYPE
-        [SETTINGS.devMode]: boolean
-        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern'
-        [SETTINGS.hapticsEnabled]: boolean
-        [SETTINGS.soundsEnabled]: boolean
-        [SETTINGS.compressOldTestsData]: boolean
-        [SETTINGS.autoIncreeseLevel]: boolean
-        [SETTINGS.leftSwipeTag]: string // options from existring tags, archive by default  TODO check on tag removing
-    
-        [SETTINGS.remindersEnabled]: boolean
-        [SETTINGS.remindersSmartTime]: boolean // based on last month of tests history
-        [SETTINGS.remindersList]: ReminderModel[]
+        [SETTINGS.langCode]: LANGCODE;
+        [SETTINGS.theme]: THEME_TYPE;
+        [SETTINGS.devMode]: boolean;
+        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern';
+        [SETTINGS.hapticsEnabled]: boolean;
+        [SETTINGS.soundsEnabled]: boolean;
+        [SETTINGS.compressOldTestsData]: boolean;
+        [SETTINGS.autoIncreeseLevel]: boolean;
+        [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
 
-        [SETTINGS.translations]: TranslationModel[]//dont need id for now, just user provided name
-        [SETTINGS.homeScreenStatsType]: 'auto' | 'dayStreak' | 'absoluteProgress' | 'monthProgress'
-        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS
-    }
+        [SETTINGS.remindersEnabled]: boolean;
+        [SETTINGS.remindersSmartTime]: boolean; // based on last month of tests history
+        [SETTINGS.remindersList]: ReminderModel[];
+
+        [SETTINGS.translations]: TranslationModel[]; //dont need id for now, just user provided name
+        [SETTINGS.homeScreenStatsType]:
+            | 'auto'
+            | 'dayStreak'
+            | 'absoluteProgress'
+            | 'monthProgress';
+        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS;
+
+        [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
+    };
 }
 
 export interface PassageModel {
@@ -69,7 +123,7 @@ export interface exportingModel {
     passages: PassageModel[];
 }
 
-export type TestModel = TestModel0_0_7
+export type TestModel = TestModel0_0_7;
 
 export interface TestModel0_0_7 {
     //for every passage every practice session
@@ -77,8 +131,8 @@ export interface TestModel0_0_7 {
     sessionId: number; //tests are created before every session and deleted if not finished
     passageId: number;
     userId: number | null;
-    triesDuration: number[][]// start and finish
-    isFinished: boolean
+    triesDuration: number[][]; // start and finish
+    isFinished: boolean;
     level: TEST_LEVEL;
     testData: {
         addressOptions?: AddressType[];
@@ -102,42 +156,46 @@ export interface TestModel0_0_7 {
     wrongWords: [number, string][]; //word index, wrong word string
 }
 
-export interface ReminderModel{//>=0.0.7
-    id: number
-    enabled: boolean
-    timeInSec: number //in seconds from midnight
+export interface ReminderModel {
+    //>=0.0.7
+    id: number;
+    enabled: boolean;
+    timeInSec: number; //in seconds from midnight
     days: {
-        mo: boolean;
-        tu: boolean;
-        we: boolean;
-        th: boolean;
-        fr: boolean;
-        sa: boolean;
-        su: boolean;
-    }
+        dayMO: boolean;
+        dayTU: boolean;
+        dayWE: boolean;
+        dayTH: boolean;
+        dayFR: boolean;
+        daySA: boolean;
+        daySU: boolean;
+    };
 }
-export interface TranslationModel{//>=0.0.7
-    id: number
-    editable: boolean
-    isDefault: boolean
-    name: string
-    addressLanguage: LANGCODE
+export interface TranslationModel {
+    //>=0.0.7
+    id: number;
+    editable: boolean;
+    isDefault: boolean;
+    name: string;
+    addressLanguage: LANGCODE;
 }
-export interface TrainModeModel{//>=0.0.7
-    id: number
-    editable: boolean//aka removable
-    name: string
-    enabled: boolean
-    length: number //5-20,all
-    translation: LANGCODE
-    includeTags: string[]
-    excludeTags: string[]
-    sort: SORTING_OPTION
-} 
+export interface TrainModeModel {
+    //>=0.0.7
+    id: number;
+    editable: boolean; //aka removable
+    name: string;
+    enabled: boolean;
+    length: number; //5-20,all
+    translation: number | null;
+    includeTags: string[];
+    excludeTags: string[];
+    testAsLevel: PASSAGE_LEVEL | null;//null is passage level
+    sort: SORTING_OPTION;
+}
 
-export interface OptionModel{
-    value: string// no numbers for now
-    label: string// not WORD because it could be user provided value
+export interface OptionModel {
+    value: string; // no numbers for now
+    label: string; // not WORD because it could be user provided value
 }
 
 export interface AddressType {
@@ -164,32 +222,34 @@ export enum ActionName {
     setSorting = 'setSorting',
     toggleFilter = 'toggleFilter',
     setSettingsParam = 'setSettingsParam',
-    setTranslationsList = 'setTranslationsList'
+    setTranslationsList = 'setTranslationsList',
+    setRemindersList = 'setRemindersList',
+    setTrainModesList = 'setTrainModesList',
 }
 export type ActionModel =
-    {
+    | {
           name: ActionName.setLang;
           payload: LANGCODE;
       }
     | {
-        name: ActionName.setTheme;
-        payload: THEME_TYPE;
-    }
+          name: ActionName.setTheme;
+          payload: THEME_TYPE;
+      }
     | {
           name: ActionName.setPassage;
           payload: PassageModel;
       }
     | {
-        name: ActionName.setLeftSwipeTag;
-        payload: string;
-    }
+          name: ActionName.setLeftSwipeTag;
+          payload: string;
+      }
     | {
-        name: ActionName.setSettingsParam
-        payload: {
-            param: SETTINGS,
-            value: boolean | string
-        }
-    }
+          name: ActionName.setSettingsParam;
+          payload: {
+              param: SETTINGS;
+              value: boolean | string | number;
+          };
+      }
     | {
           name: ActionName.setPassagesList;
           payload: PassageModel[];
@@ -227,34 +287,37 @@ export type ActionModel =
           payload: number;
       }
     | {
-        name: ActionName.setDevMode;
-        payload: boolean;
-    }
+          name: ActionName.setDevMode;
+          payload: boolean;
+      }
     | {
-            name: ActionName.setSorting;
-            payload: SORTING_OPTION
-        }
+          name: ActionName.setSorting;
+          payload: SORTING_OPTION;
+      }
     | {
-        name: ActionName.toggleFilter;
-        payload: {
-            tag?: string
-            selectedLevel?: PASSAGE_LEVEL
-            maxLevel?: PASSAGE_LEVEL
-            translationId?: number
-        }
-    }
+          name: ActionName.toggleFilter;
+          payload: {
+              tag?: string;
+              selectedLevel?: PASSAGE_LEVEL;
+              maxLevel?: PASSAGE_LEVEL;
+              translationId?: number;
+          };
+      }
     | {
-        name: ActionName.setTranslationsList
-        payload: TranslationModel[]
-    }
-
-
-
-
-
+          name: ActionName.setTranslationsList;
+          payload: TranslationModel[];
+      }
+    | {
+          name: ActionName.setRemindersList;
+          payload: ReminderModel[];
+      }
+    | {
+          name: ActionName.setTrainModesList;
+          payload: TrainModeModel[];
+      };
 
 /* state archive */
-export interface AppStateModel0_0_6{
+export interface AppStateModel0_0_6 {
     version: string;
     apiVersion: string;
     lastChange: number;
@@ -270,11 +333,11 @@ export interface AppStateModel0_0_6{
     reminderTimes: number[];
     userId: number | null;
     filters: {
-        tags: string[],
-        selectedLevels: PASSAGE_LEVEL[],
-        maxLevels: PASSAGE_LEVEL[]
-    },
-    sort: SORTING_OPTION
+        tags: string[];
+        selectedLevels: PASSAGE_LEVEL[];
+        maxLevels: PASSAGE_LEVEL[];
+    };
+    sort: SORTING_OPTION;
 }
 
 export interface TestModel0_0_6 {
@@ -284,8 +347,8 @@ export interface TestModel0_0_6 {
     passageId: number;
     userId: number | null;
     // triesDuration: [number, number][]// start and finish
-    dateStarted: number;//was non array in <0.0.7
-    dateFinished: number;//was non array in <0.0.7
+    dateStarted: number; //was non array in <0.0.7
+    dateFinished: number; //was non array in <0.0.7
     level: TEST_LEVEL;
     testData: {
         addressOptions?: AddressType[];

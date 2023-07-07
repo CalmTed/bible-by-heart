@@ -23,7 +23,7 @@
                 "backgroundColor": "#ECECEC"
             },
             "package": "com.CalmTed.bibleByHeart",
-            "versionCode":230626
+            "versionCode": 230706
         },
         "web": {
             "favicon": "./assets/favicon.png"
@@ -32,6 +32,15 @@
             "eas": {
                 "projectId": "c76e832f-dde7-42aa-b303-7c97507b9ac9"
             }
-        }
+        },
+        "plugins": [
+            [
+                "expo-notifications",
+                {
+                    "icon": "./assets/notification.png",
+                    "color": "#ECECEC"
+                }
+            ]
+        ]
     }
 }

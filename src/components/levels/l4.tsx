@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native"
 import addressToString from "../../tools/addressToString"
@@ -30,6 +30,7 @@ const levelComponentStyle = StyleSheet.create({
   passageTextView: {
     maxHeight: "30%",
     height: "auto",
+    minHeight: 100,
     borderRadius: 10,
     margin: 10,
     paddingHorizontal: 10
@@ -125,7 +126,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
     const nextWord = targetWords[passageWords.length];
     const nextWordIfNeeded = 
       word === targetWords[passageWords.length - 1] &&
-      ["–", "-", ":", ";", ".", ","].includes(nextWord) ?
+      ["—","–", "-", ":", ";", ".", ","].includes(nextWord) ?
         nextWord + " " : // adding one more space here for a reason
         "";
     state.settings.hapticsEnabled ? Vibration.vibrate(VIBRATION_PATTERNS.wordClick) : null;
@@ -161,7 +162,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
   const levelFinished = test.isFinished;
   const isAddressProvided = test.testData.showAddressOrFirstWords;
   const theme = getTheme(state.settings.theme);
-  return <View style={levelComponentStyle.levelComponentView}>
+  return <ScrollView style={levelComponentStyle.levelComponentView}>
     <View style={levelComponentStyle.addressTextView}>
       {isAddressProvided &&
         <Text style={{...levelComponentStyle.addressText, color: theme.colors.text}}>{addressToString(targetPassage.address, t)}</Text>
@@ -170,7 +171,7 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         <Text style={{...levelComponentStyle.passageText, color: theme.colors.text}}>{t("FinishPassage")}</Text>
       }
       </View>
-    <ScrollView style={{
+    <View style={{
       ...levelComponentStyle.passageTextView,
     }}>
       <Input
@@ -182,13 +183,14 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
         onSubmit={() => {}}
         color={isCorrect ? "green" : "red"}
         onChange={handleTextChange}
-        style={{width: "100%"}}
+        wrapperStyle={{width: "100%", height: "100%"}}
+        style={{width: "100%", height: "100%", justifyContent: "flex-start"}}
       />
       {
         !!wordOptions.length &&
         <Text style={{...levelComponentStyle.inputSubtext, color: theme.colors.textSecond}}>{t("LevelL40Hint")}</Text>
       }
-    </ScrollView>
+    </View>
       {passageText.length >= targetPassage.verseText.length && isCorrect && 
         <View style={levelComponentStyle.optionButtonsWrapper}>
           {
@@ -233,5 +235,5 @@ export const L40: FC<LevelComponentModel> = ({test, state, t, submitTest}) => {
       }
       </View>
     </ScrollView>
-  </View>
+  </ScrollView>
 }
