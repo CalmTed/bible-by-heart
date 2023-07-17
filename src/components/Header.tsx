@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { StackNavigationHelpers } from '@react-navigation/stack/src/types';
 import { IconButton } from './Button';
@@ -46,7 +46,7 @@ export const Header: FC<HeaderModel> = ({
                     theme={theme}
                     onPress={handleBack}
                     icon={IconName.back}
-                ></IconButton>
+                />
             )}
             {title && (
                 <View style={headerStyle.textView}>

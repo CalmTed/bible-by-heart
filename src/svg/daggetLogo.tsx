@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { SvgXml } from 'react-native-svg';
 const xmlData = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">

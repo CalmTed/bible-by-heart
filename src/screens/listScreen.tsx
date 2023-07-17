@@ -12,7 +12,7 @@ import {
     Vibration,
     ToastAndroid
 } from 'react-native';
-import { archivedName, PASSAGE_LEVEL, SORTING_OPTION } from '../constants';
+import { archivedName, PASSAGELEVEL, SORTINGOPTION } from '../constants';
 import {
     ActionName,
     AddressType,
@@ -49,7 +49,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         createPassage(
             createAddress(),
             '',
-            state.settings.translations.find((t) => t.isDefault)?.id
+            state.settings.translations.find((tr) => tr.isDefault)?.id
         )
     );
 
@@ -69,7 +69,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         const newPassage = createPassage(
             address,
             '',
-            state.settings.translations.find((t) => t.isDefault)?.id
+            state.settings.translations.find((tr) => tr.isDefault)?.id
         );
         const versesInEnglish = getNumberOfVersesInEnglish(
             state.settings.translations,
@@ -81,9 +81,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         } else {
             ToastAndroid.show(t('ErrorCantAddMoreEngVerses'), 10000);
         }
-    };
-    const handlePECancel = () => {
-        setPEOpen(false);
     };
     const handlePESubmit = (passage: PassageModel) => {
         //reduce set pasage
@@ -112,7 +109,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     };
     const handleListItemToggleTag = (passage: PassageModel, tag: string) => {
         const newTags = passage.tags.includes(tag)
-            ? passage.tags.filter((t) => t !== tag)
+            ? passage.tags.filter((tg) => tg !== tag)
             : [...passage.tags, tag];
         handlePESubmit({
             ...passage,
@@ -126,7 +123,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             isCollapsed: !passage.isCollapsed
         });
     };
-    const handleSortChange = (option: SORTING_OPTION) => {
+    const handleSortChange = (option: SORTINGOPTION) => {
         setState((prv) => {
             const newState = reduce(prv, {
                 name: ActionName.setSorting,
@@ -137,8 +134,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     };
     const handleFilterChange: (arg: {
         tag?: string;
-        selectedLevel?: PASSAGE_LEVEL;
-        maxLevel?: PASSAGE_LEVEL;
+        selectedLevel?: PASSAGELEVEL;
+        maxLevel?: PASSAGELEVEL;
         translation?: number;
     }) => void = ({ tag, selectedLevel, maxLevel, translation }) => {
         setState((prv) => {
@@ -202,15 +199,15 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     });
     const sortedPassages = filteredPassages.sort((a, b) => {
         switch (state.sort) {
-            case SORTING_OPTION.address:
+            case SORTINGOPTION.address:
                 return getAddressDifference(a, b);
-            case SORTING_OPTION.maxLevel:
+            case SORTINGOPTION.maxLevel:
                 return b.maxLevel - a.maxLevel;
-            case SORTING_OPTION.selectedLevel:
+            case SORTINGOPTION.selectedLevel:
                 return b.selectedLevel - a.selectedLevel;
-            case SORTING_OPTION.resentlyCreated:
+            case SORTINGOPTION.resentlyCreated:
                 return b.dateCreated - a.dateCreated;
-            case SORTING_OPTION.oldestToTrain:
+            case SORTINGOPTION.oldestToTrain:
                 return a.dateTested - b.dateTested;
             default:
                 return 0;
@@ -335,31 +332,31 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             {'( '}
                             {
                                 state.passages.filter(
-                                    (p) => p.maxLevel === PASSAGE_LEVEL.l1
+                                    (p) => p.maxLevel === PASSAGELEVEL.l1
                                 ).length
                             }{' '}
                             {', '}
                             {
                                 state.passages.filter(
-                                    (p) => p.maxLevel === PASSAGE_LEVEL.l2
+                                    (p) => p.maxLevel === PASSAGELEVEL.l2
                                 ).length
                             }{' '}
                             {', '}
                             {
                                 state.passages.filter(
-                                    (p) => p.maxLevel === PASSAGE_LEVEL.l3
+                                    (p) => p.maxLevel === PASSAGELEVEL.l3
                                 ).length
                             }{' '}
                             {', '}
                             {
                                 state.passages.filter(
-                                    (p) => p.maxLevel === PASSAGE_LEVEL.l4
+                                    (p) => p.maxLevel === PASSAGELEVEL.l4
                                 ).length
                             }{' '}
                             {', '}
                             {
                                 state.passages.filter(
-                                    (p) => p.maxLevel === PASSAGE_LEVEL.l5
+                                    (p) => p.maxLevel === PASSAGELEVEL.l5
                                 ).length
                             }{' '}
                             {')'}
@@ -372,23 +369,23 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             )}{' '}
                             {'( '}
                             {state.passages
-                                .filter((p) => p.maxLevel === PASSAGE_LEVEL.l1)
+                                .filter((p) => p.maxLevel === PASSAGELEVEL.l1)
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}{' '}
                             {', '}
                             {state.passages
-                                .filter((p) => p.maxLevel === PASSAGE_LEVEL.l2)
+                                .filter((p) => p.maxLevel === PASSAGELEVEL.l2)
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}{' '}
                             {', '}
                             {state.passages
-                                .filter((p) => p.maxLevel === PASSAGE_LEVEL.l3)
+                                .filter((p) => p.maxLevel === PASSAGELEVEL.l3)
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}{' '}
                             {', '}
                             {state.passages
-                                .filter((p) => p.maxLevel === PASSAGE_LEVEL.l4)
+                                .filter((p) => p.maxLevel === PASSAGELEVEL.l4)
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}{' '}
                             {', '}
                             {state.passages
-                                .filter((p) => p.maxLevel === PASSAGE_LEVEL.l5)
+                                .filter((p) => p.maxLevel === PASSAGELEVEL.l5)
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}{' '}
                             {')'}
                         </Text>
@@ -398,9 +395,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             {state.passages
                                 .filter((p) =>
                                     [
-                                        PASSAGE_LEVEL.l3,
-                                        PASSAGE_LEVEL.l4,
-                                        PASSAGE_LEVEL.l5
+                                        PASSAGELEVEL.l3,
+                                        PASSAGELEVEL.l4,
+                                        PASSAGELEVEL.l5
                                     ].includes(p.maxLevel)
                                 )
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}
@@ -410,7 +407,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             {': '}
                             {state.passages
                                 .filter((p) =>
-                                    [PASSAGE_LEVEL.l5].includes(p.maxLevel)
+                                    [PASSAGELEVEL.l5].includes(p.maxLevel)
                                 )
                                 .reduce((ps, p) => ps + p.versesNumber, 0)}
                         </Text>
@@ -423,7 +420,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 handleClose={() => setOpenSorting(false)}
             >
                 <Text style={theme.theme.headerText}>{t('TitleSort')}</Text>
-                {Object.values(SORTING_OPTION).map((option) => (
+                {Object.values(SORTINGOPTION).map((option) => (
                     <Button
                         theme={theme}
                         key={option}
@@ -464,11 +461,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         }}
                     >
                         {[
-                            PASSAGE_LEVEL.l1,
-                            PASSAGE_LEVEL.l2,
-                            PASSAGE_LEVEL.l3,
-                            PASSAGE_LEVEL.l4,
-                            PASSAGE_LEVEL.l5
+                            PASSAGELEVEL.l1,
+                            PASSAGELEVEL.l2,
+                            PASSAGELEVEL.l3,
+                            PASSAGELEVEL.l4,
+                            PASSAGELEVEL.l5
                         ].map((sl) => (
                             <Button
                                 theme={theme}
@@ -504,11 +501,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         }}
                     >
                         {[
-                            PASSAGE_LEVEL.l1,
-                            PASSAGE_LEVEL.l2,
-                            PASSAGE_LEVEL.l3,
-                            PASSAGE_LEVEL.l4,
-                            PASSAGE_LEVEL.l5
+                            PASSAGELEVEL.l1,
+                            PASSAGELEVEL.l2,
+                            PASSAGELEVEL.l3,
+                            PASSAGELEVEL.l4,
+                            PASSAGELEVEL.l5
                         ].map((ml) => (
                             <Button
                                 theme={theme}
@@ -644,7 +641,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 state={state}
                 visible={isPEOpen}
                 passage={selectedPassage}
-                onCancel={handlePECancel}
                 onConfirm={handlePESubmit}
                 onRemove={handlePERemove}
                 t={t}
@@ -749,25 +745,26 @@ const ListItem: FC<{
         );
     };
     const getSecondaryOptions = (
-        sort: SORTING_OPTION,
+        sortType: SORTINGOPTION,
         passage: PassageModel
     ) => {
-        switch (sort) {
-            case SORTING_OPTION.maxLevel:
+        switch (sortType) {
+            case SORTINGOPTION.maxLevel:
                 return `${t('MaxLevel')} ${passage.maxLevel}`;
-            case SORTING_OPTION.selectedLevel:
+            case SORTINGOPTION.selectedLevel:
                 return `${t('SelectedLevel')} ${passage.selectedLevel}`;
-            case SORTING_OPTION.resentlyCreated:
+            case SORTINGOPTION.resentlyCreated:
                 // return `${t("DateCreated")} ${timeToString(passage.dateCreated)}`;
                 return `${timeToString(passage.dateCreated)}`;
-            case SORTING_OPTION.oldestToTrain:
+            case SORTINGOPTION.oldestToTrain:
                 // return `${t("DateTested")} ${timeToString(passage.dateTested)}`;
                 return `${timeToString(passage.dateTested)}`;
         }
     };
     const customT = createT(
-        state.settings.translations.find((t) => t.id === data.verseTranslation)
-            ?.addressLanguage || state.settings.langCode
+        state.settings.translations.find(
+            (tr) => tr.id === data.verseTranslation
+        )?.addressLanguage || state.settings.langCode
     );
     return (
         <Pressable onPress={onPress} onLongPress={onLongPress}>

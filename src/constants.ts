@@ -1,8 +1,14 @@
-import { StyleSheet } from 'react-native';;
+import { StyleSheet } from 'react-native';
 
 export const VERSION = '0.0.8';
 
-export const alowedStateVersions = ['0.0.4', '0.0.5', '0.0.6','0.0.7' ,VERSION]; //make translators for imported data
+export const alowedStateVersions = [
+    '0.0.4',
+    '0.0.5',
+    '0.0.6',
+    '0.0.7',
+    VERSION
+]; //make translators for imported data
 
 export const API_VERSION = '0.0.1';
 //cant sync with oudated version
@@ -18,12 +24,11 @@ export const storageName = 'data';
 
 export const archivedName = 'Archived';
 
-export const backgroundNotificationName = 'backgroundNotificationName'; 
-
+export const backgroundNotificationName = 'backgroundNotificationName';
 
 export const PERFECT_TESTS_TO_PRCEED = 4;
 export const TEST_LIST_NUMBER = 10;
-export const MAX_L50_TRIES = 5;//with bonus for a long passage
+export const MAX_L50_TRIES = 5; //with bonus for a long passage
 
 export const MINUTE = 60;
 export const HOUR = 3600;
@@ -39,7 +44,7 @@ export enum SCREEN {
     settings = 'settings'
 }
 
-export enum SORTING_OPTION {
+export enum SORTINGOPTION {
     //sorting option: address, dateCreated, dateTrained, selectedLevel, mexLevel, errorCount
     address = 'address',
     resentlyCreated = 'resentlyCreated',
@@ -48,13 +53,13 @@ export enum SORTING_OPTION {
     maxLevel = 'maxLevel'
 }
 
-export enum STATS_METRICS {
+export enum STATSMETRICS {
     minutes = 'minutes',
     sesstions = 'sessions',
     verses = 'verses'
 }
 
-export enum THEME_TYPE {
+export enum THEMETYPE {
     auto = 'auto',
     dark = 'dark',
     light = 'light'
@@ -165,7 +170,7 @@ export const THEME_LIGHT: typeof THEME_DARK = {
     }
 };
 
-export enum TEST_LEVEL {
+export enum TESTLEVEL {
     l10 = 10,
     l11 = 11,
     l20 = 20,
@@ -174,7 +179,7 @@ export enum TEST_LEVEL {
     l40 = 40,
     l50 = 50
 }
-export enum PASSAGE_LEVEL {
+export enum PASSAGELEVEL {
     l1 = 1,
     l2 = 2,
     l3 = 3,

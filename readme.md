@@ -75,10 +75,32 @@ Roadmap
     - [x] remove all testData from history
     - [x] remove unfinished
     - [x] remove it before finishing session
-  - [ ] publish as it is for now b.c. we dont really care about state model now, other parts will be just rendered
-  - [ ] edit passage due to, sort main train mode by it
+  - [x] publish as it is for now b.c. we dont really care about state model now, other parts will be just rendered
+  - [ ] futureprofing
+    - [x] update dependencies
+    - [ ] protect all critical funcions with try catch
+      - [x] storing
+      - [ ] redusing
+      - [ ] app rendering
+      - [ ] initials
+      - [ ] generate tests
+      - [ ] all async
+      - [ ] add throw Error
+      - [ ] hadle errors with toast translated label
+    - [ ] everyday save backup
+    - [ ] on crash propose to open backup and send last state as a report
+    - [ ] incapculate all function and components
+    - [ ] replace inputs with menu-ones (passage editor,settings,modals...) 
   - [ ] export to csv, import from share(parse), or from other data types
+  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
+  - [ ] ask to fetch translation if textfiled is not empty
+  - [ ] edit passage due to, sort main train mode by it
   - [ ] all tests list, grouping by date and session
+- [ ] register and login (confirm email or google/facebook login) v0.0.9
+  - [ ] passage statistics in passage editor
+     - [ ] most common errors list with error numbers
+     - [ ] total tries tested, total time spent
+     - [ ] most often wrong addresses
   - [ ] statistics:
     - [ ] overal learned
     - [ ] global progress (learned passages score versesNumber*level)
@@ -88,9 +110,7 @@ Roadmap
       - [ ] general progress 2 weeks to 1 month
       - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
       - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
-  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
-  - [ ] ask to fetch translation if textfiled is not empty
-- [ ] register and login (confirm email or google/facebook login) v0.0.9
+      - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday
   - [ ] feedback form for authorirized users or telegram bot
   - [ ] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0

@@ -4,7 +4,7 @@ import {
     COLOR_LIGHT,
     THEME_DARK,
     THEME_LIGHT,
-    THEME_TYPE
+    THEMETYPE
 } from '../constants';
 
 export interface ThemeAndColorsModel {
@@ -12,11 +12,11 @@ export interface ThemeAndColorsModel {
     colors: typeof COLOR_DARK;
 }
 
-export const getTheme: (theme: THEME_TYPE) => ThemeAndColorsModel = (theme) => {
+export const getTheme: (theme: THEMETYPE) => ThemeAndColorsModel = (theme) => {
     const colorScheme = useColorScheme();
     if (
-        (theme === THEME_TYPE.auto && colorScheme === 'dark') ||
-        theme === THEME_TYPE.dark
+        (theme === THEMETYPE.auto && colorScheme === 'dark') ||
+        theme === THEMETYPE.dark
     ) {
         return {
             theme: THEME_DARK,

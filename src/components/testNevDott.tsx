@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { ThemeAndColorsModel } from 'src/tools/getTheme';
 
@@ -56,9 +56,7 @@ export const TestNavDott: FC<TestNavDottModel> = ({
                     locations={[0, 1]}
                     style={testNavDottStyles.gradientView}
                 >
-                    {!isCurrent && (
-                        <View style={testNavDottStyles.inner}></View>
-                    )}
+                    {!isCurrent && <View style={testNavDottStyles.inner} />}
                 </LinearGradient>
             </Pressable>
         </View>

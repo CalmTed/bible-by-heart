@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { StyleSheet, View, Text, Pressable, TextInput } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { OptionModel } from '../models';
 import { SelectModal } from './SelectModal';
 import { ThemeAndColorsModel } from '../tools/getTheme';
@@ -9,7 +9,7 @@ import { TagItem } from './PassageEditor';
 import { archivedName } from '../constants';
 import { WORD } from '../l10n';
 
-type settingsMenuItemModel =
+type SettingsMenuItemModel =
     | {
           theme: ThemeAndColorsModel;
           header: string;
@@ -64,7 +64,7 @@ type settingsMenuItemModel =
           type: 'label';
       };
 
-export const SettingsMenuItem: FC<settingsMenuItemModel> = (data) => {
+export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
     const [selectOpen, setSelectOpen] = useState(false);
     const [tagSelectOpen, setTagSelectOpen] = useState(false);
 
@@ -210,7 +210,7 @@ export const SettingsMenuItem: FC<settingsMenuItemModel> = (data) => {
                                             ? '50%'
                                             : '0%'
                                     }}
-                                ></View>
+                                />
                             </LinearGradient>
                         </View>
                     </View>

@@ -1,6 +1,6 @@
-import { FC, useState } from 'react';
-import { View, StyleSheet, Pressable, Text } from 'react-native';
-import { PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL } from '../constants';
+import React, { FC, useState } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
+import { PERFECT_TESTS_TO_PRCEED, PASSAGELEVEL } from '../constants';
 import { WORD } from '../l10n';
 import { AppStateModel, PassageModel, TestModel } from '../models';
 import { MiniModal } from './miniModal';
@@ -12,7 +12,7 @@ import { DotIndicator } from './DotIndicator';
 
 interface LevelPickerModel {
     targetPassage: PassageModel;
-    handleChange: (level: PASSAGE_LEVEL, passageId: number) => void;
+    handleChange: (level: PASSAGELEVEL, passageId: number) => void;
     handleOpen: (passageId: number) => void;
     t: (w: WORD) => string;
     state: AppStateModel;
@@ -90,11 +90,11 @@ export const LevelPicker: FC<LevelPickerModel> = ({
                 </Text>
                 <View style={levelPickerStyles.buttonsView}>
                     {[
-                        PASSAGE_LEVEL.l1,
-                        PASSAGE_LEVEL.l2,
-                        PASSAGE_LEVEL.l3,
-                        PASSAGE_LEVEL.l4,
-                        PASSAGE_LEVEL.l5
+                        PASSAGELEVEL.l1,
+                        PASSAGELEVEL.l2,
+                        PASSAGELEVEL.l3,
+                        PASSAGELEVEL.l4,
+                        PASSAGELEVEL.l5
                     ].map((n) => {
                         const color =
                             targetPassage.selectedLevel === n
@@ -120,7 +120,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
                     })}
                 </View>
                 {!activeTestObj &&
-                    targetPassage.maxLevel !== PASSAGE_LEVEL.l5 && (
+                    targetPassage.maxLevel !== PASSAGELEVEL.l5 && (
                         <Text style={levelPickerStyles.subText}>
                             {t('LevelPickerSubtext')} (
                             {getPerfectTestsNumber(
@@ -131,7 +131,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
                         </Text>
                     )}
                 {!activeTestObj &&
-                    targetPassage.maxLevel === PASSAGE_LEVEL.l5 && (
+                    targetPassage.maxLevel === PASSAGELEVEL.l5 && (
                         <Text style={levelPickerStyles.subText}>
                             {t('LevelPickerSubtextL5')} (
                             {getPerfectTestsNumber(
@@ -145,7 +145,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
                     targetPassage.selectedLevel.toString() ===
                         activeTestObj.level.toString().slice(0, 1) &&
                     targetPassage.selectedLevel === targetPassage.maxLevel &&
-                    targetPassage.selectedLevel !== PASSAGE_LEVEL.l5 && (
+                    targetPassage.selectedLevel !== PASSAGELEVEL.l5 && (
                         <Text style={levelPickerStyles.subText}>
                             {t('LevelPickerSubtext')} (
                             {getPerfectTestsNumber(

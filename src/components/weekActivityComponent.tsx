@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { FC } from 'react';
+import { View, Text, StyleSheet, DimensionValue } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppStateModel } from '../models';
 import { getWeeklyStats } from '../tools/getStats';
@@ -33,7 +33,7 @@ export const WeekActivityComponent: FC<{
                         value={data.number}
                         maxValue={maxValue}
                         label={t(data.label as WORD)}
-                        isToday={(!!day ? day - 1 : 6) === i} //[0-6], 6 is sunday
+                        isToday={(day ? day - 1 : 6) === i} //[0-6], 6 is sunday
                     />
                 );
             })}
@@ -48,8 +48,8 @@ const DayActivityBar: FC<{
     isToday: boolean;
     theme: ThemeAndColorsModel;
 }> = ({ value, maxValue, label, isToday, theme }) => {
-    const barHeight = `${(80 / maxValue) * value + 20}%`;
-    const gradientColors = !!value
+    const barHeight = `${(80 / maxValue) * value + 20}%` as DimensionValue;
+    const gradientColors = value
         ? [theme.colors.gradient1, theme.colors.gradient2]
         : [theme.colors.bgSecond, theme.colors.bgSecond];
     const DayActivityBarStyles = StyleSheet.create({

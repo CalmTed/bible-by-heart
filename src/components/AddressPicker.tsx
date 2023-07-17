@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
     Modal,
     ScrollView,
@@ -60,7 +60,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                 : Object.keys(tempAddres)[0]
         );
         setAddress(isAddressProvided ? address : createAddress());
-    }, [visible]);
+    }, [visible]);//dont change this list please:)
     const chaptersNumber =
         bibleReference[tempAddres.bookIndex]?.chapters.length;
     const versesNumber =
@@ -101,9 +101,9 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                 break;
             case Object.keys(tempAddres).length - 1:
                 //auto confirming address
-                !isDoneDisabled
-                    ? onConfirm({ ...tempAddres, [addresPart]: index })
-                    : null;
+                if (!isDoneDisabled) {
+                    onConfirm({ ...tempAddres, [addresPart]: index });
+                }
                 break;
             default:
                 setAddressPart(Object.keys(tempAddres)[curPartIndex + 1]);

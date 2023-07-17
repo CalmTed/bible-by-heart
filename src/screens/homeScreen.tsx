@@ -1,9 +1,9 @@
 import React, { FC, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { SCREEN, SETTINGS, THEME_TYPE } from '../constants';
+import { SCREEN, SETTINGS, THEMETYPE } from '../constants';
 import { StackNavigationHelpers } from '@react-navigation/stack/src/types';
 import { navigateWithState } from '../screeenManagement';
-import { Button, IconButton } from '../components/Button';
+import { Button } from '../components/Button';
 import { DaggerLogoSVG } from '../svg/daggetLogo';
 import { getStroke } from '../tools/getStats';
 import { WeekActivityComponent } from '../components/weekActivityComponent';
@@ -47,11 +47,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     {t('DaysStroke')}: {strokeData.length}
                 </Text>
             </View>
-            <WeekActivityComponent
-                theme={theme}
-                state={state}
-                t={t}
-            ></WeekActivityComponent>
+            <WeekActivityComponent theme={theme} state={state} t={t} />
             <View style={homeStyle.buttonView}>
                 <Button
                     theme={theme}
@@ -84,7 +80,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             state: state
                         })
                     }
-                ></Button>
+                />
                 <Button
                     theme={theme}
                     title={t('homeSettings')}
@@ -95,7 +91,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             state: state
                         })
                     }
-                ></Button>
+                />
             </View>
             <SelectModal
                 isShown={showTrainModesList}
@@ -123,7 +119,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             name: ActionName.setSettingsParam,
                             payload: {
                                 param: SETTINGS.activeTrainModeId,
-                                value: parseInt(value)
+                                value: parseInt(value, 10)
                             }
                         }
                     });
@@ -135,7 +131,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
             />
             <StatusBar
                 style={
-                    state.settings.theme === THEME_TYPE.light ? 'dark' : 'light'
+                    state.settings.theme === THEMETYPE.light ? 'dark' : 'light'
                 }
             />
         </View>

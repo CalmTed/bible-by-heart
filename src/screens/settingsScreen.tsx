@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SCREEN, LANGCODE, THEME_TYPE } from '../constants';
+import { SCREEN, LANGCODE, THEMETYPE } from '../constants';
 import { ActionName } from '../models';
 import { navigateWithState } from '../screeenManagement';
 import { createT } from '../l10n';
@@ -92,13 +92,13 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         header={t('settsChangeTheme')}
                         subtext={t(state.settings.theme)}
                         type="select"
-                        options={Object.entries(THEME_TYPE).map(([k, v]) => {
+                        options={Object.entries(THEMETYPE).map(([k, v]) => {
                             return {
                                 value: k,
                                 label: t(v)
                             };
                         })}
-                        selectedIndex={Object.keys(THEME_TYPE).indexOf(
+                        selectedIndex={Object.keys(THEMETYPE).indexOf(
                             state.settings.theme
                         )}
                         onSelect={(value) => {
@@ -106,7 +106,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                                 (st) =>
                                     reduce(st, {
                                         name: ActionName.setTheme,
-                                        payload: value as THEME_TYPE
+                                        payload: value as THEMETYPE
                                     }) || st
                             );
                         }}
@@ -151,7 +151,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             </ScrollView>
             <StatusBar
                 style={
-                    state.settings.theme === THEME_TYPE.light ? 'dark' : 'light'
+                    state.settings.theme === THEMETYPE.light ? 'dark' : 'light'
                 }
             />
         </View>

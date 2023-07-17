@@ -1,13 +1,14 @@
-import { FC, useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
     Modal,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
+    ToastAndroid,
     View
 } from 'react-native';
-import { PASSAGE_LEVEL, archivedName } from '../constants';
+import { PASSAGELEVEL, archivedName } from '../constants';
 import { AddressType, AppStateModel, PassageModel } from '../models';
 import { Button, IconButton } from './Button';
 import { IconName } from './Icon';
@@ -26,7 +27,6 @@ import { fetchESV } from '../tools/fetchESV';
 interface PassageEditorModel {
     visible: boolean;
     passage: PassageModel;
-    onCancel: () => void;
     onConfirm: (passage: PassageModel) => void;
     onRemove: (arg: number) => void;
     t: (w: WORD) => string;
@@ -36,7 +36,6 @@ interface PassageEditorModel {
 export const PassageEditor: FC<PassageEditorModel> = ({
     visible,
     passage,
-    onCancel,
     onConfirm,
     onRemove,
     t,
@@ -44,6 +43,21 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 }) => {
     const [isAPVisible, setAPVisible] = useState(false);
     const [tempPassage, setPassage] = useState(passage);
+
+    const handleTextFetch = (translation?: number) => {
+        const translationId = translation || tempPassage.verseTranslation;
+        //1 is hardwired id for ESV
+        if (translationId === 1) {
+            fetchESV(tempPassage.address).then((data) => {
+                setPassage((prevPassage) => {
+                    return { ...prevPassage, verseText: data };
+                });
+            }).catch((e) => {
+                ToastAndroid.show(e, 10000);
+            });
+        } else {
+        }
+    };
 
     useEffect(() => {
         setPassage(passage);
@@ -56,32 +70,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         handleTextFetch();
     }, [JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
 
-    //on creation
-    //on address change
-    //on translation change
-    const handleTextFetch = (translation?: number) => {
-        const translationId = translation || tempPassage.verseTranslation;
-        //1 is hardwired id for ESV
-        if (translationId === 1) {
-            fetchESV(tempPassage.address).then((data) => {
-                setPassage((prevPassage) => {
-                    return { ...prevPassage, verseText: data };
-                });
-            });
-        } else {
-        }
-    };
-
-    const handleBack = () => {
-        //TODO: confirm if changed
-        onCancel();
-    };
     const handleConfirm = () => {
         onConfirm(tempPassage);
     };
     const handleTextChange = (newVal: string) => {
         setPassage((prv) => {
-            return { ...prv, verseText: newVal.replace(/  /g, ' ').trim() };
+            return { ...prv, verseText: newVal.replace(/ {2}/g, ' ').trim() };
         });
     };
     const handleRemove = (id: number) => {
@@ -99,21 +93,21 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             }
             const newTags =
                 tag === archivedName && prv.tags.includes(archivedName)
-                    ? prv.tags.filter((t) => t !== archivedName)
+                    ? prv.tags.filter((tg) => tg !== archivedName)
                     : [...prv.tags, tag];
             return { ...prv, tags: newTags };
         });
     };
     const handleTagRemove = (tag: string) => {
         setPassage((prv) => {
-            return { ...prv, tags: prv.tags.filter((t) => t !== tag) };
+            return { ...prv, tags: prv.tags.filter((tg) => tg !== tag) };
         });
     };
-    const handleReminderToggle = () => {
-        setPassage((prv) => {
-            return { ...prv, isReminderOn: !prv.isReminderOn };
-        });
-    };
+    // const handleReminderToggle = () => {
+    //     setPassage((prv) => {
+    //         return { ...prv, isReminderOn: !prv.isReminderOn };
+    //     });
+    // };
     const handleAddresChange = (newAdress: AddressType) => {
         const versesInEnglish = getNumberOfVersesInEnglish(
             state.settings.translations,
@@ -137,7 +131,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             return { ...prv, isNewLevelAwalible: false };
         });
     };
-    const handleLevelChange = (level: PASSAGE_LEVEL) => {
+    const handleLevelChange = (level: PASSAGELEVEL) => {
         setPassage((prv) => {
             return { ...prv, selectedLevel: level };
         });
@@ -146,7 +140,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         setPassage((prv) => {
             return {
                 ...prv,
-                verseTranslation: value === 'null' ? null : parseInt(value)
+                verseTranslation: value === 'null' ? null : parseInt(value, 10)
             };
         });
     };
@@ -240,7 +234,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     });
     const tempT = createT(
         state.settings.translations.find(
-            (t) => t.id === tempPassage.verseTranslation
+            (tr) => tr.id === tempPassage.verseTranslation
         )?.addressLanguage || state.settings.langCode
     );
     return (
@@ -300,7 +294,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                             onSubmitEditing={(newVal) =>
                                 handleTagAdd(newVal.nativeEvent.text.trim())
                             }
-                        ></TextInput>
+                        />
                     </View>
                     <View style={PEstyle.bodyMeta}>
                         <Text style={PEstyle.bodyMetaText}>
@@ -331,16 +325,16 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                             theme={theme}
                             options={[
                                 { label: t('TranslationOther'), value: 'null' },
-                                ...state.settings.translations.map((t) => {
+                                ...state.settings.translations.map((tr) => {
                                     return {
-                                        label: t.name,
-                                        value: t.id.toString()
+                                        label: tr.name,
+                                        value: tr.id.toString()
                                     };
                                 })
                             ]}
                             selectedIndex={
                                 state.settings.translations
-                                    .map((t) => t.id)
+                                    .map((tr) => tr.id)
                                     .indexOf(
                                         tempPassage.verseTranslation || -1
                                     ) + 1

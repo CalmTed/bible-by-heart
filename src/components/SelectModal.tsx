@@ -1,7 +1,7 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { MiniModal } from './miniModal';
 import { OptionModel } from '../models';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { ThemeAndColorsModel } from '../tools/getTheme';
 import { Button } from './Button';
 

@@ -1,5 +1,5 @@
-import { FC } from 'react';
-import { StyleSheet, View, TextInput, ScrollView } from 'react-native';
+import React, { FC } from 'react';
+import { StyleSheet, View, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Icon, IconName } from './Icon';
 import { ThemeAndColorsModel } from 'src/tools/getTheme';

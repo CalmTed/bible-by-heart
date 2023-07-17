@@ -1,6 +1,6 @@
-import React, { FC, useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TEST_LEVEL, PASSAGE_LEVEL, archivedName } from '../constants';
+import React, { FC, useState } from 'react';
+import { View, Text, StyleSheet, ToastAndroid } from 'react-native';
+import { TESTLEVEL, PASSAGELEVEL, archivedName } from '../constants';
 import { ActionName, PassageModel, TestModel } from '../models';
 import { navigateWithState } from '../screeenManagement';
 import { SCREEN } from '../constants';
@@ -23,7 +23,7 @@ import { useApp } from '../tools/useApp';
 export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     const { state, setState, t, theme } = useApp({ route, navigation });
     const nextUnfinishedTestIndex = state.testsActive.indexOf(
-        state.testsActive.filter((t) => !t.isFinished)[0]
+        state.testsActive.filter((tst) => !tst.isFinished)[0]
     );
     const [activeTestIndex, setActiveTest] = useState(
         nextUnfinishedTestIndex !== -1 ? nextUnfinishedTestIndex : 0
@@ -41,6 +41,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     const activateTests = () => {
         const generatedTests = generateTests(state);
         if (!generatedTests.length) {
+            ToastAndroid.show(t('ErrorNoPassagesForThisTrainMode'), 1000);
             navigateWithState({ navigation, screen: SCREEN.home, state });
             return;
         }
@@ -69,15 +70,16 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         //if there is at least one unfinished then it is the last one
         if (
             isRight &&
-            state.testsActive.filter((t) => !t.isFinished).length > 1
+            state.testsActive.filter((tst) => !tst.isFinished).length > 1
         ) {
             //if right but not last
-            setActiveTest((prv) => {
-                return prv + 1 < state.testsActive.length
-                    ? prv + 1
-                    : state.testsActive.indexOf(
-                          state.testsActive.filter((t) => !t.isFinished)[0]
-                      );
+            setActiveTest(() => {
+                //set first of unfinished and not active
+                return state.testsActive.indexOf(
+                    state.testsActive.filter(
+                        (tst) => !tst.isFinished && tst.id !== activeTestObj.id
+                    )[0]
+                );
             });
         } else if (isRight) {
             //if last test and right then finish
@@ -85,8 +87,8 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 reduce(state, {
                     name: ActionName.finishTesting,
                     payload: {
-                        tests: state.testsActive.map((t) =>
-                            t.id === modifiedTest.id ? modifiedTest : t
+                        tests: state.testsActive.map((tst) =>
+                            tst.id === modifiedTest.id ? modifiedTest : tst
                         )
                     }
                 }) || state;
@@ -118,7 +120,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             );
         });
     };
-    const handleLevelChange = (level: PASSAGE_LEVEL, passageId: number) => {
+    const handleLevelChange = (level: PASSAGELEVEL, passageId: number) => {
         setState((prv) => {
             return (
                 reduce(prv, {
@@ -194,16 +196,19 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     //if no active tests > create them
     if (!state.testsActive.length) {
         activateTests();
-        return <View style={{ ...theme.theme.screen }}></View>;
+        return <View style={{ ...theme.theme.screen }} />;
     }
     const activeTestObj: TestModel = {
         ...state.testsActive[activeTestIndex],
         triesDuration:
             state.testsActive[activeTestIndex]?.triesDuration?.filter(
-                (t) => t.length === 1
+                (tst) => tst.length === 1
             ).length > 0
-                ? state.testsActive[activeTestIndex]?.triesDuration.map((t) =>
-                      t.length === 1 ? [...t, new Date().getTime()] : t
+                ? state.testsActive[activeTestIndex]?.triesDuration.map(
+                      (tst) =>
+                          tst.length === 1
+                              ? [...tst, new Date().getTime()]
+                              : tst
                   )
                 : [
                       ...(state.testsActive[activeTestIndex]?.triesDuration ||
@@ -217,11 +222,11 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     if (!targetPassage) {
         //if passages from old tests left in state
         activateTests();
-        return <View style={{ ...theme.theme.screen }}></View>;
+        return <View style={{ ...theme.theme.screen }} />;
     }
     const tempT = createT(
         state.settings.translations.find(
-            (t) => t.id === targetPassage.verseTranslation
+            (tr) => tr.id === targetPassage.verseTranslation
         )?.addressLanguage || state.settings.langCode
     );
     return (
@@ -230,7 +235,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 style={{
                     ...theme.theme.view,
                     //if there are any unfinished tests
-                    ...(state.testsActive?.filter((t) => !t.isFinished)
+                    ...(state.testsActive?.filter((tst) => !tst.isFinished)
                         ?.length === 0
                         ? testsStyle.viewHidden
                         : {})
@@ -248,9 +253,9 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                             onPress={exitTests}
                         />,
                         <View style={{ ...testsStyle.testNav }}>
-                            {state.testsActive.map((t, i, arr) => {
-                                const isFinished = t.isFinished;
-                                const hasErrors = !!t.errorNumber;
+                            {state.testsActive.map((tst, i, arr) => {
+                                const isFinished = tst.isFinished;
+                                const hasErrors = !!tst.errorNumber;
                                 const isFirst = i === 0;
                                 //if it first and unfinished
                                 //or if not finished and previus is finished
@@ -269,7 +274,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                                 return (
                                     <TestNavDott
                                         theme={theme}
-                                        key={t.id}
+                                        key={tst.id}
                                         isCurrent={activeTestIndex === i}
                                         color={color}
                                         onPress={() =>
@@ -294,7 +299,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     handleOpen={handleLevelPickerOpen}
                     handleRestart={handleReset}
                 />
-                {activeTestObj?.level === TEST_LEVEL.l10 && (
+                {activeTestObj?.level === TESTLEVEL.l10 && (
                     <L10
                         test={activeTestObj}
                         state={state}
@@ -302,7 +307,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l11 && (
+                {activeTestObj?.level === TESTLEVEL.l11 && (
                     <L11
                         test={activeTestObj}
                         state={state}
@@ -310,7 +315,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l20 && (
+                {activeTestObj?.level === TESTLEVEL.l20 && (
                     <L20
                         test={activeTestObj}
                         state={state}
@@ -318,7 +323,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l21 && (
+                {activeTestObj?.level === TESTLEVEL.l21 && (
                     <L21
                         test={activeTestObj}
                         state={state}
@@ -326,7 +331,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l30 && (
+                {activeTestObj?.level === TESTLEVEL.l30 && (
                     <L30
                         test={activeTestObj}
                         state={state}
@@ -334,7 +339,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l40 && (
+                {activeTestObj?.level === TESTLEVEL.l40 && (
                     <L40
                         test={activeTestObj}
                         state={state}
@@ -342,7 +347,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         submitTest={handleTestSubmit}
                     />
                 )}
-                {activeTestObj?.level === TEST_LEVEL.l50 && (
+                {activeTestObj?.level === TESTLEVEL.l50 && (
                     <L50
                         test={activeTestObj}
                         state={state}
@@ -357,7 +362,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         color="gray"
                         title={t('Reset')}
                         onPress={handleReset}
-                    ></Button>
+                    />
                 )}
             </View>
         </View>

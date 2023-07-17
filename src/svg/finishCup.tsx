@@ -1,3 +1,4 @@
+import React from 'react';
 import { SvgXml } from 'react-native-svg';
 const xmlData = `<svg width="141" height="130" viewBox="0 0 141 130" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g filter="url(#filter0_d_169_37)">

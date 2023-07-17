@@ -11,8 +11,9 @@ import {
     registerForPushNotificationsAsync
 } from '../tools/notifications';
 import { navigateWithState } from '../screeenManagement';
+import { ToastAndroid } from 'react-native';
 
-type useAppModel = (arg: {
+type UseAppModel = (arg: {
     route: any;
     navigation: StackNavigationHelpers;
 }) => {
@@ -22,12 +23,16 @@ type useAppModel = (arg: {
     theme: ThemeAndColorsModel;
 };
 
-export const useApp: useAppModel = ({ route, navigation }) => {
+export const useApp: UseAppModel = ({ route, navigation }) => {
     const oldState = route.params as AppStateModel;
     const [state, setState] = useState(oldState);
+
+    const stateString = JSON.stringify(state);
+    const oldStateString = JSON.stringify(oldState);
+
     useEffect(() => {
         setState(oldState);
-    }, [JSON.stringify(oldState)]);
+    }, [oldStateString]);
 
     useEffect(() => {
         storage
@@ -35,8 +40,10 @@ export const useApp: useAppModel = ({ route, navigation }) => {
                 key: storageName,
                 data: { ...state }
             })
-            .then((e) => {});
-    }, [JSON.stringify(state)]);
+            .catch((e) => {
+                ToastAndroid.show(e, 10000);
+            });
+    }, [stateString]);
 
     // const [expoPushToken, setExpoPushToken] = useState("" as undefined | string);
     // const [notification, setNotification] = useState(undefined as unknown as Notifications.Notification);
@@ -108,7 +115,7 @@ export const useApp: useAppModel = ({ route, navigation }) => {
                 );
             };
         },
-        [JSON.stringify(state)] //need latest state so it would be updated on navigating
+        [state, stateString] //need latest state so it would be updated on navigating
     );
 
     const theme = getTheme(state.settings.theme);

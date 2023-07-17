@@ -17,10 +17,17 @@ interface NavigatorModel {
 }
 
 export const Navigator: FC<NavigatorModel> = ({ state }) => {
-
-    TaskManager.defineTask(backgroundNotificationName, ({ data, error, executionInfo }) => {
-        console.log('Received a notification in the background!', data);
-    });
+    TaskManager.defineTask(
+        backgroundNotificationName,
+        ({ data, error, executionInfo }) => {
+            console.log(
+                'Received a notification in the background!',
+                data,
+                error,
+                executionInfo
+            );
+        }
+    );
 
     return (
         <NavigationContainer>

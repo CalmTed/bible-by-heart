@@ -3,22 +3,22 @@ import { bibleReference } from './bibleReference';
 import {
     API_VERSION,
     LANGCODE,
-    PASSAGE_LEVEL,
+    PASSAGELEVEL,
     SETTINGS,
-    SORTING_OPTION,
-    STATS_METRICS,
-    TEST_LEVEL,
+    SORTINGOPTION,
+    STATSMETRICS,
+    TESTLEVEL,
     TEST_LIST_NUMBER,
-    THEME_TYPE,
+    THEMETYPE,
     VERSION,
     archivedName
 } from './constants';
 import {
     AddressType,
     AppStateModel,
-    AppStateModel0_0_6,
-    AppStateModel0_0_7,
-    AppStateModel0_0_8,
+    AppStateModel006,
+    AppStateModel007,
+    AppStateModel008,
     PassageModel,
     ReminderModel,
     TestModel,
@@ -31,7 +31,7 @@ const genId: () => number = () => {
     return Math.round(Math.random() * 1000000000);
 };
 
-export const createAppState0_0_8: () => AppStateModel0_0_8 = () => {
+export const createAppState008: () => AppStateModel008 = () => {
     const phoneLangCode = getLocales()[0].languageCode;
     const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
     return {
@@ -50,10 +50,10 @@ export const createAppState0_0_8: () => AppStateModel0_0_8 = () => {
             maxLevels: [],
             translations: []
         },
-        sort: SORTING_OPTION.address,
+        sort: SORTINGOPTION.address,
         settings: {
             [SETTINGS.langCode]: langCode,
-            [SETTINGS.theme]: THEME_TYPE.auto,
+            [SETTINGS.theme]: THEMETYPE.auto,
             [SETTINGS.devMode]: false,
             [SETTINGS.chapterNumbering]: 'vestern',
             [SETTINGS.hapticsEnabled]: true,
@@ -68,14 +68,14 @@ export const createAppState0_0_8: () => AppStateModel0_0_8 = () => {
 
             [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
             [SETTINGS.homeScreenStatsType]: 'auto', //dont need id for now, just user provided name
-            [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses,
+            [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses,
             [SETTINGS.trainModesList]: getDefaultTrainModes(langCode),
             [SETTINGS.activeTrainModeId]: getDefaultTrainModes(langCode)[0].id
         }
     };
 };
 
-export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
+export const createAppState007: () => AppStateModel007 = () => {
     const phoneLangCode = getLocales()[0].languageCode;
     const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
     return {
@@ -94,10 +94,10 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
             maxLevels: [],
             translations: []
         },
-        sort: SORTING_OPTION.address,
+        sort: SORTINGOPTION.address,
         settings: {
             [SETTINGS.langCode]: langCode,
-            [SETTINGS.theme]: THEME_TYPE.auto,
+            [SETTINGS.theme]: THEMETYPE.auto,
             [SETTINGS.devMode]: false,
             [SETTINGS.chapterNumbering]: 'vestern',
             [SETTINGS.hapticsEnabled]: true,
@@ -114,12 +114,12 @@ export const createAppState0_0_7: () => AppStateModel0_0_7 = () => {
 
             [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
             [SETTINGS.homeScreenStatsType]: 'auto', //dont need id for now, just user provided name
-            [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS.verses
+            [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses
         }
     };
 };
 
-export const createAppState: () => AppStateModel = createAppState0_0_8;
+export const createAppState: () => AppStateModel = createAppState008;
 
 export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
     lang
@@ -140,23 +140,24 @@ export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
     }
 ];
 
-export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (lang) => {
+export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
+    lang
+) => {
     return [
         {
             id: 3,
             editable: false,
-            name: createT(lang)("DefaultTrainModeName"),
+            name: createT(lang)('DefaultTrainModeName'),
             enabled: true,
             length: TEST_LIST_NUMBER,
             translation: 1,
             includeTags: [],
             excludeTags: [archivedName],
             testAsLevel: null,
-            sort: SORTING_OPTION.oldestToTrain
+            sort: SORTINGOPTION.oldestToTrain
         }
-    ]
-}
-
+    ];
+};
 
 export const getVersesNumber: (adress: AddressType) => number = (address) => {
     //if one verse (end == null || edn == start)
@@ -218,8 +219,8 @@ export const createPassage: (
         dateEdited: new Date().getTime(),
         dateTested: 0,
         minIntervalDaysNum: null,
-        selectedLevel: PASSAGE_LEVEL.l1,
-        maxLevel: PASSAGE_LEVEL.l1,
+        selectedLevel: PASSAGELEVEL.l1,
+        maxLevel: PASSAGELEVEL.l1,
         isNewLevelAwalible: false,
         tags: [],
         isReminderOn: false,
@@ -230,21 +231,21 @@ export const createPassage: (
 export const createTest: (
     sessionId: number,
     passageId: number,
-    level: PASSAGE_LEVEL,
+    level: PASSAGELEVEL,
     userId?: number
 ) => TestModel = (sessionId, passageId, level, userId) => {
-    const selectedLevel = (level: PASSAGE_LEVEL) => {
-        switch (level) {
-            case PASSAGE_LEVEL.l1:
-                return Math.random() > 0.5 ? TEST_LEVEL.l10 : TEST_LEVEL.l11;
-            case PASSAGE_LEVEL.l2:
-                return Math.random() > 0.5 ? TEST_LEVEL.l20 : TEST_LEVEL.l21;
-            case PASSAGE_LEVEL.l3:
-                return TEST_LEVEL.l30;
-            case PASSAGE_LEVEL.l4:
-                return TEST_LEVEL.l40;
-            case PASSAGE_LEVEL.l5:
-                return TEST_LEVEL.l50;
+    const selectedLevelMatrix = (pLevel: PASSAGELEVEL) => {
+        switch (pLevel) {
+            case PASSAGELEVEL.l1:
+                return Math.random() > 0.5 ? TESTLEVEL.l10 : TESTLEVEL.l11;
+            case PASSAGELEVEL.l2:
+                return Math.random() > 0.5 ? TESTLEVEL.l20 : TESTLEVEL.l21;
+            case PASSAGELEVEL.l3:
+                return TESTLEVEL.l30;
+            case PASSAGELEVEL.l4:
+                return TESTLEVEL.l40;
+            case PASSAGELEVEL.l5:
+                return TESTLEVEL.l50;
         }
     };
     return {
@@ -254,7 +255,7 @@ export const createTest: (
         userId: userId || null,
         triesDuration: [],
         isFinished: false,
-        level: selectedLevel(level),
+        level: selectedLevelMatrix(level),
         testData: {},
         errorNumber: null,
         errorType: null,
@@ -280,7 +281,7 @@ export const createTranslation: (lang?: LANGCODE) => TranslationModel = (
     return {
         id: genId(),
         addressLanguage: lang,
-        name: createT(lang)("NewTranslationName"),
+        name: createT(lang)('NewTranslationName'),
         editable: true,
         isDefault: false
     };
@@ -303,26 +304,27 @@ export const createReminder: () => ReminderModel = () => {
     };
 };
 
-export const createTrainMode: (lang: LANGCODE,translationId?: number) => TrainModeModel = (
-    lang, translationId
-) => {
+export const createTrainMode: (
+    lang: LANGCODE,
+    translationId?: number
+) => TrainModeModel = (lang, translationId) => {
     return {
         id: genId(),
         editable: true,
-        name: createT(lang)("NewTrainModeName"),
+        name: createT(lang)('NewTrainModeName'),
         enabled: true,
         length: 10,
         translation: translationId || null,
         includeTags: [],
         excludeTags: [],
         testAsLevel: null,
-        sort: SORTING_OPTION.oldestToTrain
-    }
-}
+        sort: SORTINGOPTION.oldestToTrain
+    };
+};
 
 /* initials archive */
 
-export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
+export const createAppState006: () => AppStateModel006 = () => {
     const phoneLangCode = getLocales()[0].languageCode;
     const langCode = phoneLangCode === 'uk' ? LANGCODE.ua : LANGCODE.en;
     return {
@@ -345,6 +347,6 @@ export const createAppState0_0_6: () => AppStateModel0_0_6 = () => {
             selectedLevels: [],
             maxLevels: []
         },
-        sort: SORTING_OPTION.address
+        sort: SORTINGOPTION.address
     };
 };

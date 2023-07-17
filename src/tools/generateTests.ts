@@ -1,11 +1,6 @@
 import { getAddressDifference } from '../screens/listScreen';
 import { bibleReference } from '../bibleReference';
-import {
-    TEST_LIST_NUMBER,
-    TEST_LEVEL,
-    PASSAGE_LEVEL,
-    SORTING_OPTION
-} from '../constants';
+import { TESTLEVEL, PASSAGELEVEL, SORTINGOPTION } from '../constants';
 import { createTest } from '../initials';
 import {
     AddressType,
@@ -31,10 +26,6 @@ import { randomItem, randomListRange, randomRange } from './randomizers';
 //addreses to passage: from errors, neigboring, +-1/2 to some parts, other passages(this book and other) <- select by weigthed random
 //passages to address: erros, other passages(random weight from address distance)
 //hidden words: random word, common errors(by word index), common errors from next levels
-
-//for debugging
-let onlyLevel: TEST_LEVEL | null = null; //TEST_LEVEL.l30;
-let listLength: number | null = null; //3
 
 export const getPassagesByTrainMode: (
     state: AppStateModel,
@@ -71,15 +62,15 @@ export const getPassagesByTrainMode: (
         })
         .sort((a, b) => {
             switch (trainMode.sort) {
-                case SORTING_OPTION.address:
+                case SORTINGOPTION.address:
                     return getAddressDifference(a, b);
-                case SORTING_OPTION.maxLevel:
+                case SORTINGOPTION.maxLevel:
                     return b.maxLevel - a.maxLevel;
-                case SORTING_OPTION.selectedLevel:
+                case SORTINGOPTION.selectedLevel:
                     return b.selectedLevel - a.selectedLevel;
-                case SORTING_OPTION.resentlyCreated:
+                case SORTINGOPTION.resentlyCreated:
                     return b.dateCreated - a.dateCreated;
-                case SORTING_OPTION.oldestToTrain:
+                case SORTINGOPTION.oldestToTrain:
                     return a.dateTested - b.dateTested;
                 default:
                     return 0;
@@ -110,41 +101,45 @@ export const generateTests: (state: AppStateModel) => TestModel[] = (state) => {
             const testTenghtSafeTest =
                 passages.length > 3
                     ? initialTest
-                    : initialTest.level === TEST_LEVEL.l11
-                    ? { ...initialTest, level: TEST_LEVEL.l10 }
+                    : initialTest.level === TESTLEVEL.l11
+                    ? { ...initialTest, level: TESTLEVEL.l10 }
                     : initialTest;
             //filling test data here
             const testCreationList = {
-                [TEST_LEVEL.l10]: createL10Test,
-                [TEST_LEVEL.l11]: createL11Test,
-                [TEST_LEVEL.l20]: createL20Test,
-                [TEST_LEVEL.l21]: createL21Test,
-                [TEST_LEVEL.l30]: createL30Test,
-                [TEST_LEVEL.l40]: createL40Test,
-                [TEST_LEVEL.l50]: createL50Test
+                [TESTLEVEL.l10]: createL10Test,
+                [TESTLEVEL.l11]: createL11Test,
+                [TESTLEVEL.l20]: createL20Test,
+                [TESTLEVEL.l21]: createL21Test,
+                [TESTLEVEL.l30]: createL30Test,
+                [TESTLEVEL.l40]: createL40Test,
+                [TESTLEVEL.l50]: createL50Test
             };
             const randBool = Math.random() > 0.5;
-            const onlyLevelFunctions = {
-                [PASSAGE_LEVEL.l1]: randBool ? createL10Test : createL11Test,
-                [PASSAGE_LEVEL.l2]: randBool ? createL20Test : createL21Test,
-                [PASSAGE_LEVEL.l3]: createL30Test,
-                [PASSAGE_LEVEL.l4]: createL40Test,
-                [PASSAGE_LEVEL.l5]: createL50Test
+            const onlyLevelFunctions: Record<
+                PASSAGELEVEL,
+                CreateTestMethodModel
+            > = {
+                [PASSAGELEVEL.l1]: randBool ? createL10Test : createL11Test,
+                [PASSAGELEVEL.l2]: randBool ? createL20Test : createL21Test,
+                [PASSAGELEVEL.l3]: createL30Test,
+                [PASSAGELEVEL.l4]: createL40Test,
+                [PASSAGELEVEL.l5]: createL50Test
             };
             const onlyLevelTestLevels = {
                 //l11 cant be created without 4 passages minimum
-                [PASSAGE_LEVEL.l1]:
+                [PASSAGELEVEL.l1]:
                     randBool || passages.length <= 3
-                        ? TEST_LEVEL.l10
-                        : TEST_LEVEL.l11,
-                [PASSAGE_LEVEL.l2]: randBool ? TEST_LEVEL.l20 : TEST_LEVEL.l21,
-                [PASSAGE_LEVEL.l3]: TEST_LEVEL.l30,
-                [PASSAGE_LEVEL.l4]: TEST_LEVEL.l40,
-                [PASSAGE_LEVEL.l5]: TEST_LEVEL.l50
+                        ? TESTLEVEL.l10
+                        : TESTLEVEL.l11,
+                [PASSAGELEVEL.l2]: randBool ? TESTLEVEL.l20 : TESTLEVEL.l21,
+                [PASSAGELEVEL.l3]: TESTLEVEL.l30,
+                [PASSAGELEVEL.l4]: TESTLEVEL.l40,
+                [PASSAGELEVEL.l5]: TESTLEVEL.l50
             };
-            const onlyLevel = trainMode.testAsLevel
-                ? ((trainMode.testAsLevel + 1) as PASSAGE_LEVEL)
-                : trainMode.testAsLevel;
+            const onlyLevel =
+                trainMode.testAsLevel !== null
+                    ? ((trainMode.testAsLevel + 1) as PASSAGELEVEL)
+                    : trainMode.testAsLevel;
             if (onlyLevel) {
                 return onlyLevelFunctions[onlyLevel]({
                     initialTest: {
@@ -177,7 +172,7 @@ const createL10Test: CreateTestMethodModel = ({
     passages,
     passageHistory
 }) => {
-    const p = passages.find((p) => p.id === initialTest.passageId); //aka targetPassage
+    const p = passages.find((ps) => ps.id === initialTest.passageId); //aka targetPassage
     if (!p) {
         return initialTest;
     }
@@ -261,7 +256,7 @@ const createL10Test: CreateTestMethodModel = ({
         //4 from errors
         const wrongAdressesWithSamePassage = passageHistory
             .filter((ph) => ph.passageId === p.id)
-            .map((p) => p.wrongAddress)
+            .map((ph) => ph.wrongAddress)
             .flat();
         if (successStroke > 2 && wrongAdressesWithSamePassage.length > 4) {
             return randomItem([
@@ -400,23 +395,25 @@ const createL30Test: CreateTestMethodModel = ({
                         missingWords.length - 1
                     );
                     const mostSimmularArr = words
-                        .map((w, i) => [
-                            i,
+                        .map((w, ind) => [
+                            ind,
                             getSimularity(w, words[randomFromExisting])
                         ])
                         .filter((w) => w[1] < 1)
                         .sort((a, b) => b[1] - a[1]);
-                    mostSimmularArr.map((mostSimmularWord, i) => {
-                        //first three from most simmular
-                        const mostSimmular = mostSimmularWord[0];
-                        if (
-                            i < 3 &&
-                            mostSimmular !== -1 &&
-                            !missingWords.includes(mostSimmular)
-                        ) {
-                            missingWords.push(mostSimmular);
-                        }
-                    });
+                    const wordsToAdd = mostSimmularArr
+                        .filter((mostSimmularWord, ind) => {
+                            //first three from most simmular
+                            const mostSimmular = mostSimmularWord[0];
+                            return (
+                                ind < 3 &&
+                                mostSimmular !== -1 &&
+                                !missingWords.includes(mostSimmular)
+                            );
+                        })
+                        .map((v) => v[0])
+                        .filter((v, ind, arr) => arr.slice(0, ind).includes(v));
+                    missingWords = [...missingWords, ...wordsToAdd];
                 }
                 //else select simular
             } else {

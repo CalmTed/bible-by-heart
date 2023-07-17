@@ -1,4 +1,4 @@
-import { SORTING_OPTION, STATS_METRICS, THEME_TYPE } from '../constants';
+import { SORTINGOPTION, STATSMETRICS, THEMETYPE } from '../constants';
 
 export const en = {
     name: 'English',
@@ -35,20 +35,20 @@ export const en = {
     CheckText: 'Check text',
     LevelSkip: 'Skip level',
     ButtonContinue: 'Contunue',
-    [SORTING_OPTION.address]: 'Address',
-    [SORTING_OPTION.selectedLevel]: 'Selected level',
-    [SORTING_OPTION.maxLevel]: 'Max level',
-    [SORTING_OPTION.oldestToTrain]: 'Oldest to train',
-    [SORTING_OPTION.resentlyCreated]: 'Recently created',
+    [SORTINGOPTION.address]: 'Address',
+    [SORTINGOPTION.selectedLevel]: 'Selected level',
+    [SORTINGOPTION.maxLevel]: 'Max level',
+    [SORTINGOPTION.oldestToTrain]: 'Oldest to train',
+    [SORTINGOPTION.resentlyCreated]: 'Recently created',
     TranslationSetDefault: 'Set as default',
 
-    [THEME_TYPE.auto]: 'System default',
-    [THEME_TYPE.dark]: 'Dark',
-    [THEME_TYPE.light]: 'Light',
+    [THEMETYPE.auto]: 'System default',
+    [THEMETYPE.dark]: 'Dark',
+    [THEMETYPE.light]: 'Light',
 
-    [STATS_METRICS.minutes]: 'Minutes',
-    [STATS_METRICS.verses]: 'Sum of verses',
-    [STATS_METRICS.sesstions]: 'Sessions',
+    [STATSMETRICS.minutes]: 'Minutes',
+    [STATSMETRICS.verses]: 'Sum of verses',
+    [STATSMETRICS.sesstions]: 'Sessions',
     //titles
     listScreenTitle: 'Passages list',
     APSelectBook: 'Select book',
@@ -161,10 +161,14 @@ export const en = {
     NewTranslationName: 'New translation',
     DefaultTrainModeName: 'Default training mode',
     NewTrainModeName: 'New training mode',
+    settsPrivacyPolicyHeader: 'Privacy policy',
+    OpenExternalLink: 'Open external link',
 
     TranslationOther: 'Other',
 
     ErrorCantAddMoreEngVerses: "Can't add more then 500 verses in English",
+    ErrorNoPassagesForThisTrainMode:
+        'There are no passages for this train mode, check train mode list in settings',
 
     dayMO: 'Mo',
     dayTU: 'Tu',

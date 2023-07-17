@@ -1,8 +1,9 @@
-import { PERFECT_TESTS_TO_PRCEED, PASSAGE_LEVEL } from '../constants';
+import { PERFECT_TESTS_TO_PRCEED, PASSAGELEVEL } from '../constants';
 import { ActionModel, ActionName, AppStateModel } from '../models';
 import { getPerfectTestsNumber } from './getPerfectTests';
 import { getNumberOfVersesInEnglish } from './getNumberOfEnglishVerses';
 import { checkSchedule } from './notifications';
+import { ToastAndroid } from 'react-native';
 
 export const reduce: (
     state: AppStateModel,
@@ -185,15 +186,15 @@ export const reduce: (
                 const hasErrorFromLastThreeTests =
                     perfectTestsNumber !== PERFECT_TESTS_TO_PRCEED;
                 const nextLevel = {
-                    [PASSAGE_LEVEL.l1]: PASSAGE_LEVEL.l2,
-                    [PASSAGE_LEVEL.l2]: PASSAGE_LEVEL.l3,
-                    [PASSAGE_LEVEL.l3]: PASSAGE_LEVEL.l4,
-                    [PASSAGE_LEVEL.l4]: PASSAGE_LEVEL.l5
+                    [PASSAGELEVEL.l1]: PASSAGELEVEL.l2,
+                    [PASSAGELEVEL.l2]: PASSAGELEVEL.l3,
+                    [PASSAGELEVEL.l3]: PASSAGELEVEL.l4,
+                    [PASSAGELEVEL.l4]: PASSAGELEVEL.l5
                 };
                 //if has 3 perfect test stroke and not l5
                 const level =
                     !hasErrorFromLastThreeTests &&
-                    p.maxLevel !== PASSAGE_LEVEL.l5
+                    p.maxLevel !== PASSAGELEVEL.l5
                         ? nextLevel[p.maxLevel]
                         : p.maxLevel;
                 //if new max level is not the current one
@@ -333,5 +334,11 @@ export const reduce: (
     if (changedState) {
         changedState.lastChange = new Date().getTime();
     }
-    return changedState;
+    try{
+        //checking if not corrapted
+        return JSON.parse(JSON.stringify(changedState))
+    }catch(err){
+        ToastAndroid.show("Cant change app state "+ err,10000)
+        return state
+    }
 };

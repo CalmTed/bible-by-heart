@@ -1,40 +1,40 @@
 import {
     LANGCODE,
-    PASSAGE_LEVEL,
+    PASSAGELEVEL,
     SETTINGS,
-    SORTING_OPTION,
-    STATS_METRICS,
-    TEST_LEVEL,
-    THEME_TYPE
+    SORTINGOPTION,
+    STATSMETRICS,
+    TESTLEVEL,
+    THEMETYPE
 } from './constants';
 
-export type AppStateModel = AppStateModel0_0_8;
+export type AppStateModel = AppStateModel008;
 
-export interface AppStateModel0_0_8 {
+export interface AppStateModel008 {
     version: string;
-    apiVersion: string;//not implemented yet
+    apiVersion: string; //not implemented yet
     lastChange: number;
-    dateSyncTry: number;//not implemented yet
-    dateSyncSuccess: number;//not implemented yet
+    dateSyncTry: number; //not implemented yet
+    dateSyncSuccess: number; //not implemented yet
     passages: PassageModel[];
-    testsActive: TestModel0_0_7[];
-    testsHistory: TestModel0_0_7[];
-    userId: number | null;//not implemented yet
+    testsActive: TestModel007[];
+    testsHistory: TestModel007[];
+    userId: number | null; //not implemented yet
     filters: {
         tags: string[];
-        selectedLevels: PASSAGE_LEVEL[];
-        maxLevels: PASSAGE_LEVEL[];
+        selectedLevels: PASSAGELEVEL[];
+        maxLevels: PASSAGELEVEL[];
         translations: number[];
     };
-    sort: SORTING_OPTION;
+    sort: SORTINGOPTION;
     settings: {
         [SETTINGS.langCode]: LANGCODE;
-        [SETTINGS.theme]: THEME_TYPE;
+        [SETTINGS.theme]: THEMETYPE;
         [SETTINGS.devMode]: boolean;
-        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern';//not implemented yet
+        [SETTINGS.chapterNumbering]: 'eastern' | 'vestern'; //not implemented yet
         [SETTINGS.hapticsEnabled]: boolean;
-        [SETTINGS.soundsEnabled]: boolean;//not implemented yet
-        [SETTINGS.compressOldTestsData]: boolean;//not implemented yet
+        [SETTINGS.soundsEnabled]: boolean; //not implemented yet
+        [SETTINGS.compressOldTestsData]: boolean; //not implemented yet
         [SETTINGS.autoIncreeseLevel]: boolean;
         [SETTINGS.leftSwipeTag]: string;
 
@@ -47,34 +47,34 @@ export interface AppStateModel0_0_8 {
             | 'auto'
             | 'dayStreak'
             | 'absoluteProgress'
-            | 'monthProgress';//not implemented yet
-        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS;
+            | 'monthProgress'; //not implemented yet
+        [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
         [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
         [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
     };
 }
 
-export interface AppStateModel0_0_7 {
+export interface AppStateModel007 {
     version: string;
     apiVersion: string;
     lastChange: number;
     dateSyncTry: number;
     dateSyncSuccess: number;
     passages: PassageModel[];
-    testsActive: TestModel0_0_7[];
-    testsHistory: TestModel0_0_7[];
+    testsActive: TestModel007[];
+    testsHistory: TestModel007[];
     userId: number | null;
     filters: {
         tags: string[];
-        selectedLevels: PASSAGE_LEVEL[];
-        maxLevels: PASSAGE_LEVEL[];
+        selectedLevels: PASSAGELEVEL[];
+        maxLevels: PASSAGELEVEL[];
         translations: number[];
     };
-    sort: SORTING_OPTION;
+    sort: SORTINGOPTION;
     settings: {
         [SETTINGS.langCode]: LANGCODE;
-        [SETTINGS.theme]: THEME_TYPE;
+        [SETTINGS.theme]: THEMETYPE;
         [SETTINGS.devMode]: boolean;
         [SETTINGS.chapterNumbering]: 'eastern' | 'vestern';
         [SETTINGS.hapticsEnabled]: boolean;
@@ -93,7 +93,7 @@ export interface AppStateModel0_0_7 {
             | 'dayStreak'
             | 'absoluteProgress'
             | 'monthProgress';
-        [SETTINGS.homeScreenWeeklyMetric]: STATS_METRICS;
+        [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
         [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
     };
@@ -110,22 +110,22 @@ export interface PassageModel {
     dateEdited: number;
     dateTested: number;
     minIntervalDaysNum: number | null;
-    selectedLevel: PASSAGE_LEVEL;
-    maxLevel: PASSAGE_LEVEL; //set on end by a history of tests
+    selectedLevel: PASSAGELEVEL;
+    maxLevel: PASSAGELEVEL; //set on end by a history of tests
     isNewLevelAwalible: boolean;
     tags: string[]; //archive and custom
     isReminderOn: boolean;
     isCollapsed: boolean;
 }
 
-export interface exportingModel {
+export interface ExportingModel {
     version: string;
     passages: PassageModel[];
 }
 
-export type TestModel = TestModel0_0_7;
+export type TestModel = TestModel007;
 
-export interface TestModel0_0_7 {
+export interface TestModel007 {
     //for every passage every practice session
     id: number;
     sessionId: number; //tests are created before every session and deleted if not finished
@@ -133,7 +133,7 @@ export interface TestModel0_0_7 {
     userId: number | null;
     triesDuration: number[][]; // start and finish
     isFinished: boolean;
-    level: TEST_LEVEL;
+    level: TESTLEVEL;
     testData: {
         addressOptions?: AddressType[];
         passagesOptions?: PassageModel[];
@@ -189,8 +189,8 @@ export interface TrainModeModel {
     translation: number | null;
     includeTags: string[];
     excludeTags: string[];
-    testAsLevel: PASSAGE_LEVEL | null;//null is passage level
-    sort: SORTING_OPTION;
+    testAsLevel: PASSAGELEVEL | null; //null is passage level
+    sort: SORTINGOPTION;
 }
 
 export interface OptionModel {
@@ -224,7 +224,7 @@ export enum ActionName {
     setSettingsParam = 'setSettingsParam',
     setTranslationsList = 'setTranslationsList',
     setRemindersList = 'setRemindersList',
-    setTrainModesList = 'setTrainModesList',
+    setTrainModesList = 'setTrainModesList'
 }
 export type ActionModel =
     | {
@@ -233,7 +233,7 @@ export type ActionModel =
       }
     | {
           name: ActionName.setTheme;
-          payload: THEME_TYPE;
+          payload: THEMETYPE;
       }
     | {
           name: ActionName.setPassage;
@@ -279,7 +279,7 @@ export type ActionModel =
           name: ActionName.setPassageLevel;
           payload: {
               passageId: number;
-              level: PASSAGE_LEVEL;
+              level: PASSAGELEVEL;
           };
       }
     | {
@@ -292,14 +292,14 @@ export type ActionModel =
       }
     | {
           name: ActionName.setSorting;
-          payload: SORTING_OPTION;
+          payload: SORTINGOPTION;
       }
     | {
           name: ActionName.toggleFilter;
           payload: {
               tag?: string;
-              selectedLevel?: PASSAGE_LEVEL;
-              maxLevel?: PASSAGE_LEVEL;
+              selectedLevel?: PASSAGELEVEL;
+              maxLevel?: PASSAGELEVEL;
               translationId?: number;
           };
       }
@@ -317,15 +317,15 @@ export type ActionModel =
       };
 
 /* state archive */
-export interface AppStateModel0_0_6 {
+export interface AppStateModel006 {
     version: string;
     apiVersion: string;
     lastChange: number;
     dateSyncTry: number;
     dateSyncSuccess: number;
     passages: PassageModel[];
-    testsActive: TestModel0_0_6[];
-    testsHistory: TestModel0_0_6[];
+    testsActive: TestModel006[];
+    testsHistory: TestModel006[];
     langCode: LANGCODE;
     theme: 'dark' | 'light' | 'auto';
     chapterNumbering: 'eastern' | 'vestern';
@@ -334,13 +334,13 @@ export interface AppStateModel0_0_6 {
     userId: number | null;
     filters: {
         tags: string[];
-        selectedLevels: PASSAGE_LEVEL[];
-        maxLevels: PASSAGE_LEVEL[];
+        selectedLevels: PASSAGELEVEL[];
+        maxLevels: PASSAGELEVEL[];
     };
-    sort: SORTING_OPTION;
+    sort: SORTINGOPTION;
 }
 
-export interface TestModel0_0_6 {
+export interface TestModel006 {
     //for every passage every practice session
     id: number;
     sessionId: number; //tests are created before every session and deleted if not finished
@@ -349,7 +349,7 @@ export interface TestModel0_0_6 {
     // triesDuration: [number, number][]// start and finish
     dateStarted: number; //was non array in <0.0.7
     dateFinished: number; //was non array in <0.0.7
-    level: TEST_LEVEL;
+    level: TESTLEVEL;
     testData: {
         addressOptions?: AddressType[];
         passagesOptions?: PassageModel[];

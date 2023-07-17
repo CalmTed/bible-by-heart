@@ -1,19 +1,19 @@
 import { SETTINGS, VERSION } from '../../src/constants';
-import { createAppState0_0_7, createAppState0_0_8 } from '../../src/initials';
+import { createAppState007, createAppState008 } from '../../src/initials';
 import {
     AppStateModel,
-    AppStateModel0_0_6,
-    AppStateModel0_0_7,
-    AppStateModel0_0_8,
-    TestModel0_0_6,
-    TestModel0_0_7
+    AppStateModel006,
+    AppStateModel007,
+    AppStateModel008,
+    TestModel006,
+    TestModel007
 } from '../../src/models';
 
-type converterType = (stateFrom: any) => any;
+type ConverterType = (stateFrom: any) => any;
 
-const to008: converterType = (stateFrom) => {
-    const from = stateFrom as AppStateModel0_0_7;
-    const convertTests: (arg: TestModel0_0_7[]) => TestModel0_0_7[] = (arg) => {
+const to008: ConverterType = (stateFrom) => {
+    const from = stateFrom as AppStateModel007;
+    const convertTests: (arg: TestModel007[]) => TestModel007[] = (arg) => {
         return (
             arg
                 //remove unfinished
@@ -24,14 +24,14 @@ const to008: converterType = (stateFrom) => {
                     testData: {},
                     //change times
                     triesDuration: test?.triesDuration || [
-                        (test as never as TestModel0_0_6)?.dateStarted,
-                        (test as never as TestModel0_0_6)?.dateFinished
+                        (test as never as TestModel006)?.dateStarted,
+                        (test as never as TestModel006)?.dateFinished
                     ]
                 }))
         );
     };
 
-    const initial0_0_8 = createAppState0_0_8();
+    const initial008 = createAppState008();
     const to = {
         version: '0.0.8',
         lastChange: from.lastChange,
@@ -51,16 +51,15 @@ const to008: converterType = (stateFrom) => {
         sort: from.sort,
         settings: {
             ...from.settings,
-            [SETTINGS.trainModesList]: initial0_0_8.settings.trainModesList,
-            [SETTINGS.activeTrainModeId]:
-                initial0_0_8.settings.activeTrainModeId
+            [SETTINGS.trainModesList]: initial008.settings.trainModesList,
+            [SETTINGS.activeTrainModeId]: initial008.settings.activeTrainModeId
         }
-    } as AppStateModel0_0_8;
+    } as AppStateModel008;
     return to;
 };
 
-const to007: converterType = (stateFrom) => {
-    const from = stateFrom as AppStateModel0_0_6;
+const to007: ConverterType = (stateFrom) => {
+    const from = stateFrom as AppStateModel006;
 
     /*changing state model 0.0.6 to 0.0.7:
   - removed: 
@@ -78,14 +77,14 @@ const to007: converterType = (stateFrom) => {
     tests.triesDuration
 
   */
-    const initial0_0_7 = createAppState0_0_7();
-    const convertTests: (arg: TestModel0_0_6[]) => TestModel0_0_7[] = (arg) => {
+    const initial007 = createAppState007();
+    const convertTests: (arg: TestModel006[]) => TestModel007[] = (arg) => {
         return arg.map((test) => {
             return {
                 ...test,
                 triesDuration: [[test.dateStarted, test.dateFinished]],
                 isFinished: true
-            } as TestModel0_0_7;
+            } as TestModel007;
         });
     };
     const to = {
@@ -106,28 +105,27 @@ const to007: converterType = (stateFrom) => {
         },
         sort: from.sort,
         settings: {
-            ...initial0_0_7.settings,
+            ...initial007.settings,
             ...{
                 [SETTINGS.langCode]:
-                    from.langCode || initial0_0_7.settings.langCode,
-                [SETTINGS.theme]: from.theme || initial0_0_7.settings.theme,
-                [SETTINGS.devMode]:
-                    from.devMode || initial0_0_7.settings.devMode,
+                    from.langCode || initial007.settings.langCode,
+                [SETTINGS.theme]: from.theme || initial007.settings.theme,
+                [SETTINGS.devMode]: from.devMode || initial007.settings.devMode,
                 [SETTINGS.remindersList]:
-                    [] || initial0_0_7.settings.remindersList, //there were no ways for user to edit this
+                    [] || initial007.settings.remindersList, //there were no ways for user to edit this
                 [SETTINGS.chapterNumbering]:
                     from.chapterNumbering ||
-                    initial0_0_7.settings.chapterNumbering //this too, but who cares, right
+                    initial007.settings.chapterNumbering //this too, but who cares, right
             }
         }
-    } as AppStateModel0_0_7;
+    } as AppStateModel007;
     return to;
 };
 
 export const versionsConvertionTable: {
     from: string[];
     to: string;
-    method: converterType;
+    method: ConverterType;
 }[] = [
     {
         from: ['0.0.4', '0.0.5', '0.0.6'],

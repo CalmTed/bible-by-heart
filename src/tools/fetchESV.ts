@@ -46,11 +46,12 @@ export const fetchESV: (address: AddressType) => Promise<string> = (
             return data.passages[0]
                 .trim()
                 .replace(/\n/g, ' ')
-                .replace(/  /g, ' ')
-                .replace(/   /g, ' ');
+                .replace(/ {2}/g, ' ')
+                .replace(/ {3}/g, ' ');
         })
         .catch((error) => {
-            console.error(error);
-            return 'Unable to get passage text';
+            throw new Error('Unable to get passage text' + error);
+            // console.error(error);
+            // return 'Unable to get passage text';
         });
 };

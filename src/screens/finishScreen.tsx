@@ -1,18 +1,14 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { storageName, SCREEN } from '../constants';
-import { AppStateModel } from '../models';
+import { SCREEN } from '../constants';
 import { navigateWithState } from '../screeenManagement';
-import { createT } from '../l10n';
 import { Button } from '../components/Button';
-import storage from '../storage';
 import { FinishCupSVG } from '../svg/finishCup';
 import { ScreenModel } from './homeScreen';
-import { getTheme } from '../tools/getTheme';
 import { useApp } from '../tools/useApp';
 
 export const FinishScreen: FC<ScreenModel> = ({ route, navigation }) => {
-    const { state, setState, t, theme } = useApp({ route, navigation });
+    const { state, t, theme } = useApp({ route, navigation });
 
     return (
         <View

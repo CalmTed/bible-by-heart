@@ -1,4 +1,4 @@
-import { FC, ReactElement, useState } from 'react';
+import React, { FC, ReactElement, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { ThemeAndColorsModel } from '../tools/getTheme';
 import { MiniModal } from './miniModal';
@@ -71,7 +71,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
             width: '100%'
         }
     });
-    const itemSelected = items.find((i) => i.id == itemSelectedID);
+    const itemSelected = items.find((i) => i.id === itemSelectedID);
     const titleText =
         typeof (itemSelected as TrainModeModel | TranslationModel)?.name !==
         'undefined'

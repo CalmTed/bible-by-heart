@@ -1,4 +1,4 @@
-import { SORTING_OPTION, STATS_METRICS, THEME_TYPE } from '../constants';
+import { SORTINGOPTION, STATSMETRICS, THEMETYPE } from '../constants';
 import { en } from './en';
 
 export const ua: typeof en = {
@@ -38,20 +38,20 @@ export const ua: typeof en = {
     CheckText: 'Перевірити текст',
     LevelSkip: 'Пропустити рівень',
     ButtonContinue: 'Продовжити',
-    [SORTING_OPTION.address]: 'Адреса',
-    [SORTING_OPTION.selectedLevel]: 'Обраний рівень',
-    [SORTING_OPTION.maxLevel]: 'Доступний рівень',
-    [SORTING_OPTION.oldestToTrain]: 'Треновані найдавніше',
-    [SORTING_OPTION.resentlyCreated]: 'Нещодавно додані',
+    [SORTINGOPTION.address]: 'Адреса',
+    [SORTINGOPTION.selectedLevel]: 'Обраний рівень',
+    [SORTINGOPTION.maxLevel]: 'Доступний рівень',
+    [SORTINGOPTION.oldestToTrain]: 'Треновані найдавніше',
+    [SORTINGOPTION.resentlyCreated]: 'Нещодавно додані',
     TranslationSetDefault: 'Поставити за замовченням',
 
-    [THEME_TYPE.auto]: 'Системна',
-    [THEME_TYPE.dark]: 'Темна',
-    [THEME_TYPE.light]: 'Світла',
+    [THEMETYPE.auto]: 'Системна',
+    [THEMETYPE.dark]: 'Темна',
+    [THEMETYPE.light]: 'Світла',
 
-    [STATS_METRICS.minutes]: 'Хвилини',
-    [STATS_METRICS.verses]: 'Кількість віршів',
-    [STATS_METRICS.sesstions]: 'Підходи',
+    [STATSMETRICS.minutes]: 'Хвилини',
+    [STATSMETRICS.verses]: 'Кількість віршів',
+    [STATSMETRICS.sesstions]: 'Підходи',
     //titles
     listScreenTitle: 'Список віршів',
     APSelectBook: 'Оберіть книгу',
@@ -165,11 +165,15 @@ export const ua: typeof en = {
     NewTranslationName: 'Новий переклад',
     DefaultTrainModeName: 'Звичайний режим',
     NewTrainModeName: 'Новий режим',
+    settsPrivacyPolicyHeader: 'Політика конфіденційності',
+    OpenExternalLink: 'Зовнішнє посилання (англійською)',
 
     TranslationOther: 'Інший',
 
     ErrorCantAddMoreEngVerses:
         'Не можна додавати більше 500 віршів англійською',
+    ErrorNoPassagesForThisTrainMode:
+        'Для цього режиму тренування немає жотдого тексту, перевірь режими тренування у налаштуваннях',
 
     dayMO: 'Пн',
     dayTU: 'Вт',

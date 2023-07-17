@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, ToastAndroid } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { COLOR_DARK, DAY, HOUR, LANGCODE, MINUTE } from '../constants';
@@ -6,6 +6,22 @@ import { AppStateModel, ReminderModel, TestModel } from '../models';
 import { cancelScheduledNotificationAsync } from 'expo-notifications';
 import { WORD, createT } from '../l10n';
 import { randomRange } from './randomizers';
+
+export const schedulePushNotification = async (
+    title: string = 'Hi!',
+    body: string = 'Would you like to click me?',
+    data: Record<string, any> = {},
+    trigger: Notifications.NotificationTriggerInput = null
+) => {
+    await Notifications.scheduleNotificationAsync({
+        content: {
+            title: title,
+            body: body,
+            data: data
+        },
+        trigger
+    });
+};
 
 export const getAutoTimeTrigger: (
     history: TestModel[]
@@ -100,15 +116,17 @@ export const checkSchedule = async (state: AppStateModel) => {
         //get scheduled reminders
         const getNextActivationTime: (item: ReminderModel) => Date = (item) => {
             // what weekday today?
-            const d = new Date();
+            const d2 = new Date();
             const timeNow =
-                d.getHours() * HOUR + d.getMinutes() * MINUTE + d.getSeconds();
-            const today = d.getDay() ? d.getDay() - 1 : 6;
+                d2.getHours() * HOUR +
+                d2.getMinutes() * MINUTE +
+                d2.getSeconds();
+            const today = d2.getDay() ? d2.getDay() - 1 : 6;
             const days = Object.entries(item.days);
             // whats next weekday on item
             const getNextIndex = (start: number, array: boolean[]) => {
                 let i = 0;
-                let n = undefined;
+                let n;
                 while (i < array.length && typeof n === 'undefined') {
                     const marker =
                         i + start > array.length - 1
@@ -137,7 +155,7 @@ export const checkSchedule = async (state: AppStateModel) => {
                     : nextIndexWithoutToday
                 : nextIndex;
             // what time to do it
-            const trigger = new Date(d.getTime() + daysInFuture * DAY * 1000);
+            const trigger = new Date(d2.getTime() + daysInFuture * DAY * 1000);
             const h = Math.floor(item.timeInSec / HOUR);
             const m = Math.floor((item.timeInSec - h * HOUR) / MINUTE);
             trigger.setHours(h);
@@ -185,22 +203,6 @@ export const checkSchedule = async (state: AppStateModel) => {
     }
 };
 
-export const schedulePushNotification = async (
-    title: string = 'Hi!',
-    body: string = 'Would you like to click me?',
-    data: Record<string, any> = {},
-    trigger: Notifications.NotificationTriggerInput = null
-) => {
-    await Notifications.scheduleNotificationAsync({
-        content: {
-            title: title,
-            body: body,
-            data: data
-        },
-        trigger
-    });
-};
-
 export const registerForPushNotificationsAsync = async () => {
     let token;
 
@@ -222,12 +224,15 @@ export const registerForPushNotificationsAsync = async () => {
             finalStatus = status;
         }
         if (finalStatus !== 'granted') {
-            alert('Failed to get token for notification!');
+            ToastAndroid.show('Failed to get token for notification!', 10000);
             return;
         }
         token = (await Notifications.getExpoPushTokenAsync()).data;
     } else {
-        alert('Must use physical device for Push Notifications');
+        ToastAndroid.show(
+            'Must use physical device for Push Notifications',
+            10000
+        );
     }
 
     return token;

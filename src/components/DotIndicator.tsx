@@ -1,4 +1,4 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { LinearGradient } from 'expo-linear-gradient';
 import { FC } from 'react';
 import { View } from 'react-native';
 import { ThemeAndColorsModel } from 'src/tools/getTheme';

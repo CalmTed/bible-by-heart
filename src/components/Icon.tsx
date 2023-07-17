@@ -11,7 +11,7 @@ import {
     iconSelectArrow,
     iconSort
 } from './icondata';
-import { SvgXml } from 'react-native-svg';
+import React, { SvgXml } from 'react-native-svg';
 
 export enum IconName {
     back = 'iconBack',

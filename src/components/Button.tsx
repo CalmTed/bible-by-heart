@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import React, { FC } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Icon, IconName } from './Icon';
@@ -50,7 +50,6 @@ export const Button: FC<ButtonModel> = ({
                 ? theme.colors.text
                 : theme.colors.mainColor
             : theme.colors.text;
-    dot ? console.log(icon, dot) : null;
     return (
         <View style={{ ...buttonStyles.touch }}>
             <Pressable

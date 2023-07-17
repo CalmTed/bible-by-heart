@@ -1,7 +1,7 @@
 import { getVersesNumber } from '../initials';
 import { AppStateModel, TestModel } from '../models';
 import addZero from './addZero';
-import { SETTINGS, STATS_METRICS } from '../constants';
+import { SETTINGS, STATSMETRICS } from '../constants';
 
 const dayInMs = 24 * 60 * 60 * 1000;
 
@@ -30,14 +30,14 @@ export const getStroke = (testHistory: TestModel[]) => {
         !isToday && nowD - new Date(uniqueDays[0]).getTime() < dayInMs * 2;
     const unbrokenSeries = uniqueDays
         .map((v, i, arr) => {
-            const d = new Date(v).getTime();
+            const d2 = new Date(v).getTime();
             if (!i) {
                 //last test was finished less then 24h before
                 return isToday || isYesterday;
             } else {
                 //if there are no false - if there is an unbrocken series
                 const prvD = new Date(arr[i - 1]).getTime();
-                return prvD - d <= dayInMs;
+                return prvD - d2 <= dayInMs;
             }
         })
         .filter((v, i, arr) => {
@@ -49,13 +49,13 @@ export const getStroke = (testHistory: TestModel[]) => {
     };
 };
 
-interface dayStatsModel {
+interface DayStatsModel {
     label: string;
     number: number;
     errors: number;
 }
 
-type weeklyStatsModel = dayStatsModel[];
+type WeeklyStatsModel = DayStatsModel[];
 
 const daysLabels = [
     'dayMO',
@@ -67,17 +67,17 @@ const daysLabels = [
     'daySU'
 ];
 
-export const getWeeklyStats: (state: AppStateModel) => weeklyStatsModel = (
+export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
     state
 ) => {
-    const d = new Date();
+    const d3 = new Date();
     const day = new Date().getDay();
-    const todayWeekDay = !!day ? day - 1 : 6; //[0-6], 6 is sunday
+    const todayWeekDay = day ? day - 1 : 6; //[0-6], 6 is sunday
     const passages = state.passages;
     const testHistory = state.testsHistory;
     const weekStats = new Array(7).fill(0).map((v, i) => {
         const selectedDay = new Date(
-            d.getTime() - dayInMs * (todayWeekDay - i)
+            d3.getTime() - dayInMs * (todayWeekDay - i)
         );
         const selectedOnlyDate = new Date(
             `${selectedDay.getFullYear()}-${
@@ -115,13 +115,15 @@ export const getWeeklyStats: (state: AppStateModel) => weeklyStatsModel = (
         ); //ronunding after summing
         const sessionNumber = selectedDayActivity
             .map((t) => t.sessionId)
-            .filter((v, i, arr) => !arr.slice(0, i).includes(v)).length;
+            .filter(
+                (value, index, arr) => !arr.slice(0, index).includes(value)
+            ).length;
         const metrics =
             state.settings[SETTINGS.homeScreenWeeklyMetric] ===
-            STATS_METRICS.verses
+            STATSMETRICS.verses
                 ? versesNumber
                 : state.settings[SETTINGS.homeScreenWeeklyMetric] ===
-                  STATS_METRICS.minutes
+                  STATSMETRICS.minutes
                 ? minutesNumber
                 : sessionNumber;
         const errorNumber = selectedDayActivity
