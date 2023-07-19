@@ -1,5 +1,5 @@
-import React, { FC } from 'react';
-import { SvgXml } from 'react-native-svg';
+import React, { FC } from "react";
+import { SvgXml } from "react-native-svg";
 const xmlData = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="mask0_34_1458" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="213" height="134">
@@ -50,9 +50,9 @@ const xmlData2 = `
 </svg>`;
 
 export const DaggerLogoSVG: FC<{ isOutline?: boolean; color: string }> = ({
-    isOutline,
-    color = '#ECECEC'
+  isOutline,
+  color = "#ECECEC"
 }) => {
-    const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
-    return <SvgXml xml={data} width="255" height="160" />;
+  const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
+  return <SvgXml xml={data} width="255" height="160" />;
 };

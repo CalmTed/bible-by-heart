@@ -1,46 +1,46 @@
 {
-    "expo": {
-        "name": "Bible by heart",
-        "slug": "bible-by-heart",
-        "version": "0.0.8",
-        "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "userInterfaceStyle": "automatic",
-        "primaryColor": "#1A9E37",
-        "backgroundColor": "#272A27",
-        "splash": {
-            "image": "./assets/splash.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#272A27"
-        },
-        "assetBundlePatterns": ["**/*"],
-        "ios": {
-            "supportsTablet": false
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
-                "backgroundColor": "#ECECEC"
-            },
-            "package": "com.CalmTed.bibleByHeart",
-            "versionCode": 2307142
-        },
-        "web": {
-            "favicon": "./assets/favicon.png"
-        },
-        "extra": {
-            "eas": {
-                "projectId": "c76e832f-dde7-42aa-b303-7c97507b9ac9"
-            }
-        },
-        "plugins": [
-            [
-                "expo-notifications",
-                {
-                    "icon": "./assets/notification.png",
-                    "color": "#ECECEC"
-                }
-            ]
-        ]
-    }
+  "expo": {
+    "name": "Bible by heart",
+    "slug": "bible-by-heart",
+    "version": "0.0.8",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "primaryColor": "#1A9E37",
+    "backgroundColor": "#272A27",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#272A27"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ECECEC"
+      },
+      "package": "com.CalmTed.bibleByHeart",
+      "versionCode": 2307142
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c76e832f-dde7-42aa-b303-7c97507b9ac9"
+      }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification.png",
+          "color": "#ECECEC"
+        }
+      ]
+    ]
+  }
 }

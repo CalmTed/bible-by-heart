@@ -10,13 +10,13 @@ Whats different from analogus apps:
 - address learning tests for black box learning method
 - ukrainian interface language (add your if you want)
 - customizable Bible translation
-- fully offline and free (syncying options might be paid in future to support work)
+- offline-first and free (syncying options might be paid in future to support work)
 
 Whats the same:
 ---
 
 - passages list(add, remove, edit)
-- reminders notification
+- reminders notification  
 - difficulty levels
 
 Roadmap
@@ -76,21 +76,16 @@ Roadmap
     - [x] remove unfinished
     - [x] remove it before finishing session
   - [x] publish as it is for now b.c. we dont really care about state model now, other parts will be just rendered
-  - [ ] futureprofing
+  - [x] futureprofing
     - [x] update dependencies
-    - [ ] protect all critical funcions with try catch
+    - [x] protect all critical funcions with try catch
       - [x] storing
-      - [ ] redusing
-      - [ ] app rendering
-      - [ ] initials
-      - [ ] generate tests
-      - [ ] all async
-      - [ ] add throw Error
-      - [ ] hadle errors with toast translated label
-    - [ ] everyday save backup
-    - [ ] on crash propose to open backup and send last state as a report
-    - [ ] incapculate all function and components
-    - [ ] replace inputs with menu-ones (passage editor,settings,modals...) 
+      - [x] redusing
+      - [x] app rendering
+      - [x] initials
+      - [x] generate tests
+    - [x] everyday save backup
+    - [x] on crash propose to open backup and contact developer
   - [ ] export to csv, import from share(parse), or from other data types
   - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
   - [ ] ask to fetch translation if textfiled is not empty
