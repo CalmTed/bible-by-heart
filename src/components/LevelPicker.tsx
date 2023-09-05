@@ -1,6 +1,10 @@
 import React, { FC, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { PERFECT_TESTS_TO_PRCEED, PASSAGELEVEL, TESTLEVEL } from "../constants";
+import {
+  PERFECT_TESTS_TO_PROCEED,
+  PASSAGELEVEL,
+  TESTLEVEL
+} from "../constants";
 import { WORD } from "../l10n";
 import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
@@ -115,7 +119,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           <Text style={levelPickerStyles.subText}>
             {t("LevelPickerSubtext")} (
             {getPerfectTestsNumber(state.testsHistory, targetPassage)}/
-            {PERFECT_TESTS_TO_PRCEED})
+            {PERFECT_TESTS_TO_PROCEED})
           </Text>
         )}
         {!testLevel && targetPassage.maxLevel === PASSAGELEVEL.l5 && (
@@ -132,7 +136,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
             <Text style={levelPickerStyles.subText}>
               {t("LevelPickerSubtext")} (
               {getPerfectTestsNumber(state.testsHistory, targetPassage)}/
-              {PERFECT_TESTS_TO_PRCEED})
+              {PERFECT_TESTS_TO_PROCEED})
             </Text>
           )}
         {testLevel &&

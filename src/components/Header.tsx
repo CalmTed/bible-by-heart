@@ -6,7 +6,7 @@ import { IconName } from "./Icon";
 import { ThemeAndColorsModel } from "../tools/getTheme";
 
 interface HeaderModel {
-  navigation: StackNavigationHelpers;
+  navigation?: StackNavigationHelpers;
   showBackButton?: boolean;
   title?: string;
   additionalChild?: React.ReactNode;
@@ -31,17 +31,18 @@ export const Header: FC<HeaderModel> = ({
   alignChildren
 }) => {
   const handleBack = () => {
-    navigation.goBack();
+    navigation?.goBack();
   };
   return (
     <View
       style={{
         ...headerStyle.view,
         justifyContent: alignChildren || "flex-end",
-        alignItems: "center"
+        alignItems: "center",
+        width: "100%"
       }}
     >
-      {showBackButton && (
+      {showBackButton && navigation && (
         <IconButton theme={theme} onPress={handleBack} icon={IconName.back} />
       )}
       {title && (

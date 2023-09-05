@@ -11,7 +11,7 @@ import {
   TEST_LIST_NUMBER,
   THEMETYPE,
   VERSION,
-  archivedName
+  ARCHIVED_NAME
 } from "./constants";
 import {
   AddressType,
@@ -46,7 +46,7 @@ export const createAppState008: () => AppStateModel008 = () => {
     testsHistory: [],
     userId: null,
     filters: {
-      tags: [archivedName],
+      tags: [ARCHIVED_NAME],
       selectedLevels: [],
       maxLevels: [],
       translations: []
@@ -61,7 +61,7 @@ export const createAppState008: () => AppStateModel008 = () => {
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
       [SETTINGS.autoIncreeseLevel]: false,
-      [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
@@ -90,7 +90,7 @@ export const createAppState007: () => AppStateModel007 = () => {
     testsHistory: [],
     userId: null,
     filters: {
-      tags: [archivedName],
+      tags: [ARCHIVED_NAME],
       selectedLevels: [],
       maxLevels: [],
       translations: []
@@ -105,7 +105,7 @@ export const createAppState007: () => AppStateModel007 = () => {
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
       [SETTINGS.autoIncreeseLevel]: false,
-      [SETTINGS.leftSwipeTag]: archivedName, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
@@ -159,7 +159,7 @@ export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
       length: TEST_LIST_NUMBER,
       translation: 1,
       includeTags: [],
-      excludeTags: [archivedName],
+      excludeTags: [ARCHIVED_NAME],
       testAsLevel: null,
       sort: SORTINGOPTION.oldestToTrain
     }
@@ -350,7 +350,7 @@ export const createAppState006: () => AppStateModel006 = () => {
     userId: null,
     devMode: false,
     filters: {
-      tags: [archivedName],
+      tags: [ARCHIVED_NAME],
       selectedLevels: [],
       maxLevels: []
     },

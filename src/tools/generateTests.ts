@@ -342,7 +342,10 @@ const createL30Test: CreateTestMethodModel = ({
   }
 
   const successStroke = getPerfectTestsNumber(passageHistory, targetPassage);
-  const words = targetPassage.verseText.split(" ");
+  const words = targetPassage.verseText
+    .replace(/ {2,3}/g, " ")
+    .trim()
+    .split(" ");
   if (!words.length) {
     return initialTest;
   }
@@ -377,10 +380,12 @@ const createL30Test: CreateTestMethodModel = ({
             .map((w, ind) => [ind, getSimularity(w, words[randomFromExisting])])
             .filter((w) => w[1] < 1)
             .sort((a, b) => b[1] - a[1]);
+          let mostSimmular = 0;
           const wordsToAdd = mostSimmularArr
+            // eslint-disable-next-line @typescript-eslint/no-loop-func
             .filter((mostSimmularWord, ind) => {
               //first three from most simmular
-              const mostSimmular = mostSimmularWord[0];
+              mostSimmular = mostSimmularWord[0];
               return (
                 ind < 3 &&
                 mostSimmular !== -1 &&

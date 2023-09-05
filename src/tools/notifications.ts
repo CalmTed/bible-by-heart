@@ -7,6 +7,8 @@ import { cancelScheduledNotificationAsync } from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
 
+const notificationDebug = true;
+
 export const schedulePushNotification = async (
   title: string = "Hi!",
   body: string = "Would you like to click me?",
@@ -43,8 +45,11 @@ export const getAutoTimeTrigger: (
     });
   const mostCommonHour = new Array(24)
     .fill(0)
+    //all hours grouped by hour
     .map((z, i) => hourAndMinutes.filter((h) => h[0] === i).length)
+    //get time and index
     .map((a, i) => [a, i])
+    //sort
     .sort((a, b) => b[0] - a[0])[0][1];
   const minutesGroups = 5;
   const mostCommon5Minutes = new Array(60 / minutesGroups)
@@ -52,7 +57,10 @@ export const getAutoTimeTrigger: (
     .map(
       (z, i) =>
         hourAndMinutes.filter(
-          (h) => h[1] > i * minutesGroups && h[1] < (i + 1) * minutesGroups
+          (h) =>
+            h[0] === mostCommonHour &&
+            h[1] > i * minutesGroups &&
+            h[1] < (i + 1) * minutesGroups
         ).length
     )
     .map((a, i) => [a, i])
@@ -76,6 +84,9 @@ export const checkSchedule = async (state: AppStateModel) => {
     const removeAll =
       !state.settings.remindersEnabled || state.settings.remindersSmartTime;
     if (!scheduled.content.data.itemString) {
+      if (notificationDebug) {
+        console.log("Canceling autonotification");
+      }
       await cancelScheduledNotificationAsync(scheduled.identifier);
       return;
     }
@@ -84,7 +95,10 @@ export const checkSchedule = async (state: AppStateModel) => {
     ) as ReminderModel;
     const fromState = allUserSetted.find((setted) => setted.id === itemData.id);
     if (removeAll || !fromState || !fromState?.enabled) {
-      // await cancelScheduledNotificationAsync(scheduled.identifier)
+      if (notificationDebug) {
+        console.log("Canceling manual notification");
+      }
+      await cancelScheduledNotificationAsync(scheduled.identifier);
     }
   });
 
@@ -98,11 +112,17 @@ export const checkSchedule = async (state: AppStateModel) => {
 
   // IF ENABLED BUT AUTOMATIC TIME
   if (state.settings.remindersSmartTime) {
+    const autoTimeTrigger = getAutoTimeTrigger(state.testsHistory);
+    if (notificationDebug) {
+      console.log(
+        `Scheduling autonotification at ${autoTimeTrigger.hour}:${autoTimeTrigger.minute}`
+      );
+    }
     await schedulePushNotification(
       t(`notificationTitle${randNum}` as WORD),
       t(`notificationBody${randNum}` as WORD),
       {},
-      getAutoTimeTrigger(state.testsHistory)
+      autoTimeTrigger
     );
   } else {
     //IF ENABLED AND NOT AUTOMATIC TIME
@@ -164,6 +184,13 @@ export const checkSchedule = async (state: AppStateModel) => {
       );
       if (!scheduledRiminder) {
         //add reminder
+        console.log(
+          `Scheduling notification at ${Math.floor(
+            item.timeInSec / HOUR
+          )}:${Math.floor(
+            (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) / MINUTE
+          )}`
+        );
         await schedulePushNotification(
           t(`notificationTitle${randNum}` as WORD),
           t(`notificationBody${randNum}` as WORD),
@@ -175,6 +202,14 @@ export const checkSchedule = async (state: AppStateModel) => {
         if (
           JSON.stringify(item) !== scheduledRiminder.content.data.itemString
         ) {
+          console.log(
+            `Changing notification at ${Math.floor(
+              item.timeInSec / HOUR
+            )}:${Math.floor(
+              (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) /
+                MINUTE
+            )}`
+          );
           await cancelScheduledNotificationAsync(scheduledRiminder.identifier);
           await schedulePushNotification(
             t(`notificationTitle${randNum}` as WORD),

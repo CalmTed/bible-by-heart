@@ -1,4 +1,4 @@
-import { VERSION, storageBackupName, storageName } from "./src/constants";
+import { VERSION, STORAGE_BACKUP_NAME, STORAGE_NAME } from "./src/constants";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AppStateModel } from "./src/models";
 import { Navigator } from "./src/navigator";
@@ -30,7 +30,7 @@ export default function App() {
   const loadState = () => {
     storage
       .load({
-        key: `${storageName}`
+        key: `${STORAGE_NAME}`
       })
       .then((data) => {
         const dataObj: AppStateModel = data as AppStateModel;
@@ -43,7 +43,7 @@ export default function App() {
           //try to convert
           storage
             .save({
-              key: storageBackupName,
+              key: STORAGE_BACKUP_NAME,
               data: dataObj
             })
             .then(() => {
@@ -55,7 +55,7 @@ export default function App() {
                 );
                 storage
                   .save({
-                    key: `${storageName}`,
+                    key: `${STORAGE_NAME}`,
                     data: convertedState
                   })
                   .then(() => {
@@ -113,7 +113,7 @@ export default function App() {
               try {
                 storage
                   .load({
-                    key: storageBackupName
+                    key: STORAGE_BACKUP_NAME
                   })
                   .then((data) => {
                     const dataObj: AppStateModel = data as AppStateModel;
@@ -121,7 +121,7 @@ export default function App() {
                     if (dataObj.version === VERSION) {
                       storage
                         .save({
-                          key: `${storageName}`,
+                          key: `${STORAGE_NAME}`,
                           data: dataObj
                         })
                         .then(() => {
@@ -152,7 +152,7 @@ export default function App() {
                 try {
                   storage
                     .load({
-                      key: `${storageName}`
+                      key: `${STORAGE_NAME}`
                     })
                     .then((data) => {
                       setTextInputValue(JSON.stringify(data.passages, null, 4));
@@ -168,7 +168,7 @@ export default function App() {
                 try {
                   storage
                     .load({
-                      key: `${storageName}`
+                      key: `${STORAGE_NAME}`
                     })
                     .then((data) => {
                       setTextInputValue(JSON.stringify(data, null, 4));
@@ -209,7 +209,7 @@ export default function App() {
                 const newState = createAppState();
                 storage
                   .save({
-                    key: `${storageName}`,
+                    key: `${STORAGE_NAME}`,
                     data: newState
                   })
                   .then(() => {

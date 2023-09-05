@@ -6,7 +6,7 @@ import { ThemeAndColorsModel } from "../tools/getTheme";
 import { LinearGradient } from "expo-linear-gradient";
 import { Input } from "./Input";
 import { TagItem } from "./PassageEditor";
-import { archivedName } from "../constants";
+import { ARCHIVED_NAME } from "../constants";
 import { WORD } from "../l10n";
 
 type SettingsMenuItemModel =
@@ -252,7 +252,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
                   key={p}
                   theme={data.theme}
                   title={
-                    p === archivedName ? data.t("Archived") : p.slice(0, 20)
+                    p === ARCHIVED_NAME ? data.t("Archived") : p.slice(0, 20)
                   }
                   onRemove={() =>
                     data.onListChange(data.valuesList.filter((v) => v !== p))
@@ -267,7 +267,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             isShown={tagSelectOpen}
             options={data.optionsList.map((v) => ({
               value: v,
-              label: v === archivedName ? data.t("Archived") : v
+              label: v === ARCHIVED_NAME ? data.t("Archived") : v
             }))}
             selectedIndex={null}
             onSelect={(newVal) => {

@@ -86,12 +86,12 @@ Roadmap
       - [x] generate tests
     - [x] everyday save backup
     - [x] on crash propose to open backup and contact developer
-  - [ ] export to csv, import from share(parse), or from other data types
-  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
   - [ ] ask to fetch translation if textfiled is not empty
   - [ ] edit passage due to, sort main train mode by it
-  - [ ] all tests list, grouping by date and session
+  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
+  - [ ] export to csv, import from share(parse), or from other data types
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
+  - [ ] all tests list, grouping by date and session
   - [ ] passage statistics in passage editor
      - [ ] most common errors list with error numbers
      - [ ] total tries tested, total time spent
@@ -129,11 +129,11 @@ Dev. rules
 Using
 ---
 *Installing requirements:*
--  android sdk
+- android sdk
 - expo tools and packages from package.json
 
 *Running:*
 - run `npm start` to start expo (a - run on android, r - reload...)
 
 *Building:*
-- `eas build --platform android --profile [preview | production]` to build apk(preview) or aab(production) file (need expo eas account)
+- `eas build --platform android --profile [preview | production]` to build apk(preview) or aab(production) file (need exp/eas account)

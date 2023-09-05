@@ -8,7 +8,11 @@ import {
   ToastAndroid,
   View
 } from "react-native";
-import { PASSAGELEVEL, archivedName } from "../constants";
+import {
+  PASSAGELEVEL,
+  ARCHIVED_NAME,
+  CUSTOM_TRANSLATION_NAME
+} from "../constants";
 import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
 import { IconName } from "./Icon";
@@ -89,13 +93,13 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       if (
         tag === t("Archive") ||
         !tag ||
-        (tag !== archivedName && prv.tags.includes(tag))
+        (tag !== ARCHIVED_NAME && prv.tags.includes(tag))
       ) {
         return prv;
       }
       const newTags =
-        tag === archivedName && prv.tags.includes(archivedName)
-          ? prv.tags.filter((tg) => tg !== archivedName)
+        tag === ARCHIVED_NAME && prv.tags.includes(ARCHIVED_NAME)
+          ? prv.tags.filter((tg) => tg !== ARCHIVED_NAME)
           : [...prv.tags, tag];
       return { ...prv, tags: newTags };
     });
@@ -140,7 +144,9 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     setPassage((prv) => {
       return {
         ...prv,
-        verseTranslation: value === "null" ? null : parseInt(value, 10)
+        //null for custom
+        verseTranslation:
+          value === CUSTOM_TRANSLATION_NAME ? null : parseInt(value, 10)
       };
     });
   };
@@ -277,7 +283,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                 <TagItem
                   key={p}
                   theme={theme}
-                  title={p === archivedName ? t("Archived") : p.slice(0, 20)}
+                  title={p === ARCHIVED_NAME ? t("Archived") : p.slice(0, 20)}
                   onRemove={() => handleTagRemove(p)}
                 />
               ))}
@@ -316,7 +322,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <Select
               theme={theme}
               options={[
-                { label: t("TranslationOther"), value: "null" },
+                {
+                  label: t("TranslationOther"),
+                  value: CUSTOM_TRANSLATION_NAME
+                },
                 ...state.settings.translations.map((tr) => {
                   return {
                     label: tr.name,
@@ -343,11 +352,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <Button
               theme={theme}
               title={
-                tempPassage.tags.includes(archivedName)
+                tempPassage.tags.includes(ARCHIVED_NAME)
                   ? t("Unrchive")
                   : t("Archive")
               }
-              onPress={() => handleTagAdd(archivedName)}
+              onPress={() => handleTagAdd(ARCHIVED_NAME)}
             />
             <Button
               theme={theme}

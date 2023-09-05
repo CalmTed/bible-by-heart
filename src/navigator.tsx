@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AppStateModel } from "./models";
-import { SCREEN, backgroundNotificationName } from "./constants";
+import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
 import { HomeScreen } from "./screens/homeScreen";
 import { ListScreen } from "./screens/listScreen";
 import { TestsScreen } from "./screens/testsScreen";
@@ -18,7 +18,7 @@ interface NavigatorModel {
 
 export const Navigator: FC<NavigatorModel> = ({ state }) => {
   TaskManager.defineTask(
-    backgroundNotificationName,
+    BACKGROUND_NOTIFICATION_NAME,
     ({ data, error, executionInfo }) => {
       console.log(
         "Received a notification in the background!",

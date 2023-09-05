@@ -1,4 +1,4 @@
-import { PERFECT_TESTS_TO_PRCEED } from "../constants";
+import { PERFECT_TESTS_TO_PROCEED } from "../constants";
 import { PassageModel, TestModel } from "../models";
 
 export const getPerfectTestsNumber: (
@@ -12,7 +12,7 @@ export const getPerfectTestsNumber: (
         a.triesDuration[a.triesDuration.length - 1][1]
     )
     .filter((th) => th.passageId === passage.id)
-    .slice(0, PERFECT_TESTS_TO_PRCEED);
+    .slice(0, PERFECT_TESTS_TO_PROCEED);
   //does last tree tests has max avalible level
   const lastTestsWithMaxLevel = lastThreeTests.filter(
     (t) => t.level.toString().slice(0, 1) === passage.maxLevel.toString()

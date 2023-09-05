@@ -12,7 +12,7 @@ import {
   Vibration,
   ToastAndroid
 } from "react-native";
-import { archivedName, PASSAGELEVEL, SORTINGOPTION } from "../constants";
+import { ARCHIVED_NAME, PASSAGELEVEL, SORTINGOPTION } from "../constants";
 import {
   ActionName,
   AddressType,
@@ -167,7 +167,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       invertedTags.length > 0
         ? invertedTags.find((it) => p.tags.includes(it))
         : state.filters.tags.length === allTags.length
-        ? !p.tags.includes(archivedName)
+        ? !p.tags.includes(ARCHIVED_NAME)
         : true;
     const isSelectedLevelFilteringShown =
       state.filters.selectedLevels.filter(
@@ -513,7 +513,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     key={option}
                     type="outline"
                     color={
-                      option === archivedName &&
+                      option === ARCHIVED_NAME &&
                       state.filters.tags.length === allTags.length
                         ? "red"
                         : state.filters.tags.includes(option)
@@ -521,7 +521,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                         : "green"
                     }
                     title={
-                      option === archivedName
+                      option === ARCHIVED_NAME
                         ? t("Archived")
                         : option.slice(0, 20)
                     }
@@ -664,8 +664,8 @@ const ListItem: FC<{
       : inWord;
   };
   const tagName =
-    leftSwipeTag === archivedName
-      ? data.tags.includes(archivedName)
+    leftSwipeTag === ARCHIVED_NAME
+      ? data.tags.includes(ARCHIVED_NAME)
         ? t("Unrchive")
         : t("Archive")
       : data.tags.includes(leftSwipeTag)

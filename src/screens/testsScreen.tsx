@@ -1,6 +1,6 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
-import { TESTLEVEL, PASSAGELEVEL, archivedName } from "../constants";
+import { TESTLEVEL, PASSAGELEVEL, ARCHIVED_NAME } from "../constants";
 import { ActionName, PassageModel, TestModel } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
@@ -174,7 +174,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   });
 
   if (
-    !state.passages.filter((passage) => !passage.tags.includes(archivedName))
+    !state.passages.filter((passage) => !passage.tags.includes(ARCHIVED_NAME))
       .length
   ) {
     return (

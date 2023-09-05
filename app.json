@@ -13,17 +13,33 @@
       "resizeMode": "contain",
       "backgroundColor": "#272A27"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false
     },
     "android": {
+      "intentFilters": [
+        {
+          "autoVerify": true,
+          "action": "SEND",
+          "data": {
+            "memeType": "text/plain"
+          },
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ECECEC"
+        "backgroundColor": "#ECECEC",
+        "monochromeImage": "./assets/adaptive-icon.png"
       },
       "package": "com.CalmTed.bibleByHeart",
-      "versionCode": 2307142
+      "versionCode": 230902
     },
     "web": {
       "favicon": "./assets/favicon.png"

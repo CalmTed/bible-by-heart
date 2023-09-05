@@ -20,14 +20,15 @@ export enum LANGCODE {
   ua = "ua"
 }
 
-export const storageName = "data";
-export const storageBackupName = "backup";
+export const STORAGE_NAME = "data";
+export const STORAGE_BACKUP_NAME = "backup";
 
-export const archivedName = "Archived";
+export const ARCHIVED_NAME = "Archived";
 
-export const backgroundNotificationName = "backgroundNotificationName";
+export const BACKGROUND_NOTIFICATION_NAME = "backgroundNotificationName";
+export const CUSTOM_TRANSLATION_NAME = "null";
 
-export const PERFECT_TESTS_TO_PRCEED = 4;
+export const PERFECT_TESTS_TO_PROCEED = 4;
 export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
 

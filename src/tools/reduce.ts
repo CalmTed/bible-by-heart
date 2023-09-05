@@ -1,7 +1,4 @@
-import {
-  PERFECT_TESTS_TO_PRCEED,
-  PASSAGELEVEL,
-} from "../constants";
+import { PERFECT_TESTS_TO_PROCEED, PASSAGELEVEL } from "../constants";
 import { ActionModel, ActionName, AppStateModel } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
 import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
@@ -169,7 +166,7 @@ export const reduce: (
         //+update passages new level awalible
         const perfectTestsNumber = getPerfectTestsNumber(newHistory, p);
         const hasErrorFromLastThreeTests =
-          perfectTestsNumber !== PERFECT_TESTS_TO_PRCEED;
+          perfectTestsNumber !== PERFECT_TESTS_TO_PROCEED;
         const nextLevel = {
           [PASSAGELEVEL.l1]: PASSAGELEVEL.l2,
           [PASSAGELEVEL.l2]: PASSAGELEVEL.l3,

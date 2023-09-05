@@ -7,8 +7,8 @@ import {
   DAY,
   LANGCODE,
   SCREEN,
-  storageBackupName,
-  storageName
+  STORAGE_BACKUP_NAME,
+  STORAGE_NAME
 } from "../constants";
 import storage from "../storage";
 import * as Notifications from "expo-notifications";
@@ -43,7 +43,7 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
   useEffect(() => {
     storage
       .save({
-        key: storageName,
+        key: STORAGE_NAME,
         data: { ...state }
       })
       .catch((e) => {
@@ -55,7 +55,7 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
     if ((safeObject?.lastBackup || 0) < new Date().getTime() - DAY) {
       storage
         .save({
-          key: storageBackupName,
+          key: STORAGE_BACKUP_NAME,
           data: safeObject
         })
         .then(() => {

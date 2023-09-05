@@ -47,7 +47,8 @@ export const fetchESV: (address: AddressType) => Promise<string> = (
         .trim()
         .replace(/\n/g, " ")
         .replace(/ {2}/g, " ")
-        .replace(/ {3}/g, " ");
+        .replace(/ {3}/g, " ")
+        .replace(/“|”|„|‟/g, '"');
     })
     .catch((error) => {
       throw new Error("Unable to get passage text" + error);
