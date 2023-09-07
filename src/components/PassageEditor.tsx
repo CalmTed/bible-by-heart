@@ -236,6 +236,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     bodyButtons: {
       width: "100%",
       flexDirection: "row"
+    },
+    translationSelectWrapper: {
+      flexDirection: "row",
+      width: "100%",
+      justifyContent: "space-evenly",
+      alignItems: "center"
     }
   });
   const tempT = createT(
@@ -252,7 +258,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           icon={IconName.back}
           onPress={handleConfirm}
         />
-        {/* <IconButton theme={theme} style={PEstyle.headerBotton} icon={IconName.back} onPress={handleBack} /> */}
         <Text style={PEstyle.headerTitle}>{t("EditPassageTitle")}</Text>
       </View>
 
@@ -311,14 +316,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                 : ""}
             </Text>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              width: "100%",
-              justifyContent: "space-evenly",
-              alignItems: "center"
-            }}
-          >
+          <View style={PEstyle.translationSelectWrapper}>
             <Select
               theme={theme}
               options={[

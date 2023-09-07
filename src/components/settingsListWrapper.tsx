@@ -82,7 +82,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
       theme={theme}
       shown={shown}
       handleClose={handleClose}
-      style={{ width: "100%" }}
+      style={{ ...theme.theme.fullWidth }}
     >
       <View style={settingsListWrapperStyle.headerView}>
         <IconButton
@@ -116,7 +116,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
         handleClose={() => setItemSelected(null)}
       >
         {itemSelected && (
-          <View style={{ width: "100%" }}>
+          <View style={{ ...theme.theme.fullWidth }}>
             <View style={settingsListWrapperStyle.minimodalHeaderView}>
               <IconButton
                 theme={theme}
@@ -124,7 +124,9 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
                 onPress={() => setItemSelected(null)}
                 color={theme.colors.text}
               />
-              <Text style={{ ...theme.theme.headerText, flex: 1 }}>
+              <Text
+                style={{ ...theme.theme.headerText, ...theme.theme.flexOne }}
+              >
                 {titleText}
               </Text>
             </View>

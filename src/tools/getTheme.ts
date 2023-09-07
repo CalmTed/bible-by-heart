@@ -1,4 +1,4 @@
-import { useColorScheme } from "react-native";
+import * as reactNative from "react-native";
 import {
   COLOR_DARK,
   COLOR_LIGHT,
@@ -13,7 +13,7 @@ export interface ThemeAndColorsModel {
 }
 
 export const getTheme: (theme: THEMETYPE) => ThemeAndColorsModel = (theme) => {
-  const colorScheme = useColorScheme();
+  const colorScheme = reactNative.useColorScheme();
   if (
     (theme === THEMETYPE.auto && colorScheme === "dark") ||
     theme === THEMETYPE.dark

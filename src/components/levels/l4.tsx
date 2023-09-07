@@ -60,6 +60,22 @@ const levelComponentStyle = StyleSheet.create({
   inputSubtext: {
     textAlign: "center",
     fontSize: 12
+  },
+  inputWrapperStyle: {
+    width: "100%",
+    height: "100%"
+  },
+  inputStyle: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "flex-start"
+  },
+  wordOptionStyle: {
+    padding: 0
+  },
+  wordOptionTextStyle: {
+    fontSize: 16,
+    textTransform: "none"
   }
 });
 
@@ -233,12 +249,8 @@ export const L40: FC<LevelComponentModel> = ({
           onSubmit={() => {}}
           color={isCorrect ? "green" : "red"}
           onChange={handleTextChange}
-          wrapperStyle={{ width: "100%", height: "100%" }}
-          style={{
-            width: "100%",
-            height: "100%",
-            justifyContent: "flex-start"
-          }}
+          wrapperStyle={levelComponentStyle.inputWrapperStyle}
+          style={levelComponentStyle.inputStyle}
         />
         {!!wordOptions.length && (
           <Text
@@ -300,8 +312,8 @@ export const L40: FC<LevelComponentModel> = ({
               key={`${w}-${i}`}
               title={w}
               onPress={() => handleWordSelect(passageText, w)}
-              style={{ padding: 0 }}
-              textStyle={{ fontSize: 16, textTransform: "none" }}
+              style={levelComponentStyle.wordOptionStyle}
+              textStyle={levelComponentStyle.wordOptionStyle}
               disabled={levelFinished}
             />
           ))}

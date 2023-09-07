@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { SettingsMenuItem } from "../setttingsMenuItem";
 import { SETTINGS, STATSMETRICS } from "../../constants";
 import { WORD } from "../../l10n";
@@ -25,6 +25,20 @@ export const StatsSettingsList: FC<StatsSettingsListModel> = ({
 }) => {
   const [isStatsSettingsShown, setStatsSettingsShown] = useState(false);
 
+  const settingsGroupStyle = StyleSheet.create({
+    miniModal: {
+      width: "100%",
+      height: "100%"
+    },
+    miniModalContent: {
+      height: 60,
+      flexWrap: "nowrap",
+      flexDirection: "row",
+      width: "100%",
+      alignItems: "center"
+    }
+  });
+
   return (
     <View>
       <SettingsMenuItem
@@ -38,19 +52,9 @@ export const StatsSettingsList: FC<StatsSettingsListModel> = ({
         theme={theme}
         shown={isStatsSettingsShown}
         handleClose={() => setStatsSettingsShown(false)}
-        style={{
-          width: "100%"
-        }}
+        style={settingsGroupStyle.miniModal}
       >
-        <View
-          style={{
-            height: 60,
-            flexWrap: "nowrap",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
-        >
+        <View style={settingsGroupStyle.miniModalContent}>
           <IconButton
             theme={theme}
             icon={IconName.back}

@@ -33,15 +33,30 @@ export const Header: FC<HeaderModel> = ({
   const handleBack = () => {
     navigation?.goBack();
   };
+
+  const headerStyle = StyleSheet.create({
+    view: {
+      height: 60,
+      width: "100%",
+      flexDirection: "row",
+      justifyContent: alignChildren || "flex-end",
+      alignItems: "center"
+    },
+    textView: {
+      height: "100%",
+      justifyContent: "center",
+      marginHorizontal: 20,
+      flex: 1
+    },
+    text: {
+      fontSize: 18,
+      fontWeight: "500",
+      textTransform: "uppercase"
+    }
+  });
+
   return (
-    <View
-      style={{
-        ...headerStyle.view,
-        justifyContent: alignChildren || "flex-end",
-        alignItems: "center",
-        width: "100%"
-      }}
-    >
+    <View style={headerStyle.view}>
       {showBackButton && navigation && (
         <IconButton theme={theme} onPress={handleBack} icon={IconName.back} />
       )}
@@ -67,22 +82,3 @@ export const Header: FC<HeaderModel> = ({
     </View>
   );
 };
-
-const headerStyle = StyleSheet.create({
-  view: {
-    height: 60,
-    width: "100%",
-    flexDirection: "row"
-  },
-  textView: {
-    height: "100%",
-    justifyContent: "center",
-    marginHorizontal: 20,
-    flex: 1
-  },
-  text: {
-    fontSize: 18,
-    fontWeight: "500",
-    textTransform: "uppercase"
-  }
-});

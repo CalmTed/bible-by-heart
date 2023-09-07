@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Button, IconButton } from "../Button";
 import { Icon, IconName } from "../Icon";
 import { Select } from "../Select";
@@ -45,6 +45,37 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
 
   const remindersListString = JSON.stringify(state.settings.remindersList);
 
+  const settingsGroupStyle = StyleSheet.create({
+    miniModal: {
+      width: "100%",
+      height: "100%"
+    },
+    miniModalContent: {
+      height: 60,
+      flexWrap: "nowrap",
+      flexDirection: "row",
+      width: "100%",
+      alignItems: "center"
+    },
+    remindersListOptonsView: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10
+    },
+    remindersEnabledView: {
+      gap: 20
+    },
+    remindersTimePickerView: {
+      flexDirection: "row",
+      gap: 10
+    },
+    remindersDaysListView: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
+    }
+  });
+
   useEffect(() => {
     checkSchedule(state);
   }, [remindersListString]);
@@ -86,19 +117,9 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
         theme={theme}
         shown={isNotificationSettingsShown}
         handleClose={() => setNotificationSettingsShown(false)}
-        style={{
-          width: "100%"
-        }}
+        style={settingsGroupStyle.miniModal}
       >
-        <View
-          style={{
-            height: 60,
-            flexWrap: "nowrap",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
-        >
+        <View style={settingsGroupStyle.miniModalContent}>
           <IconButton
             theme={theme}
             icon={IconName.back}
@@ -206,13 +227,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
           }
           items={state.settings.remindersList}
           renderListItem={(item, handleChange) => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10
-              }}
-            >
+            <View style={settingsGroupStyle.remindersListOptonsView}>
               <Pressable
                 onPress={() =>
                   handleChange({
@@ -261,11 +276,12 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
                 } as OptionModel;
               });
             const hoursSelected = Math.floor(reminderItem.timeInSec / HOUR);
+            // /5 here b.c. we show minutes list in a factor if 5
             const minutesSelected = Math.floor(
               (reminderItem.timeInSec - hoursSelected * HOUR) / 60 / 5
-            ); // /5 here b.c. we show minutes list in a factor if 5
+            );
             return (
-              <View style={{ gap: 20 }}>
+              <View style={settingsGroupStyle.remindersEnabledView}>
                 <SettingsMenuItem
                   theme={theme}
                   header={t("settsReminderEnabled")}
@@ -281,7 +297,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
                     });
                   }}
                 />
-                <View style={{ flexDirection: "row", gap: 10 }}>
+                <View style={settingsGroupStyle.remindersTimePickerView}>
                   <Select
                     theme={theme}
                     options={hoursOptions}
@@ -312,13 +328,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
                     }}
                   />
                 </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    flexWrap: "wrap",
-                    gap: 10
-                  }}
-                >
+                <View style={settingsGroupStyle.remindersDaysListView}>
                   {Object.entries(reminderItem.days).map(([key, value]) => {
                     return (
                       <Button

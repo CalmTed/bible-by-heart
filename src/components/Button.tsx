@@ -51,9 +51,10 @@ export const Button: FC<ButtonModel> = ({
         : theme.colors.mainColor
       : theme.colors.text;
   return (
-    <View style={{ ...buttonStyles.touch }}>
+    <View style={buttonStyles.touch}>
       <Pressable
-        style={{ ...buttonStyles.touch, opacity: disabled ? 0.5 : 1 }}
+        style={buttonStyles.touch}
+        // style={{ ...buttonStyles.touch, opacity: disabled ? 0.5 : 1 }}
         onPress={onPress}
         disabled={disabled}
         android_ripple={{

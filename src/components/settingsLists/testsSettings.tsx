@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { SettingsMenuItem } from "../setttingsMenuItem";
 import {
   PASSAGELEVEL,
@@ -38,6 +38,20 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
   const [testSettingsShown, setTestSettingsShown] = useState(false);
   const [trainModesListShown, setTrainModesShown] = useState(false);
 
+  const settingsGroupStyle = StyleSheet.create({
+    miniModal: {
+      width: "100%",
+      height: "100%"
+    },
+    miniModalContent: {
+      height: 60,
+      flexWrap: "nowrap",
+      flexDirection: "row",
+      width: "100%",
+      alignItems: "center"
+    }
+  });
+
   return (
     <View>
       <SettingsMenuItem
@@ -51,19 +65,9 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
         theme={theme}
         shown={testSettingsShown}
         handleClose={() => setTestSettingsShown(false)}
-        style={{
-          width: "100%"
-        }}
+        style={settingsGroupStyle.miniModal}
       >
-        <View
-          style={{
-            height: 60,
-            flexWrap: "nowrap",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
-        >
+        <View style={settingsGroupStyle.miniModalContent}>
           <IconButton
             theme={theme}
             icon={IconName.back}

@@ -143,6 +143,12 @@ export const THEME_DARK = StyleSheet.create({
   rowView: {
     flexDirection: "row",
     flexWrap: "wrap"
+  },
+  fullWidth: {
+    width: "100%"
+  },
+  flexOne: {
+    flex: 1
   }
 });
 
@@ -169,6 +175,12 @@ export const THEME_LIGHT: typeof THEME_DARK = {
   },
   rowView: {
     ...THEME_DARK.rowView
+  },
+  fullWidth: {
+    ...THEME_DARK.fullWidth
+  },
+  flexOne: {
+    ...THEME_DARK.flexOne
   }
 };
 

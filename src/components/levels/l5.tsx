@@ -53,6 +53,18 @@ const levelComponentStyle = StyleSheet.create({
   inputSubtext: {
     textAlign: "center",
     fontSize: 12
+  },
+  inputStyle: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "flex-start"
+  },
+  inputTextStyle: {
+    fontWeight: "normal"
+  },
+  inputWrapperStyle: {
+    width: "100%",
+    height: "100%"
   }
 });
 
@@ -266,14 +278,10 @@ export const L50: FC<LevelComponentModel> = ({
           onSubmit={() => {}}
           color={isCorrect ? "green" : "gray"}
           onChange={handleTextChange}
-          wrapperStyle={{ width: "100%", height: "100%" }}
-          style={{
-            width: "100%",
-            height: "100%",
-            justifyContent: "flex-start"
-          }}
+          wrapperStyle={levelComponentStyle.inputWrapperStyle}
+          style={levelComponentStyle.inputStyle}
           autoCorrect={false}
-          textStyle={{ fontWeight: "normal" }}
+          textStyle={levelComponentStyle.inputTextStyle}
         />
       </View>
       <View style={levelComponentStyle.optionButtonsWrapper}>

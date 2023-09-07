@@ -112,6 +112,9 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
       alignItems: "center",
       width: "100%"
     },
+    chrckBoxTextView: {
+      maxWidth: "80%"
+    },
     checkBoxWrapper: {
       height: 30,
       width: 55,
@@ -126,6 +129,29 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
       borderRadius: 50,
       height: "100%",
       aspectRatio: 1
+    },
+    checkBoxGradiend: {
+      width: "100%",
+      padding: 3
+    },
+    bgText: {
+      backgroundColor: data.theme.colors.text
+    },
+    bgSecond: {
+      backgroundColor: data.theme.colors.bgSecond
+    },
+    ml50: {
+      marginLeft: "50%"
+    },
+    ml0: {
+      marginLeft: "0%"
+    },
+    halfOpacity: {
+      opacity: 0.5
+    },
+    tagListWrapper: {
+      flexDirection: "row",
+      flexWrap: "wrap"
     }
   });
   return (
@@ -160,7 +186,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
           }}
           disabled={data.disabled}
         >
-          <View style={{ maxWidth: "80%" }}>
+          <View style={settingsMenuItemStyles.chrckBoxTextView}>
             <Text style={settingsMenuItemStyles.header}>{data.header}</Text>
             <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
           </View>
@@ -182,18 +208,17 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
                 start={{ x: 0.0, y: 0 }}
                 end={{ x: 0.0, y: 1.0 }}
                 locations={[0, 1]}
-                style={{
-                  width: "100%",
-                  padding: 3
-                }}
+                style={settingsMenuItemStyles.checkBoxGradiend}
               >
                 <View
                   style={{
                     ...settingsMenuItemStyles.checkBoxCircle,
-                    backgroundColor: data.checkBoxState
-                      ? data.theme.colors.text
-                      : data.theme.colors.bgSecond,
-                    marginLeft: data.checkBoxState ? "50%" : "0%"
+                    ...(data.checkBoxState
+                      ? settingsMenuItemStyles.bgText
+                      : settingsMenuItemStyles.bgSecond),
+                    ...(data.checkBoxState
+                      ? settingsMenuItemStyles.ml50
+                      : settingsMenuItemStyles.ml0)
                   }}
                 />
               </LinearGradient>
@@ -202,10 +227,12 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
         </Pressable>
       )}
       {data.type === "select" && (
-        <View style={{ width: "100%" }}>
+        <View style={{ ...data.theme.theme.fullWidth }}>
           <Pressable
             onPress={handleOpenSelectList}
-            style={data.disabled ? { opacity: 0.5 } : {}}
+            style={{
+              ...(data.disabled ? settingsMenuItemStyles.halfOpacity : {})
+            }}
             disabled={data.disabled}
           >
             <Text style={settingsMenuItemStyles.header}>{data.header}</Text>
@@ -222,7 +249,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
         </View>
       )}
       {data.type === "textinput" && (
-        <View style={{ width: "100%" }}>
+        <View style={{ ...data.theme.theme.fullWidth }}>
           <Text style={settingsMenuItemStyles.subtext}>{data.header}:</Text>
           <Input
             value={data.value}
@@ -236,9 +263,9 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
       )}
 
       {data.type === "taglist" && (
-        <View style={{ width: "100%" }}>
+        <View style={{ ...data.theme.theme.fullWidth }}>
           <Text style={settingsMenuItemStyles.subtext}>{data.header}:</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+          <View style={{ ...settingsMenuItemStyles.tagListWrapper }}>
             {[
               <TagItem
                 key={"addNew"}

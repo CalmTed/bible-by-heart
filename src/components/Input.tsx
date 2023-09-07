@@ -110,6 +110,10 @@ export const Input: FC<InputModel> = ({
     touch: {
       flexDirection: "row"
     },
+    innerTouch: {
+      flexDirection: "row",
+      opacity: disabled ? 0.5 : 1
+    },
     InputStyle: {
       borderRadius: 22,
       alignItems: "center",
@@ -141,8 +145,8 @@ export const Input: FC<InputModel> = ({
     }
   });
   return (
-    <View style={{ ...InputStyles.touch }}>
-      <View style={{ ...InputStyles.touch, opacity: disabled ? 0.5 : 1 }}>
+    <View style={InputStyles.touch}>
+      <View style={InputStyles.innerTouch}>
         {
           <LinearGradient
             colors={gradientColors}

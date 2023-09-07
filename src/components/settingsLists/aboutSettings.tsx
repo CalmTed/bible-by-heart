@@ -1,5 +1,12 @@
 import React, { FC, useState } from "react";
-import { ToastAndroid, View, Text, ScrollView, TextInput } from "react-native";
+import {
+  ToastAndroid,
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  StyleSheet
+} from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
@@ -31,6 +38,42 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
   const [isLegalModalShown, setIsLegalModalShown] = useState(false);
   const [isStateViewerModalOpen, setIsStateViewerModalOpen] = useState(false);
+
+  const settingsGroupStyle = StyleSheet.create({
+    miniModal: {
+      width: "100%"
+    },
+    miniModalContent: {
+      height: 60,
+      flexWrap: "nowrap",
+      flexDirection: "row",
+      width: "100%",
+      alignItems: "center"
+    },
+    miniModalDevPasswordHeader: {
+      color: theme.colors.text,
+      fontSize: 16
+    },
+    devModeView: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      flexWrap: "wrap"
+    },
+    devModeHeader: {
+      color: theme.colors.text,
+      fontSize: 16
+    },
+    devModeAppStateTextMiniModal: {
+      width: "100%"
+    },
+    devModeAppStateTextScrollView: {
+      width: "100%"
+    },
+    devModeAppStateTextarea: {
+      width: "100%"
+    }
+  });
 
   const getPassword = () => {
     return Math.round(Math.random() * 10000);
@@ -101,19 +144,9 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         theme={theme}
         shown={isAboutModalShown}
         handleClose={() => setIsAboutModalShown(false)}
-        style={{
-          width: "100%"
-        }}
+        style={settingsGroupStyle.miniModal}
       >
-        <View
-          style={{
-            height: 60,
-            flexWrap: "nowrap",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
-        >
+        <View style={settingsGroupStyle.miniModalContent}>
           <IconButton
             theme={theme}
             icon={IconName.back}
@@ -210,7 +243,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           shown={isDevPasswordModalOpen}
           handleClose={() => setIsDevPasswordModalOpen(false)}
         >
-          <Text style={{ color: theme.colors.text, fontSize: 16 }}>
+          <Text style={settingsGroupStyle.miniModalDevPasswordHeader}>
             {t("settsDevPasswordHeader")}: {devModeKey}
           </Text>
           <Input
@@ -223,20 +256,8 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         </MiniModal>
         {/* DEV MODE SETTINGS */}
         {state.settings.devMode && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap"
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontSize: 16
-              }}
-            >
+          <View style={settingsGroupStyle.devModeView}>
+            <Text style={settingsGroupStyle.devModeHeader}>
               {t("settsGetDevAnswer")}:
             </Text>
             <Input
@@ -265,14 +286,16 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               theme={theme}
               shown={isStateViewerModalOpen}
               handleClose={() => setIsStateViewerModalOpen(false)}
-              style={{ width: "100%" }}
+              style={settingsGroupStyle.devModeAppStateTextMiniModal}
             >
-              <ScrollView style={{ width: "100%" }}>
+              <ScrollView
+                style={settingsGroupStyle.devModeAppStateTextScrollView}
+              >
                 {/* native input for ability to copy */}
                 <TextInput
                   style={{
                     ...theme.theme.text,
-                    width: "100%"
+                    ...settingsGroupStyle.devModeAppStateTextarea
                   }}
                   multiline={true}
                 >

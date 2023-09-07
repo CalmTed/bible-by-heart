@@ -48,6 +48,9 @@ const levelComponentStyle = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     paddingHorizontal: 20
+  },
+  textTransformNone: {
+    textTransform: "none"
   }
 });
 
@@ -247,7 +250,7 @@ export const L11: FC<LevelComponentModel> = ({
                   title={title}
                   type="outline"
                   color="green"
-                  textStyle={{ textTransform: "none" }}
+                  textStyle={levelComponentStyle.textTransformNone}
                   onPress={() => handleOptionsSelect(op.id)}
                   disabled={levelFinished}
                 />
@@ -262,7 +265,7 @@ export const L11: FC<LevelComponentModel> = ({
                   title={title}
                   type="outline"
                   color={isRight ? "green" : isWrong ? "red" : "gray"}
-                  textStyle={{ textTransform: "none" }}
+                  textStyle={levelComponentStyle.textTransformNone}
                   onPress={() => {}}
                   disabled={levelFinished}
                 />

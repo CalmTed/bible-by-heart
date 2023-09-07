@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { Select } from "../Select";
@@ -38,6 +38,23 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
   const [isListSettingsShown, setListSettingsShown] = useState(false);
   const [isTranslationsListShown, setTranslationsListShown] = useState(false);
 
+  const settingsGroupStyle = StyleSheet.create({
+    miniModal: {
+      width: "100%",
+      height: "100%"
+    },
+    miniModalContent: {
+      height: 60,
+      flexWrap: "nowrap",
+      flexDirection: "row",
+      width: "100%",
+      alignItems: "center"
+    },
+    tranlationOptionsView: {
+      gap: 20
+    }
+  });
+
   const allTags = [
     ARCHIVED_NAME,
     ...state.passages.map((p) => p.tags).flat()
@@ -56,19 +73,9 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
         theme={theme}
         shown={isListSettingsShown}
         handleClose={() => setListSettingsShown(false)}
-        style={{
-          width: "100%"
-        }}
+        style={settingsGroupStyle.miniModal}
       >
-        <View
-          style={{
-            height: 60,
-            flexWrap: "nowrap",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
-        >
+        <View style={settingsGroupStyle.miniModalContent}>
           <IconButton
             theme={theme}
             icon={IconName.back}
@@ -161,7 +168,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           renderEditItem={(item, handleChange, handleRemove) => {
             const translationItem = item as TranslationModel;
             return (
-              <View style={{ gap: 20 }}>
+              <View style={settingsGroupStyle.tranlationOptionsView}>
                 {/* name */}
                 <Text style={theme.theme.text}>
                   {t("settsTranslationItemName")}:

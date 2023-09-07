@@ -44,6 +44,12 @@ const levelComponentStyle = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     paddingHorizontal: 20
+  },
+  textTransformNone: {
+    textTransform: "none"
+  },
+  optionsWrapper2: {
+    gap: 10
   }
 });
 
@@ -117,8 +123,8 @@ export const L20: FC<LevelComponentModel> = ({
   const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
   return (
-    <View style={{ ...levelComponentStyle.levelComponentView }}>
-      <ScrollView style={{ ...levelComponentStyle.passageTextView }}>
+    <View style={levelComponentStyle.levelComponentView}>
+      <ScrollView style={levelComponentStyle.passageTextView}>
         <Text
           style={{
             ...theme.theme.text,
@@ -129,7 +135,7 @@ export const L20: FC<LevelComponentModel> = ({
           {targetPassage?.verseText}
         </Text>
       </ScrollView>
-      <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
+      <View style={levelComponentStyle.optionButtonsWrapper}>
         {!!errorValue && [
           <Button
             theme={theme}
@@ -266,8 +272,8 @@ export const L21: FC<LevelComponentModel> = ({
   const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
   return (
-    <View style={{ ...levelComponentStyle.levelComponentView }}>
-      <View style={{ ...levelComponentStyle.addressTextView }}>
+    <View style={levelComponentStyle.levelComponentView}>
+      <View style={levelComponentStyle.addressTextView}>
         <Text
           style={{
             ...theme.theme.text,
@@ -277,8 +283,9 @@ export const L21: FC<LevelComponentModel> = ({
           {addressToString(targetPassage.address, t)}
         </Text>
       </View>
-      <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
-        <View style={{ gap: 10 }}>
+      <View style={levelComponentStyle.optionButtonsWrapper}>
+        <View style={levelComponentStyle.optionsWrapper2}>
+          {/* passages text options */}
           {!errorValue &&
             passagesOptions.map((p) => {
               const passageText =
@@ -294,13 +301,14 @@ export const L21: FC<LevelComponentModel> = ({
                   key={p.id}
                   type="outline"
                   color="green"
-                  textStyle={{ textTransform: "none" }}
+                  textStyle={levelComponentStyle.textTransformNone}
                   title={passageText}
                   onPress={() => handlePassageCheck(p.id)}
                   disabled={levelFinished}
                 />
               );
             })}
+          {/* just right and wrond passages text options */}
           {!!errorValue && [
             state.passages
               .filter((p) => [targetPassage.id, errorValue].includes(p.id))
@@ -318,7 +326,7 @@ export const L21: FC<LevelComponentModel> = ({
                     key={p.id}
                     type="outline"
                     color={p.id === targetPassage.id ? "green" : "red"}
-                    textStyle={{ textTransform: "none" }}
+                    textStyle={levelComponentStyle.textTransformNone}
                     title={passageText}
                     onPress={() => {}}
                     disabled={levelFinished}

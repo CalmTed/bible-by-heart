@@ -51,6 +51,13 @@ const levelComponentStyle = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     paddingVertical: 10
+  },
+  optionButtonStyle: {
+    padding: 0
+  },
+  optionButtonTextStyle: {
+    fontSize: 16,
+    textTransform: "none"
   }
 });
 
@@ -249,11 +256,8 @@ export const L30: FC<LevelComponentModel> = ({
                       key={`${words[mwi]}-${mwi}`}
                       title={words[mwi]}
                       onPress={() => handleWordSelect(nextUnselectedIndex, mwi)}
-                      style={{ padding: 0 }}
-                      textStyle={{
-                        fontSize: 16,
-                        textTransform: "none"
-                      }}
+                      style={levelComponentStyle.optionButtonStyle}
+                      textStyle={levelComponentStyle.optionButtonTextStyle}
                       disabled={levelFinished}
                     />
                   );
@@ -275,11 +279,8 @@ export const L30: FC<LevelComponentModel> = ({
                         key={`${mwi}-${i}`}
                         title={words[mwi]}
                         onPress={() => {}}
-                        style={{ padding: 0 }}
-                        textStyle={{
-                          fontSize: 16,
-                          textTransform: "none"
-                        }}
+                        style={levelComponentStyle.optionButtonStyle}
+                        textStyle={levelComponentStyle.optionButtonTextStyle}
                         color={mwi === nextUnselectedIndex ? "green" : "red"}
                       />
                     );

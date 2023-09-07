@@ -105,7 +105,7 @@ export const ua: typeof en = {
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",
-  settsLabelTests: "Тестування",
+  settsLabelTests: "Вивчення",
   settsLabelAbout: "Про додаток",
   settsChangeTheme: "Змінити кольорову тему",
   settsChangeLang: "Змінити мову",

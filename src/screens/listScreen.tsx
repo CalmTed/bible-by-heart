@@ -227,6 +227,25 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     },
     listView: {
       width: "100%"
+    },
+    hiddenLabel: {
+      ...theme.theme.subText,
+      textAlign: "center",
+      paddingVertical: 10
+    },
+    devStatsView: {
+      margin: 20
+    },
+    listHeader: {
+      ...theme.theme.text,
+      marginTop: 20,
+      marginBottom: 10
+    },
+    optionsView: {
+      ...theme.theme.rowView,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 10
     }
   });
   return (
@@ -304,18 +323,12 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           })}
         </View>
         {state.passages.length > sortedPassages.length && (
-          <Text
-            style={{
-              ...theme.theme.subText,
-              textAlign: "center",
-              paddingVertical: 10
-            }}
-          >{`${t("PassagesHidden")} ${
+          <Text style={listStyle.hiddenLabel}>{`${t("PassagesHidden")} ${
             state.passages.length - sortedPassages.length
           }`}</Text>
         )}
         {state.settings.devMode && (
-          <View style={{ margin: 20 }}>
+          <View style={listStyle.devStatsView}>
             <Text style={theme.theme.text}>
               {t("NumberOfPassages")}: {state.passages.length} {"( "}
               {
@@ -418,23 +431,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       >
         <Text style={theme.theme.headerText}>{t("TitleFilters")}</Text>
         <ScrollView style={{}}>
-          <Text
-            style={{
-              ...theme.theme.text,
-              marginTop: 20,
-              marginBottom: 10
-            }}
-          >
-            {t("SelectedLevel")}
-          </Text>
-          <View
-            style={{
-              ...theme.theme.rowView,
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 10
-            }}
-          >
+          <Text style={listStyle.listHeader}>{t("SelectedLevel")}</Text>
+          <View style={listStyle.optionsView}>
             {[
               PASSAGELEVEL.l1,
               PASSAGELEVEL.l2,
@@ -454,23 +452,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               />
             ))}
           </View>
-          <Text
-            style={{
-              ...theme.theme.text,
-              marginTop: 20,
-              marginBottom: 10
-            }}
-          >
-            {t("MaxLevel")}
-          </Text>
-          <View
-            style={{
-              ...theme.theme.rowView,
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 10
-            }}
-          >
+          <Text style={listStyle.listHeader}>{t("MaxLevel")}</Text>
+          <View style={listStyle.optionsView}>
             {[
               PASSAGELEVEL.l1,
               PASSAGELEVEL.l2,
@@ -490,23 +473,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           </View>
           {!!allTags.length && (
             <View>
-              <Text
-                style={{
-                  ...theme.theme.text,
-                  marginTop: 20,
-                  marginBottom: 10
-                }}
-              >
-                {t("Tags")}
-              </Text>
-              <View
-                style={{
-                  ...theme.theme.rowView,
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  gap: 10
-                }}
-              >
+              <Text style={listStyle.listHeader}>{t("Tags")}</Text>
+              <View style={listStyle.optionsView}>
                 {allTags.map((option) => (
                   <Button
                     theme={theme}
@@ -532,34 +500,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             </View>
           )}
           {!allTags.length && (
-            <Text
-              style={{
-                ...theme.theme.text,
-                marginTop: 20,
-                marginBottom: 10
-              }}
-            >
-              {t("NoTagsFound")}
-            </Text>
+            <Text style={listStyle.listHeader}>{t("NoTagsFound")}</Text>
           )}
           <View>
-            <Text
-              style={{
-                ...theme.theme.text,
-                marginTop: 20,
-                marginBottom: 10
-              }}
-            >
-              {t("Translations")}
-            </Text>
-            <View
-              style={{
-                ...theme.theme.rowView,
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: 10
-              }}
-            >
+            <Text style={listStyle.listHeader}>{t("Translations")}</Text>
+            <View style={listStyle.optionsView}>
               {state.settings.translations.map((option) => (
                 <Button
                   theme={theme}
