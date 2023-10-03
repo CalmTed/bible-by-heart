@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { PassageModel } from "./models";
 
 export const VERSION = "0.0.8";
 
@@ -31,6 +32,7 @@ export const CUSTOM_TRANSLATION_NAME = "null";
 export const PERFECT_TESTS_TO_PROCEED = 4;
 export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
+export const ERRORS_TO_DOWNGRADE = 2;
 
 export const MINUTE = 60;
 export const HOUR = 3600;
@@ -149,6 +151,12 @@ export const THEME_DARK = StyleSheet.create({
   },
   flexOne: {
     flex: 1
+  },
+  marginVertical: {
+    marginVertical: 20
+  },
+  gap20: {
+    gap: 20
   }
 });
 
@@ -181,6 +189,12 @@ export const THEME_LIGHT: typeof THEME_DARK = {
   },
   flexOne: {
     ...THEME_DARK.flexOne
+  },
+  marginVertical: {
+    ...THEME_DARK.marginVertical
+  },
+  gap20: {
+    ...THEME_DARK.gap20
   }
 };
 
@@ -224,3 +238,7 @@ export enum SETTINGS {
   trainModesList = "trainModesList",
   activeTrainModeId = "activeTrainModeId"
 }
+
+export const PASSAGE_ROWS_TO_EXPORT = [
+  "dateCreated", "dateTested", "verseText", "verseTranslation", "tags", "address", "minIntervalDaysNum", "isReminderOn"
+] as (keyof PassageModel)[]

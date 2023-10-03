@@ -8,7 +8,6 @@ import {
 import { WORD } from "../l10n";
 import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
-import { IconName } from "./Icon";
 import { Button } from "./Button";
 import { getPerfectTestsNumber } from "../tools/getPerfectTests";
 import { getTheme } from "../tools/getTheme";
@@ -37,7 +36,14 @@ export const LevelPicker: FC<LevelPickerModel> = ({
   const closeLevelPicker = () => {
     setLevelPickerShown(false);
   };
+  const passageLevelFromTestLevel = testLevel?.toString().substring(0, 1);
   const handleLabelPress = () => {
+    if (
+      passageLevelFromTestLevel &&
+      parseInt(passageLevelFromTestLevel, 10) !== targetPassage.selectedLevel
+    ) {
+      // return;
+    }
     setLevelPickerShown(true);
     handleOpen(targetPassage.id);
   };
@@ -64,7 +70,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
       gap: 5
     },
     buttonStyle: {
-      margin: 0
+      margin: 0,
     },
     levelPickerWrapper: {
       flexDirection: "row",
@@ -76,8 +82,10 @@ export const LevelPicker: FC<LevelPickerModel> = ({
       <View style={{ ...levelPickerStyles.levelPickerWrapper }}>
         <Button
           theme={theme}
-          title={`${t("Level")} ${testLevel || targetPassage.selectedLevel}`}
-          icon={IconName.selectArrow}
+          title={`${t("Level")} ${
+            passageLevelFromTestLevel || targetPassage.selectedLevel
+          }`}
+          // icon={IconName.selectArrow}
           onPress={handleLabelPress}
         />
         {targetPassage.isNewLevelAwalible && <DotIndicator theme={theme} />}
@@ -99,14 +107,14 @@ export const LevelPicker: FC<LevelPickerModel> = ({
             PASSAGELEVEL.l5
           ].map((n) => {
             const color = targetPassage.selectedLevel === n ? "green" : "gray";
-            const disabled =
-              n > targetPassage.maxLevel && !state.settings.devMode;
+            const disabled = n > targetPassage.maxLevel; //&& !state.settings.devMode;
             return (
               <Button
                 theme={theme}
                 type={disabled ? "secondary" : "outline"}
                 color={color}
                 style={levelPickerStyles.buttonStyle}
+                textStyle={{...disabled ? {opacity: 0.5} : {}}}
                 key={n}
                 title={n.toString()}
                 onPress={() => handleChange(n, targetPassage.id)}

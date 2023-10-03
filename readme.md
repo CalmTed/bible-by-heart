@@ -86,10 +86,12 @@ Roadmap
       - [x] generate tests
     - [x] everyday save backup
     - [x] on crash propose to open backup and contact developer
-  - [ ] ask to fetch translation if textfiled is not empty
-  - [ ] edit passage due to, sort main train mode by it
-  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
+  - [x] "reimagine" level picker(disable level picker in fixed level tests & remove angle arrow)
+  - [x] ask to fetch translation if textfiled is not empty
+  - [x] after 2 errors propose to downgrade level and restart only one task
   - [ ] export to csv, import from share(parse), or from other data types
+  - [ ] edit passage due to, sort main train mode by it(later)
+  - [ ] an activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)(later)
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
   - [ ] all tests list, grouping by date and session
   - [ ] passage statistics in passage editor

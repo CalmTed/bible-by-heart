@@ -1,9 +1,19 @@
-import { PERFECT_TESTS_TO_PROCEED, PASSAGELEVEL } from "../constants";
-import { ActionModel, ActionName, AppStateModel } from "../models";
+import {
+  PERFECT_TESTS_TO_PROCEED,
+  PASSAGELEVEL,
+  TESTLEVEL
+} from "../constants";
+import {
+  ActionModel,
+  ActionName,
+  AppStateModel,
+  PassageModel
+} from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
 import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 import { checkSchedule } from "./notifications";
 import { ToastAndroid } from "react-native";
+import { generateATest } from "./generateTests";
 
 export const reduce: (
   state: AppStateModel,
@@ -146,6 +156,61 @@ export const reduce: (
             ...updatedTests.filter((t) => !t.isFinished && !!t.errorNumber) //unfinished with error
           ];
       changedState = { ...state, testsActive: sortedTests };
+      break;
+    case ActionName.downgradePassage:
+      //check if level is higher then 1
+      if ([TESTLEVEL.l10, TESTLEVEL.l11].includes(action.payload.test.level)) {
+        break;
+      }
+      const levelDowngradingMap: PASSAGELEVEL[] = [
+        //0
+        PASSAGELEVEL.l1,
+        //1
+        PASSAGELEVEL.l1,
+        //level 2
+        PASSAGELEVEL.l1,
+        //level 3
+        PASSAGELEVEL.l2,
+        //level 4
+        PASSAGELEVEL.l3,
+        //level 5
+        PASSAGELEVEL.l4
+      ];
+      const targetPasasge = state.passages.find(
+        (p) => p.id === action.payload.test.passageId
+      );
+      if (!targetPasasge) {
+        break;
+      }
+      const newPassageLevel = levelDowngradingMap[targetPasasge.selectedLevel];
+      console.log("downgrading. new level:",newPassageLevel)
+      //change selected level
+      const updatedPassages = state.passages.map((p) =>
+        p.id === action.payload.test.passageId
+          ? ({
+              ...p,
+              //we taking from selectedLevel, b.c. if selected to hard then max is even harder
+              selectedLevel: newPassageLevel,
+              maxLevel: newPassageLevel
+            } as PassageModel)
+          : p
+      );
+      //regenerate test with new level
+      const updatedActiveTests = state.testsActive.map((t) =>
+        t.id === action.payload.test.id
+          ? generateATest (
+              t,
+              state.passages,
+              newPassageLevel,
+              state.testsHistory
+            )
+          : t
+      );
+      changedState = {
+        ...state,
+        testsActive: updatedActiveTests,
+        passages: updatedPassages
+      };
       break;
     case ActionName.finishTesting:
       //updating last test finish time is finished flag

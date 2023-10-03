@@ -25,7 +25,7 @@
           "autoVerify": true,
           "action": "SEND",
           "data": {
-            "memeType": "text/plain"
+            "mimeType": "text/plain"
           },
           "category": [
             "BROWSABLE",
@@ -39,7 +39,7 @@
         "monochromeImage": "./assets/adaptive-icon.png"
       },
       "package": "com.CalmTed.bibleByHeart",
-      "versionCode": 230902
+      "versionCode": 231003
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -56,6 +56,9 @@
           "icon": "./assets/notification.png",
           "color": "#ECECEC"
         }
+      ],
+        [
+          "./plugins/handlingIntents"
       ]
     ]
   }

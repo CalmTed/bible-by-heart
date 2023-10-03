@@ -216,6 +216,7 @@ export enum ActionName {
   removePassage = "removePassage",
   setActiveTests = "setActiveTests",
   updateTest = "updateTest",
+  downgradePassage = "downgradePassage",
   finishTesting = "finishTesting",
   setPassageLevel = "setPassageLevel",
   disableNewLevelFlag = "disableNewLevelFlag",
@@ -268,6 +269,12 @@ export type ActionModel =
       payload: {
         test: TestModel;
         isRight: boolean;
+      };
+    }
+  | {
+      name: ActionName.downgradePassage;
+      payload: {
+        test: TestModel;
       };
     }
   | {

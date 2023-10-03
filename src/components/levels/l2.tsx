@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { AddressType, PassageModel } from "../../models";
+import { ActionName, AddressType, PassageModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
@@ -7,7 +7,7 @@ import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../tools/getTheme";
-import { VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -57,7 +57,8 @@ export const L20: FC<LevelComponentModel> = ({
   test,
   state,
   t,
-  submitTest
+  submitTest,
+  dispatch
 }) => {
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
@@ -115,6 +116,14 @@ export const L20: FC<LevelComponentModel> = ({
   };
   const handleAddressCancel = () => {
     setAPVisible(false);
+  };
+  const handleDowngrade = () => {
+    dispatch({
+      name: ActionName.downgradePassage,
+      payload: {
+        test: test
+      }
+    });
   };
   const targetPassage = state.passages.find((p) => p.id === test.passageId);
   if (!targetPassage) {
@@ -189,6 +198,16 @@ export const L20: FC<LevelComponentModel> = ({
             }
           />
         ]}
+        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+          <Button
+            theme={theme}
+            key="nextButton"
+            type="secondary"
+            color="gray"
+            title={t("DowngradeLevel")}
+            onPress={() => handleDowngrade()}
+          />
+        )}
       </View>
       <AddressPicker
         theme={theme}
@@ -196,7 +215,8 @@ export const L20: FC<LevelComponentModel> = ({
         onCancel={handleAddressCancel}
         onConfirm={handleAddressSelect}
         t={t}
-      />
+        />
+        
     </View>
   );
 };
@@ -206,7 +226,8 @@ export const L21: FC<LevelComponentModel> = ({
   test,
   state,
   t,
-  submitTest
+  submitTest,
+  dispatch
 }) => {
   const [passagesOptions, setPassageOptions] = useState([] as PassageModel[]);
   const [errorValue, setErrorValue] = useState(null as number | null);
@@ -264,6 +285,15 @@ export const L21: FC<LevelComponentModel> = ({
             )
             .slice(0, 3);
     setPassageOptions(options);
+  };
+
+  const handleDowngrade = () => {
+    dispatch({
+      name: ActionName.downgradePassage,
+      payload: {
+        test: test
+      }
+    });
   };
   const targetPassage = state.passages.find((p) => p.id === test.passageId);
   if (!targetPassage) {
@@ -350,6 +380,16 @@ export const L21: FC<LevelComponentModel> = ({
             placeholder={t("LevelStartWritingPassage")}
             onChange={(value) => handleSearchPassages(value)}
             onSubmit={() => {}}
+          />
+        )}
+        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+          <Button
+            theme={theme}
+            key="nextButton"
+            type="secondary"
+            color="gray"
+            title={t("DowngradeLevel")}
+            onPress={() => handleDowngrade()}
           />
         )}
       </View>

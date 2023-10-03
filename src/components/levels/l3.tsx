@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useState } from "react";
-import { AddressType } from "../../models";
+import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { getTheme } from "../../tools/getTheme";
-import { VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -65,7 +65,8 @@ export const L30: FC<LevelComponentModel> = ({
   test,
   state,
   t,
-  submitTest
+  submitTest,
+  dispatch
 }) => {
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
@@ -173,6 +174,15 @@ export const L30: FC<LevelComponentModel> = ({
   const handleAddressSelect = (address: AddressType) => {
     setAPVisible(false);
     setSelectedAddress(address);
+  };
+
+  const handleDowngrade = () => {
+    dispatch({
+      name: ActionName.downgradePassage,
+      payload: {
+        test: test
+      }
+    });
   };
 
   const levelFinished = test.isFinished;
@@ -300,6 +310,16 @@ export const L30: FC<LevelComponentModel> = ({
                 />
               ]
             }
+            {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+              <Button
+                theme={theme}
+                key="nextButton"
+                type="transparent"
+                color="gray"
+                title={t("DowngradeLevel")}
+                onPress={() => handleDowngrade()}
+              />
+            )}
           </View>
         </ScrollView>
       )}

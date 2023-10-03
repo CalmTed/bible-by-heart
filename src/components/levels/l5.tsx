@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
-import { AddressType } from "../../models";
+import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
-import { MAX_L50_TRIES, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, MAX_L50_TRIES, VIBRATION_PATTERNS } from "../../constants";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
@@ -72,7 +72,8 @@ export const L50: FC<LevelComponentModel> = ({
   test,
   state,
   t,
-  submitTest
+  submitTest,
+  dispatch
 }) => {
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
@@ -227,6 +228,14 @@ export const L50: FC<LevelComponentModel> = ({
     }
   };
 
+  const handleDowngrade = () => {
+    dispatch({
+      name: ActionName.downgradePassage,
+      payload: {
+        test: test
+      }
+    });
+  };
   if (!targetPassage) {
     return <View />;
   }
@@ -309,7 +318,17 @@ export const L50: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
         )}
-        {/* text entered but address needed and address not checked as wrong */}
+        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+          <Button
+            theme={theme}
+            type="secondary"
+            color="gray"
+            title={`${t("DowngradeLevel")}`}
+            onPress={() => handleDowngrade()}
+            disabled={levelFinished}
+          />
+        )}
+        {/* text entered but address needed and address has not been checked */}
         {isCorrect &&
           !isAddressProvided &&
           !wrongAddress && [
@@ -338,6 +357,7 @@ export const L50: FC<LevelComponentModel> = ({
               disabled={!selectedAddress || levelFinished}
             />
           ]}
+        {/* text entered but address checked and wrong */}
         {isCorrect &&
           !isAddressProvided &&
           selectedAddress &&

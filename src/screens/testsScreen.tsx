@@ -1,7 +1,7 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ToastAndroid } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL, ARCHIVED_NAME } from "../constants";
-import { ActionName, PassageModel, TestModel } from "../models";
+import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
@@ -146,7 +146,11 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       );
     });
   };
-
+  const handleDispatch = (action: ActionModel) => {
+    setState((prv) => {
+      return reduce(prv, action) || prv;
+    });
+  };
   const testsStyle = StyleSheet.create({
     viewHidden: {
       display: "none"
@@ -307,6 +311,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l11 && (
@@ -315,6 +320,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l20 && (
@@ -323,6 +329,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l21 && (
@@ -331,6 +338,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l30 && (
@@ -339,6 +347,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l40 && (
@@ -347,6 +356,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {activeTestObj?.level === TESTLEVEL.l50 && (
@@ -355,6 +365,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
+            dispatch={handleDispatch}
           />
         )}
         {state.settings.devMode && (

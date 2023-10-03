@@ -30,7 +30,7 @@
     "skipLibCheck": true
   },
 
-  "include": ["*", "src/*", "src/*", "src/**/*"],
+  "include": ["*", "src/*", "src/*", "src/**/*", "plugins/*"],
   "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

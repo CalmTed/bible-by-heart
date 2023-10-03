@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { AddressType } from "../../models";
+import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
@@ -8,7 +8,7 @@ import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../tools/getSimularity";
 import { getTheme } from "../../tools/getTheme";
-import { VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -83,7 +83,8 @@ export const L40: FC<LevelComponentModel> = ({
   test,
   state,
   t,
-  submitTest
+  submitTest,
+  dispatch
 }) => {
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
@@ -175,6 +176,14 @@ export const L40: FC<LevelComponentModel> = ({
       nextWordIfNeeded
     ].join(" ");
     setPassageText(newPassageText);
+  };
+  const handleDowngrade = () => {
+    dispatch({
+      name: ActionName.downgradePassage,
+      payload: {
+        test: test
+      }
+    });
   };
   if (!targetPassage) {
     return <View />;
@@ -302,7 +311,21 @@ export const L40: FC<LevelComponentModel> = ({
         onConfirm={handleAddressSelect}
         t={t}
       />
-
+      {((test.errorNumber || 0) > ERRORS_TO_DOWNGRADE ||
+        test.triesDuration
+          .map((i) => i[1] - i[0])
+          .reduce((ps, num) => {
+            return ps + num;
+          }, 0)) && (
+        <Button
+          theme={theme}
+          type="secondary"
+          color="gray"
+          title={`${t("DowngradeLevel")}`}
+          onPress={() => handleDowngrade()}
+          disabled={levelFinished}
+        />
+      )}
       <ScrollView style={{ ...levelComponentStyle.optionButtonsScrollWrapper }}>
         <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
           {wordOptions.map((w, i) => (
@@ -313,7 +336,7 @@ export const L40: FC<LevelComponentModel> = ({
               title={w}
               onPress={() => handleWordSelect(passageText, w)}
               style={levelComponentStyle.wordOptionStyle}
-              textStyle={levelComponentStyle.wordOptionStyle}
+              textStyle={levelComponentStyle.wordOptionTextStyle}
               disabled={levelFinished}
             />
           ))}

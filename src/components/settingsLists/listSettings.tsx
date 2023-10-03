@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Linking, ToastAndroid } from "react-native";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { Select } from "../Select";
@@ -18,7 +18,8 @@ import { ThemeAndColorsModel } from "../../tools/getTheme";
 import { reduce } from "../../tools/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
-// import { readFile } from "../../tools/fileManager";
+import { writeFile, readFile } from "../../tools/fileManager";
+import { CSVToArray, passagesToCSV } from "../../tools/handlePassageExport";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -250,16 +251,37 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             );
           }}
         />
-      </MiniModal>
-      {/* <SettingsMenuItem
+        <SettingsMenuItem
         theme={theme}
         type="action"
-        header={t("settsTranslationsListHeader")}
-        subtext={t("settsTranslationsListSubtext")}
+        header={"__WRITE FILE__"}
+        subtext={""}
         actionCallBack={() => {
-          readFile();
+          console.log("started")
+          const content = passagesToCSV(state)
+          if(!content){
+            ToastAndroid.show("Error with exporting ;(", 1000)
+            return;
+          }
+          writeFile("BibleByHeart.csv", content, "text/csv")
+          .then((r) => {
+            console.log(r)
+            ToastAndroid.showWithGravity("Exported!",1000, 2)
+          } 
+          );
         }}
-      /> */}
+      />
+              <SettingsMenuItem
+        theme={theme}
+        type="action"
+        header={"__READ FILE__"}
+        subtext={""}
+        actionCallBack={() => {
+          readFile().then((r) => r ? console.log(CSVToArray(r)) : null);
+        }}
+      />
+      </MiniModal>
+      
     </View>
   );
 };

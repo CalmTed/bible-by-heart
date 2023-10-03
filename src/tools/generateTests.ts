@@ -1,4 +1,4 @@
-import { getAddressDifference } from "../screens/listScreen";
+import { getAddressDifference } from "./addressDifference";
 import { bibleReference } from "../bibleReference";
 import { TESTLEVEL, PASSAGELEVEL, SORTINGOPTION } from "../constants";
 import { createTest } from "../initials";
@@ -90,84 +90,99 @@ export const generateTests: (state: AppStateModel) => TestModel[] = (state) => {
   //TODO all due to (one if one left), other only if there are no passages due ot
   //TODO make getDueTo as a separate method
   const sessionId = Math.round(Math.random() * 10000000);
+  const targetTestLevel =
+    trainMode.testAsLevel !== null
+      ? ((trainMode.testAsLevel + 1) as PASSAGELEVEL)
+      : trainMode.testAsLevel;
   const tests: TestModel[] = getPassagesByTrainMode(state, trainMode).map(
     (p) => {
       const initialTest = createTest(sessionId, p.id, p.selectedLevel);
-      //l11 can't be done without 4 passages min
-      const testTenghtSafeTest =
-        passages.length > 3
-          ? initialTest
-          : initialTest.level === TESTLEVEL.l11
-          ? { ...initialTest, level: TESTLEVEL.l10 }
-          : initialTest;
-      //filling test data here
-      const testCreationList = {
-        [TESTLEVEL.l10]: createL10Test,
-        [TESTLEVEL.l11]: createL11Test,
-        [TESTLEVEL.l20]: createL20Test,
-        [TESTLEVEL.l21]: createL21Test,
-        [TESTLEVEL.l30]: createL30Test,
-        [TESTLEVEL.l40]: createL40Test,
-        [TESTLEVEL.l50]: createL50Test
-      };
-      const randBool = Math.random() > 0.5;
-      const onlyLevelFunctions: Record<PASSAGELEVEL, CreateTestMethodModel> = {
-        [PASSAGELEVEL.l1]: randBool ? createL10Test : createL11Test,
-        [PASSAGELEVEL.l2]: randBool ? createL20Test : createL21Test,
-        [PASSAGELEVEL.l3]: createL30Test,
-        [PASSAGELEVEL.l4]: createL40Test,
-        [PASSAGELEVEL.l5]: createL50Test
-      };
-      const onlyLevelTestLevels = {
-        //l11 cant be created without 4 passages minimum
-        [PASSAGELEVEL.l1]:
-          randBool || passages.length <= 3 ? TESTLEVEL.l10 : TESTLEVEL.l11,
-        [PASSAGELEVEL.l2]: randBool ? TESTLEVEL.l20 : TESTLEVEL.l21,
-        [PASSAGELEVEL.l3]: TESTLEVEL.l30,
-        [PASSAGELEVEL.l4]: TESTLEVEL.l40,
-        [PASSAGELEVEL.l5]: TESTLEVEL.l50
-      };
-      const onlyLevel =
-        trainMode.testAsLevel !== null
-          ? ((trainMode.testAsLevel + 1) as PASSAGELEVEL)
-          : trainMode.testAsLevel;
-      if (onlyLevel) {
-        return onlyLevelFunctions[onlyLevel]({
-          initialTest: {
-            ...initialTest,
-            level: onlyLevelTestLevels[onlyLevel]
-          },
-          passages,
-          passageHistory: history
-        });
-      }
-      return testCreationList[testTenghtSafeTest.level]({
-        initialTest: testTenghtSafeTest,
-        passages,
-        passageHistory: history
-      });
+      return generateATest(initialTest, passages, targetTestLevel, history);
     }
   );
   return tests;
 };
 
+//generate a test
+//require passages list
+//get initial test or generate one
+//get target test level or generate from target passage level
+//   when downgrading we will already have lower level after redusing or we will call it from reduser
+//get history or set to be []
+export const generateATest: (
+  initialTest: TestModel,
+  passages: PassageModel[],
+  targetTestLevel?: PASSAGELEVEL | null,
+  history?: TestModel[]
+) => TestModel = (initialTest, passages, targetTestLevel, history = []) => {
+  const littleClearerInitialTest = {...initialTest, errorNumber: null, errorType: null} as TestModel
+  const testTenghtSafeTest =
+    passages.length > 3
+      ? littleClearerInitialTest
+      : littleClearerInitialTest.level === TESTLEVEL.l11
+      ? { ...littleClearerInitialTest, level: TESTLEVEL.l10 }
+      : littleClearerInitialTest;
+  //filling test data here
+  const testCreationList = {
+    [TESTLEVEL.l10]: createL10Test,
+    [TESTLEVEL.l11]: createL11Test,
+    [TESTLEVEL.l20]: createL20Test,
+    [TESTLEVEL.l21]: createL21Test,
+    [TESTLEVEL.l30]: createL30Test,
+    [TESTLEVEL.l40]: createL40Test,
+    [TESTLEVEL.l50]: createL50Test
+  };
+  const randBool = Math.random() > 0.5;
+  const onlyLevelFunctions: Record<PASSAGELEVEL, CreateTestMethodModel> = {
+    [PASSAGELEVEL.l1]: randBool ? createL10Test : createL11Test,
+    [PASSAGELEVEL.l2]: randBool ? createL20Test : createL21Test,
+    [PASSAGELEVEL.l3]: createL30Test,
+    [PASSAGELEVEL.l4]: createL40Test,
+    [PASSAGELEVEL.l5]: createL50Test
+  };
+  const onlyLevelTestLevels = {
+    //l11 cant be created without 4 passages minimum
+    [PASSAGELEVEL.l1]:
+      randBool || passages.length <= 3 ? TESTLEVEL.l10 : TESTLEVEL.l11,
+    [PASSAGELEVEL.l2]: randBool ? TESTLEVEL.l20 : TESTLEVEL.l21,
+    [PASSAGELEVEL.l3]: TESTLEVEL.l30,
+    [PASSAGELEVEL.l4]: TESTLEVEL.l40,
+    [PASSAGELEVEL.l5]: TESTLEVEL.l50
+  };
+  if (targetTestLevel) {
+    return onlyLevelFunctions[targetTestLevel]({
+      initialTest: {
+        ...initialTest,
+        level: onlyLevelTestLevels[targetTestLevel]
+      },
+      passages,
+      history
+    });
+  }
+  return testCreationList[testTenghtSafeTest.level]({
+    initialTest: testTenghtSafeTest,
+    passages,
+    history
+  });
+};
+
 interface CreateTestInputModel {
   initialTest: TestModel;
   passages: PassageModel[];
-  passageHistory: TestModel[];
+  history: TestModel[];
 }
 type CreateTestMethodModel = (data: CreateTestInputModel) => TestModel;
 
 const createL10Test: CreateTestMethodModel = ({
   initialTest,
   passages,
-  passageHistory
+  history
 }) => {
   const p = passages.find((ps) => ps.id === initialTest.passageId); //aka targetPassage
   if (!p) {
     return initialTest;
   }
-  const successStroke = getPerfectTestsNumber(passageHistory, p);
+  const successStroke = getPerfectTestsNumber(history, p);
   const getRandomAddress = () => {
     //1 same book diff address
     const sameBookAddresses = passages
@@ -236,7 +251,7 @@ const createL10Test: CreateTestMethodModel = ({
       endVerseNum: randomEndVerseNumber
     };
     //4 from errors
-    const wrongAdressesWithSamePassage = passageHistory
+    const wrongAdressesWithSamePassage = history
       .filter((ph) => ph.passageId === p.id)
       .map((ph) => ph.wrongAddress)
       .flat();
@@ -281,19 +296,19 @@ const createL10Test: CreateTestMethodModel = ({
 const createL11Test: CreateTestMethodModel = ({
   initialTest,
   passages,
-  passageHistory
+  history
 }) => {
   const optionsLength = 4;
 
   //if passages.length < optionsLength - replace with L10
   if (passages.length < optionsLength) {
-    return createL10Test({ initialTest, passages, passageHistory });
+    return createL10Test({ initialTest, passages, history });
   }
   //passages from errors
   const rightOne = passages.find(
     (p) => p.id === initialTest.passageId
   ) as PassageModel;
-  const fromErrors = passageHistory
+  const fromErrors = history
     .filter((ph) => ph.passageId === initialTest.passageId)
     .map((ph) =>
       passages.filter((p) => (ph.wrongPassagesId || []).includes(p.id))
@@ -334,14 +349,14 @@ const createL21Test: CreateTestMethodModel = ({ initialTest }) => {
 const createL30Test: CreateTestMethodModel = ({
   initialTest,
   passages,
-  passageHistory
+  history
 }) => {
   const targetPassage = passages.find((p) => p.id === initialTest.passageId);
   if (!targetPassage) {
     return initialTest;
   }
 
-  const successStroke = getPerfectTestsNumber(passageHistory, targetPassage);
+  const successStroke = getPerfectTestsNumber(history, targetPassage);
   const words = targetPassage.verseText
     .replace(/ {2,3}/g, " ")
     .trim()
@@ -399,7 +414,7 @@ const createL30Test: CreateTestMethodModel = ({
         //else select simular
       } else {
         //from errors or random
-        const wordsFromErrors = passageHistory
+        const wordsFromErrors = history
           .filter(
             (t) =>
               t.passageId === initialTest.passageId &&

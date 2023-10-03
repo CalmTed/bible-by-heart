@@ -1,6 +1,11 @@
 import React, { FC, useEffect, useState } from "react";
 import { WORD } from "../../l10n";
-import { AddressType, AppStateModel, TestModel } from "../../models";
+import {
+  ActionModel,
+  AddressType,
+  AppStateModel,
+  TestModel
+} from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
@@ -12,6 +17,7 @@ export interface LevelComponentModel {
   state: AppStateModel;
   t: (w: WORD) => string;
   submitTest: (data: { isRight: boolean; modifiedTest: TestModel }) => void;
+  dispatch: (action: ActionModel) => void;
 }
 
 const levelComponentStyle = StyleSheet.create({

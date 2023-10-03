@@ -27,6 +27,7 @@ import { ThemeAndColorsModel, getTheme } from "../tools/getTheme";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
 import { fetchESV } from "../tools/fetchESV";
+import { MiniModal } from "./miniModal";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -46,6 +47,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   state
 }) => {
   const [isAPVisible, setAPVisible] = useState(false);
+  const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
 
   const handleTextFetch = (translation?: number) => {
@@ -73,7 +75,19 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   }, [visible]);
 
   useEffect(() => {
-    handleTextFetch();
+    //checknig if data changed after first PE rendering
+    if (
+      JSON.stringify(tempPassage.address) === JSON.stringify(passage.address) &&
+      tempPassage.verseTranslation === passage.verseTranslation
+    ) {
+      return () => {};
+    }
+    //should ask user to fetch if verse taxt is not empty
+    if (tempPassage.verseText.length) {
+      setFetchPropositionOpen(true);
+    } else {
+      handleTextFetch();
+    }
   }, [JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
 
   const handleConfirm = () => {
@@ -373,6 +387,34 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         onConfirm={handleAddresChange}
         t={tempT}
       />
+      <MiniModal
+        theme={theme}
+        shown={isFetchPropositionOpen}
+        handleClose={() => setFetchPropositionOpen(false)}
+      >
+        <Text style={theme.theme.headerText}>{t("fetchPropositionText")}</Text>
+        <View
+          style={{
+            ...theme.theme.rowView,
+            ...theme.theme.marginVertical,
+            ...theme.theme.gap20
+          }}
+        >
+          <Button
+            theme={theme}
+            onPress={() => setFetchPropositionOpen(false)}
+            type="secondary"
+            title={t("Cancel")}
+          />
+          <Button
+            theme={theme}
+            onPress={() => handleTextFetch()}
+            type="main"
+            color="green"
+            title={t("Fetch")}
+          />
+        </View>
+      </MiniModal>
     </Modal>
   );
 };
