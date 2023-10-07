@@ -9,6 +9,7 @@ import { TestsScreen } from "./screens/testsScreen";
 import { FinishScreen } from "./screens/finishScreen";
 import { SettingsScreen } from "./screens/settingsScreen";
 import * as TaskManager from "expo-task-manager";
+import { ToastAndroid } from "react-native";
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         error,
         executionInfo
       );
+      ToastAndroid.show(JSON.stringify(data), 1000)
     }
   );
 

@@ -102,6 +102,7 @@ export const en = {
   Tags: "Tags",
   Translations: "Translations",
   fetchPropositionText: "Do you want to fetch passage text?",
+  Loading: "Loading...",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",
@@ -109,8 +110,12 @@ export const en = {
   settsLabelAbout: "About",
   settsChangeTheme: "Change color theme",
   settsChangeLang: "Change Language",
-  settingsExport: "Export passages",
-  settingsImport: "Import passages",
+  settingsExportPassages: "Export passages",
+  settingsImportPassages: "Import passages",
+  settsExportPassagesSubtext: "Write passales to .txt file",
+  settsImportPassagesSubtext: "Read passales from special .txt file",
+  settsExported: "Exported!", 
+  settsImported: "Imported!", 
   settsDevMode: "Dev mode",
   settsHaptics: "Haptics vibration",
   settsLeftSwipeTag: "Right swipe category",
@@ -174,6 +179,10 @@ export const en = {
   ErrorCantAddMoreEngVerses: "Can't add more then 500 verses in English",
   ErrorNoPassagesForThisTrainMode:
     "There are no passages for this train mode, check train mode list in settings",
+  ErrorWhileReadingFile: "Error occured while reading file",
+  ErrorWhileWritingFile: "Error occured while writing file",
+  ErrorWhileEncoding: "Error occured while encoding",
+  ErrorWhileDecoding: "Error occured while decoding",
 
   dayMO: "Mo",
   dayTU: "Tu",

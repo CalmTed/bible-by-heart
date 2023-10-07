@@ -106,6 +106,7 @@ export const ua: typeof en = {
   Tags: "Категорії",
   Translations: "Переклади",
   fetchPropositionText: "Підтягнути текст автоматично?",
+  Loading: "Заванатження...",
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",
@@ -126,8 +127,12 @@ export const ua: typeof en = {
   settsAutoIncreseLevel: "Автоматично підвищувати рівень",
   settsShowStateHeader: "Файл даних додатку",
   settsShowStateSubtext: "Показати текст стану додатка",
-  settingsExport: "Експортувати вірші",
-  settingsImport: "Імпортувати вірші",
+  settingsExportPassages: "Експортувати вірші",
+  settingsImportPassages: "Імпортувати вірші",
+  settsExportPassagesSubtext: "Записати вірші у txt файл",
+  settsImportPassagesSubtext: "Зчитати вірші із спеціального txt файлу",
+  settsExported: "Експортувано!", 
+  settsImported: "Імпортовано!", 
   settsClearHistory: "Видалити історію",
   settsClearPassages: "Видалити список віршів",
   settsClearData: "Видалити всі дані",
@@ -178,6 +183,10 @@ export const ua: typeof en = {
   ErrorCantAddMoreEngVerses: "Не можна додавати більше 500 віршів англійською",
   ErrorNoPassagesForThisTrainMode:
     "Для цього режиму тренування немає жотдого тексту, перевірь режими тренування у налаштуваннях",
+  ErrorWhileReadingFile: "Помилка читання файлу",
+  ErrorWhileWritingFile: "Помилка запису у файл",
+  ErrorWhileEncoding: "Помилка форматування",
+  ErrorWhileDecoding: "Помилка розшифровування",
 
   dayMO: "Пн",
   dayTU: "Вт",

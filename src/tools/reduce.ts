@@ -1,7 +1,8 @@
 import {
   PERFECT_TESTS_TO_PROCEED,
   PASSAGELEVEL,
-  TESTLEVEL
+  TESTLEVEL,
+  LANGCODE
 } from "../constants";
 import {
   ActionModel,
@@ -14,6 +15,8 @@ import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 import { checkSchedule } from "./notifications";
 import { ToastAndroid } from "react-native";
 import { generateATest } from "./generateTests";
+import { createAddress, createPassage } from "../initials";
+import { addressFromString } from "./addressFromString";
 
 export const reduce: (
   state: AppStateModel,
@@ -356,6 +359,63 @@ export const reduce: (
         ...state,
         settings: { ...state.settings, trainModesList: action.payload }
       };
+      break;
+    case ActionName.importPassages:
+      //validate:
+      //data exists
+      const dataExists = action.payload.headers && action.payload.data && action.payload.headers.length && action.payload.data.length
+      //same number of columns
+      const sameColumnsNumber = 
+      action.payload.data.map(row =>
+        Math.abs(action.payload.headers.length - row.length)
+        ).reduce((ps, s) => {
+          return ps + s;
+        }, 0) === 0
+      //valid header names
+      const validHeaders = action.payload.headers.filter(h => {
+        return Object.keys(createPassage( createAddress() , "")).includes(h)//initial passage have all nneded passages
+      }
+      )
+      //required headers: address
+      const hasRequiredHeaders = action.payload.headers.includes("address")
+      //BE AWARE: we dont check fot data type here b.c. we read it from strings and see all as strings even tags param(witch have , as separator)
+      if(!dataExists || !sameColumnsNumber || !hasRequiredHeaders){
+        break;
+      }
+      //generate passages
+      const importedPassages: PassageModel[] = action.payload.data.map(passage => {
+        const addressColumnIndex = action.payload.headers.indexOf("address")
+        const address = addressFromString(passage[addressColumnIndex])
+        if(!address){
+          console.log("Not an address")
+          return null;
+        }
+        const newPassage = createPassage(address);
+        action.payload.headers.map((header, headerIndex) => {
+          const typedHeader = header as keyof PassageModel
+          if(typedHeader === "address"){
+            return;
+          }
+          if(typedHeader === "tags"){
+            newPassage.tags = passage[headerIndex]?.split(",").filter(t => t.length).map(t => t.trim()) ?? []
+          }
+          if(typedHeader === "verseTranslation"){
+            newPassage.verseTranslation = state.settings.translations.find(translation => translation.name === passage[headerIndex])?.id || null
+          }
+          //done in a hackable way on purpose
+          if(typeof newPassage[typedHeader] === typeof passage[headerIndex]){
+            newPassage[typedHeader] = passage[headerIndex] as never//this is not on purpose
+          }
+        })
+        return newPassage;
+
+      }).filter(p => p !== null) as PassageModel[]
+      //find translation with translationName or set to null
+      //edit params
+      changedState = {
+        ...state,
+        passages: [...state.passages, ...importedPassages]
+      }
       break;
     default:
       console.warn("unknown action name: ", action);

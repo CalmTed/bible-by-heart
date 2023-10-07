@@ -11,7 +11,8 @@ import {
 import {
   PASSAGELEVEL,
   ARCHIVED_NAME,
-  CUSTOM_TRANSLATION_NAME
+  CUSTOM_TRANSLATION_NAME,
+  TRANSLATIONS_TO_FETCH
 } from "../constants";
 import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
@@ -49,11 +50,19 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
+  const [fetchingInProgress, setFetchingInProgress] = useState(false)
 
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
-    //1 is hardwired id for ESV
-    if (translationId === 1) {
+    //1 is ESV
+    const validAdress = tempPassage.address.bookIndex !== null 
+      && tempPassage.address.startChapterNum !== null
+      && tempPassage.address.startVerseNum !== null
+    if (translationId && validAdress && TRANSLATIONS_TO_FETCH.includes(translationId)) {
+      if(state.settings.devMode){
+        console.log("Fetching", tempPassage.address);
+      } 
+      setFetchingInProgress(true)
       fetchESV(tempPassage.address)
         .then((data) => {
           setPassage((prevPassage) => {
@@ -62,31 +71,34 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         })
         .catch((e) => {
           ToastAndroid.show(e, 10000);
-        });
-    } else {
+        }).finally(() => {
+          setFetchingInProgress(false)
+        })
     }
   };
 
   useEffect(() => {
     setPassage(passage);
-    if (!tempPassage.verseText.length) {
+    const passageExists = state.passages.map(p => p.id).includes(tempPassage.id);
+    const textIsEmpty = !tempPassage.verseText.length;
+    if (visible && passageExists && textIsEmpty) {
       handleTextFetch();
     }
   }, [visible]);
 
   useEffect(() => {
     //checknig if data changed after first PE rendering
-    if (
-      JSON.stringify(tempPassage.address) === JSON.stringify(passage.address) &&
-      tempPassage.verseTranslation === passage.verseTranslation
-    ) {
-      return () => {};
-    }
+    const fetchableTranslation = tempPassage.verseTranslation && TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation);
+    const addressORTranslationChanged = passage.verseTranslation !== tempPassage.verseTranslation 
+    || JSON.stringify(passage.address) !== JSON.stringify(tempPassage.address) 
+    const textEmpty = !tempPassage.verseText.length
     //should ask user to fetch if verse taxt is not empty
-    if (tempPassage.verseText.length) {
-      setFetchPropositionOpen(true);
-    } else {
-      handleTextFetch();
+    if(fetchableTranslation && addressORTranslationChanged){
+      if (!textEmpty) {
+        setFetchPropositionOpen(true);
+      } else {
+        handleTextFetch();
+      }
     }
   }, [JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
 
@@ -164,6 +176,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       };
     });
   };
+  const handleFetchConfirm = () => {
+    handleTextFetch()
+    setFetchPropositionOpen(false)
+  }
   const theme = getTheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
@@ -225,7 +241,8 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       color: theme.colors.text,
       fontSize: 16,
       borderRadius: 10,
-      textAlignVertical: "top"
+      textAlignVertical: "top",
+      
     },
     //meta
     tagItemListBlock: {
@@ -293,7 +310,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               numberOfLines={8}
               onChangeText={handleTextChange}
             >
-              {tempPassage.verseText}
+              {fetchingInProgress ? t("Loading") : tempPassage.verseText}
             </TextInput>
           </View>
           <View style={PEstyle.tagItemListBlock}>
@@ -408,7 +425,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           />
           <Button
             theme={theme}
-            onPress={() => handleTextFetch()}
+            onPress={() => handleFetchConfirm()}
             type="main"
             color="green"
             title={t("Fetch")}

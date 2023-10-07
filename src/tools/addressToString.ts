@@ -27,7 +27,7 @@ const addressToString: (
     (address.startChapterNum === address.endChapterNum &&
       address.startVerseNum === address.endVerseNum)
   ) {
-    return `${t(bibleReference[address.bookIndex]?.longTitle as WORD)} ${
+    return `${t(bibleReference[address.bookIndex]?.longTitle)} ${
       address.startChapterNum + 1
     }:${address.startVerseNum + 1}`;
   }
@@ -36,12 +36,12 @@ const addressToString: (
     address.startChapterNum === address.endChapterNum &&
     address.startVerseNum !== address.endVerseNum
   ) {
-    return `${t(bibleReference[address.bookIndex]?.longTitle as WORD)} ${
+    return `${t(bibleReference[address.bookIndex]?.longTitle)} ${
       address.startChapterNum + 1
     }:${address.startVerseNum + 1}-${address.endVerseNum + 1}`;
   }
   //diff chapter and diff verses
-  return `${t(bibleReference[address.bookIndex]?.longTitle as WORD)} ${
+  return `${t(bibleReference[address.bookIndex]?.longTitle)} ${
     address.startChapterNum + 1
   }:${address.startVerseNum + 1}-${address.endChapterNum + 1}:${
     address.endVerseNum + 1

@@ -19,7 +19,7 @@ import { reduce } from "../../tools/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
 import { writeFile, readFile } from "../../tools/fileManager";
-import { CSVToArray, passagesToCSV } from "../../tools/handlePassageExport";
+import { LSVToArray, passagesToLSV } from "../../tools/handlePassageExport";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -254,30 +254,66 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
         <SettingsMenuItem
         theme={theme}
         type="action"
-        header={"__WRITE FILE__"}
-        subtext={""}
+        header={t("settingsExportPassages")}
+        subtext={t("settsExportPassagesSubtext")}
+        disabled={!state.passages.length}
         actionCallBack={() => {
-          console.log("started")
-          const content = passagesToCSV(state)
+          const content = passagesToLSV(state)//line separated values
           if(!content){
-            ToastAndroid.show("Error with exporting ;(", 1000)
+            ToastAndroid.show(t("ErrorWhileEncoding"), 1000)
             return;
           }
-          writeFile("BibleByHeart.csv", content, "text/csv")
+          writeFile("BibleByHeart.txt", content, "text/plain")
           .then((r) => {
-            console.log(r)
-            ToastAndroid.showWithGravity("Exported!",1000, 2)
+            if(r){
+              ToastAndroid.showWithGravity(t("settsExported"),1000, 2)
+            }
           } 
-          );
+          ).catch(err => {
+            console.error(err)
+            ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
+          })
         }}
       />
               <SettingsMenuItem
         theme={theme}
         type="action"
-        header={"__READ FILE__"}
-        subtext={""}
+        header={t("settingsImportPassages")}
+        subtext={t("settsImportPassagesSubtext")}
         actionCallBack={() => {
-          readFile().then((r) => r ? console.log(CSVToArray(r)) : null);
+          readFile([
+            "text/plain"
+          ])
+          .then((r) =>{
+            if(!r){
+              ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
+              return;
+            }
+            switch(r.mimeType){
+              case "text/plain":
+                const decodedData = LSVToArray(r.content)
+                if(decodedData){
+                  setState(
+                    (st) =>
+                      reduce(st, {
+                        name: ActionName.importPassages,
+                        payload: {
+                          headers: decodedData.headers,
+                          data: decodedData.data
+                        }
+                      }) || st
+                  );
+                }else{
+                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                }
+                break;
+            }
+          })
+          .catch(err => {
+            console.error(err)
+            ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
+
+          })
         }}
       />
       </MiniModal>

@@ -12,6 +12,7 @@ export const writeFile: (name: string, content: string, fileMIME?: string) => Pr
     if(!folder.granted){
       return false;
     }
+    console.log(fileMIME)
     const selectedURI = await StorageAccessFramework.createFileAsync(folder.directoryUri, fileName, fileMIME)
     if(!selectedURI){
       return false
@@ -27,19 +28,22 @@ export const writeFile: (name: string, content: string, fileMIME?: string) => Pr
   }
 }
 
-export const readFile: () => Promise<string | false>  = async () => {
+export const readFile: (fileMIME?: string | string[]) => Promise<{content: string, mimeType: string} | false>  = async (fileMIME = "text/plain") => {
   try{
+    console.log(fileMIME)
     const file = await DocumentPicker.getDocumentAsync({
       multiple: false,
-      type: "text/plain"
+      type: fileMIME
     });
-    if(file.canceled || !file.assets[0].uri){
+    if(file.canceled || !file.assets[0].uri || !file.assets[0].mimeType){
       return false;
     }
-    
     const text = await StorageAccessFramework.readAsStringAsync(file.assets[0].uri);
 
-    return JSON.stringify(text)
+    return {
+      content: text,
+      mimeType: file.assets[0].mimeType
+    }
   } catch (error) {
     console.error(error)
     return false

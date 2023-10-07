@@ -211,7 +211,7 @@ export const getVersesNumber: (adress: AddressType) => number = (address) => {
 
 export const createPassage: (
   address: AddressType,
-  text: string,
+  text?: string,
   translation?: number,
   ownnerId?: number
 ) => PassageModel = (address, text, translation, ownerId) => {
@@ -220,7 +220,7 @@ export const createPassage: (
     ownerId: ownerId || null,
     address: address,
     versesNumber: getVersesNumber(address),
-    verseText: text,
+    verseText: text || "",
     verseTranslation: translation || null,
     dateCreated: new Date().getTime(),
     dateEdited: new Date().getTime(),

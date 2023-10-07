@@ -35,7 +35,7 @@ export default function App() {
       .then((data) => {
         const dataObj: AppStateModel = data as AppStateModel;
         //check if version is correct
-        if (dataObj.version === VERSION) {
+        if (dataObj?.version === VERSION) {
           setState(data);
           setReady(true);
         } else {
@@ -75,9 +75,15 @@ export default function App() {
         }
       })
       .catch((e) => {
-        ToastAndroid.show(e, 10000);
-        console.error(e);
-        setReady(true);
+        ToastAndroid.show("creating new state", 10000);
+        console.warn(e);
+        storage
+          .save({
+            key: `${STORAGE_NAME}`,
+            data: state
+          }).then(() => {
+            setReady(true);
+          })
       });
   };
 
@@ -235,6 +241,12 @@ export default function App() {
       </ScrollView>
     );
   }
+}
+
+export function App2 () {
+  return <View>
+    <Text style={{color: "#ffffff"}}>Test</Text>
+  </View>
 }
 
 AppRegistry.registerComponent("Bible by heart", () => App);

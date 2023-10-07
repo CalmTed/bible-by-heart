@@ -226,7 +226,8 @@ export enum ActionName {
   setSettingsParam = "setSettingsParam",
   setTranslationsList = "setTranslationsList",
   setRemindersList = "setRemindersList",
-  setTrainModesList = "setTrainModesList"
+  setTrainModesList = "setTrainModesList",
+  importPassages = "importPassages"
 }
 export type ActionModel =
   | {
@@ -322,7 +323,14 @@ export type ActionModel =
   | {
       name: ActionName.setTrainModesList;
       payload: TrainModeModel[];
-    };
+    } 
+  | {
+      name: ActionName.importPassages;
+      payload: {
+        headers: string[]
+        data: string[][]
+      }
+  };
 
 /* state archive */
 export interface AppStateModel006 {

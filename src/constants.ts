@@ -240,5 +240,9 @@ export enum SETTINGS {
 }
 
 export const PASSAGE_ROWS_TO_EXPORT = [
-  "dateCreated", "dateTested", "verseText", "verseTranslation", "tags", "address", "minIntervalDaysNum", "isReminderOn"
+  "address","verseText", "verseTranslation", "tags"
 ] as (keyof PassageModel)[]
+
+export const TRANSLATIONS_TO_FETCH = [
+  1
+]

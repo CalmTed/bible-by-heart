@@ -1,4 +1,11 @@
-export const bibleReference = [
+import { WORD } from "./l10n";
+
+export const bibleReference:{
+  titleShort: WORD,
+    longTitle: WORD,
+    chapters: number[]
+    chaptersAlternative?: number[]
+}[] = [
   {
     titleShort: "bGenShrt",
     longTitle: "bGenLong",
