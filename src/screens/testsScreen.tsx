@@ -1,15 +1,14 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, ToastAndroid } from "react-native";
-import { TESTLEVEL, PASSAGELEVEL, ARCHIVED_NAME } from "../constants";
+import { View, StyleSheet  } from "react-native";
+import { TESTLEVEL, PASSAGELEVEL } from "../constants";
 import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
-import { Button, IconButton } from "../components/Button";
+import { IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
-import { generateTests } from "../tools/generateTests";
 import { reduce } from "../tools/reduce";
 import { TestNavDott } from "../components/testNevDott";
 import { L10, L11 } from "../components/levels/l1";
@@ -22,8 +21,6 @@ import { useApp } from "../tools/useApp";
 
 export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
-  const [activationTries, setActivationTries] = useState(0);
-  const maxActivationTries = 1000;
   const nextUnfinishedTestIndex = state.testsActive.indexOf(
     state.testsActive.filter((tst) => !tst.isFinished)[0]
   );
@@ -34,45 +31,17 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const exitTests = () => {
     const newState =
       reduce(state, {
-        name: ActionName.setActiveTests,
-        payload: []
+        name: ActionName.clearActiveTests,
       }) || state;
     navigateWithState({ navigation, screen: SCREEN.home, state: newState });
   };
 
-  const activateTests = () => {
-    const generatedTests = generateTests(state);
-    if (activationTries > maxActivationTries) {
-      ToastAndroid.show("Error: Max number of activation tries", 1000);
-      //navagating back with removing active tests
-      navigateWithState({
-        navigation,
-        screen: SCREEN.home,
-        state: { ...state, testsActive: [] }
-      });
-    } else {
-      setActivationTries((prv) => prv + 1);
-    }
-    if (!generatedTests.length) {
-      ToastAndroid.show(t("ErrorNoPassagesForThisTrainMode"), 1000);
-      navigateWithState({ navigation, screen: SCREEN.home, state });
-      return;
-    }
-    setState((prevState) => {
-      const newState = reduce(prevState, {
-        name: ActionName.setActiveTests,
-        payload: generatedTests
-      });
-      return newState ? newState : prevState;
-    });
-  };
   const handleReset = () => {
+    setActiveTest(0);
     setState((prevState) => {
       const newState = reduce(prevState, {
-        name: ActionName.setActiveTests,
-        payload: []
+        name: ActionName.generateTests
       });
-      setActiveTest(0);
       return newState ? newState : prevState;
     });
   };
@@ -85,9 +54,9 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       isRight &&
       state.testsActive.filter((tst) => !tst.isFinished).length > 1
     ) {
-      //if right but not last
+      //if test is right but it is not the last
       setActiveTest(() => {
-        //set first of unfinished and not active
+        //set first of unfinished and not active tests to be active
         return state.testsActive.indexOf(
           state.testsActive.filter(
             (tst) => !tst.isFinished && tst.id !== activeTestObj.id
@@ -146,11 +115,13 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       );
     });
   };
+  //to rerender specific test on downgrading
   const handleDispatch = (action: ActionModel) => {
     setState((prv) => {
       return reduce(prv, action) || prv;
     });
   };
+  
   const testsStyle = StyleSheet.create({
     viewHidden: {
       display: "none"
@@ -177,39 +148,9 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     }
   });
 
-  if (
-    !state.passages.filter((passage) => !passage.tags.includes(ARCHIVED_NAME))
-      .length
-  ) {
-    return (
-      <View style={{ ...theme.theme.screen }}>
-        <Header
-          theme={theme}
-          navigation={navigation}
-          showBackButton={true}
-          alignChildren="flex-start"
-        />
-        <View style={testsStyle.centeredView}>
-          <Text style={testsStyle.subText}>{t("TestsAddPassagesToTest")}</Text>
-          <Button
-            theme={theme}
-            type="main"
-            title={t("AddPassages")}
-            onPress={() =>
-              navigateWithState({
-                screen: SCREEN.listPassage,
-                state,
-                navigation
-              })
-            }
-          />
-        </View>
-      </View>
-    );
-  }
   //if no active tests > create them
   if (!state.testsActive.length) {
-    activateTests();
+    exitTests()
     return <View style={{ ...theme.theme.screen }} />;
   }
   const activeTestObj: TestModel = {
@@ -230,8 +171,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     (p) => p.id === activeTestObj.passageId
   ) as PassageModel;
   if (!targetPassage) {
-    //if passages from old tests left in state
-    activateTests();
+    exitTests()
     return <View style={{ ...theme.theme.screen }} />;
   }
   const tempT = createT(
@@ -366,15 +306,6 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
-          />
-        )}
-        {state.settings.devMode && (
-          <Button
-            theme={theme}
-            type="main"
-            color="gray"
-            title={t("Reset")}
-            onPress={handleReset}
           />
         )}
       </View>

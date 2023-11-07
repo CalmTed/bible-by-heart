@@ -69,6 +69,7 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
   state
 ) => {
   const d3 = new Date();
+  const timezoneoffset = d3.getTimezoneOffset() * 60 * 1000//in MS
   const day = new Date().getDay();
   const todayWeekDay = day ? day - 1 : 6; //[0-6], 6 is sunday
   const passages = state.passages;
@@ -81,10 +82,10 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
       }-${selectedDay.getDate()}`
     ).getTime();
     const selectedDayActivity = testHistory.filter((t) => {
+      const tryEndTime = t.triesDuration[t.triesDuration.length - 1][1] + timezoneoffset;
       return (
-        t.triesDuration[t.triesDuration.length - 1][1] > selectedOnlyDate &&
-        t.triesDuration[t.triesDuration.length - 1][1] <
-          selectedOnlyDate + dayInMs
+        tryEndTime > selectedOnlyDate &&
+        tryEndTime < selectedOnlyDate + dayInMs
       );
     });
     const versesPassageIds = selectedDayActivity.map((t) => t.passageId);
@@ -106,7 +107,7 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
       }, 0) /
         1000 /
         60
-    ); //ronunding after summing
+    ); //ronunding after summing to minutes
     const sessionNumber = selectedDayActivity
       .map((t) => t.sessionId)
       .filter(

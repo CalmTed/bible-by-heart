@@ -38,7 +38,7 @@ function addAttributesToMainActivity(androidManifest) {
   action.$ = {
     ...action.$,
     ...{
-      "android:name": "com.domain.action.PROCESS_TRANSACTION",
+      "android:name": "com.CalmTed.bibleByHeart.PROCESS_TRANSACTION",
     },
   };
 

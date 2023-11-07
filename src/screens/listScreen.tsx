@@ -541,14 +541,16 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         onConfirm={handleAPSubmit}
         t={t}
       />
-      <PassageEditor
-        state={state}
-        visible={isPEOpen}
-        passage={selectedPassage}
-        onConfirm={handlePESubmit}
-        onRemove={handlePERemove}
-        t={t}
-      />
+      {isPEOpen && 
+        <PassageEditor
+          state={state}
+          visible={isPEOpen}
+          passage={selectedPassage}
+          onConfirm={handlePESubmit}
+          onRemove={handlePERemove}
+          t={t}
+        />
+      }
     </View>
   );
 };

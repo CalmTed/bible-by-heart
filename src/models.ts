@@ -214,7 +214,8 @@ export enum ActionName {
   setLeftSwipeTag = "setLeftSwipeTag",
   setPassagesList = "setPassagesList",
   removePassage = "removePassage",
-  setActiveTests = "setActiveTests",
+  clearActiveTests = "clearActiveTests",
+  generateTests = "generateTests",
   updateTest = "updateTest",
   downgradePassage = "downgradePassage",
   finishTesting = "finishTesting",
@@ -262,9 +263,12 @@ export type ActionModel =
       payload: number; //passageId
     }
   | {
-      name: ActionName.setActiveTests;
-      payload: TestModel[];
+      name: ActionName.clearActiveTests;
     }
+  | {
+    name: ActionName.generateTests
+    trainModeId?: number;
+  }
   | {
       name: ActionName.updateTest;
       payload: {
@@ -327,8 +331,7 @@ export type ActionModel =
   | {
       name: ActionName.importPassages;
       payload: {
-        headers: string[]
-        data: string[][]
+        passages: PassageModel[]
       }
   };
 

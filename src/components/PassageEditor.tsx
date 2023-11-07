@@ -54,14 +54,13 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
-    //1 is ESV
     const validAdress = tempPassage.address.bookIndex !== null 
       && tempPassage.address.startChapterNum !== null
       && tempPassage.address.startVerseNum !== null
     if (translationId && validAdress && TRANSLATIONS_TO_FETCH.includes(translationId)) {
       if(state.settings.devMode){
         console.log("Fetching", tempPassage.address);
-      } 
+      }
       setFetchingInProgress(true)
       fetchESV(tempPassage.address)
         .then((data) => {
@@ -79,9 +78,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 
   useEffect(() => {
     setPassage(passage);
-    const passageExists = state.passages.map(p => p.id).includes(tempPassage.id);
+    // const passageExists = state.passages.map(p => p.id).includes(tempPassage.id);
+    const addressExists = tempPassage.address.bookIndex !== null 
+      && tempPassage.address.startChapterNum !== null 
+      && tempPassage.address.startVerseNum !== null
     const textIsEmpty = !tempPassage.verseText.length;
-    if (visible && passageExists && textIsEmpty) {
+    if (visible && addressExists && textIsEmpty) {
       handleTextFetch();
     }
   }, [visible]);
@@ -309,6 +311,8 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               multiline
               numberOfLines={8}
               onChangeText={handleTextChange}
+              placeholder={!tempPassage.verseTranslation || !TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation) ? t("NotAFetchableTranslation") : ""}
+              placeholderTextColor={theme.colors.textSecond}
             >
               {fetchingInProgress ? t("Loading") : tempPassage.verseText}
             </TextInput>

@@ -35,3 +35,17 @@ boilerplate:
 - [x] #added export and import passages to and from txt file
 - [ ] #intent Next: to make export/import state to json with chechsum Later: handling share text reciever (modal with options)
 - [ ] #problem what if we have the same address and the same translation?: disallow to add it(or to import)
+2023-10-31
+- [ ] #idea importted 5/6 passages and do not replace passages with the same address and translation
+2023-11-06
+- [x] #intent add json state export(without import)
+- [x] #intent fix tests freezing error
+- [x] #added export app state to json & remade tests generation
+2023-11-07
+- [x] #intent to show import warning result & improve level1 tests
+- [x] #intent to check Nicks time error
+- [ ] #intent optimize levels (level1: from errors, same book, same number level 3: less words/groups of words for long level 4,5: not the whole just parts/hard parts)
+- [ ] #intent later to add due to and new sorting option
+- [ ] #plan fix levelPicker dott in testing mode
+- [ ] #plan check train mode filters validity
+- [x] #added did add import warning info & did fix timezone thing(but need to check it anyway)

@@ -3,8 +3,6 @@ import {
   ToastAndroid,
   View,
   Text,
-  ScrollView,
-  TextInput,
   StyleSheet
 } from "react-native";
 import * as Linking from "expo-linking";
@@ -19,6 +17,7 @@ import { ActionName, AppStateModel } from "../../models";
 import { ThemeAndColorsModel } from "../../tools/getTheme";
 import { reduce } from "../../tools/reduce";
 import { IconName } from "../Icon";
+import { writeFile } from "../../tools/fileManager";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -271,7 +270,8 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
             />
           </View>
         )}
-        {state.settings.devMode && (
+
+        {/* {state.settings.devMode && (
           <View>
             <SettingsMenuItem
               theme={theme}
@@ -291,7 +291,6 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               <ScrollView
                 style={settingsGroupStyle.devModeAppStateTextScrollView}
               >
-                {/* native input for ability to copy */}
                 <TextInput
                   style={{
                     ...theme.theme.text,
@@ -304,6 +303,29 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               </ScrollView>
             </MiniModal>
           </View>
+        )} */}
+        {state.settings.devMode && (
+          <View>
+            <SettingsMenuItem
+              theme={theme}
+              type="action"
+              subtext={t("settsExportStateHeader")}
+              header={t("settsExportStateHeader")}
+              actionCallBack={() => {
+                const content = JSON.stringify(state, null, "_ ");
+                writeFile("BibleByHeartState.json", content, "application/json")
+                .then((r) => {
+                  if(r){
+                    ToastAndroid.show(t("settsExported"),1000)
+                  }
+                } 
+                ).catch(err => {
+                  console.error(err)
+                  ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
+                })
+              }}
+            />
+          </View>
         )}
         {state.settings.devMode && (
           <View>
@@ -311,34 +333,25 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               theme={theme}
               type="action"
               subtext={t("settsOneWayDoor")}
-              header={t("settsClearHistory")}
-              actionCallBack={() =>
-                setState((prv) => {
-                  return { ...prv, testsHistory: [] };
-                })
-              }
-            />
-            <SettingsMenuItem
-              theme={theme}
-              type="action"
-              subtext={t("settsOneWayDoor")}
               header={t("settsClearPassages")}
-              actionCallBack={() =>
+              actionCallBack={() => {
                 setState((prv) => {
-                  return { ...prv, passages: [] };
+                  return { ...prv, passages: [], testsHistory: [] };
                 })
-              }
+                ToastAndroid.show(t("settsCleared"), 1000)
+              }}
             />
             <SettingsMenuItem
               theme={theme}
               type="action"
               subtext={t("settsOneWayDoor")}
               header={t("settsClearData")}
-              actionCallBack={() =>
+              actionCallBack={() => {
                 setState(() => {
                   return createAppState();
                 })
-              }
+                ToastAndroid.show(t("settsCleared"), 1000)
+              }}
             />
           </View>
         )}

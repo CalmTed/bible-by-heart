@@ -2,21 +2,21 @@ import {
   PERFECT_TESTS_TO_PROCEED,
   PASSAGELEVEL,
   TESTLEVEL,
-  LANGCODE
+  DEFAULT_TRAINMODE_ID,
+  ARCHIVED_NAME
 } from "../constants";
 import {
   ActionModel,
   ActionName,
   AppStateModel,
-  PassageModel
+  PassageModel,
+  TrainModeModel
 } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
 import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 import { checkSchedule } from "./notifications";
 import { ToastAndroid } from "react-native";
-import { generateATest } from "./generateTests";
-import { createAddress, createPassage } from "../initials";
-import { addressFromString } from "./addressFromString";
+import { generateATest, generateTests, getPassagesByTrainMode } from "./generateTests";
 
 export const reduce: (
   state: AppStateModel,
@@ -26,9 +26,39 @@ export const reduce: (
 
   switch (action.name) {
     case ActionName.setLang:
+      let defaultLangChanged = false//this flag is to set new default translation only once, if there are few translations in the same language
+      const noPassages = !state.passages.length
+      const updatedTranslations = state.settings.translations.map(translation => {
+        const isDefault = translation.isDefault
+        const isTransLangSameAsInterface = action.payload === translation.addressLanguage;
+        if(!isDefault && isTransLangSameAsInterface && !defaultLangChanged){
+          defaultLangChanged = true
+          return {...translation, isDefault: true}
+        }
+        if(isDefault && !isTransLangSameAsInterface){
+          return {...translation, isDefault: false}
+        }
+        return translation;
+      })
+      const updatedTrainModesList = state.settings.trainModesList.map(trainMode => {
+        const isDefault = trainMode.id === DEFAULT_TRAINMODE_ID;
+        const modeTranslationLangauge = state.settings.translations.filter(translation => translation.id === trainMode.translation)[0].addressLanguage;
+        const isModeLangSameAsInterface = action.payload === modeTranslationLangauge;
+        const defaultTranslation = updatedTranslations.filter(translation => translation.isDefault)[0]
+        if(isDefault && !isModeLangSameAsInterface){
+          return {...trainMode, translation: defaultTranslation.id}
+        }else{
+          return trainMode;
+        }
+      })
       changedState = {
         ...state,
-        settings: { ...state.settings, langCode: action.payload }
+        settings: {
+          ...state.settings,
+          langCode: action.payload,
+          translations: noPassages ? updatedTranslations : state.settings.translations,
+          trainModesList: noPassages ? updatedTrainModesList : state.settings.trainModesList
+        }
       };
       break;
     case ActionName.setTheme:
@@ -125,13 +155,42 @@ export const reduce: (
         passages: state.passages.filter((p) => p.id !== action.payload)
       };
       break;
-    case ActionName.setActiveTests:
-      if (!state.testsActive.length) {
-        changedState = { ...state, testsActive: action.payload };
-      } else {
+    case ActionName.clearActiveTests:
+      if (state.testsActive.length) {
         changedState = { ...state, testsActive: [] };
       }
       break;
+    case ActionName.generateTests: 
+      //if passages exists
+      const nonArchivedPassages = state.passages.filter(p => !p.tags.includes(ARCHIVED_NAME))
+      if(nonArchivedPassages.length === 0){
+         break;
+      }
+      //if trainMode filtered passages exists
+      //selected or default(uneditable)
+      const selectedTrainMode = state.settings.trainModesList.filter(t => action.trainModeId ? t.id === action.trainModeId : true)[0]
+      const slectedTrainModeWithPassageLanguage:TrainModeModel = {...selectedTrainMode, translation: nonArchivedPassages[0]?.verseTranslation}
+      const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode)
+      const filteredWithOtherTranslationPassages = getPassagesByTrainMode(state, slectedTrainModeWithPassageLanguage)
+      
+      const generatedTests = filteredPassages.length ? generateTests(state, selectedTrainMode) : generateTests(state, slectedTrainModeWithPassageLanguage)
+      
+      let changedDefaultTrainMode: TrainModeModel
+      //if there are no passages other then in unknown translation set default mode language to this language
+      if(!filteredPassages.length && filteredWithOtherTranslationPassages.length && !selectedTrainMode.editable){
+        changedDefaultTrainMode = slectedTrainModeWithPassageLanguage
+      }
+      const changedSettings = {
+        ...state.settings,
+        trainModesList: state.settings.trainModesList.map(tm => tm.id === selectedTrainMode.id ? changedDefaultTrainMode ?? tm : tm),
+        activeTrainModeId: selectedTrainMode.id
+      }
+      if(generatedTests){
+        changedState = { ...state, testsActive: generatedTests, settings: changedSettings}
+      }else{
+        console.warn("Unable to generate tests")
+      }
+    break;
     case ActionName.updateTest:
       const updatedTests = state.testsActive
         .map((t) => {
@@ -227,11 +286,11 @@ export const reduce: (
           testData: {}
         };
       });
-      //+update history
+      //updating history
       const newHistory = [...state.testsHistory, ...testsWithUpdatedLastTest];
       const newPassages = state.passages.map((p) => {
-        //+update passages max level
-        //+update passages new level awalible
+        //updating passages max level
+        //updating passages new level awalible
         const perfectTestsNumber = getPerfectTestsNumber(newHistory, p);
         const hasErrorFromLastThreeTests =
           perfectTestsNumber !== PERFECT_TESTS_TO_PROCEED;
@@ -361,57 +420,10 @@ export const reduce: (
       };
       break;
     case ActionName.importPassages:
-      //validate:
-      //data exists
-      const dataExists = action.payload.headers && action.payload.data && action.payload.headers.length && action.payload.data.length
-      //same number of columns
-      const sameColumnsNumber = 
-      action.payload.data.map(row =>
-        Math.abs(action.payload.headers.length - row.length)
-        ).reduce((ps, s) => {
-          return ps + s;
-        }, 0) === 0
-      //valid header names
-      const validHeaders = action.payload.headers.filter(h => {
-        return Object.keys(createPassage( createAddress() , "")).includes(h)//initial passage have all nneded passages
-      }
-      )
-      //required headers: address
-      const hasRequiredHeaders = action.payload.headers.includes("address")
-      //BE AWARE: we dont check fot data type here b.c. we read it from strings and see all as strings even tags param(witch have , as separator)
-      if(!dataExists || !sameColumnsNumber || !hasRequiredHeaders){
+      if(!action?.payload?.passages?.length){
         break;
       }
-      //generate passages
-      const importedPassages: PassageModel[] = action.payload.data.map(passage => {
-        const addressColumnIndex = action.payload.headers.indexOf("address")
-        const address = addressFromString(passage[addressColumnIndex])
-        if(!address){
-          console.log("Not an address")
-          return null;
-        }
-        const newPassage = createPassage(address);
-        action.payload.headers.map((header, headerIndex) => {
-          const typedHeader = header as keyof PassageModel
-          if(typedHeader === "address"){
-            return;
-          }
-          if(typedHeader === "tags"){
-            newPassage.tags = passage[headerIndex]?.split(",").filter(t => t.length).map(t => t.trim()) ?? []
-          }
-          if(typedHeader === "verseTranslation"){
-            newPassage.verseTranslation = state.settings.translations.find(translation => translation.name === passage[headerIndex])?.id || null
-          }
-          //done in a hackable way on purpose
-          if(typeof newPassage[typedHeader] === typeof passage[headerIndex]){
-            newPassage[typedHeader] = passage[headerIndex] as never//this is not on purpose
-          }
-        })
-        return newPassage;
-
-      }).filter(p => p !== null) as PassageModel[]
-      //find translation with translationName or set to null
-      //edit params
+      const importedPassages = action.payload.passages;
       changedState = {
         ...state,
         passages: [...state.passages, ...importedPassages]

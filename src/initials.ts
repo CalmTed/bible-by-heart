@@ -11,7 +11,8 @@ import {
   TEST_LIST_NUMBER,
   THEMETYPE,
   VERSION,
-  ARCHIVED_NAME
+  ARCHIVED_NAME,
+  DEFAULT_TRAINMODE_ID
 } from "./constants";
 import {
   AddressType,
@@ -152,12 +153,12 @@ export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
 ) => {
   return [
     {
-      id: 3,
+      id: DEFAULT_TRAINMODE_ID,
       editable: false,
       name: createT(lang)("DefaultTrainModeName"),
       enabled: true,
       length: TEST_LIST_NUMBER,
-      translation: 1,
+      translation: lang === LANGCODE.en ? 1 : 2,
       includeTags: [],
       excludeTags: [ARCHIVED_NAME],
       testAsLevel: null,

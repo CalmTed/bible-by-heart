@@ -243,10 +243,5 @@ export default function App() {
   }
 }
 
-export function App2 () {
-  return <View>
-    <Text style={{color: "#ffffff"}}>Test</Text>
-  </View>
-}
 
 AppRegistry.registerComponent("Bible by heart", () => App);

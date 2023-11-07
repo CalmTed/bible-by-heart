@@ -33,6 +33,7 @@ export const PERFECT_TESTS_TO_PROCEED = 4;
 export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
 export const ERRORS_TO_DOWNGRADE = 2;
+export const DEFAULT_TRAINMODE_ID = 3;
 
 export const MINUTE = 60;
 export const HOUR = 3600;

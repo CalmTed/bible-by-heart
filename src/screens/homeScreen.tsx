@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ToastAndroid, DeviceEventEmitter } from "react-native";
 import { SCREEN, SETTINGS, THEMETYPE } from "../constants";
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { navigateWithState } from "../screeenManagement";
@@ -13,6 +13,7 @@ import { IconName } from "../components/Icon";
 import { SelectModal } from "../components/SelectModal";
 import { ActionName } from "../models";
 import { getPassagesByTrainMode } from "../tools/generateTests";
+import { reduce } from "../tools/reduce";
 
 export interface ScreenModel {
   route: any;
@@ -28,6 +29,59 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const activeTrainModes = state.settings.trainModesList.filter(
     (m) => m.enabled
   );
+
+  // Linking.getInitialURL().then((url) => {
+  //   if (url) {
+  //     ToastAndroid.show("Recieved text or link", 10000);
+  //     console.log(`shared string/text is: ${url}`);
+  //     setInitialURL(url);
+  //   }else{
+  //     state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
+  //   }
+  // }).catch(err => {
+  //   ToastAndroid.show("An error occurred on home screen no getting initial url", 10000);
+  //   console.error('An error occurred on home screen no getting initial url', err)
+  // });
+  // const [data, setData] = React.useState<ExpoIntentReceiver.IntentInfo[]>([]);
+  // const refIntent = React.useRef(ExpoIntentReceiver.getInitialIntent());
+  
+    // if(!initialIntent && refIntent.current){
+    //   setInitialIntent(refIntent.current);
+    //   ToastAndroid.show(`Recieved intent ${JSON.stringify(refIntent.current[0])}`, 10000);
+    // }
+    // if(!refIntent.current){
+    //   state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;   
+    // }
+    // const subscription = ExpoIntentReceiver.addChangeListener(({ data }) => {
+    //   setData((currentData) => [...currentData, ...data])
+    // })
+    // return () => subscription.remove();
+    // ReceiveSharingIntent.getReceivedFiles((data:any)=> {
+      //   ToastAndroid.show(`Received intent data ${data.length}`, 1000)
+      //   initialIntent(data)
+      //   // console.log(data);
+      // },
+      // (err:any)=>{
+        //   ToastAndroid.show(`Error while receiveing intents ${err}`, 1000)
+        //   console.log(err);
+        // });
+        
+    //   React.useEffect(() => {
+    //     try{
+    //     DeviceEventEmitter.addListener("result", message => {
+    //       state.settings.devMode ? ToastAndroid.show( message,1000) : null
+    //       setInitialIntent(message)
+    //     })
+    //     return () => {
+    //       DeviceEventEmitter.removeAllListeners()
+    //     }
+    //   }catch(e){
+    //     state.settings.devMode ? ToastAndroid.show(`Error while calling module`, 1000) : null
+    //     return () => {}
+    //   }
+    // }, []);
+
+
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <View style={homeStyle.logoView}>
@@ -57,7 +111,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
               : navigateWithState({
                   navigation,
                   screen: SCREEN.test,
-                  state: state
+                  state: reduce(state, {name: ActionName.generateTests}) || state
                 })
           }
           icon={activeTrainModes.length > 1 ? IconName.selectArrow : undefined}
@@ -102,17 +156,15 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
         )}
         onSelect={(value) => {
           setShowTrainModesList(false);
+          const newState =
+            reduce(state, {
+              name: ActionName.generateTests,
+              trainModeId: parseInt(value, 10)
+            }) || state;
           navigateWithState({
             navigation,
             screen: SCREEN.test,
-            state: state,
-            action: {
-              name: ActionName.setSettingsParam,
-              payload: {
-                param: SETTINGS.activeTrainModeId,
-                value: parseInt(value, 10)
-              }
-            }
+            state: newState,
           });
         }}
         onCancel={() => {
@@ -123,6 +175,32 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
       <StatusBar
         style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
       />
+      {/* <MiniModal 
+        shown={!!initialIntent} 
+        handleClose={
+         () => setInitialIntent(undefined)
+        }
+        theme={theme}
+      >
+        <View style={homeStyle.sharingModalView}>
+          <Text style={{...homeStyle.sharingModalVerseText, ...theme.theme.text}}>{JSON.stringify(initialIntent)}</Text>
+           <Text style={{...homeStyle.sharingModalVerseText, ...theme.theme.text}}>{initialIntent ? JSON.stringify(addressFromString(initialIntent[0]. || "")) : ""}</Text>
+          <View style={theme.theme.rowView}>
+            <Button
+              title={t("Cancel")}
+              theme={theme}
+              onPress={() => setInitialIntent(undefined)}
+            />
+            <Button
+              type="main"
+              title={t("AddPassage")}
+              theme={theme}
+              onPress={() => {}}
+            />
+
+          </View>
+        </View>
+      </MiniModal> */}
     </View>
   );
 };

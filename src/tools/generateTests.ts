@@ -69,6 +69,7 @@ export const getPassagesByTrainMode: (
         case SORTINGOPTION.oldestToTrain:
           return a.dateTested - b.dateTested;
         default:
+          console.warn("Undefined sorting option", trainMode.sort)
           return 0;
       }
     })
@@ -76,13 +77,9 @@ export const getPassagesByTrainMode: (
     .sort(() => (Math.random() > 0.5 ? -1 : 1)); //shuffling again JUST FOR FUN!!!
 };
 
-export const generateTests: (state: AppStateModel) => TestModel[] = (state) => {
+export const generateTests: (state: AppStateModel, trainMode: TrainModeModel) => TestModel[] = (state, trainMode) => {
   const passages = state.passages;
   const history = state.testsHistory;
-  const trainMode =
-    state.settings.trainModesList.find(
-      (m) => m.id === state.settings.activeTrainModeId
-    ) || state.settings.trainModesList[0];
   if (!passages.length) {
     console.log("there are no passages to create tests");
     return [];

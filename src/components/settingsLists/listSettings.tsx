@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, Linking, ToastAndroid } from "react-native";
+import { View, Text, StyleSheet, ToastAndroid } from "react-native";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { Select } from "../Select";
@@ -19,7 +19,8 @@ import { reduce } from "../../tools/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
 import { writeFile, readFile } from "../../tools/fileManager";
-import { LSVToArray, passagesToLSV } from "../../tools/handlePassageExport";
+import { LSVToArray, arrayToPassages, passagesToLSV } from "../../tools/handlePassageExport";
+import { schedulePushNotification } from "../../tools/notifications";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -266,7 +267,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           writeFile("BibleByHeart.txt", content, "text/plain")
           .then((r) => {
             if(r){
-              ToastAndroid.showWithGravity(t("settsExported"),1000, 2)
+              ToastAndroid.show(t("settsExported"),1000)
             }
           } 
           ).catch(err => {
@@ -292,21 +293,41 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             switch(r.mimeType){
               case "text/plain":
                 const decodedData = LSVToArray(r.content)
-                if(decodedData){
+                if(!decodedData){
+                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                  break;
+                }
+                const convertedData = arrayToPassages(decodedData, state);
+                if(!convertedData){
+                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                  break;
+                }
+                const {passages, invalidIndexes, conflictedIndexes} = convertedData;
+                if(invalidIndexes.length || conflictedIndexes.length){
+                  const errorDataString = 
+                    `${invalidIndexes.length ? t("ErrorInvalidIndexes") + ": " + invalidIndexes.join(",") : "" } \n ${conflictedIndexes.length ? t("ErrorConflictedIndexes") + ": " + conflictedIndexes.join(",") : "" }`;
+                  if(state.settings.remindersEnabled){
+                    schedulePushNotification(
+                      t("ErrorWhileDecoding"),
+                      errorDataString,
+                      {}
+                    );
+                  }else{
+                    ToastAndroid.show(t("ErrorTurnOnRemindersOnImport"),1000)
+                  }
+                }
+                ToastAndroid.show(`${t("settsImported")}: ${passages.length}`,1000)
                   setState(
                     (st) =>
                       reduce(st, {
                         name: ActionName.importPassages,
                         payload: {
-                          headers: decodedData.headers,
-                          data: decodedData.data
+                          passages
                         }
                       }) || st
                   );
-                }else{
-                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
-                }
-                break;
+                break; 
+              default: ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
             }
           })
           .catch(err => {

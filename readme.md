@@ -89,8 +89,8 @@ Roadmap
   - [x] "reimagine" level picker(disable level picker in fixed level tests & remove angle arrow)
   - [x] ask to fetch translation if textfiled is not empty
   - [x] after 2 errors propose to downgrade level and restart only one task
-  - [ ] export to csv and import (export & import state in json for developing)
-  - [ ] activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
+  - [x] export to csv and import (export state in json for developing)
+  - [-] activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
     - [ ] parse text from most popular apps
     - [ ] open modal to ask, show parsing result (add as is, edit address, edit text, select another translation(add if nedded))
     - [ ] add to passages and open list
@@ -109,15 +109,16 @@ Roadmap
       - [ ] stroke first two weeks
       - [ ] general progress 2 weeks to 1 month
       - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
-      - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
+    - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
       - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday
   - [ ] feedback form for authorirized users or telegram bot
   - [ ] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0
   - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
-  - [ ] about page and donate button
-  - [ ] screen readers labels
+  - [ ] about page and donate(premium) button
+    - [ ] connect payment service
+  - [ ] screen readers labels 
 
 Other ideas:
 - show most common errors for the given passage
