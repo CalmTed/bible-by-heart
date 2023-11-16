@@ -200,7 +200,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const sortedPassages = filteredPassages.sort((a, b) => {
     switch (state.sort) {
       case SORTINGOPTION.address:
-        return getAddressDifference(a, b);
+        return getAddressDifference(a.address, b.address);
       case SORTINGOPTION.maxLevel:
         return b.maxLevel - a.maxLevel;
       case SORTINGOPTION.selectedLevel:

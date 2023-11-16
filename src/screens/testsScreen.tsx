@@ -1,11 +1,11 @@
 import React, { FC, useState } from "react";
-import { View, StyleSheet  } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL } from "../constants";
 import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
-import { IconButton } from "../components/Button";
+import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
@@ -179,6 +179,67 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       (tr) => tr.id === targetPassage.verseTranslation
     )?.addressLanguage || state.settings.langCode
   );
+  const DottList = state.testsActive.length < 13 
+  ? () => <View style={{ ...testsStyle.testNav }}>
+    {state.testsActive.map((tst, i, arr) => {
+      const isFinished = tst.isFinished;
+      const hasErrors = !!tst.errorNumber;
+      const isFirst = i === 0;
+      //if it first and unfinished
+      //or if not finished and previus is finished
+      const isLastOfUnfinished =
+        (isFirst && !isFinished) ||
+        (!isFinished && arr[i - 1]?.isFinished);
+      const color =
+        isFinished || (activeTestIndex === i && !hasErrors)
+          ? "green"
+          : hasErrors
+          ? "red"
+          : isLastOfUnfinished
+          ? "text"
+          : "gray";
+      return (
+        <TestNavDott
+          theme={theme}
+          key={tst.id}
+          isCurrent={activeTestIndex === i}
+          color={color}
+          onPress={() =>
+            isFinished || isLastOfUnfinished || hasErrors
+              ? setActiveTest(i)
+              : null
+          }
+        />
+      );
+      })}
+    </View>
+    : () => <View style={{ ...testsStyle.testNav }}>
+        <TestNavDott
+          theme={theme}
+          key={"testDoddGreen"}
+          isCurrent={false}
+          color={"green"}
+          onPress={() => {}}
+        />
+        <Text style={theme.theme.text}>{state.testsActive.filter(t => t.isFinished).length}x</Text>
+        <TestNavDott
+          theme={theme}
+          key={"testDoddRed"}
+          isCurrent={false}
+          color={"red"}
+          onPress={() => {}}
+        />
+        <Text style={theme.theme.text}>{state.testsActive.filter(t => t.errorNumber && !t.isFinished).length}x</Text>
+        <TestNavDott
+          theme={theme}
+          key={"testDoddGray"}
+          isCurrent={false}
+          color={"gray"}
+          onPress={() => {}}
+        />
+        <Text style={theme.theme.text}>{state.testsActive.filter(t => !t.triesDuration.length).length}x</Text>
+    </View>
+
   return (
     <View style={{ ...theme.theme.screen }}>
       <View
@@ -201,39 +262,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               icon={IconName.cross}
               onPress={exitTests}
             />,
-            <View style={{ ...testsStyle.testNav }}>
-              {state.testsActive.map((tst, i, arr) => {
-                const isFinished = tst.isFinished;
-                const hasErrors = !!tst.errorNumber;
-                const isFirst = i === 0;
-                //if it first and unfinished
-                //or if not finished and previus is finished
-                const isLastOfUnfinished =
-                  (isFirst && !isFinished) ||
-                  (!isFinished && arr[i - 1]?.isFinished);
-                const color =
-                  isFinished || (activeTestIndex === i && !hasErrors)
-                    ? "green"
-                    : hasErrors
-                    ? "red"
-                    : isLastOfUnfinished
-                    ? "text"
-                    : "gray";
-                return (
-                  <TestNavDott
-                    theme={theme}
-                    key={tst.id}
-                    isCurrent={activeTestIndex === i}
-                    color={color}
-                    onPress={() =>
-                      isFinished || isLastOfUnfinished || hasErrors
-                        ? setActiveTest(i)
-                        : null
-                    }
-                  />
-                );
-              })}
-            </View>
+            <DottList/>
           ]}
         />
         <LevelPicker
@@ -308,6 +337,10 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             dispatch={handleDispatch}
           />
         )}
+      {
+        state.settings.devMode &&
+        <Button theme={theme} onPress={handleReset} title={t("Reset")}/>
+        }
       </View>
     </View>
   );

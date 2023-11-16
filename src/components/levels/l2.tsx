@@ -7,7 +7,7 @@ import { LevelComponentModel } from "./l1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../tools/getTheme";
-import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -131,6 +131,11 @@ export const L20: FC<LevelComponentModel> = ({
   }
   const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
+  const sentences = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
+  const slicingStart = test.testData?.sentenceRange?.[0] || 0;
+  const slicingEnd = test.testData?.sentenceRange?.[1] || sentences.length;
+  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
+  const verseText = test.testData?.sentenceRange?.length ? slicedPassageText : targetPassage.verseText
   return (
     <View style={levelComponentStyle.levelComponentView}>
       <ScrollView style={levelComponentStyle.passageTextView}>
@@ -141,7 +146,7 @@ export const L20: FC<LevelComponentModel> = ({
             backgroundColor: theme.colors.bgSecond
           }}
         >
-          {targetPassage?.verseText}
+          {verseText}
         </Text>
       </ScrollView>
       <View style={levelComponentStyle.optionButtonsWrapper}>

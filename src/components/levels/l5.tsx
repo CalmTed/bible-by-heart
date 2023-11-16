@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
-import { ERRORS_TO_DOWNGRADE, MAX_L50_TRIES, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, MAX_L50_TRIES, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./l1";
@@ -29,6 +29,10 @@ const levelComponentStyle = StyleSheet.create({
     padding: 10,
     maxHeight: 200,
     minHeight: 50
+  },
+  otherSentencesTextView: {
+    marginHorizontal: 10,
+    marginVertical: 5
   },
   passageText: {
     alignContent: "center",
@@ -80,19 +84,26 @@ export const L50: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
   const targetPassage = state.passages.find((p) => p.id === test.passageId);
-  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse";
-  //showAddressOrFirstWords: true if address OR false if just first words
-  const initialEnteredText = lastErrorIsWrongAddress
-    ? targetPassage?.verseText || ""
-    : test.testData.showAddressOrFirstWords
+  //showAddressOrFirstWords: true => address false => first words
+  const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
+  const sentancesRange = test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
+    ? sentences.slice(...test.testData.sentenceRange)
+    : sentences;
+  const targetText = sentancesRange.join("");
+  const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
+  const initialValue = test.testData.showAddressOrFirstWords
     ? ""
-    : (targetPassage?.verseText || "").split(" ").slice(0, 4).join(" ") + " ";
-  const [passageText, setPassageText] = useState(initialEnteredText);
+    : firstFewWords;
+  const [passageText, setPassageText] = useState(initialValue);
+  const sentancesRangeLength =  test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
+    ? test.testData.sentenceRange[1] - test.testData.sentenceRange[0]
+    : sentences.length;
   const maxTriesBonus =
-    targetPassage && targetPassage.versesNumber > 2
-      ? targetPassage.versesNumber - 2
+    targetPassage && sentancesRangeLength > 2
+      ? sentancesRangeLength - 2
       : 0;
   const [tries, setTries] = useState(MAX_L50_TRIES + maxTriesBonus);
+  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse";
   const [isCorrect, setIsCorrect] = useState(
     lastErrorIsWrongAddress ? true : false
   );
@@ -102,7 +113,7 @@ export const L50: FC<LevelComponentModel> = ({
   const resetForm = () => {
     setAPVisible(false);
     setSelectedAddress(null);
-    setPassageText(initialEnteredText);
+    setPassageText(initialValue);
     setAucompleteWarn(false);
     setIsCorrect(lastErrorIsWrongAddress ? true : false);
     setTries(MAX_L50_TRIES + maxTriesBonus);
@@ -163,17 +174,17 @@ export const L50: FC<LevelComponentModel> = ({
       return output;
     };
     if (
-      simplifyString(passageText) === simplifyString(targetPassage.verseText)
+      simplifyString(passageText) === simplifyString(targetText)
     ) {
       setIsCorrect(true);
-      if (passageText !== targetPassage.verseText) {
-        setPassageText(targetPassage.verseText);
+      if (passageText !== targetText) {
+        setPassageText(targetText);
       }
     } else {
       if (tries > 0) {
         setTries((prv) => prv - 1);
         const enteredTextArray = passageText.split("");
-        const rightPart = targetPassage.verseText
+        const rightPart = targetText
           .split("")
           .filter((targetChar, i, wholeString) => {
             if (!i) {
@@ -277,6 +288,18 @@ export const L50: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
+      {test.testData.sentenceRange && test.testData.sentenceRange[0] > 0 &&
+        <View style={levelComponentStyle.otherSentencesTextView}>
+          <Text style={theme.theme.text}>
+            {test.testData.sentenceRange[0] > 3 ? "..." : ""}
+            {sentences.slice(
+              test.testData.sentenceRange[0] > 3 ? test.testData.sentenceRange[0] - 3 : 0,
+              test.testData.sentenceRange[0]
+            ).join("")}
+            ...
+            </Text>
+        </View>
+      }
       <View style={levelComponentStyle.passageTextView}>
         <Input
           theme={theme}
@@ -293,6 +316,15 @@ export const L50: FC<LevelComponentModel> = ({
           textStyle={levelComponentStyle.inputTextStyle}
         />
       </View>
+      {test.testData.sentenceRange && test.testData.sentenceRange[1] < sentences.length &&
+        <View style={levelComponentStyle.otherSentencesTextView}>
+          <Text style={theme.theme.text}>
+            ...
+            {sentences.slice(test.testData.sentenceRange[1], Math.min(test.testData.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences.length - test.testData.sentenceRange[1] >= 3 ? "..." : ""}
+            </Text>
+        </View>
+      }
       <View style={levelComponentStyle.optionButtonsWrapper}>
         {/* text is not entered */}
         {!isCorrect && (
@@ -318,7 +350,8 @@ export const L50: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
         )}
-        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+        {((test.errorNumber || 0) > ERRORS_TO_DOWNGRADE ||
+          (new Date().getTime() - test.triesDuration[0][0]) > (1000*60*10)) && (
           <Button
             theme={theme}
             type="secondary"

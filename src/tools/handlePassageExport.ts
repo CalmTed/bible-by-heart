@@ -154,7 +154,7 @@ export const arrayToPassages: (decodedData: importArrayModel, state: AppStateMod
           }
         })
         const samePassage = state.passages.find(ep => {
-          const sameAddress =  getAddressDifference(newPassage, ep) === 0;
+          const sameAddress =  getAddressDifference(newPassage.address, ep.address) === 0;
           const sameTranslation = newPassage.verseTranslation === ep.verseTranslation;
           return sameAddress && sameTranslation;
         })

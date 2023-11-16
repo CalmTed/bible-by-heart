@@ -81,7 +81,7 @@ export const en = {
   LevelStartWritingPassage: "Start writing passage",
   LevelWritePassageText: "Write passage text",
   LevelPickerSubtext:
-    "Train this passage 3 times without an error to open next level",
+    "Train this passage several times without an error to open next level",
   LevelPickerSubtextSecond: "Level will change next time",
   LevelPickerSubtextL5: "Perfect stroke",
   TestsAddPassagesToTest: "Add some passages to list to be able to test them",
@@ -167,7 +167,7 @@ export const en = {
   settsTrainModeSortingHeader: "Sorting",
   settsTrainModeSortingSubtext: "sort passages list by",
   settsTrainModeLevelHeader: "Target level",
-  settsTrainModeLevelSubtext: "train in a specific level (in avalible)",
+  settsTrainModeLevelSubtext: "train in a specific level (if avalible)",
   settsTrainModeIncludeTagsHeader:
     "Include tags(if none then all passages are shown)",
   settsTrainModeExcludeTagsHeader: "Exclude tags",

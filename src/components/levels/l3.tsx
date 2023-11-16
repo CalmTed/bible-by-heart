@@ -29,12 +29,12 @@ const levelComponentStyle = StyleSheet.create({
   },
   fixedWord: {
     paddingHorizontal: 2,
-    padding: 4
+    padding: 2
   },
   variableWord: {
     marginHorizontal: 2,
     margin: 4,
-    borderBottomWidth: 2
+    borderBottomWidth: 2,
   },
   hiddenWordText: {
     color: "transparent"

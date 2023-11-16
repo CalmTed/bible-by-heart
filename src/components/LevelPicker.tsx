@@ -36,11 +36,10 @@ export const LevelPicker: FC<LevelPickerModel> = ({
   const closeLevelPicker = () => {
     setLevelPickerShown(false);
   };
-  const passageLevelFromTestLevel = testLevel?.toString().substring(0, 1);
+  const passageLevelFromTestLevel = parseInt(testLevel?.toString().substring(0, 1) as string, 10) as PASSAGELEVEL || NaN;
   const handleLabelPress = () => {
     if (
-      passageLevelFromTestLevel &&
-      parseInt(passageLevelFromTestLevel, 10) !== targetPassage.selectedLevel
+      !isNaN(passageLevelFromTestLevel)
     ) {
       // return;
     }
@@ -83,7 +82,11 @@ export const LevelPicker: FC<LevelPickerModel> = ({
         <Button
           theme={theme}
           title={`${t("Level")} ${
-            passageLevelFromTestLevel || targetPassage.selectedLevel
+            isNaN(passageLevelFromTestLevel)
+              ? targetPassage.selectedLevel
+              : passageLevelFromTestLevel === targetPassage.selectedLevel 
+              ? passageLevelFromTestLevel
+              : passageLevelFromTestLevel + " ("+targetPassage.selectedLevel+")" 
           }`}
           // icon={IconName.selectArrow}
           onPress={handleLabelPress}
@@ -147,14 +150,14 @@ export const LevelPicker: FC<LevelPickerModel> = ({
               {PERFECT_TESTS_TO_PROCEED})
             </Text>
           )}
-        {testLevel &&
+        {testLevel && isNaN(passageLevelFromTestLevel) &&
           targetPassage.selectedLevel.toString() !==
             testLevel.toString().slice(0, 1) && (
             <Text style={levelPickerStyles.subText}>
               {t("LevelPickerSubtextSecond")}
             </Text>
           )}
-        {testLevel &&
+        {testLevel && isNaN(passageLevelFromTestLevel) &&
           handleRestart &&
           targetPassage.selectedLevel.toString() !==
             testLevel.toString().slice(0, 1) && (

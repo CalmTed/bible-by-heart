@@ -140,6 +140,7 @@ export interface TestModel007 {
     passagesOptions?: PassageModel[];
     missingWords?: number[]; //word index
     showAddressOrFirstWords?: boolean;
+    sentenceRange?: number[];//from..to. Default undefinded or [] is [0,-1]
   };
   errorNumber: number | null; // 0 if passed without error
   errorType:

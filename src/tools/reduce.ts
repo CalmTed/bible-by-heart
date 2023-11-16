@@ -10,6 +10,7 @@ import {
   ActionName,
   AppStateModel,
   PassageModel,
+  TestModel,
   TrainModeModel
 } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
@@ -17,6 +18,7 @@ import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 import { checkSchedule } from "./notifications";
 import { ToastAndroid } from "react-native";
 import { generateATest, generateTests, getPassagesByTrainMode } from "./generateTests";
+import { createTest } from "../initials";
 
 export const reduce: (
   state: AppStateModel,
@@ -91,6 +93,7 @@ export const reduce: (
           p.id === action.payload.id
             ? {
                 ...action.payload,
+                verseText: action.payload.verseText.trim(),
                 dateEdited: new Date().getTime()
               }
             : p
@@ -167,8 +170,13 @@ export const reduce: (
          break;
       }
       //if trainMode filtered passages exists
-      //selected or default(uneditable)
-      const selectedTrainMode = state.settings.trainModesList.filter(t => action.trainModeId ? t.id === action.trainModeId : true)[0]
+      //selected or default(settings.activeMode)
+      const selectedTrainMode = 
+        state.settings.trainModesList.filter(t => 
+          action.trainModeId 
+          ? t.id === action.trainModeId 
+          : t.id === state.settings.activeTrainModeId
+        )[0]
       const slectedTrainModeWithPassageLanguage:TrainModeModel = {...selectedTrainMode, translation: nonArchivedPassages[0]?.verseTranslation}
       const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode)
       const filteredWithOtherTranslationPassages = getPassagesByTrainMode(state, slectedTrainModeWithPassageLanguage)
@@ -238,13 +246,13 @@ export const reduce: (
         //level 5
         PASSAGELEVEL.l4
       ];
-      const targetPasasge = state.passages.find(
+      const targetPassage = state.passages.find(
         (p) => p.id === action.payload.test.passageId
       );
-      if (!targetPasasge) {
+      if (!targetPassage) {
         break;
       }
-      const newPassageLevel = levelDowngradingMap[targetPasasge.selectedLevel];
+      const newPassageLevel = levelDowngradingMap[targetPassage.selectedLevel];
       console.log("downgrading. new level:",newPassageLevel)
       //change selected level
       const updatedPassages = state.passages.map((p) =>
@@ -258,14 +266,24 @@ export const reduce: (
           : p
       );
       //regenerate test with new level
+      const targetTest = state.testsActive.filter((t) =>
+      t.id === action.payload.test.id)[0] as TestModel
+      
+      const recreatedTest = {
+        ...generateATest (
+          createTest(targetTest.sessionId, targetTest.passageId, newPassageLevel),
+          state.passages,
+          newPassageLevel,
+          state.testsHistory
+        ),
+        wrongAddress: targetTest.wrongAddress,
+        wrongWords: targetTest.wrongWords,
+        wrongPassagesId: targetTest.wrongPassagesId
+      }
+      console.log(recreatedTest)
       const updatedActiveTests = state.testsActive.map((t) =>
         t.id === action.payload.test.id
-          ? generateATest (
-              t,
-              state.passages,
-              newPassageLevel,
-              state.testsHistory
-            )
+          ? recreatedTest
           : t
       );
       changedState = {

@@ -3,6 +3,9 @@ export const getSimularity: (w1: string, w2: string) => number = (w1, w2) => {
   if (w1 === w2) {
     return 1;
   }
+  if(typeof w1 !== "string" || typeof w2 !== "string" ){
+    return 1;
+  }
   const maxLength = Math.max(w1.length, w2.length);
   const w1Array = w1.split("");
   const w2Array = w2.split("");

@@ -8,18 +8,17 @@ import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../tools/getSimularity";
 import { getTheme } from "../../tools/getTheme";
-import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
     width: "100%",
-    flex: 1
+    flex: 1,
+    paddingHorizontal: 15
   },
   addressTextView: {
     alignContent: "flex-start",
     justifyContent: "center",
-    marginVertical: 10,
-    paddingHorizontal: 20
   },
   addressText: {
     fontSize: 22,
@@ -27,13 +26,18 @@ const levelComponentStyle = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center"
   },
+  otherSentencesTextView: {
+    marginHorizontal: 10,
+    marginVertical: 5
+  },
   passageTextView: {
-    maxHeight: "30%",
+    maxHeight: 100,
     height: "auto",
-    minHeight: 100,
+    minHeight: 22,
     borderRadius: 10,
-    margin: 10,
-    paddingHorizontal: 10
+    marginHorizontal: 10,
+    marginBottom: 0,
+    paddingHorizontal: 0
   },
   passageText: {
     alignContent: "center",
@@ -59,7 +63,8 @@ const levelComponentStyle = StyleSheet.create({
   },
   inputSubtext: {
     textAlign: "center",
-    fontSize: 12
+    fontSize: 12,
+    marginVertical: 5
   },
   inputWrapperStyle: {
     width: "100%",
@@ -91,10 +96,16 @@ export const L40: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
   const targetPassage = state.passages.find((p) => p.id === test.passageId);
-  //showAddressOrFirstWords: true is address false is first words
+  //showAddressOrFirstWords: true => address false => first words
+  const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
+  const sentancesRange = test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
+    ? sentences.slice(...test.testData.sentenceRange)
+    : sentences;
+  const targetText = sentancesRange.join("");
+  const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
   const initialValue = test.testData.showAddressOrFirstWords
     ? ""
-    : (targetPassage?.verseText || "").split(" ").slice(0, 4).join(" ") + " ";
+    : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
   useEffect(() => {
     setPassageText(initialValue);
@@ -188,7 +199,7 @@ export const L40: FC<LevelComponentModel> = ({
   if (!targetPassage) {
     return <View />;
   }
-  const targetWords = targetPassage.verseText.split(" ");
+  const targetWords = targetText.split(" ");
   const currentWords = passageText.split(" ");
 
   const curentLastIndex = currentWords.length - 1;
@@ -214,8 +225,8 @@ export const L40: FC<LevelComponentModel> = ({
     );
 
   const isCorrect =
-    targetPassage.verseText.trim().startsWith(passageText.trim()) ||
-    targetPassage.verseText === passageText;
+    targetText.trim().startsWith(passageText.trim()) ||
+    targetText === passageText;
 
   const levelFinished = test.isFinished;
   const isAddressProvided = test.testData.showAddressOrFirstWords;
@@ -244,6 +255,18 @@ export const L40: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
+      {test.testData.sentenceRange && test.testData.sentenceRange[0] > 0 &&
+        <View style={levelComponentStyle.otherSentencesTextView}>
+          <Text style={theme.theme.text}>
+            {test.testData.sentenceRange[0] > 3 ? "..." : ""}
+            {sentences.slice(
+              test.testData.sentenceRange[0] > 3 ? test.testData.sentenceRange[0] - 3 : 0,
+              test.testData.sentenceRange[0]
+            ).join("")}
+            ...
+            </Text>
+        </View>
+      }
       <View
         style={{
           ...levelComponentStyle.passageTextView
@@ -261,18 +284,27 @@ export const L40: FC<LevelComponentModel> = ({
           wrapperStyle={levelComponentStyle.inputWrapperStyle}
           style={levelComponentStyle.inputStyle}
         />
-        {!!wordOptions.length && (
-          <Text
-            style={{
-              ...levelComponentStyle.inputSubtext,
-              color: theme.colors.textSecond
-            }}
-          >
-            {t("LevelL40Hint")}
-          </Text>
-        )}
       </View>
-      {passageText.length >= targetPassage.verseText.length && isCorrect && (
+      {test.testData.sentenceRange && test.testData.sentenceRange[1] < sentences.length &&
+        <View style={levelComponentStyle.otherSentencesTextView}>
+          <Text style={theme.theme.text}>
+            ...
+            {sentences.slice(test.testData.sentenceRange[1], Math.min(test.testData.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences.length - test.testData.sentenceRange[1] >= 3 ? "..." : ""}
+            </Text>
+        </View>
+      }
+      {!!wordOptions.length && currentWords.length < 5 && (
+      <Text
+          style={{
+            ...levelComponentStyle.inputSubtext,
+            color: theme.colors.textSecond
+          }}
+        >
+          {t("LevelL40Hint")}
+      </Text>
+      )}
+      {passageText.length >= targetText.length && isCorrect && (
         <View style={levelComponentStyle.optionButtonsWrapper}>
           {!isAddressProvided && (
             <Button
@@ -312,11 +344,7 @@ export const L40: FC<LevelComponentModel> = ({
         t={t}
       />
       {((test.errorNumber || 0) > ERRORS_TO_DOWNGRADE ||
-        test.triesDuration
-          .map((i) => i[1] - i[0])
-          .reduce((ps, num) => {
-            return ps + num;
-          }, 0)) && (
+        (new Date().getTime() - test.triesDuration[0][0]) > (1000*60*5)) && (
         <Button
           theme={theme}
           type="secondary"

@@ -10,7 +10,7 @@ import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
 import { getTheme } from "../../tools/getTheme";
-import { VIBRATION_PATTERNS } from "../../constants";
+import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 
 export interface LevelComponentModel {
   test: TestModel;
@@ -70,6 +70,7 @@ export const L10: FC<LevelComponentModel> = ({
   useEffect(() => {
     setErrorValue(null);
   }, [test.id]); //reseting error flag if same level but different test
+  const rightPassage = state.passages.filter((p) => p.id === test.passageId)[0];
   const handleErrorSubmit = (value: AddressType) => {
     submitTest({
       isRight: false,
@@ -83,7 +84,6 @@ export const L10: FC<LevelComponentModel> = ({
     setErrorValue(null);
   };
   const handleOptionSelect = (value: AddressType) => {
-    const rightPassage = state.passages.find((p) => p.id === test.passageId);
     if (!rightPassage) {
       return;
     }
@@ -106,6 +106,11 @@ export const L10: FC<LevelComponentModel> = ({
   };
   const levelFinished = test.isFinished;
   const theme = getTheme(state.settings.theme);
+  const sentences = rightPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
+  const slicingStart = test.testData?.sentenceRange?.[0] || 0;
+  const slicingEnd = test.testData?.sentenceRange?.[1] || sentences.length;
+  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
+  const verseText = test.testData?.sentenceRange?.length ? slicedPassageText : rightPassage.verseText
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
       <ScrollView style={{ ...levelComponentStyle.passageTextView }}>
@@ -116,7 +121,7 @@ export const L10: FC<LevelComponentModel> = ({
             backgroundColor: theme.colors.bgSecond
           }}
         >
-          {state.passages.find((p) => p.id === test.passageId)?.verseText}
+          {verseText}
         </Text>
       </ScrollView>
       <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
@@ -241,10 +246,30 @@ export const L11: FC<LevelComponentModel> = ({
       <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
         {test.testData.passagesOptions &&
           test.testData.passagesOptions.map((op) => {
-            const title =
-              op.verseText.length < 50
-                ? op.verseText
-                : op.verseText
+            const sentences = op.verseText.split(SENTENCE_SEPARATOR);
+            //has max or last
+            //has min or last-1
+            //joined range is more then MIN_SENTENCE
+            //else show full
+            const rangeStart = test.testData?.sentenceRange
+            ? sentences.length > test.testData.sentenceRange[0] 
+              ? test.testData.sentenceRange[0]
+              : sentences.length > 1 && test.testData.sentenceRange[0] > 0
+                ? 1
+                : 0
+            : 0;
+            const rangeEnd = test.testData?.sentenceRange 
+            ? sentences.length >= test.testData.sentenceRange[1] 
+            ? test.testData.sentenceRange[1]
+            : sentences.length
+            : sentences.length;
+            const slicedTitle = sentences.slice(rangeStart, rangeEnd).join().length > MINIMUM_SENTENCE_LENGTH
+              ? `${rangeStart ? "..." : ""}${sentences.slice(rangeStart, rangeEnd).join().trim()}${rangeEnd != sentences.length ? "..." : ""}`
+              : op.verseText;
+            const limitedTitle =
+              slicedTitle.length < 50
+                ? slicedTitle
+                : slicedTitle
                     .slice(0, 50)
                     .trim()
                     .replace(/(.|,)$/, "") + "...";
@@ -253,7 +278,7 @@ export const L11: FC<LevelComponentModel> = ({
                 <Button
                   theme={theme}
                   key={op.id}
-                  title={title}
+                  title={limitedTitle}
                   type="outline"
                   color="green"
                   textStyle={levelComponentStyle.textTransformNone}
@@ -268,7 +293,7 @@ export const L11: FC<LevelComponentModel> = ({
                 <Button
                   theme={theme}
                   key={op.id}
-                  title={title}
+                  title={limitedTitle}
                   type="outline"
                   color={isRight ? "green" : isWrong ? "red" : "gray"}
                   textStyle={levelComponentStyle.textTransformNone}

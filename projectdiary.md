@@ -44,8 +44,23 @@ boilerplate:
 2023-11-07
 - [x] #intent to show import warning result & improve level1 tests
 - [x] #intent to check Nicks time error
-- [ ] #intent optimize levels (level1: from errors, same book, same number level 3: less words/groups of words for long level 4,5: not the whole just parts/hard parts)
+- [x] #intent optimize levels (level1: from errors, same book, same number level 3: less words/groups of words for long level 4,5: not the whole text just parts/hard parts)
 - [ ] #intent later to add due to and new sorting option
-- [ ] #plan fix levelPicker dott in testing mode
-- [ ] #plan check train mode filters validity
+- [x] #plan fix levelPicker dott in testing mode
+- [x] #plan check train mode filters validity
 - [x] #added did add import warning info & did fix timezone thing(but need to check it anyway)
+2023-11-08
+- [ ] #intent check trainMode filters(+), check LevelPicker dott(+) THEN optimize levels and add "due to" as so on
+- [ ] #idea due to is considered only if sorting is oldestToTrain
+- [x] #added checking trainModes and levelPicker, level 10 optimizing
+2023-11-09
+- [x] #intent finish optimizing level 11, 30, 40, 50
+- [x] #added optimized levels 10,11,20
+2023-11-10
+- [x] #intent finish optimizing level 30, fix level 1 duplicates
+- [x] #added finished optimizing level 3, checked level 1 for duplicated(haven't foud them)
+2023-11-14
+- [x] #intent optimize levels 40 and 50: enter only a few sentences
+2023-11-15
+- [x] #intent optimize levels 40 and 50: enter only a few sentences
+- [x] #added optimized 40 and 50 to limit number of sentences

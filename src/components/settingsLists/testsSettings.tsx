@@ -213,7 +213,7 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
               ...Object.keys(
                 Object.keys(PASSAGELEVEL).filter((l) => !!parseInt(l, 10))
               ).map((v) => ({
-                value: v.toString(),
+                value: (parseInt(v, 10) + 1).toString(),
                 label: `${t("Level")} ${parseInt(v, 10) + 1}`
               }))
             ];
@@ -341,7 +341,7 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
                   subtext={`${t("settsTrainModeLevelSubtext")}: ${
                     trainModeItem.testAsLevel === null
                       ? t("settsAsSelectedLevelOption")
-                      : (trainModeItem.testAsLevel + 1).toString()
+                      : (trainModeItem.testAsLevel).toString()
                   }`}
                   type="select"
                   options={levelsOptions}
