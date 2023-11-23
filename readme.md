@@ -65,7 +65,7 @@ Roadmap
   - [x] update all passages with translation that was deleted to "other/null" 
   - [x] add tag to filter on adding to passage, remove if it was last
   - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
-- [ ] customizable daily reminder, more stats v0.0.8
+- [-] customizable daily reminder, more stats v0.0.8
   - [x] reminders list: time, days
   - [x] fix reminders permisions, fix back swipe state eracing, fix all tests enabled bug(fix check if all tests are finiched to finish session)
   - [x] fix level 4 wrong scroll wrapping, fix level 5 no scroll wrapping
@@ -91,26 +91,28 @@ Roadmap
   - [x] after 2 errors propose to downgrade level and restart only one task
   - [x] export to csv and import (export state in json for developing)
   - [-] activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
-    - [ ] parse text from most popular apps
-    - [ ] open modal to ask, show parsing result (add as is, edit address, edit text, select another translation(add if nedded))
-    - [ ] add to passages and open list
-  - [ ] edit passage due to, sort main train mode by it(later)
+    - [-] parse text from most popular apps
+    - [-] open modal to ask, show parsing result (add as is, edit address, edit text, select another translation(add if nedded))
+    - [-] add to passages and open list
+  - [x] edit passage due to, sort main train mode by it
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
   - [ ] all tests list, grouping by date and session
-  - [ ] passage statistics in passage editor
-     - [ ] most common errors list with error numbers
-     - [ ] total tries tested, total time spent
-     - [ ] most often wrong addresses
+  - [x] passage statistics in passage editor
+     - [x] most common errors list with error numbers
+     - [x] total tries tested, total time spent
+     - [x] most often wrong addresses
   - [ ] statistics:
-    - [ ] overal learned
-    - [ ] global progress (learned passages score versesNumber*level)
-    - [ ] relative progress (score relative to last month)
+    - [x] overal learned
+    - [x] global progress (learned passages score versesNumber*level)
+    - [x] relative progress (score relative to last month)
     - [ ] show different stats on home screen
       - [ ] stroke first two weeks
       - [ ] general progress 2 weeks to 1 month
-      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
+      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned... 
     - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
       - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday
+  - [ ] updateMessages list: show unread modal on startup or show all in settings
+  - [ ] login form and action with API
   - [ ] feedback form for authorirized users or telegram bot
   - [ ] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0
@@ -121,7 +123,6 @@ Roadmap
   - [ ] screen readers labels 
 
 Other ideas:
-- show most common errors for the given passage
 - accomplishments
 - friends feature / feed
 - groups functionality(group stats, group passages, group quests)
@@ -135,8 +136,14 @@ Dev. rules
 Using
 ---
 *Installing requirements:*
-- android sdk
-- expo tools and packages from package.json
+- (for Windows) expo tools and packages from package.json
+- (for Linux) it will install from package.json
+
+*Cloning:*
+- run `git clone https://github.com/CalmTed/bible-by-heart.git`
+
+*Instaling:*
+- run `yarn install`
 
 *Running:*
 - run `npm start` to start expo (a - run on android, r - reload...)

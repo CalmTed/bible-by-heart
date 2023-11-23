@@ -19,8 +19,8 @@ export const addressFromString: (string: string) => addressToStringReturnType | 
   const bookIndex = Object.values(LANGCODE).map(langcode => {
     const t = createT(langcode);
     return bibleReference.map((book,i) => {
-      if(string.includes(t(book.longTitle)) || string.includes(t(book.titleShort))){
-        const justBook = string.includes(t(book.longTitle)) ? t(book.longTitle) : t(book.titleShort);
+      if(string.toLocaleLowerCase().startsWith(t(book.longTitle).toLocaleLowerCase()) || string.toLocaleLowerCase().startsWith(t(book.titleShort).toLocaleLowerCase())){
+        const justBook = string.toLocaleLowerCase().includes(t(book.longTitle)) ? t(book.longTitle) : t(book.titleShort);
         const afterBookText = string.substring(string.indexOf(justBook)+justBook.length, string.indexOf(justBook)+justBook.length+15)
         justNumbers = afterBookText.match(/(\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}:\d{1,3}|\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}|\s{0,1}\d{1,3}:\d{1,3})/)?.[0] || ""
         fullAddressString = justNumbers ? justBook+justNumbers : fullAddressString;

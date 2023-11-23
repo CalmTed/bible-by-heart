@@ -1,6 +1,6 @@
 import { getAddressDifference } from "./addressDifference";
 import { bibleReference } from "../bibleReference";
-import { TESTLEVEL, PASSAGELEVEL, SORTINGOPTION, SENTENCE_SEPARATOR, MINIMUM_SENTENCE_LENGTH, PERFECT_TESTS_TO_PROCEED, FIRST_FEW_WORDS } from "../constants";
+import { TESTLEVEL, PASSAGELEVEL, SORTINGOPTION, SENTENCE_SEPARATOR, MINIMUM_SENTENCE_LENGTH, PERFECT_TESTS_TO_PROCEED, FIRST_FEW_WORDS, DAY } from "../constants";
 import { createTest } from "../initials";
 import {
   AddressType,
@@ -22,13 +22,28 @@ export const getPassagesByTrainMode: (
   const targetTranslation = state.settings.translations.find(
     (tr) => tr.id === trainMode.translation
   );
-  //if train mode enabled AND translation exists
+  //proseed only if train mode enabled AND translation exists
   if (!trainMode.enabled || !targetTranslation) {
     return [];
   }
 
-  //TODO all due to (one if one left), other only if there are no passages due ot
-  //TODO make getDueTo as a separate method
+  const passagesDueTo = state.passages.filter((p) => {
+    if(p.minIntervalDaysNum === null || !p.isReminderOn){
+      return false;
+    }
+    const lastTastedDate = state.testsHistory.filter(t => t.pi === p.id).sort((a,b) => b.td[0][1] - a.td[0][1])[0].td[0][1]
+    const dayinMs = DAY * 1000;
+    const targetNextTest = Math.floor((lastTastedDate + (p.minIntervalDaysNum * dayinMs))/ dayinMs)* dayinMs;
+    return new Date().getTime() > targetNextTest;
+  })
+  
+  const isDueTo = (p: PassageModel, dueToList: PassageModel[]) => {
+    if(!dueToList || !dueToList.length){
+      return false;
+    }
+    return !!dueToList.find(dtlp => dtlp.id === p.id)
+  }
+
   return state.passages
     .filter((p) => {
       //if translation right
@@ -45,7 +60,7 @@ export const getPassagesByTrainMode: (
         ? !trainMode.excludeTags.filter((tag) => p.tags.includes(tag)).length
         : true;
       const hasTargetLevelAvalible = trainMode.testAsLevel 
-        ? p.maxLevel > trainMode.testAsLevel - 1 || state.settings.devMode
+        ? p.maxLevel > trainMode.testAsLevel - 1 || state.settings.devModeEnabled
         : true;
       return (
         isTranslationRight && hasAllIncludedTags && doesNotHasAnyExcludedTags && hasTargetLevelAvalible
@@ -62,14 +77,21 @@ export const getPassagesByTrainMode: (
         case SORTINGOPTION.resentlyCreated:
           return b.dateCreated - a.dateCreated;
         case SORTINGOPTION.oldestToTrain:
+          //if due to
+          if(isDueTo(a, passagesDueTo)){
+            return -Infinity
+          }
+          if(isDueTo(b, passagesDueTo)){
+            return Infinity
+          }
           return a.dateTested - b.dateTested;
         default:
           console.warn("Undefined sorting option", trainMode.sort)
           return 0;
       }
     })
-    .slice(0, trainMode.length || Infinity) //limiting max number
-    .sort(() => (Math.random() > 0.5 ? -1 : 1)); //shuffling again JUST FOR FUN!!!
+    .slice(0, trainMode.length || Math.min(state.passages.length, 100) ) //limiting max number to 100
+    .sort(() => (Math.random() > 0.5 ? -1 : 1))//shuffling again JUST FOR MORE VARIABILITY!!!
 };
 
 export const generateTests: (state: AppStateModel, trainMode: TrainModeModel) => TestModel[] = (state, trainMode) => {
@@ -102,14 +124,14 @@ export const generateATest: (
   history?: TestModel[]
 ) => TestModel = (initialTest, passages, targetTestLevel, history = []) => {
   const littleClearerInitialTest = {...initialTest, errorNumber: null, errorType: null} as TestModel
-  const testTenghtSafeTest =
+  const testTenghtSafeTest: TestModel =
     passages.length > 3
       ? littleClearerInitialTest
-      : littleClearerInitialTest.level === TESTLEVEL.l11
-      ? { ...littleClearerInitialTest, level: TESTLEVEL.l10 }
+      : littleClearerInitialTest.l === TESTLEVEL.l11
+      ? { ...littleClearerInitialTest, l: TESTLEVEL.l10 }
       : littleClearerInitialTest;
   //filling test data here
-  const testCreationList = {
+  const testCreationList: Record<TESTLEVEL, CreateTestMethodModel> = {
     [TESTLEVEL.l10]: createL10Test,
     [TESTLEVEL.l11]: createL11Test,
     [TESTLEVEL.l20]: createL20Test,
@@ -121,32 +143,32 @@ export const generateATest: (
   const randBool = Math.random() > 0.5;
   const onlyLevelFunctions: Record<PASSAGELEVEL, CreateTestMethodModel> = {
     [PASSAGELEVEL.l1]: 
-      randBool || passages.length <= 3 ? createL10Test : createL11Test,
+      randBool || passages.length < 4 ? createL10Test : createL11Test,
     [PASSAGELEVEL.l2]: randBool ? createL20Test : createL21Test,
     [PASSAGELEVEL.l3]: createL30Test,
     [PASSAGELEVEL.l4]: createL40Test,
     [PASSAGELEVEL.l5]: createL50Test
   };
-  const onlyLevelTestLevels = {
+  const onlyLevelTestLevels: Record<PASSAGELEVEL, TESTLEVEL> = {
     //l11 cant be created without 4 passages minimum
     [PASSAGELEVEL.l1]:
-      randBool || passages.length <= 3 ? TESTLEVEL.l10 : TESTLEVEL.l11,
+      randBool || passages.length < 4 ? TESTLEVEL.l10 : TESTLEVEL.l11,
     [PASSAGELEVEL.l2]: randBool ? TESTLEVEL.l20 : TESTLEVEL.l21,
     [PASSAGELEVEL.l3]: TESTLEVEL.l30,
     [PASSAGELEVEL.l4]: TESTLEVEL.l40,
     [PASSAGELEVEL.l5]: TESTLEVEL.l50
   };
-  if (typeof targetTestLevel === "number") {
-    return onlyLevelFunctions[targetTestLevel as PASSAGELEVEL]({
+  if (typeof targetTestLevel === "number") {//if specific level is selected
+    return onlyLevelFunctions[Math.max(targetTestLevel, 0) as PASSAGELEVEL]({
       initialTest: {
         ...initialTest,
-        level: onlyLevelTestLevels[targetTestLevel as PASSAGELEVEL]
+        l: onlyLevelTestLevels[targetTestLevel as PASSAGELEVEL]
       },
       passages,
       history
     });
   }
-  return testCreationList[testTenghtSafeTest.level]({
+  return testCreationList[testTenghtSafeTest.l]({
     initialTest: testTenghtSafeTest,
     passages,
     history
@@ -170,10 +192,10 @@ const getWordsFromErrors: (history: TestModel[], passageId: number) => ErrorGrad
   return history
     .filter(
       (t) =>
-        t.passageId === passageId 
-        && t.errorType === "wrongWord"
+        t.pi === passageId 
+        && t.ww.length > 0
     )
-    .map((t) => t.wrongWords)
+    .map((t) => t.ww)
     .flat()
     .map((w,i, arr) => {
       return {
@@ -208,7 +230,7 @@ const createL10Test: CreateTestMethodModel = ({
   passages,
   history
 }) => {
-  const targetPassage = passages.find((ps) => ps.id === initialTest.passageId); //targetPassage
+  const targetPassage = passages.find((ps) => ps.id === initialTest.pi); //targetPassage
   const optionsLength = 4;
   if (!targetPassage) {
     return initialTest;
@@ -226,8 +248,8 @@ const createL10Test: CreateTestMethodModel = ({
   const sentenceRange = shouldntSlice ? [] : [randomSentenceStart,randomSentenceEnd]
   const errorAddresses = history
     //same passage, any level, but some wrong address (maybe from 2nd level even)
-    .filter(h => h.passageId == targetPassage.id && h.wrongAddress.length)
-    .map(h => h.wrongAddress)
+    .filter(h => h.pi == targetPassage.id && h.wa.length)
+    .map(h => h.wa)
     .flat()
   let uniqueErrorAddresses = errorAddresses.filter((a, i, arr) => {
     return arr.filter(a2 => 
@@ -326,8 +348,8 @@ const createL10Test: CreateTestMethodModel = ({
   }
   return {
     ...initialTest,
-    testData: {
-      ...initialTest.testData,
+    d: {
+      ...initialTest.d,
       addressOptions: addressOptions.sort(() => Math.random() > 0.5 ? 1 : -1),
       sentenceRange 
   }};
@@ -345,14 +367,14 @@ const createL11Test: CreateTestMethodModel = ({
   }
   //passages from errors
   const targetPassage = passages.find(
-    (p) => p.id === initialTest.passageId
+    (p) => p.id === initialTest.pi
     ) as PassageModel;
   const successStroke = getPerfectTestsNumber(history, targetPassage);
   const fromErrors = history
-    .filter(ph => ph.passageId === initialTest.passageId || ph.wrongPassagesId || ph.wrongAddress)
-    .filter(ph => ph.wrongPassagesId.includes(ph.id))
+    .filter(ph => ph.pi === initialTest.pi || ph.wp || ph.wa)
+    .filter(ph => ph.wp.includes(ph.i))
     .map((ph) =>
-      passages.filter((p) => ph.wrongPassagesId.includes(p.id) || ph.wrongAddress.find(wa => getAddressDifference(p.address, wa) === 0))
+      passages.filter((p) => ph.wp.includes(p.id) || ph.wa.find(wa => getAddressDifference(p.address, wa) === 0))
     )
     .flat();
   //simular passages
@@ -383,8 +405,8 @@ const createL11Test: CreateTestMethodModel = ({
   const sentenceRange = successStroke ? [rangeStart, randomRange(rangeStart + 1, maxSENTENCELength)] : []
   const returnTest: TestModel = {
     ...initialTest,
-    testData: {
-      ...initialTest.testData,
+    d: {
+      ...initialTest.d,
       passagesOptions: allOptions,
       sentenceRange
     }
@@ -393,7 +415,7 @@ const createL11Test: CreateTestMethodModel = ({
 };
 
 const createL20Test: CreateTestMethodModel = ({ initialTest, history, passages }) => {
-  const targetPassage = passages.filter(p => p.id === initialTest.passageId)[0];
+  const targetPassage = passages.filter(p => p.id === initialTest.pi)[0];
   const successStroke = getPerfectTestsNumber(history, targetPassage);
 
   const sentaces = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length)
@@ -407,7 +429,7 @@ const createL20Test: CreateTestMethodModel = ({ initialTest, history, passages }
     : [];
   return {
     ...initialTest,
-    testData: {
+    d: {
       sentenceRange
     }
   };
@@ -422,7 +444,7 @@ const createL30Test: CreateTestMethodModel = ({
   passages,
   history
 }) => {
-  const targetPassage = passages.find((p) => p.id === initialTest.passageId);
+  const targetPassage = passages.find((p) => p.id === initialTest.pi);
   if (!targetPassage) {
     return initialTest;
   }
@@ -435,7 +457,7 @@ const createL30Test: CreateTestMethodModel = ({
   }
   const successStroke = getPerfectTestsNumber(history, targetPassage);
   const sentances = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length > 1);
-  const wordsFromErrors = getWordsFromErrors(history, initialTest.passageId)
+  const wordsFromErrors = getWordsFromErrors(history, initialTest.pi)
   let missingWords: number[] = [];
   if(successStroke === PERFECT_TESTS_TO_PROCEED) { //last time before next level
     //add all words
@@ -543,15 +565,15 @@ const createL30Test: CreateTestMethodModel = ({
   );
   return {
     ...initialTest,
-    testData: {
-      ...initialTest.testData,
+    d: {
+      ...initialTest.d,
       missingWords: alphabeticalMissingWords 
     }
   };
 };
 
 const createL40Test: CreateTestMethodModel = ({ initialTest, passages, history }) => {
-  const targetPassage = passages.find(p => p.id === initialTest.passageId)
+  const targetPassage = passages.find(p => p.id === initialTest.pi)
   if(!targetPassage){
     return initialTest;
   }
@@ -560,7 +582,7 @@ const createL40Test: CreateTestMethodModel = ({ initialTest, passages, history }
   if(!sentences){
     return initialTest
   }
-  const wordsFromErrors = getWordsFromErrors(history, initialTest.passageId)
+  const wordsFromErrors = getWordsFromErrors(history, initialTest.pi)
   const sentancesErrorGraded = getErrorGradedSentences(sentences, wordsFromErrors)
   const biasedRandomSentence = sentancesErrorGraded
         .filter((s,i,arr) => {
@@ -573,11 +595,11 @@ const createL40Test: CreateTestMethodModel = ({ initialTest, passages, history }
   sentences.length > 2 && sentanceIndexToAdd < sentences.length - numberOfSentences 
   ? sentanceIndexToAdd
   : 0;
-  const sentenceRange = sentences.length < 3 || successStroke >= PERFECT_TESTS_TO_PROCEED ? [] : [sentanceStartIndex,sentanceStartIndex + numberOfSentences];
+  const sentenceRange = sentences.length < 3 || successStroke >= PERFECT_TESTS_TO_PROCEED -1 ? [] : [sentanceStartIndex,sentanceStartIndex + numberOfSentences];
   return {
     ...initialTest,
-    testData: {
-      ...initialTest.testData,
+    d: {
+      ...initialTest.d,
       //show first words instead of address only if there are more then 4 words
       showAddressOrFirstWords: targetPassage.verseText.split(" ").length > FIRST_FEW_WORDS ? Math.random() > 0.5 : true,
       sentenceRange

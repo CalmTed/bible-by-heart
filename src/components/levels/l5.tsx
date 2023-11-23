@@ -83,27 +83,27 @@ export const L50: FC<LevelComponentModel> = ({
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
   );
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
   //showAddressOrFirstWords: true => address false => first words
   const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
-  const sentancesRange = test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
-    ? sentences.slice(...test.testData.sentenceRange)
+  const sentancesRange = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
+    ? sentences.slice(...test.d.sentenceRange)
     : sentences;
   const targetText = sentancesRange.join("");
   const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
-  const initialValue = test.testData.showAddressOrFirstWords
+  const initialValue = test.d.showAddressOrFirstWords
     ? ""
     : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
-  const sentancesRangeLength =  test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
-    ? test.testData.sentenceRange[1] - test.testData.sentenceRange[0]
+  const sentancesRangeLength =  test.d?.sentenceRange && test.d.sentenceRange.length === 2 
+    ? test.d.sentenceRange[1] - test.d.sentenceRange[0]
     : sentences.length;
   const maxTriesBonus =
     targetPassage && sentancesRangeLength > 2
       ? sentancesRangeLength - 2
       : 0;
   const [tries, setTries] = useState(MAX_L50_TRIES + maxTriesBonus);
-  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse";
+  const lastErrorIsWrongAddress = test.et.length ? test.et[test.et.length - 1] === "wrongAddressToVerse" : false;
   const [isCorrect, setIsCorrect] = useState(
     lastErrorIsWrongAddress ? true : false
   );
@@ -122,16 +122,16 @@ export const L50: FC<LevelComponentModel> = ({
 
   useEffect(() => {
     resetForm();
-  }, [test.id]);
+  }, [test.i]);
 
   const handleErrorSubmit = (value: AddressType) => {
     submitTest({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et,"wrongAddressToVerse"],
+        wa: [...test.wa, value]
       }
     });
     resetForm();
@@ -202,12 +202,20 @@ export const L50: FC<LevelComponentModel> = ({
         if (state.settings.hapticsEnabled) {
           Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
         }
+        const words = targetText.split(" ")
+        const userWords = passageText.split(" ")
+        const wrongWordIndex = words.map((w,i) => {
+          const iterationtText = words.slice(0,i).join(" ")
+          const passageSliced = userWords.slice(0,i).join(" ")
+          return simplifyString(iterationtText) === simplifyString(passageSliced)
+        }).filter(w => !!w).length - 1//length is corrisponging to the last word user got right
         submitTest({
           isRight: false,
           modifiedTest: {
             ...test,
-            errorNumber: (test.errorNumber || 0) + 1,
-            errorType: "other"
+            en: (test.en || 0) + 1,
+            et: [...test.et, "wrongWord"],
+            ww: [...test.ww, [wrongWordIndex, userWords[wrongWordIndex]]]
           }
         });
         resetForm();
@@ -231,8 +239,8 @@ export const L50: FC<LevelComponentModel> = ({
           isRight: false,
           modifiedTest: {
             ...test,
-            errorNumber: (test.errorNumber || 0) + 1,
-            errorType: "moreThenOneCharacter"
+            en: (test.en || 0) + 1,
+            et: [...test.et, "moreThenOneCharacter"]
           }
         });
       }
@@ -251,8 +259,8 @@ export const L50: FC<LevelComponentModel> = ({
     return <View />;
   }
 
-  const levelFinished = test.isFinished;
-  const isAddressProvided = test.testData.showAddressOrFirstWords;
+  const levelFinished = test.f;
+  const isAddressProvided = test.d.showAddressOrFirstWords;
   const theme = getTheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
@@ -288,13 +296,13 @@ export const L50: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.testData.sentenceRange && test.testData.sentenceRange[0] > 0 &&
+      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 &&
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
-            {test.testData.sentenceRange[0] > 3 ? "..." : ""}
+            {test.d.sentenceRange[0] > 3 ? "..." : ""}
             {sentences.slice(
-              test.testData.sentenceRange[0] > 3 ? test.testData.sentenceRange[0] - 3 : 0,
-              test.testData.sentenceRange[0]
+              test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
+              test.d.sentenceRange[0]
             ).join("")}
             ...
             </Text>
@@ -316,12 +324,12 @@ export const L50: FC<LevelComponentModel> = ({
           textStyle={levelComponentStyle.inputTextStyle}
         />
       </View>
-      {test.testData.sentenceRange && test.testData.sentenceRange[1] < sentences.length &&
+      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length &&
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             ...
-            {sentences.slice(test.testData.sentenceRange[1], Math.min(test.testData.sentenceRange[1] + 3, sentences.length)).join("")}
-            {sentences.length - test.testData.sentenceRange[1] >= 3 ? "..." : ""}
+            {sentences.slice(test.d.sentenceRange[1], Math.min(test.d.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
             </Text>
         </View>
       }
@@ -350,8 +358,8 @@ export const L50: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
         )}
-        {((test.errorNumber || 0) > ERRORS_TO_DOWNGRADE ||
-          (new Date().getTime() - test.triesDuration[0][0]) > (1000*60*10)) && (
+        {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
+          (new Date().getTime() - test.td[0][0]) > (1000*60*10)) && (
           <Button
             theme={theme}
             type="secondary"

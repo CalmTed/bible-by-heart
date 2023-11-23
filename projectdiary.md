@@ -13,7 +13,7 @@ boilerplate:
 - [x] #problem Looping dependency in generating tests. Need to decrease level with reducer but regenerare with generator >>> remove screen dependecy from generators
 2023-09-27
 - [x] #added finish adding downgrading levels after 2 or so errors (set 2 to be editable constant)
-- [ ] #idea make general method to convert passageLevel to testLevel and beck with saving correct types
+- [x] #idea make general method to convert passageLevel to testLevel and back with saving correct types
 2023-09-29
 - [x] #added file manager, but cant open it with file explorer or cant share it for now
 2023-10-03
@@ -33,10 +33,10 @@ boilerplate:
 - [x] #intent to finish importing passages, thinking on not using csv, but just txt with "|" as separator and four colummns (address, text, translation, tags)
 2023-10-07
 - [x] #added export and import passages to and from txt file
-- [ ] #intent Next: to make export/import state to json with chechsum Later: handling share text reciever (modal with options)
-- [ ] #problem what if we have the same address and the same translation?: disallow to add it(or to import)
+- [x] #intent Next: to make export/import state to json with chechsum Later: handling share text reciever (modal with options)
+- [x] #problem what if we have the same address and the same translation?: disallow to add it(or to import) >>> skiping it 
 2023-10-31
-- [ ] #idea importted 5/6 passages and do not replace passages with the same address and translation
+- [x] #idea importted 5/6 passages and do not replace passages with the same address and translation
 2023-11-06
 - [x] #intent add json state export(without import)
 - [x] #intent fix tests freezing error
@@ -45,13 +45,13 @@ boilerplate:
 - [x] #intent to show import warning result & improve level1 tests
 - [x] #intent to check Nicks time error
 - [x] #intent optimize levels (level1: from errors, same book, same number level 3: less words/groups of words for long level 4,5: not the whole text just parts/hard parts)
-- [ ] #intent later to add due to and new sorting option
+- [x] #intent later to add due to and new sorting option(-)
 - [x] #plan fix levelPicker dott in testing mode
 - [x] #plan check train mode filters validity
 - [x] #added did add import warning info & did fix timezone thing(but need to check it anyway)
 2023-11-08
-- [ ] #intent check trainMode filters(+), check LevelPicker dott(+) THEN optimize levels and add "due to" as so on
-- [ ] #idea due to is considered only if sorting is oldestToTrain
+- [x] #intent check trainMode filters(+), check LevelPicker dott(+) THEN optimize levels and add "due to" as so on
+- [x] #idea due to is considered only if sorting is oldestToTrain
 - [x] #added checking trainModes and levelPicker, level 10 optimizing
 2023-11-09
 - [x] #intent finish optimizing level 11, 30, 40, 50
@@ -64,3 +64,28 @@ boilerplate:
 2023-11-15
 - [x] #intent optimize levels 40 and 50: enter only a few sentences
 - [x] #added optimized 40 and 50 to limit number of sentences
+2023-11-17
+- [x] #intent turn on "due to" switcher, add number selector, add to sorting for "last tested" option
+- [x] #intent make harder passwords for dev mode, turn it off after 24h, add devmodeEnabledSwitcheer
+- [x] #added due to modal and switcher, updated sorting to included due to passages before others
+- [x] #added updated appStateModel for v0.0.9 added userData, updateMessages and feedbackMessages
+2023-11-20
+- [x] #intent complete new state model + state convertor + new devmode switcher + dev mode timeout check in reducer
+- [x] #intent start stats screen + stats tools + passage stats
+- [x] #added new state model, state converter, new devmode encoder, devmode timeout disabling, fixing visible errors in each file
+- [ ] #question how to get data for relative stats? we need to know when each passage was updated to the next level, may be add new parameter to passage model?
+- [x] #added passage stats calculating and rendering(general, per level, heatmap, wrong addresses) + state import feature + level5 wrong word calculating to get more data for heatmap + a little of calculating app stats
+2023-11-22
+- [x] #intent add stats screen with other global stats(time, sessions, stats by session, stats by level) 
+- [ ] #intent add upgradeDate to passage data so we could retrieve relative score for last two month + write time on udgrade/clear on downgrading (+) + get uprade time from history(for each passage if one is level lower but the next is higher set time of level of the highter one to the time of the lower one)(+)
+- [x] #added stats screen with general stats and stats per level
+- [ ] #question do we include missing days in day/week awarage?
+- [ ] #idea we need to notify users that some stroke days might be lost due to clearing history of the removed passages
+- [ ] #idea we can add different WORD icon on the home screen in the Christmass seasona and another one for the Easter
+2023-11-23
+- [x] #added fixed bug with selecting level11 with single passage
+- [x] #added removed test,list,stats buttons in no passages, in this case showing "add passage"
+- [x] #intent check stroke calculating b.c. it removes some days on import
+- [ ] #idea add month showing with data for each day sessions
+- [x] #added upgraded passage model, added convertion from history for previus versions
+- [x] #added relative score, fixed perfect scrike for selected level, fixed downgrading bug, added level 4 error when selecting wrong word, 

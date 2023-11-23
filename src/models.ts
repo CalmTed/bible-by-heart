@@ -7,31 +7,46 @@ import {
   TESTLEVEL,
   THEMETYPE
 } from "./constants";
+import { WORD } from "./l10n";
 
-export type AppStateModel = AppStateModel008;
+export type AppStateModel = AppStateModel009;
 
-export interface AppStateModel008 {
+export interface AppStateModel009 {
   version: string;
   apiVersion: string; //not implemented yet
   lastChange: number;
   lastBackup: number;
   dateSyncTry: number; //not implemented yet
   dateSyncSuccess: number; //not implemented yet
-  passages: PassageModel[];
-  testsActive: TestModel007[];
-  testsHistory: TestModel007[];
-  userId: number | null; //not implemented yet
+  passages: PassageModel009[];
+  testsActive: TestModel009[];
+  testsHistory: TestModel009[];
+  userData: { // not implemented yet
+    userId: number | null;
+    userName: string | null; 
+    userPicture: string | null;
+    birthDate: number | null
+    authToken: string | null
+    loginType: null | "email" | "google" | "apple" | "facebook"
+    updateMessages: updateMessageModel[]//later could update it from API
+    feedBackMessages: feedbackMessageModel[]
+  }
   filters: {
     tags: string[];
     selectedLevels: PASSAGELEVEL[];
     maxLevels: PASSAGELEVEL[];
     translations: number[];
-  };
-  sort: SORTINGOPTION;
+  }
+  sort: SORTINGOPTION
+  statsDateRange: {//negative number for relative value(from now), positive number for timestamp
+    from: number
+    to: number
+  }
   settings: {
     [SETTINGS.langCode]: LANGCODE;
     [SETTINGS.theme]: THEMETYPE;
-    [SETTINGS.devMode]: boolean;
+    [SETTINGS.devModeEnabled]: boolean;
+    [SETTINGS.devModeActivationTime]: number | null;
     [SETTINGS.chapterNumbering]: "eastern" | "vestern"; //not implemented yet
     [SETTINGS.hapticsEnabled]: boolean;
     [SETTINGS.soundsEnabled]: boolean; //not implemented yet
@@ -53,54 +68,14 @@ export interface AppStateModel008 {
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
     [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
-  };
+  }
 }
 
-export interface AppStateModel007 {
-  version: string;
-  apiVersion: string;
-  lastChange: number;
-  dateSyncTry: number;
-  dateSyncSuccess: number;
-  passages: PassageModel[];
-  testsActive: TestModel007[];
-  testsHistory: TestModel007[];
-  userId: number | null;
-  filters: {
-    tags: string[];
-    selectedLevels: PASSAGELEVEL[];
-    maxLevels: PASSAGELEVEL[];
-    translations: number[];
-  };
-  sort: SORTINGOPTION;
-  settings: {
-    [SETTINGS.langCode]: LANGCODE;
-    [SETTINGS.theme]: THEMETYPE;
-    [SETTINGS.devMode]: boolean;
-    [SETTINGS.chapterNumbering]: "eastern" | "vestern";
-    [SETTINGS.hapticsEnabled]: boolean;
-    [SETTINGS.soundsEnabled]: boolean;
-    [SETTINGS.compressOldTestsData]: boolean;
-    [SETTINGS.autoIncreeseLevel]: boolean;
-    [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
 
-    [SETTINGS.remindersEnabled]: boolean;
-    [SETTINGS.remindersSmartTime]: boolean; // based on last month of tests history
-    [SETTINGS.remindersList]: ReminderModel[];
 
-    [SETTINGS.translations]: TranslationModel[]; //dont need id for now, just user provided name
-    [SETTINGS.homeScreenStatsType]:
-      | "auto"
-      | "dayStreak"
-      | "absoluteProgress"
-      | "monthProgress";
-    [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
+export type PassageModel = PassageModel009;
 
-    [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
-  };
-}
-
-export interface PassageModel {
+export interface PassageModel009 {
   id: number;
   ownerId: number | null; //userId
   address: AddressType;
@@ -110,9 +85,10 @@ export interface PassageModel {
   dateCreated: number;
   dateEdited: number;
   dateTested: number;
-  minIntervalDaysNum: number | null;
   selectedLevel: PASSAGELEVEL;
-  maxLevel: PASSAGELEVEL; //set on end by a history of tests
+  maxLevel: PASSAGELEVEL; //set on the end of testing according to history of tests
+  upgradeDates: Record<PASSAGELEVEL, number>//number of upgrade to derive relative score
+  minIntervalDaysNum: number | null;//aka reminder number of days
   isNewLevelAwalible: boolean;
   tags: string[]; //archive and custom
   isReminderOn: boolean;
@@ -124,38 +100,49 @@ export interface ExportingModel {
   passages: PassageModel[];
 }
 
-export type TestModel = TestModel007;
+export type TestModel = TestModel009;
 
-export interface TestModel007 {
-  //for every passage every practice session
-  id: number;
-  sessionId: number; //tests are created before every session and deleted if not finished
-  passageId: number;
-  userId: number | null;
-  triesDuration: number[][]; // start and finish
-  isFinished: boolean;
-  level: TESTLEVEL;
-  testData: {
+export interface TestModel009 {
+  //id
+  i: number;
+  //session id
+  si: number; //tests are created before every session and deleted if not finished
+  //passage id
+  pi: number;
+  //user id
+  ui: number | null;
+  //tries duration 
+  td: number[][]; // start and finish
+  //is finished
+  f: boolean;
+  //level
+  l: TESTLEVEL;
+  //test data
+  d: {
     addressOptions?: AddressType[];
     passagesOptions?: PassageModel[];
     missingWords?: number[]; //word index
     showAddressOrFirstWords?: boolean;
     sentenceRange?: number[];//from..to. Default undefinded or [] is [0,-1]
   };
-  errorNumber: number | null; // 0 if passed without error
-  errorType:
-    | (
-        | "wrongAddressToVerse"
-        | "wrongVerseToAddress"
-        | "wrongWord"
-        | "wrongFirstWord"
-        | "moreThenOneCharacter"
-        | "other"
-      )
-    | null;
-  wrongAddress: AddressType[];
-  wrongPassagesId: number[];
-  wrongWords: [number, string][]; //word index, wrong word string
+  //error number
+  en: number | null; // 0 if passed without error
+  //error types list
+  et:(
+      | "wrongAddressToVerse"
+      | "wrongVerseToAddress"
+      | "wrongWord"
+      | "wrongFirstWord"
+      | "moreThenOneCharacter"
+      | "downgrading"
+      | "other"
+    )[];
+  //wrong addresses
+  wa: AddressType[];
+  //wrong passage ids
+  wp: number[];
+  //wrong words
+  ww: [number, string][]; //word index, wrong word string
 }
 
 export interface ReminderModel {
@@ -335,15 +322,183 @@ export type ActionModel =
         passages: PassageModel[]
       }
   };
+  interface updateMessageModel {
+    id: number
+    header: WORD
+    text: WORD
+    buttonHeader: WORD
+    image: string //small base64 file or external link
+    link: string
+    isRead: boolean
+  } 
+
+  interface feedbackMessageModel {
+    id: number
+    creatorUserId: number
+    timeCreated: number
+    timeRead: number | null
+    text: string
+    //for future
+    attachmentLink: string | null
+    attechmentType: "photo" | "video" | "file" | "other"
+  }
+
+
+
+
+
 
 /* state archive */
+
+
+export interface PassageModel008 {
+  id: number;
+  ownerId: number | null; //userId
+  address: AddressType;
+  versesNumber: number;
+  verseText: string;
+  verseTranslation: number | null; //item id from settings.translation
+  dateCreated: number;
+  dateEdited: number;
+  dateTested: number;
+  minIntervalDaysNum: number | null;//aka reminder number of days
+  selectedLevel: PASSAGELEVEL;
+  maxLevel: PASSAGELEVEL; //set on end by a history of tests
+  isNewLevelAwalible: boolean;
+  tags: string[]; //archive and custom
+  isReminderOn: boolean;
+  isCollapsed: boolean;
+}
+
+export interface AppStateModel008 {
+  version: string;
+  apiVersion: string; //not implemented yet
+  lastChange: number;
+  lastBackup: number;
+  dateSyncTry: number; //not implemented yet
+  dateSyncSuccess: number; //not implemented yet
+  passages: PassageModel008[];
+  testsActive: TestModel007[];
+  testsHistory: TestModel007[];
+  userId: number | null; //not implemented yet
+  filters: {
+    tags: string[];
+    selectedLevels: PASSAGELEVEL[];
+    maxLevels: PASSAGELEVEL[];
+    translations: number[];
+  };
+  sort: SORTINGOPTION;
+  settings: {
+    [SETTINGS.langCode]: LANGCODE;
+    [SETTINGS.theme]: THEMETYPE;
+    "devMode": boolean;//just devMode settings name was removed
+    [SETTINGS.chapterNumbering]: "eastern" | "vestern"; //not implemented yet
+    [SETTINGS.hapticsEnabled]: boolean;
+    [SETTINGS.soundsEnabled]: boolean; //not implemented yet
+    [SETTINGS.compressOldTestsData]: boolean; //not implemented yet
+    [SETTINGS.autoIncreeseLevel]: boolean;
+    [SETTINGS.leftSwipeTag]: string;
+
+    [SETTINGS.remindersEnabled]: boolean;
+    [SETTINGS.remindersSmartTime]: boolean;
+    [SETTINGS.remindersList]: ReminderModel[];
+
+    [SETTINGS.translations]: TranslationModel[];
+    [SETTINGS.homeScreenStatsType]:
+      | "auto"
+      | "dayStreak"
+      | "absoluteProgress"
+      | "monthProgress"; //not implemented yet
+    [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
+
+    [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
+    [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
+  };
+}
+
+export interface TestModel007 {
+  //for every passage every practice session
+  id: number;
+  sessionId: number; //tests are created before every session and deleted if not finished
+  passageId: number;
+  userId: number | null;
+  triesDuration: number[][]; // start and finish
+  isFinished: boolean;
+  level: TESTLEVEL;
+  testData: {
+    addressOptions?: AddressType[];
+    passagesOptions?: PassageModel008[];
+    missingWords?: number[]; //word index
+    showAddressOrFirstWords?: boolean;
+    sentenceRange?: number[];//from..to. Default undefinded or [] is [0,-1]
+  };
+  errorNumber: number | null; // 0 if passed without error
+  errorType:
+    | (
+        | "wrongAddressToVerse"
+        | "wrongVerseToAddress"
+        | "wrongWord"
+        | "wrongFirstWord"
+        | "moreThenOneCharacter"
+        | "other"
+      )
+    | null;
+  wrongAddress: AddressType[];
+  wrongPassagesId: number[];
+  wrongWords: [number, string][]; //word index, wrong word string
+}
+
+export interface AppStateModel007 {
+  version: string;
+  apiVersion: string;
+  lastChange: number;
+  dateSyncTry: number;
+  dateSyncSuccess: number;
+  passages: PassageModel008[];
+  testsActive: TestModel007[];
+  testsHistory: TestModel007[];
+  userId: number | null;
+  filters: {
+    tags: string[];
+    selectedLevels: PASSAGELEVEL[];
+    maxLevels: PASSAGELEVEL[];
+    translations: number[];
+  };
+  sort: SORTINGOPTION;
+  settings: {
+    [SETTINGS.langCode]: LANGCODE;
+    [SETTINGS.theme]: THEMETYPE;
+    devMode: boolean;
+    [SETTINGS.chapterNumbering]: "eastern" | "vestern";
+    [SETTINGS.hapticsEnabled]: boolean;
+    [SETTINGS.soundsEnabled]: boolean;
+    [SETTINGS.compressOldTestsData]: boolean;
+    [SETTINGS.autoIncreeseLevel]: boolean;
+    [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
+
+    [SETTINGS.remindersEnabled]: boolean;
+    [SETTINGS.remindersSmartTime]: boolean; // based on last month of tests history
+    [SETTINGS.remindersList]: ReminderModel[];
+
+    [SETTINGS.translations]: TranslationModel[]; //dont need id for now, just user provided name
+    [SETTINGS.homeScreenStatsType]:
+      | "auto"
+      | "dayStreak"
+      | "absoluteProgress"
+      | "monthProgress";
+    [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
+
+    [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
+  };
+}
+
 export interface AppStateModel006 {
   version: string;
   apiVersion: string;
   lastChange: number;
   dateSyncTry: number;
   dateSyncSuccess: number;
-  passages: PassageModel[];
+  passages: PassageModel008[];
   testsActive: TestModel006[];
   testsHistory: TestModel006[];
   langCode: LANGCODE;
@@ -372,7 +527,7 @@ export interface TestModel006 {
   level: TESTLEVEL;
   testData: {
     addressOptions?: AddressType[];
-    passagesOptions?: PassageModel[];
+    passagesOptions?: PassageModel008[];
     missingWords?: number[]; //word index
     showAddressOrFirstWords?: boolean;
   };

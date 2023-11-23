@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bible by heart",
     "slug": "bible-by-heart",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -39,7 +39,7 @@
         "monochromeImage": "./assets/adaptive-icon.png"
       },
       "package": "com.CalmTed.bibleByHeart",
-      "versionCode": 2311150
+      "versionCode": 2311230
     },
     "web": {
       "favicon": "./assets/favicon.png"

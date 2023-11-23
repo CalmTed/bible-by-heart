@@ -1,13 +1,14 @@
 import { StyleSheet } from "react-native";
 import { PassageModel } from "./models";
 
-export const VERSION = "0.0.8";
+export const VERSION = "0.0.9";
 
 export const alowedStateVersions = [
   "0.0.4",
   "0.0.5",
   "0.0.6",
   "0.0.7",
+  "0.0.8",
   VERSION
 ]; //make translators for imported data
 
@@ -43,10 +44,9 @@ export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
 export enum SCREEN {
-  home = "home",
+home = "home",
   listPassage = "listPassage",
-  editPassage = "editPassage",
-  addressPicker = "addressPicker",
+  stats = "stats",
   test = "test",
   testResults = "testResults",
   settings = "settings"
@@ -74,9 +74,9 @@ export enum THEMETYPE {
 }
 
 export const VIBRATION_PATTERNS = {
-  testRight: [0, 50, 100, 40],
-  testWrong: [0, 200],
-  wordClick: 15
+  testRight: [0, 20, 190, 20],
+  testWrong: [0, 300],
+  wordClick: 10
 };
 
 //TODO will make it later
@@ -223,7 +223,8 @@ export enum SETTINGS {
   langCode = "langCode",
   theme = "theme",
   chapterNumbering = "chapterNumbering",
-  devMode = "devMode",
+  devModeActivationTime = "devModeActivationTime",
+  devModeEnabled = "devModeEnabled",
 
   remindersEnabled = "remindersEnabled",
   remindersSmartTime = "remindersSmartTime",

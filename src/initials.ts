@@ -20,7 +20,9 @@ import {
   AppStateModel006,
   AppStateModel007,
   AppStateModel008,
+  AppStateModel009,
   PassageModel,
+  PassageModel008,
   ReminderModel,
   TestModel,
   TrainModeModel,
@@ -32,7 +34,7 @@ const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
 };
 
-export const createAppState008: () => AppStateModel008 = () => {
+export const createAppState009: () => AppStateModel009 = () => {
   const phoneLangCode = getLocales()[0].languageCode;
   const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
   return {
@@ -42,10 +44,21 @@ export const createAppState008: () => AppStateModel008 = () => {
     dateSyncTry: 0,
     dateSyncSuccess: 0,
     apiVersion: API_VERSION,
+    userData: {
+      userId: null,
+      userName: null, 
+      userPicture: null,
+      birthDate: null, 
+      authToken: null,
+      loginType: null,
+      updateMessages: [
+        //TODO add defaults ones here
+      ],
+      feedBackMessages: []
+    },
     passages: [],
     testsActive: [],
     testsHistory: [],
-    userId: null,
     filters: {
       tags: [ARCHIVED_NAME],
       selectedLevels: [],
@@ -53,10 +66,15 @@ export const createAppState008: () => AppStateModel008 = () => {
       translations: []
     },
     sort: SORTINGOPTION.address,
+    statsDateRange: {
+      from: 0,
+      to: -1
+    },
     settings: {
       [SETTINGS.langCode]: langCode,
       [SETTINGS.theme]: THEMETYPE.auto,
-      [SETTINGS.devMode]: false,
+      [SETTINGS.devModeEnabled]: false,
+      [SETTINGS.devModeActivationTime]: null,
       [SETTINGS.chapterNumbering]: "vestern",
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
@@ -77,53 +95,9 @@ export const createAppState008: () => AppStateModel008 = () => {
   };
 };
 
-export const createAppState007: () => AppStateModel007 = () => {
-  const phoneLangCode = getLocales()[0].languageCode;
-  const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
-  return {
-    version: VERSION,
-    lastChange: 0,
-    dateSyncTry: 0,
-    dateSyncSuccess: 0,
-    apiVersion: API_VERSION,
-    passages: [],
-    testsActive: [],
-    testsHistory: [],
-    userId: null,
-    filters: {
-      tags: [ARCHIVED_NAME],
-      selectedLevels: [],
-      maxLevels: [],
-      translations: []
-    },
-    sort: SORTINGOPTION.address,
-    settings: {
-      [SETTINGS.langCode]: langCode,
-      [SETTINGS.theme]: THEMETYPE.auto,
-      [SETTINGS.devMode]: false,
-      [SETTINGS.chapterNumbering]: "vestern",
-      [SETTINGS.hapticsEnabled]: true,
-      [SETTINGS.soundsEnabled]: true,
-      [SETTINGS.compressOldTestsData]: true,
-      [SETTINGS.autoIncreeseLevel]: false,
-      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
-
-      [SETTINGS.remindersEnabled]: true,
-      [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
-      [SETTINGS.remindersList]: [],
-
-      [SETTINGS.trainModesList]: [],
-
-      [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
-      [SETTINGS.homeScreenStatsType]: "auto", //dont need id for now, just user provided name
-      [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses
-    }
-  };
-};
-
 export const createAppState: () => AppStateModel = () => {
   try {
-    return createAppState008();
+    return createAppState009();
   } catch (err) {
     throw new Error(`Error: ${err}`);
   }
@@ -210,12 +184,14 @@ export const getVersesNumber: (adress: AddressType) => number = (address) => {
   return NaN;
 };
 
-export const createPassage: (
+
+export const createPassage009: (
   address: AddressType,
   text?: string,
   translation?: number,
   ownnerId?: number
 ) => PassageModel = (address, text, translation, ownerId) => {
+  const birthTime = new Date().getTime();
   return {
     id: genId(),
     ownerId: ownerId || null,
@@ -223,18 +199,27 @@ export const createPassage: (
     versesNumber: getVersesNumber(address),
     verseText: text || "",
     verseTranslation: translation || null,
-    dateCreated: new Date().getTime(),
-    dateEdited: new Date().getTime(),
+    dateCreated: birthTime,
+    dateEdited: birthTime,
     dateTested: 0,
     minIntervalDaysNum: null,
     selectedLevel: PASSAGELEVEL.l1,
     maxLevel: PASSAGELEVEL.l1,
+    upgradeDates:{
+      [PASSAGELEVEL.l1]: birthTime,
+      [PASSAGELEVEL.l2]: 0,
+      [PASSAGELEVEL.l3]: 0,
+      [PASSAGELEVEL.l4]: 0,
+      [PASSAGELEVEL.l5]: 0,
+    },
     isNewLevelAwalible: false,
     tags: [],
     isReminderOn: false,
     isCollapsed: false
   };
 };
+
+export const createPassage = createPassage009;
 
 export const createTest: (
   sessionId: number,
@@ -257,19 +242,19 @@ export const createTest: (
     }
   };
   return {
-    id: genId(),
-    sessionId,
-    passageId,
-    userId: userId || null,
-    triesDuration: [],
-    isFinished: false,
-    level: selectedLevelMatrix(level),
-    testData: {},
-    errorNumber: null,
-    errorType: null,
-    wrongAddress: [],
-    wrongWords: [],
-    wrongPassagesId: []
+    i: genId(),
+    si: sessionId,
+    pi: passageId,
+    ui: userId || null,
+    td: [],
+    f: false,
+    l: selectedLevelMatrix(level),
+    d: {},
+    en: null,
+    et: [],
+    wa: [],
+    wp: [],
+    ww: []
   };
 };
 
@@ -331,6 +316,122 @@ export const createTrainMode: (
 };
 
 /* initials archive */
+
+export const createPassage008: (
+  address: AddressType,
+  text?: string,
+  translation?: number,
+  ownnerId?: number
+) => PassageModel008 = (address, text, translation, ownerId) => {
+  const birthTime = new Date().getTime();
+  return {
+    id: genId(),
+    ownerId: ownerId || null,
+    address: address,
+    versesNumber: getVersesNumber(address),
+    verseText: text || "",
+    verseTranslation: translation || null,
+    dateCreated: birthTime,
+    dateEdited: birthTime,
+    dateTested: 0,
+    minIntervalDaysNum: null,
+    selectedLevel: PASSAGELEVEL.l1,
+    maxLevel: PASSAGELEVEL.l1,
+    isNewLevelAwalible: false,
+    tags: [],
+    isReminderOn: false,
+    isCollapsed: false
+  };
+};
+
+export const createAppState008: () => AppStateModel008 = () => {
+  const phoneLangCode = getLocales()[0].languageCode;
+  const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
+  return {
+    version: VERSION,
+    lastChange: 0,
+    lastBackup: 0,
+    dateSyncTry: 0,
+    dateSyncSuccess: 0,
+    apiVersion: API_VERSION,
+    passages: [],
+    testsActive: [],
+    testsHistory: [],
+    userId: null,
+    filters: {
+      tags: [ARCHIVED_NAME],
+      selectedLevels: [],
+      maxLevels: [],
+      translations: []
+    },
+    sort: SORTINGOPTION.address,
+    settings: {
+      [SETTINGS.langCode]: langCode,
+      [SETTINGS.theme]: THEMETYPE.auto,
+      devMode: false,
+      [SETTINGS.chapterNumbering]: "vestern",
+      [SETTINGS.hapticsEnabled]: true,
+      [SETTINGS.soundsEnabled]: true,
+      [SETTINGS.compressOldTestsData]: true,
+      [SETTINGS.autoIncreeseLevel]: false,
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+
+      [SETTINGS.remindersEnabled]: true,
+      [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
+      [SETTINGS.remindersList]: [],
+
+      [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+      [SETTINGS.homeScreenStatsType]: "auto", //dont need id for now, just user provided name
+      [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses,
+      [SETTINGS.trainModesList]: getDefaultTrainModes(langCode),
+      [SETTINGS.activeTrainModeId]: getDefaultTrainModes(langCode)[0].id
+    }
+  };
+};
+
+export const createAppState007: () => AppStateModel007 = () => {
+  const phoneLangCode = getLocales()[0].languageCode;
+  const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
+  return {
+    version: VERSION,
+    lastChange: 0,
+    dateSyncTry: 0,
+    dateSyncSuccess: 0,
+    apiVersion: API_VERSION,
+    passages: [],
+    testsActive: [],
+    testsHistory: [],
+    userId: null,
+    filters: {
+      tags: [ARCHIVED_NAME],
+      selectedLevels: [],
+      maxLevels: [],
+      translations: []
+    },
+    sort: SORTINGOPTION.address,
+    settings: {
+      [SETTINGS.langCode]: langCode,
+      [SETTINGS.theme]: THEMETYPE.auto,
+      devMode: false,
+      [SETTINGS.chapterNumbering]: "vestern",
+      [SETTINGS.hapticsEnabled]: true,
+      [SETTINGS.soundsEnabled]: true,
+      [SETTINGS.compressOldTestsData]: true,
+      [SETTINGS.autoIncreeseLevel]: false,
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+
+      [SETTINGS.remindersEnabled]: true,
+      [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
+      [SETTINGS.remindersList]: [],
+
+      [SETTINGS.trainModesList]: [],
+
+      [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+      [SETTINGS.homeScreenStatsType]: "auto", //dont need id for now, just user provided name
+      [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses
+    }
+  };
+};
 
 export const createAppState006: () => AppStateModel006 = () => {
   const phoneLangCode = getLocales()[0].languageCode;

@@ -3,11 +3,11 @@ import { StyleSheet, View, Text, Pressable } from "react-native";
 import { OptionModel } from "../models";
 import { SelectModal } from "./SelectModal";
 import { ThemeAndColorsModel } from "../tools/getTheme";
-import { LinearGradient } from "expo-linear-gradient";
 import { Input } from "./Input";
 import { TagItem } from "./PassageEditor";
 import { ARCHIVED_NAME } from "../constants";
 import { WORD } from "../l10n";
+import { Checkbox } from "./Checkbox";
 
 type SettingsMenuItemModel =
   | {
@@ -115,37 +115,6 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
     chrckBoxTextView: {
       maxWidth: "80%"
     },
-    checkBoxWrapper: {
-      height: 30,
-      width: 55,
-      borderRadius: 50,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      backgroundColor: "#efe"
-    },
-    checkBoxCircle: {
-      borderRadius: 50,
-      height: "100%",
-      aspectRatio: 1
-    },
-    checkBoxGradiend: {
-      width: "100%",
-      padding: 3
-    },
-    bgText: {
-      backgroundColor: data.theme.colors.text
-    },
-    bgSecond: {
-      backgroundColor: data.theme.colors.bgSecond
-    },
-    ml50: {
-      marginLeft: "50%"
-    },
-    ml0: {
-      marginLeft: "0%"
-    },
     halfOpacity: {
       opacity: 0.5
     },
@@ -191,38 +160,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
           </View>
           <View>
-            <View
-              style={{
-                ...settingsMenuItemStyles.checkBoxWrapper
-              }}
-            >
-              <LinearGradient
-                colors={
-                  data.checkBoxState
-                    ? [data.theme.colors.gradient2, data.theme.colors.gradient1]
-                    : [
-                        data.theme.colors.textSecond,
-                        data.theme.colors.textSecond
-                      ]
-                }
-                start={{ x: 0.0, y: 0 }}
-                end={{ x: 0.0, y: 1.0 }}
-                locations={[0, 1]}
-                style={settingsMenuItemStyles.checkBoxGradiend}
-              >
-                <View
-                  style={{
-                    ...settingsMenuItemStyles.checkBoxCircle,
-                    ...(data.checkBoxState
-                      ? settingsMenuItemStyles.bgText
-                      : settingsMenuItemStyles.bgSecond),
-                    ...(data.checkBoxState
-                      ? settingsMenuItemStyles.ml50
-                      : settingsMenuItemStyles.ml0)
-                  }}
-                />
-              </LinearGradient>
-            </View>
+            <Checkbox isEnabled={data.checkBoxState} theme={data.theme}></Checkbox>
           </View>
         </Pressable>
       )}

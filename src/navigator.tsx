@@ -10,6 +10,7 @@ import { FinishScreen } from "./screens/finishScreen";
 import { SettingsScreen } from "./screens/settingsScreen";
 import * as TaskManager from "expo-task-manager";
 import { ToastAndroid } from "react-native";
+import { StatsScreen } from "./screens/statsScreen";
 
 const Stack = createStackNavigator();
 
@@ -63,6 +64,11 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         <Stack.Screen
           name={SCREEN.testResults}
           component={FinishScreen}
+          initialParams={{ ...state }}
+        />
+        <Stack.Screen
+          name={SCREEN.stats}
+          component={StatsScreen}
           initialParams={{ ...state }}
         />
       </Stack.Navigator>

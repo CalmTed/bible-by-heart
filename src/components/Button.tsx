@@ -153,7 +153,7 @@ const buttonStyles = StyleSheet.create({
     flexDirection: "row"
   },
   buttonStyle: {
-    borderRadius: 22,
+    borderRadius: 20,
     alignItems: "center",
     padding: 2,
     justifyContent: "center"

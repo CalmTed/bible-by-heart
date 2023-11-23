@@ -69,16 +69,16 @@ export const L10: FC<LevelComponentModel> = ({
   const [errorValue, setErrorValue] = useState(null as AddressType | null);
   useEffect(() => {
     setErrorValue(null);
-  }, [test.id]); //reseting error flag if same level but different test
-  const rightPassage = state.passages.filter((p) => p.id === test.passageId)[0];
+  }, [test.i]); //reseting error flag if same level but different test
+  const rightPassage = state.passages.filter((p) => p.id === test.pi)[0];
   const handleErrorSubmit = (value: AddressType) => {
     submitTest({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongAddressToVerse"],
+        wa: [...test.wa, value]
       }
     });
     setErrorValue(null);
@@ -104,13 +104,13 @@ export const L10: FC<LevelComponentModel> = ({
       setErrorValue(value);
     }
   };
-  const levelFinished = test.isFinished;
+  const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
   const sentences = rightPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
-  const slicingStart = test.testData?.sentenceRange?.[0] || 0;
-  const slicingEnd = test.testData?.sentenceRange?.[1] || sentences.length;
+  const slicingStart = test.d?.sentenceRange?.[0] || 0;
+  const slicingEnd = test.d?.sentenceRange?.[1] || sentences.length;
   const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
-  const verseText = test.testData?.sentenceRange?.length ? slicedPassageText : rightPassage.verseText
+  const verseText = test.d?.sentenceRange?.length ? slicedPassageText : rightPassage.verseText
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
       <ScrollView style={{ ...levelComponentStyle.passageTextView }}>
@@ -125,8 +125,8 @@ export const L10: FC<LevelComponentModel> = ({
         </Text>
       </ScrollView>
       <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
-        {test.testData.addressOptions &&
-          test.testData.addressOptions.map((op) => {
+        {test.d.addressOptions &&
+          test.d.addressOptions.map((op) => {
             if (!errorValue) {
               return (
                 <Button
@@ -142,7 +142,7 @@ export const L10: FC<LevelComponentModel> = ({
             } else {
               //if there is an error
               const rightPassage = state.passages.find(
-                (p) => p.id === test.passageId
+                (p) => p.id === test.pi
               );
               if (!rightPassage) {
                 return <></>;
@@ -189,22 +189,22 @@ export const L11: FC<LevelComponentModel> = ({
   const [errorValue, setErrorValue] = useState(null as number | null);
   useEffect(() => {
     setErrorValue(null);
-  }, [test.id]); //reseting error flag if same level but different test
+  }, [test.i]); //reseting error flag if same level but different test
 
   const handleErrorSubmit = (value: number) => {
     submitTest({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongVerseToAddress",
-        wrongPassagesId: [...test.wrongPassagesId, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongVerseToAddress"],
+        wp: [...test.wp, value]
       }
     });
     setErrorValue(null);
   };
   const handleOptionsSelect = (value: number) => {
-    const targetPassage = state.passages.find((p) => p.id === test.passageId);
+    const targetPassage = state.passages.find((p) => p.id === test.pi);
     if (!targetPassage) {
       return;
     }
@@ -225,11 +225,11 @@ export const L11: FC<LevelComponentModel> = ({
       setErrorValue(value);
     }
   };
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
   if (!targetPassage) {
     return <View />;
   }
-  const levelFinished = test.isFinished;
+  const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
@@ -244,23 +244,23 @@ export const L11: FC<LevelComponentModel> = ({
         </Text>
       </View>
       <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
-        {test.testData.passagesOptions &&
-          test.testData.passagesOptions.map((op) => {
+        {test.d.passagesOptions &&
+          test.d.passagesOptions.map((op) => {
             const sentences = op.verseText.split(SENTENCE_SEPARATOR);
             //has max or last
             //has min or last-1
             //joined range is more then MIN_SENTENCE
             //else show full
-            const rangeStart = test.testData?.sentenceRange
-            ? sentences.length > test.testData.sentenceRange[0] 
-              ? test.testData.sentenceRange[0]
-              : sentences.length > 1 && test.testData.sentenceRange[0] > 0
+            const rangeStart = test.d?.sentenceRange
+            ? sentences.length > test.d.sentenceRange[0] 
+              ? test.d.sentenceRange[0]
+              : sentences.length > 1 && test.d.sentenceRange[0] > 0
                 ? 1
                 : 0
             : 0;
-            const rangeEnd = test.testData?.sentenceRange 
-            ? sentences.length >= test.testData.sentenceRange[1] 
-            ? test.testData.sentenceRange[1]
+            const rangeEnd = test.d?.sentenceRange 
+            ? sentences.length >= test.d.sentenceRange[1] 
+            ? test.d.sentenceRange[1]
             : sentences.length
             : sentences.length;
             const slicedTitle = sentences.slice(rangeStart, rangeEnd).join().length > MINIMUM_SENTENCE_LENGTH

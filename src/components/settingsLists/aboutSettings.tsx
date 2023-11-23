@@ -10,14 +10,16 @@ import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { MiniModal } from "../miniModal";
 import { SettingsMenuItem } from "../setttingsMenuItem";
-import { VERSION } from "../../constants";
+import { DAY, VERSION } from "../../constants";
 import { createAppState } from "../../initials";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
 import { ThemeAndColorsModel } from "../../tools/getTheme";
 import { reduce } from "../../tools/reduce";
 import { IconName } from "../Icon";
-import { writeFile } from "../../tools/fileManager";
+import { readFile, writeFile } from "../../tools/fileManager";
+import { convertState } from "../../tools/stateVersionConvert";
+import { dateToString } from "../../tools/formatDateTime";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -36,7 +38,6 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
   const [isAboutModalShown, setIsAboutModalShown] = useState(false);
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
   const [isLegalModalShown, setIsLegalModalShown] = useState(false);
-  const [isStateViewerModalOpen, setIsStateViewerModalOpen] = useState(false);
 
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
@@ -78,7 +79,10 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
     return Math.round(Math.random() * 10000);
   };
   const [devModeKey, setDevModeKey] = useState(getPassword());
-  const devModeAnswer = (devModeKey * 2) % 9;
+  const encodeDevKey: (n: number) => number = (n) => {
+    return (n * 17) % 9999
+  }
+  const devModeAnswer = encodeDevKey(devModeKey);
 
   const handleCheckDevPassword = (value: string) => {
     if (value === devModeAnswer.toString()) {
@@ -95,39 +99,13 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
     }
     setIsDevPasswordModalOpen(false);
   };
-
-  // const handleExportData: (state: AppStateModel) => void  = (state) => {
-  //   if(!exportedText.length){
-  //     const exortingObject:exportingModel = {
-  //       version: VERSION,
-  //       passages: state.passages
-  //     }
-  //     setExportedText(JSON.stringify(exortingObject, null,undefined))
-  //   }else{
-  //     setExportedText("")
-  //   }
-  // }
-  // const handleImportData: (stateString: string) => void = (stateString) => {
-  //   try{
-  //     //validate json
-  //     const importedData:exportingModel = JSON.parse(stateString)
-  //     //validate version
-  //     if(alowedStateVersions.includes(importedData.version)){
-  //       //setState
-  //       setState(prv =>
-  //         reduce(prv, {
-  //           name: ActionName.setPassagesList,
-  //           payload: importedData.passages
-  //         }) || prv
-  //       )
-  //       ToastAndroid.show("Imported!", 100)
-  //     }else{
-  //       ToastAndroid.show(`Wrong version: ${importedData.version}, allowed: ${alowedStateVersions.join(", ")}`, 100)
-  //     }
-  //   }catch(e){
-  //     ToastAndroid.show("Unable to parce data", 100)
-  //   }
-  // }
+  const timeOfDevModeLeft = 
+    state.settings.devModeActivationTime 
+    ?  " " + Math.floor((
+        state.settings.devModeActivationTime + DAY * 1000 - new Date().getTime()
+      ) / (1000 * 60 * 60)
+    ).toString() + t("hrs") 
+    : ""
   return (
     <View>
       <SettingsMenuItem
@@ -220,9 +198,12 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         <SettingsMenuItem
           theme={theme}
           header={t("settsDevMode")}
-          subtext={t(state.settings.devMode ? "settsEnabled" : "settsDisabled")}
+          subtext={
+            t(state.settings.devModeEnabled ? "settsEnabled" : "settsDisabled") + 
+            timeOfDevModeLeft
+          }
           type="checkbox"
-          checkBoxState={state.settings.devMode}
+          checkBoxState={state.settings.devModeEnabled}
           onClick={(value) => {
             if (!value) {
               setState(
@@ -232,7 +213,15 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                     payload: value
                   }) || st
               );
-            } else {
+            } else if(state.settings.devModeActivationTime && state.settings.devModeActivationTime + DAY * 1000 > new Date().getTime()){
+              setState(
+                (st) =>
+                  reduce(st, {
+                    name: ActionName.setDevMode,
+                    payload: value
+                  }) || st
+              )
+            }else{
               setIsDevPasswordModalOpen(true);
             }
           }}
@@ -254,7 +243,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           />
         </MiniModal>
         {/* DEV MODE SETTINGS */}
-        {state.settings.devMode && (
+        {state.settings.devModeEnabled && (
           <View style={settingsGroupStyle.devModeView}>
             <Text style={settingsGroupStyle.devModeHeader}>
               {t("settsGetDevAnswer")}:
@@ -263,7 +252,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               inputMode="numeric"
               theme={theme}
               onSubmit={(text) => {
-                ToastAndroid.show(`${(parseInt(text, 10) * 2) % 9}`, 1000);
+                ToastAndroid.show(`${encodeDevKey(parseInt(text, 10))}`, 1000);
               }}
               placeholder="1234"
               onChange={() => {}}
@@ -304,16 +293,17 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
             </MiniModal>
           </View>
         )} */}
-        {state.settings.devMode && (
+        {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
               theme={theme}
               type="action"
-              subtext={t("settsExportStateHeader")}
+              subtext={t("settsExportStateSubtext")}
               header={t("settsExportStateHeader")}
               actionCallBack={() => {
-                const content = JSON.stringify(state, null, "_ ");
-                writeFile("BibleByHeartState.json", content, "application/json")
+                const content = JSON.stringify(state, null, " ");          
+                const fileName = `BibleByHeartState_${VERSION}_${dateToString(new Date().getTime())}.json`;
+                writeFile(fileName, content, "application/json")
                 .then((r) => {
                   if(r){
                     ToastAndroid.show(t("settsExported"),1000)
@@ -327,7 +317,69 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
             />
           </View>
         )}
-        {state.settings.devMode && (
+        {state.settings.devModeEnabled && (
+          <View>
+            <SettingsMenuItem
+              theme={theme}
+              type="action"
+              subtext={t("settsImportStateSubtext")}
+              header={t("settsImportStateHeader")}
+              actionCallBack={() => {
+                readFile([
+                  "application/json"
+                ])
+                .then((r) =>{
+                  if(!r){
+                    ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
+                    return;
+                  }
+                  switch(r.mimeType){
+                    case "application/json":
+                      const decodedData = JSON.parse(r.content.replace(/_ /g, " ")) as AppStateModel || undefined
+                      if(!decodedData){
+                        ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                        break;
+                      }
+                      console.log(decodedData.version)
+                      if(!decodedData?.version){
+                        ToastAndroid.show("Wrong version", 1000);
+                        break;
+                      }
+                      const validData = decodedData?.version === VERSION ? decodedData : convertState(decodedData)
+                      if(!validData){
+                        ToastAndroid.show(`Unable to convert to current version ${decodedData.version}>${VERSION}`, 1000);
+                        break;
+                      }
+                      ToastAndroid.show(`${t("settsImported")}`,1000)
+                      setState(
+                        () =>
+                          validData
+                      );
+                      break; 
+                    default: ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                  }
+                })
+                .catch(err => {
+                  console.error(err)
+                  ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
+      
+                })
+                // const content = JSON.stringify(state, null, " ");
+                // writeFile("BibleByHeartState.json", content, "application/json")
+                // .then((r) => {
+                //   if(r){
+                //     ToastAndroid.show(t("settsImported"),1000)
+                //   }
+                // } 
+                // ).catch(err => {
+                //   console.error(err)
+                //   ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
+                // })
+              }}
+            />
+          </View>
+        )}
+        {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
               theme={theme}

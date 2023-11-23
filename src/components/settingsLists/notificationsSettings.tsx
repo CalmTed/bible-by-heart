@@ -360,7 +360,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
             );
           }}
         />
-        {state.settings.devMode && (
+        {state.settings.devModeEnabled && (
           <SettingsMenuItem
             theme={theme}
             type="action"

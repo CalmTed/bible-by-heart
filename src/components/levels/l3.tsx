@@ -33,7 +33,7 @@ const levelComponentStyle = StyleSheet.create({
   },
   variableWord: {
     marginHorizontal: 2,
-    margin: 4,
+    margin: 2,
     borderBottomWidth: 2,
   },
   hiddenWordText: {
@@ -73,13 +73,13 @@ export const L30: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
 
-  const lastErrorIsWrongAddress = test.errorType === "wrongAddressToVerse";
+  const lastErrorIsWrongAddress = test.et.length ? test.et[test.et.length - 1] === "wrongAddressToVerse" : false;
   const alreadyEnteredUntill =
-    test.wrongWords.length > 0
-      ? test.wrongWords.sort((a, b) => b[0] - a[0])[0][0]
+    test.ww.length > 0
+      ? test.ww.sort((a, b) => b[0] - a[0])[0][0]
       : null;
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
-  const missingWords = test.testData.missingWords || [];
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
+  const missingWords = test.d.missingWords || [];
 
   const words = targetPassage?.verseText.split(" ") || [];
   const defaultSelectedWords: number[] = lastErrorIsWrongAddress
@@ -95,7 +95,7 @@ export const L30: FC<LevelComponentModel> = ({
     //reset list if same level but different test/passage
     resetForm();
     setSelectedWords(defaultSelectedWords);
-  }, [test.id]);
+  }, [test.i]);
 
   const resetForm = () => {
     setAPVisible(false);
@@ -109,9 +109,9 @@ export const L30: FC<LevelComponentModel> = ({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongAddressToVerse"],
+        wa: [...test.wa, value]
       }
     });
     resetForm();
@@ -165,9 +165,9 @@ export const L30: FC<LevelComponentModel> = ({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongWord",
-        wrongWords: [...test.wrongWords, [rightIndex, wrongWord]]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongWord"],
+        ww: [...test.ww, [rightIndex, wrongWord]]
       }
     });
   };
@@ -185,7 +185,7 @@ export const L30: FC<LevelComponentModel> = ({
     });
   };
 
-  const levelFinished = test.isFinished;
+  const levelFinished = test.f;
   const nextUnselectedIndex = [...missingWords]
     .sort((a, b) => a - b)
     .filter((mw) => !selectedWords.includes(mw))[0];
@@ -310,7 +310,7 @@ export const L30: FC<LevelComponentModel> = ({
                 />
               ]
             }
-            {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+            {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
               <Button
                 theme={theme}
                 key="nextButton"

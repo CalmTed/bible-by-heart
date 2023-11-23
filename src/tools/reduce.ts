@@ -3,7 +3,8 @@ import {
   PASSAGELEVEL,
   TESTLEVEL,
   DEFAULT_TRAINMODE_ID,
-  ARCHIVED_NAME
+  ARCHIVED_NAME,
+  DAY
 } from "../constants";
 import {
   ActionModel,
@@ -145,7 +146,12 @@ export const reduce: (
         ...state,
         settings: {
           ...state.settings,
-          devMode: action.payload
+          devModeEnabled: action.payload,
+          devModeActivationTime:
+            action.payload 
+            && !state.settings.devModeActivationTime 
+            ? new Date().getTime() 
+            : state.settings.devModeActivationTime
         }
       };
       break;
@@ -153,7 +159,7 @@ export const reduce: (
       changedState = {
         ...state,
         testsHistory: state.testsHistory.filter(
-          (t) => t.passageId !== action.payload
+          (t) => t.pi !== action.payload
         ),
         passages: state.passages.filter((p) => p.id !== action.payload)
       };
@@ -202,11 +208,11 @@ export const reduce: (
     case ActionName.updateTest:
       const updatedTests = state.testsActive
         .map((t) => {
-          if (t.id === action.payload.test.id) {
+          if (t.i === action.payload.test.i) {
             return {
               ...action.payload.test,
-              isFinished: action.payload.isRight ? true : t.isFinished,
-              triesDuration: action.payload.test.triesDuration.map(
+              f: action.payload.isRight ? true : t.f,
+              td: action.payload.test.td.map(
                 (td, i, a) =>
                   i === a.length - 1 ? [...td, new Date().getTime()] : td
               )
@@ -215,21 +221,21 @@ export const reduce: (
           return t;
         })
         .sort((a) =>
-          action.payload.isRight ? 0 : a.id === action.payload.test.id ? 1 : -1
+          action.payload.isRight ? 0 : a.i === action.payload.test.i ? 1 : -1
         );
       //sorting active tests to float last wrong one to the end
       const sortedTests = action.payload.isRight
         ? updatedTests
         : [
-            ...updatedTests.filter((t) => !!t.isFinished), //finished
-            ...updatedTests.filter((t) => !t.isFinished && !t.errorNumber), //unfinished without error
-            ...updatedTests.filter((t) => !t.isFinished && !!t.errorNumber) //unfinished with error
+            ...updatedTests.filter((t) => !!t.f), //finished
+            ...updatedTests.filter((t) => !t.f && !t.en), //unfinished without error
+            ...updatedTests.filter((t) => !t.f && !!t.en) //unfinished with error
           ];
       changedState = { ...state, testsActive: sortedTests };
       break;
     case ActionName.downgradePassage:
       //check if level is higher then 1
-      if ([TESTLEVEL.l10, TESTLEVEL.l11].includes(action.payload.test.level)) {
+      if ([TESTLEVEL.l10, TESTLEVEL.l11].includes(action.payload.test.l)) {
         break;
       }
       const levelDowngradingMap: PASSAGELEVEL[] = [
@@ -247,47 +253,63 @@ export const reduce: (
         PASSAGELEVEL.l4
       ];
       const targetPassage = state.passages.find(
-        (p) => p.id === action.payload.test.passageId
+        (p) => p.id === action.payload.test.pi
       );
       if (!targetPassage) {
         break;
       }
-      const newPassageLevel = levelDowngradingMap[targetPassage.selectedLevel];
-      console.log("downgrading. new level:",newPassageLevel)
       //change selected level
+      const newPassageLevel = levelDowngradingMap[targetPassage.selectedLevel];
+      //remove date of upgrading to mex level
+      const newUpgradeDates = {
+        ...targetPassage.upgradeDates,
+        [targetPassage.maxLevel]: 0
+      }
       const updatedPassages = state.passages.map((p) =>
-        p.id === action.payload.test.passageId
+        p.id === action.payload.test.pi
           ? ({
               ...p,
               //we taking from selectedLevel, b.c. if selected to hard then max is even harder
               selectedLevel: newPassageLevel,
-              maxLevel: newPassageLevel
+              maxLevel: newPassageLevel,
+              upgradeDates: newUpgradeDates
             } as PassageModel)
           : p
       );
       //regenerate test with new level
-      const targetTest = state.testsActive.filter((t) =>
-      t.id === action.payload.test.id)[0] as TestModel
+      const targetTest: TestModel = state.testsActive.filter((t) =>
+      t.i === action.payload.test.i)[0]
       
-      const recreatedTest = {
+      const recreatedTest:TestModel = {
         ...generateATest (
-          createTest(targetTest.sessionId, targetTest.passageId, newPassageLevel),
+          createTest(targetTest.si, targetTest.pi, newPassageLevel),
           state.passages,
           newPassageLevel,
           state.testsHistory
         ),
-        wrongAddress: targetTest.wrongAddress,
-        wrongWords: targetTest.wrongWords,
-        wrongPassagesId: targetTest.wrongPassagesId
+        wa: targetTest.wa,
+        ww: targetTest.ww,
+        wp: targetTest.wp
       }
-      console.log(recreatedTest)
-      const updatedActiveTests = state.testsActive.map((t) =>
-        t.id === action.payload.test.id
+      const updatedActiveTests: TestModel[] = state.testsActive.map((t) =>
+        t.i === action.payload.test.i
           ? recreatedTest
           : t
       );
+      const updatedTestHistory: TestModel[] = [
+        ...state.testsHistory,
+        {
+          ...action.payload.test,
+          f: true,
+          td: [[action.payload.test.td[0][0], new Date().getTime()]],
+          d: {},
+          en: action.payload.test.en || 0 + 1,
+          et: [...action.payload.test.et, "downgrading"]
+        }
+      ]
       changedState = {
         ...state,
+        testsHistory: updatedTestHistory,
         testsActive: updatedActiveTests,
         passages: updatedPassages
       };
@@ -295,13 +317,15 @@ export const reduce: (
     case ActionName.finishTesting:
       //updating last test finish time is finished flag
       const testsWithUpdatedLastTest = action.payload.tests.map((t) => {
+        //clearing testing data
+        //summing triesDuration up to one set from..to
         return {
           ...t,
-          triesDuration: t.triesDuration.map((td) =>
+          td: t.td.map((td) =>
             td.length === 1 ? [...td, new Date().getTime()] : td
           ),
-          isFinished: true,
-          testData: {}
+          f: true,
+          d: {}
         };
       });
       //updating history
@@ -311,26 +335,32 @@ export const reduce: (
         //updating passages new level awalible
         const perfectTestsNumber = getPerfectTestsNumber(newHistory, p);
         const hasErrorFromLastThreeTests =
-          perfectTestsNumber !== PERFECT_TESTS_TO_PROCEED;
+          perfectTestsNumber <= PERFECT_TESTS_TO_PROCEED;
         const nextLevel = {
           [PASSAGELEVEL.l1]: PASSAGELEVEL.l2,
           [PASSAGELEVEL.l2]: PASSAGELEVEL.l3,
           [PASSAGELEVEL.l3]: PASSAGELEVEL.l4,
           [PASSAGELEVEL.l4]: PASSAGELEVEL.l5
         };
-        //if has 3 perfect test stroke and not l5
+        //if has 4 perfect test stroke and not l5
         const level =
           !hasErrorFromLastThreeTests && p.maxLevel !== PASSAGELEVEL.l5
             ? nextLevel[p.maxLevel]
             : p.maxLevel;
         //if new max level is not the current one
         const flag = level !== p.maxLevel;
+        const newUpgradeDates = flag 
+          ? {
+            ...p.upgradeDates,
+            [level]: new Date().getTime()
+          }
+          : p.upgradeDates
         const lastTest = testsWithUpdatedLastTest.find(
-          (t) => t.passageId === p.id
+          (t) => t.pi === p.id
         );
         //update passages last tested time
         const lastTestedTime = lastTest
-          ? lastTest.triesDuration[lastTest.triesDuration.length - 1]?.[1]
+          ? lastTest.td[lastTest.td.length - 1]?.[1]
           : p.dateTested;
         return {
           ...p,
@@ -340,7 +370,8 @@ export const reduce: (
               ? level
               : p.selectedLevel,
           isNewLevelAwalible: flag,
-          dateTested: lastTestedTime
+          dateTested: lastTestedTime,
+          upgradeDates: newUpgradeDates
         };
       });
       //clear active tests
@@ -451,7 +482,15 @@ export const reduce: (
       console.warn("unknown action name: ", action);
   }
   if (changedState) {
-    changedState.lastChange = new Date().getTime();
+    const timeOfChange = new Date().getTime();
+    if(
+      changedState.settings.devModeActivationTime 
+      && changedState.settings.devModeActivationTime + (DAY * 1000) < timeOfChange
+      ){
+      changedState.settings.devModeActivationTime = null
+      changedState.settings.devModeEnabled = false
+    }
+    changedState.lastChange = timeOfChange;
   }
   try {
     //checking if not corrapted

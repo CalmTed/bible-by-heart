@@ -95,21 +95,21 @@ export const L40: FC<LevelComponentModel> = ({
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
   );
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
   //showAddressOrFirstWords: true => address false => first words
   const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
-  const sentancesRange = test.testData?.sentenceRange && test.testData.sentenceRange.length === 2 
-    ? sentences.slice(...test.testData.sentenceRange)
+  const sentancesRange = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
+    ? sentences.slice(...test.d.sentenceRange)
     : sentences;
   const targetText = sentancesRange.join("");
   const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
-  const initialValue = test.testData.showAddressOrFirstWords
+  const initialValue = test.d.showAddressOrFirstWords
     ? ""
     : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
   useEffect(() => {
     setPassageText(initialValue);
-  }, [test.id]);
+  }, [test.i]);
 
   const resetForm = () => {
     setAPVisible(false);
@@ -140,9 +140,9 @@ export const L40: FC<LevelComponentModel> = ({
         isRight: false,
         modifiedTest: {
           ...test,
-          errorNumber: (test.errorNumber || 0) + 1,
-          errorType: "wrongAddressToVerse",
-          wrongAddress: [...test.wrongAddress, value]
+          en: (test.en || 0) + 1,
+          et: [...test.et, "wrongAddressToVerse"],
+          wa: [...test.wa, value]
         }
       });
     }
@@ -173,20 +173,36 @@ export const L40: FC<LevelComponentModel> = ({
     //replace last unfinished word with the word provided
     const passageWords = text.split(" ");
     const nextWord = targetWords[passageWords.length];
-    const nextWordIfNeeded =
+    const charIfNeeded =
       word === targetWords[passageWords.length - 1] &&
       ["—", "–", "-", ":", ";", ".", ","].includes(nextWord)
         ? nextWord + " " // adding one more space here for a reason
         : "";
-    if (state.settings.hapticsEnabled) {
-      Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
-    }
     const newPassageText = [
       ...passageWords.slice(0, -1),
       word,
-      nextWordIfNeeded
+      charIfNeeded
     ].join(" ");
-    setPassageText(newPassageText);
+    const isWordWasWrong = newPassageText.trim().split(" ")[passageWords.length - 1] !== targetWords[passageWords.length - 1]
+    if(isWordWasWrong){
+      if (state.settings.hapticsEnabled) {
+        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
+      }
+      submitTest({
+        isRight: false,
+        modifiedTest: {
+          ...test,
+          en: (test.en || 0) + 1,
+          et: [...test.et, "wrongWord"],
+          ww: [...test.ww, [passageWords.length - 1, newPassageText.trim().split(" ")[passageWords.length - 1]]]
+        }
+      }); 
+    }else{
+      if (state.settings.hapticsEnabled) {
+        Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
+      }
+      setPassageText(newPassageText);
+    }
   };
   const handleDowngrade = () => {
     dispatch({
@@ -228,8 +244,8 @@ export const L40: FC<LevelComponentModel> = ({
     targetText.trim().startsWith(passageText.trim()) ||
     targetText === passageText;
 
-  const levelFinished = test.isFinished;
-  const isAddressProvided = test.testData.showAddressOrFirstWords;
+  const levelFinished = test.f;
+  const isAddressProvided = test.d.showAddressOrFirstWords;
   const theme = getTheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
@@ -255,13 +271,13 @@ export const L40: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.testData.sentenceRange && test.testData.sentenceRange[0] > 0 &&
+      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 &&
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
-            {test.testData.sentenceRange[0] > 3 ? "..." : ""}
+            {test.d.sentenceRange[0] > 3 ? "..." : ""}
             {sentences.slice(
-              test.testData.sentenceRange[0] > 3 ? test.testData.sentenceRange[0] - 3 : 0,
-              test.testData.sentenceRange[0]
+              test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
+              test.d.sentenceRange[0]
             ).join("")}
             ...
             </Text>
@@ -285,12 +301,12 @@ export const L40: FC<LevelComponentModel> = ({
           style={levelComponentStyle.inputStyle}
         />
       </View>
-      {test.testData.sentenceRange && test.testData.sentenceRange[1] < sentences.length &&
+      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length &&
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             ...
-            {sentences.slice(test.testData.sentenceRange[1], Math.min(test.testData.sentenceRange[1] + 3, sentences.length)).join("")}
-            {sentences.length - test.testData.sentenceRange[1] >= 3 ? "..." : ""}
+            {sentences.slice(test.d.sentenceRange[1], Math.min(test.d.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
             </Text>
         </View>
       }
@@ -343,17 +359,6 @@ export const L40: FC<LevelComponentModel> = ({
         onConfirm={handleAddressSelect}
         t={t}
       />
-      {((test.errorNumber || 0) > ERRORS_TO_DOWNGRADE ||
-        (new Date().getTime() - test.triesDuration[0][0]) > (1000*60*5)) && (
-        <Button
-          theme={theme}
-          type="secondary"
-          color="gray"
-          title={`${t("DowngradeLevel")}`}
-          onPress={() => handleDowngrade()}
-          disabled={levelFinished}
-        />
-      )}
       <ScrollView style={{ ...levelComponentStyle.optionButtonsScrollWrapper }}>
         <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
           {wordOptions.map((w, i) => (
@@ -370,6 +375,17 @@ export const L40: FC<LevelComponentModel> = ({
           ))}
         </View>
       </ScrollView>
+      {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
+        (new Date().getTime() - test.td[0][0]) > (1000*60*5)) && (
+        <Button
+          theme={theme}
+          type="secondary"
+          color="gray"
+          title={`${t("DowngradeLevel")}`}
+          onPress={() => handleDowngrade()}
+          disabled={levelFinished}
+        />
+      )}
     </ScrollView>
   );
 };

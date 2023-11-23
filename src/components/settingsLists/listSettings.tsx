@@ -21,6 +21,7 @@ import { IconName } from "../Icon";
 import { writeFile, readFile } from "../../tools/fileManager";
 import { LSVToArray, arrayToPassages, passagesToLSV } from "../../tools/handlePassageExport";
 import { schedulePushNotification } from "../../tools/notifications";
+import { dateToString } from "../../tools/formatDateTime";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -264,7 +265,8 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             ToastAndroid.show(t("ErrorWhileEncoding"), 1000)
             return;
           }
-          writeFile("BibleByHeart.txt", content, "text/plain")
+          const fileName = `BibleByHeartPassages_${dateToString(new Date().getTime())}.txt`;
+          writeFile(fileName, content, "text/plain")
           .then((r) => {
             if(r){
               ToastAndroid.show(t("settsExported"),1000)
@@ -316,7 +318,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                     ToastAndroid.show(t("ErrorTurnOnRemindersOnImport"),1000)
                   }
                 }
-                ToastAndroid.show(`${t("settsImported")}: ${passages.length}`,1000)
+                ToastAndroid.show(`${t("settsImportedVerses")}: ${passages.length}`,1000)
                   setState(
                     (st) =>
                       reduce(st, {

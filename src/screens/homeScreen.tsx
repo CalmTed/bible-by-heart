@@ -1,6 +1,6 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, ToastAndroid, DeviceEventEmitter } from "react-native";
-import { SCREEN, SETTINGS, THEMETYPE } from "../constants";
+import { View, Text, StyleSheet } from "react-native";
+import { SCREEN, THEMETYPE } from "../constants";
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
@@ -80,8 +80,6 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     //     return () => {}
     //   }
     // }, []);
-
-
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <View style={homeStyle.logoView}>
@@ -97,37 +95,71 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
         >
           {t("DaysStroke")}: {strokeData.length}
         </Text>
+        
       </View>
       <WeekActivityComponent theme={theme} state={state} t={t} />
       <View style={homeStyle.buttonView}>
-        <Button
-          theme={theme}
-          type="main"
-          color="green"
-          title={t("homePractice")}
-          onPress={() =>
-            activeTrainModes.length > 1
+        {state.passages.length === 0 &&<Button
+            key={"addFirstPassageButton"}
+            theme={theme}
+            type="main"
+            color="green"
+            title={t("AddPassages")}
+            onPress={() =>
+              navigateWithState({
+                navigation,
+                screen: SCREEN.listPassage,
+                state: state
+              })
+            }
+          />
+        }
+        {
+          state.passages.length > 0 && [
+          <Button
+            key={"practiceButton"}
+            theme={theme}
+            type="main"
+            color="green"
+            title={t("homePractice")}
+            onPress={() =>
+              activeTrainModes.length > 1
               ? setShowTrainModesList(true)
               : navigateWithState({
-                  navigation,
-                  screen: SCREEN.test,
-                  state: reduce(state, {name: ActionName.generateTests}) || state
-                })
-          }
-          icon={activeTrainModes.length > 1 ? IconName.selectArrow : undefined}
-          iconAlign="right"
-        />
-        <Button
-          theme={theme}
-          title={t("homeList")}
-          onPress={() =>
-            navigateWithState({
-              navigation,
-              screen: SCREEN.listPassage,
-              state: state
-            })
-          }
-        />
+                navigation,
+                screen: SCREEN.test,
+                state: reduce(state, {name: ActionName.generateTests}) || state
+              })
+            }
+            icon={activeTrainModes.length > 1 ? IconName.selectArrow : undefined}
+            iconAlign="right"
+            disabled={state.passages.length === 0}
+          />,
+          <Button
+            key={"listButton"}
+            theme={theme}
+            title={t("homeList")}
+            onPress={() =>
+              navigateWithState({
+                navigation,
+                screen: SCREEN.listPassage,
+                state: state
+              })
+            }
+          />,
+          <Button
+            key={"statsButton"}
+            theme={theme}
+            title={t("homeStats")}
+            onPress={() =>
+              navigateWithState({
+                navigation,
+                screen: SCREEN.stats,
+                state: state
+              })
+            }
+          />
+          ]}
         <Button
           theme={theme}
           title={t("homeSettings")}

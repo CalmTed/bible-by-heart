@@ -37,10 +37,10 @@ export const getAutoTimeTrigger: (
   const hourAndMinutes = history
     .filter(
       (histItem) =>
-        new Date().getTime() - histItem.triesDuration[0][0] < DAY * 30000
+        new Date().getTime() - histItem.td[0][0] < DAY * 30000
     ) //just last month
     .map((histItem) => {
-      const d = new Date(histItem.triesDuration[0][0]);
+      const d = new Date(histItem.td[0][0]);
       return [d.getHours(), d.getMinutes()];
     });
   const mostCommonHour = new Array(24)
@@ -68,7 +68,7 @@ export const getAutoTimeTrigger: (
   return {
     channelId: "Reminders",
     hour: mostCommonHour,
-    minute: mostCommon5Minutes * 5,
+    minute: Math.max(0, (mostCommon5Minutes * minutesGroups) - 10),//10 minutes before or at 0
     repeats: true
   };
 };

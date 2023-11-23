@@ -33,7 +33,7 @@ import addressToString from "../tools/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../tools/reduce";
 import { MiniModal } from "../components/miniModal";
-import timeToString from "../tools/timeToString";
+import { timeToString } from "../tools/formatDateTime";
 import { getTheme } from "../tools/getTheme";
 import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
 import { useApp } from "../tools/useApp";
@@ -43,7 +43,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);
-  const [isAPOpen, setAPOpen] = useState(false);
+  const addingFirstPassage = state.passages.length === 0
+  const [isAPOpen, setAPOpen] = useState(addingFirstPassage);
 
   const [isPEOpen, setPEOpen] = useState(false);
   const [selectedPassage, setSelectedPassage] = useState(
@@ -213,6 +214,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         return 0;
     }
   });
+  const archivedPassages = state.passages.filter(p => p.tags.includes(ARCHIVED_NAME))
   const listStyle = StyleSheet.create({
     searchView: {
       flexDirection: "row",
@@ -302,7 +304,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             icon={IconName.filter}
             onPress={() => setOpenFilters(true)}
             color={theme.colors.textSecond}
-            dot={state.passages.length > filteredPassages.length}
+            dot={state.passages.length - filteredPassages.length > archivedPassages.length}
           />
         </View>
         <View>
@@ -328,7 +330,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state.passages.length - sortedPassages.length
           }`}</Text>
         )}
-        {state.settings.devMode && (
+        {state.settings.devModeEnabled && (
           <View style={listStyle.devStatsView}>
             <Text style={theme.theme.text}>
               {t("NumberOfPassages")}: {state.passages.length} {"( "}
@@ -660,11 +662,9 @@ const ListItem: FC<{
       case SORTINGOPTION.selectedLevel:
         return `${t("SelectedLevel")} ${passage.selectedLevel}`;
       case SORTINGOPTION.resentlyCreated:
-        // return `${t("DateCreated")} ${timeToString(passage.dateCreated)}`;
         return `${timeToString(passage.dateCreated)}`;
       case SORTINGOPTION.oldestToTrain:
-        // return `${t("DateTested")} ${timeToString(passage.dateTested)}`;
-        return `${timeToString(passage.dateTested)}`;
+        return `${passage.dateTested ? timeToString(passage.dateTested) : t("Never")}`;
     }
   };
   const customT = createT(

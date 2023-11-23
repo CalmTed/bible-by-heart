@@ -68,7 +68,7 @@ export const L20: FC<LevelComponentModel> = ({
 
   useEffect(() => {
     resetForm();
-  }, [test.id]);
+  }, [test.i]);
 
   const resetForm = () => {
     setAPVisible(false);
@@ -81,9 +81,9 @@ export const L20: FC<LevelComponentModel> = ({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongAddressToVerse",
-        wrongAddress: [...test.wrongAddress, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongAddressToVerse"],
+        wa: [...test.wa, value]
       }
     });
     resetForm();
@@ -93,7 +93,7 @@ export const L20: FC<LevelComponentModel> = ({
     setSelectedAddress(value);
   };
   const handleAddressCheck = (value: AddressType) => {
-    const rightPassage = state.passages.find((p) => p.id === test.passageId);
+    const rightPassage = state.passages.find((p) => p.id === test.pi);
     if (!rightPassage) {
       return;
     }
@@ -103,9 +103,7 @@ export const L20: FC<LevelComponentModel> = ({
       }
       submitTest({
         isRight: true,
-        modifiedTest: {
-          ...test
-        }
+        modifiedTest: test
       }); //adding finish date and isFifish on reducer
     } else {
       if (state.settings.hapticsEnabled) {
@@ -120,22 +118,20 @@ export const L20: FC<LevelComponentModel> = ({
   const handleDowngrade = () => {
     dispatch({
       name: ActionName.downgradePassage,
-      payload: {
-        test: test
-      }
+      payload: {test}
     });
   };
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
   if (!targetPassage) {
     return <View />;
   }
-  const levelFinished = test.isFinished;
+  const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
   const sentences = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
-  const slicingStart = test.testData?.sentenceRange?.[0] || 0;
-  const slicingEnd = test.testData?.sentenceRange?.[1] || sentences.length;
+  const slicingStart = test.d?.sentenceRange?.[0] || 0;
+  const slicingEnd = test.d?.sentenceRange?.[1] || sentences.length;
   const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
-  const verseText = test.testData?.sentenceRange?.length ? slicedPassageText : targetPassage.verseText
+  const verseText = test.d?.sentenceRange?.length ? slicedPassageText : targetPassage.verseText
   return (
     <View style={levelComponentStyle.levelComponentView}>
       <ScrollView style={levelComponentStyle.passageTextView}>
@@ -203,7 +199,7 @@ export const L20: FC<LevelComponentModel> = ({
             }
           />
         ]}
-        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+        {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
           <Button
             theme={theme}
             key="nextButton"
@@ -239,7 +235,7 @@ export const L21: FC<LevelComponentModel> = ({
 
   useEffect(() => {
     resetForm();
-  }, [test.id]);
+  }, [test.i]);
 
   const resetForm = () => {
     setPassageOptions([]);
@@ -251,15 +247,15 @@ export const L21: FC<LevelComponentModel> = ({
       isRight: false,
       modifiedTest: {
         ...test,
-        errorNumber: (test.errorNumber || 0) + 1,
-        errorType: "wrongVerseToAddress",
-        wrongPassagesId: [...test.wrongPassagesId, value]
+        en: (test.en || 0) + 1,
+        et: [...test.et, "wrongVerseToAddress"],
+        wp: [...test.wp, value]
       }
     });
     resetForm();
   };
   const handlePassageCheck = (value: number) => {
-    const passage = state.passages.find((p) => p.id === test.passageId);
+    const passage = state.passages.find((p) => p.id === test.pi);
     if (!passage) {
       return;
     }
@@ -300,11 +296,11 @@ export const L21: FC<LevelComponentModel> = ({
       }
     });
   };
-  const targetPassage = state.passages.find((p) => p.id === test.passageId);
+  const targetPassage = state.passages.find((p) => p.id === test.pi);
   if (!targetPassage) {
     return <View />;
   }
-  const levelFinished = test.isFinished;
+  const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
   return (
     <View style={levelComponentStyle.levelComponentView}>
@@ -387,7 +383,7 @@ export const L21: FC<LevelComponentModel> = ({
             onSubmit={() => {}}
           />
         )}
-        {(test.errorNumber || 0) > ERRORS_TO_DOWNGRADE && (
+        {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
           <Button
             theme={theme}
             key="nextButton"

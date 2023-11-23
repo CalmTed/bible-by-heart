@@ -1,25 +1,26 @@
-import { PERFECT_TESTS_TO_PROCEED } from "../constants";
 import { PassageModel, TestModel } from "../models";
+import { testLevelToPassageLevel } from "./levelsConvertion";
 
 export const getPerfectTestsNumber: (
   history: TestModel[],
-  passageId: PassageModel
+  passage: PassageModel
 ) => number = (history, passage) => {
-  const lastThreeTests = history
+  const lastFewTests = history
+    .filter((th) => th.pi === passage.id)
     .sort(
       (a, b) =>
-        b.triesDuration[b.triesDuration.length - 1][1] -
-        a.triesDuration[a.triesDuration.length - 1][1]
+        b.td[0][1] -
+        a.td[0][1]
     )
-    .filter((th) => th.passageId === passage.id)
-    .slice(0, PERFECT_TESTS_TO_PROCEED);
-  //does last tree tests has max avalible level
-  const lastTestsWithMaxLevel = lastThreeTests.filter(
-    (t) => t.level.toString().slice(0, 1) === passage.maxLevel.toString()
-  );
-  //does last three tests has any error
-  const ErrorNUmberFromLastThreeTests = lastTestsWithMaxLevel.filter(
-    (th) => (th.errorNumber || 0) === 0
-  ).length;
-  return ErrorNUmberFromLastThreeTests;
+  let strokeLenght = 0
+  let strokeFlag = true
+  lastFewTests.forEach((t) => {
+    const isCorrect = testLevelToPassageLevel(t.l) >= passage.maxLevel && (t?.en || 0) == 0 
+    if(isCorrect && strokeFlag){
+      strokeLenght ++
+    }else{
+      strokeFlag = false
+    }
+  })
+  return strokeLenght
 };

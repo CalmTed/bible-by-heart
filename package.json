@@ -1,6 +1,6 @@
 {
   "name": "bible-by-heart",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
@@ -21,7 +21,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-native": "^4.0.0",
-    "expo": "~49.0.13",
+    "expo": "^49.0.18",
     "expo-device": "^5.4.0",
     "expo-document-picker": "~11.5.4",
     "expo-linear-gradient": "~12.3.0",

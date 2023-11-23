@@ -66,8 +66,8 @@ const DayActivityBar: FC<{
       fontSize: 10
     },
     itemBar: {
-      borderRadius: 20,
-      width: 25,
+      borderRadius: 10,
+      width: 27,
       alignContent: "center"
     },
     itemNumberText: {
@@ -85,7 +85,7 @@ const DayActivityBar: FC<{
         locations={[0, 1]}
         style={{ ...DayActivityBarStyles.itemBar, height: barHeight }}
       >
-        <Text style={DayActivityBarStyles.itemNumberText}>{value}</Text>
+        <Text style={DayActivityBarStyles.itemNumberText}>{value < 1000 ? value : `${Math.round(value / 1000)}k`}</Text>
       </LinearGradient>
       <Text
         style={{
