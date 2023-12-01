@@ -14,6 +14,7 @@ import { SelectModal } from "../components/SelectModal";
 import { ActionName } from "../models";
 import { getPassagesByTrainMode } from "../tools/generateTests";
 import { reduce } from "../tools/reduce";
+import { MangerSVG } from "../svg/manger";
 
 export interface ScreenModel {
   route: any;
@@ -83,7 +84,14 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <View style={homeStyle.logoView}>
-        <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
+        {
+          new Date().getMonth() !== 11 &&
+         <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
+        }
+        {
+          new Date().getMonth() === 11 &&
+         <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
+        }
         <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
           {t("appName")}
         </Text>

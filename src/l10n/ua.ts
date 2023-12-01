@@ -50,6 +50,7 @@ export const ua: typeof en = {
   [SORTINGOPTION.oldestToTrain]: "Треновані найдавніше",
   [SORTINGOPTION.resentlyCreated]: "Нещодавно додані",
   TranslationSetDefault: "Поставити за замовчуванням",
+  TranslationIsDefault: "Переклад за замовчуванням",
 
   [THEMETYPE.auto]: "Системна",
   [THEMETYPE.dark]: "Темна",
@@ -68,7 +69,8 @@ export const ua: typeof en = {
   settingsScreenTitle: "Налаштування",
   TitleSort: "Сортування",
   TitleFilters: "Фільтрування",
-  Repeat: "Повторювати",
+  Repeat: "Повторювати раз на",
+  NextRepeat: "Натупне повторення",
 
   notificationTitle1: "Готовий повторити вірші?",
   notificationTitle2: "Не забув потренувати вірші сьогодні?",
@@ -84,11 +86,13 @@ export const ua: typeof en = {
   DateTested: "Практиковано",
   Never: "Ніколи",
   AddTag: "Додати категорію...",
+  TranslationLabel: "Переклад",
+  LevelLabel: "Рівень",
   LevelSelectAddress: "Обери адресу",
   LevelStartWritingPassage: "Напиши перші слова",
   LevelWritePassageText: "Напиши текст вірша",
   LevelPickerSubtext:
-    "Пройди цей рівень тричі без помилок, щоби відкрити наступний рівень",
+    "Пройди цей рівень без помилок кілька раз, щоби відкрити наступний рівень",
   LevelPickerSubtextSecond: "Рівень зміниться наступного разу",
   LevelPickerSubtextL5: "Тестів без помилок поспіль",
   TestsAddPassagesToTest: "Додай тексти у список щоб мати змогу їх вчити",
@@ -201,12 +205,14 @@ export const ua: typeof en = {
   statsMostCommonAddressErrorHeader: "Найчастіші помилкові адреси",
   statsWrongWordsHeatmapHeader: "Карта найчастіших помилок у словах",
   statsAbsoluteScoreSubtext: "Загальна оцінка",
-  statsScoreCalculatingHintText: "Загальна оцінка - це сумма оцінок всіх текстів (кількість_віршів * (доступний_рівень - 1) * 2) \n\nВідносна оцінка (друге число) - це різниця загальної оцінки цього місяця і минулого",
+  statsScoreCalculatingHintText: "Загальна оцінка - це сума оцінок всіх текстів (кількість_віршів * (доступний_рівень - 1) * 2) \n\nВідносна оцінка (друге число) - це різниця загальної оцінки цього місяця і минулого",
   statsPassagesNumber: "Текстів",
   statsVersesNumber: "Віршів",
   statsAddressesLearned: "Адрес вивчено",
   statsFullyLearned: "Цілком вивчено",
   statsUpgradeDate: "Дата досягнення",
+  statsDailyTime: "Часу на день",
+  statsWeeklyTime: "Часу на тиждень",
 
   TranslationOther: "Інший",
   hrs: "год",//hours

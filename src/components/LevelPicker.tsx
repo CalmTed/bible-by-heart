@@ -86,7 +86,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
               ? targetPassage.selectedLevel
               : passageLevelFromTestLevel === targetPassage.selectedLevel 
               ? passageLevelFromTestLevel
-              : passageLevelFromTestLevel + " ("+targetPassage.selectedLevel+")" 
+              : passageLevelFromTestLevel //+ " ("+targetPassage.selectedLevel+")" 
           }`}
           // icon={IconName.selectArrow}
           onPress={handleLabelPress}

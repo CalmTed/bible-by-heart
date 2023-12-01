@@ -341,6 +341,15 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         state.settings.devModeEnabled &&
         <Button theme={theme} onPress={handleReset} title={t("Reset")}/>
         }
+        {/* {
+        state.settings.devModeEnabled &&
+        <Button theme={theme} onPress={() => {
+          handleTestSubmit({
+            isRight: true,
+            modifiedTest:activeTestObj
+          })
+        }} title={t("Pass")}/>
+        } */}
       </View>
     </View>
   );

@@ -12,7 +12,8 @@ import {
   PASSAGELEVEL,
   ARCHIVED_NAME,
   CUSTOM_TRANSLATION_NAME,
-  TRANSLATIONS_TO_FETCH
+  TRANSLATIONS_TO_FETCH,
+  DAY
 } from "../constants";
 import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
@@ -195,10 +196,13 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     if(newNumber.length != 0 && !valid){
       return;
     }
+    const newValue = newNumber.length ? parsed : null;
+    const reminderToggleValue = newNumber.length !== 0 || newValue ? true : false;
     setPassage((prv) => {
       return {
         ...prv,
-        minIntervalDaysNum: newNumber.length ? parsed : null
+        minIntervalDaysNum: newValue,
+        isReminderOn: reminderToggleValue 
       };
     });
   }
@@ -294,9 +298,14 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       width: "100%",
       flexDirection: "row"
     },
-    translationSelectWrapper: {
+    selectorsWrapper: {
       flexDirection: "row",
       width: "100%",
+      justifyContent: "space-evenly",
+      alignItems: "flex-start"
+    },
+    selectorSectionWrapper: {
+      flexDirection: "column",
       justifyContent: "space-evenly",
       alignItems: "center"
     },
@@ -423,35 +432,41 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                 : ""}
             </Text>
           </View>
-          <View style={PEstyle.translationSelectWrapper}>
-            <Select
-              theme={theme}
-              options={[
-                {
-                  label: t("TranslationOther"),
-                  value: CUSTOM_TRANSLATION_NAME
-                },
-                ...state.settings.translations.map((tr) => {
-                  return {
-                    label: tr.name,
-                    value: tr.id.toString()
-                  };
-                })
-              ]}
-              selectedIndex={
-                state.settings.translations
-                  .map((tr) => tr.id)
-                  .indexOf(tempPassage.verseTranslation || -1) + 1
-              }
-              onSelect={handleTranslationChange}
-            />
-            <LevelPicker
-              t={t}
-              targetPassage={tempPassage}
-              handleChange={handleLevelChange}
-              handleOpen={handleLevelPickerOpen}
-              state={state}
-            />
+          <View style={PEstyle.selectorsWrapper}>
+            <View style={PEstyle.selectorSectionWrapper}>
+              <Text style={theme.theme.subText}>{t("TranslationLabel")}:</Text>
+              <Select
+                theme={theme}
+                options={[
+                  {
+                    label: t("TranslationOther"),
+                    value: CUSTOM_TRANSLATION_NAME
+                  },
+                  ...state.settings.translations.map((tr) => {
+                    return {
+                      label: tr.name,
+                      value: tr.id.toString()
+                    };
+                  })
+                ]}
+                selectedIndex={
+                  state.settings.translations
+                    .map((tr) => tr.id)
+                    .indexOf(tempPassage.verseTranslation || -1) + 1
+                }
+                onSelect={handleTranslationChange}
+              />
+            </View>
+            <View style={PEstyle.selectorSectionWrapper}>
+            <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
+              <LevelPicker
+                t={t}
+                targetPassage={tempPassage}
+                handleChange={handleLevelChange}
+                handleOpen={handleLevelPickerOpen}
+                state={state}
+                />
+            </View>
           </View>
           <View style={PEstyle.bodyButtons}>
             <Button
@@ -509,7 +524,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               }) }
               
           </View>}
-          {passageStats.mostOftenAdressErrors.length > 1
+          {Math.max(...passageStats.mostOftenAdressErrors.map(i => i.errorNumber)) > 1
             && <Text key="AddressesTitle" style={{...PEstyle.bodyMetaTextHeader, marginHorizontal: 20}}>{t("statsMostCommonAddressErrorHeader")}</Text>
             }
           {passageStats.mostOftenAdressErrors.length > 1 && <View key="wrongAddressesView" style={{ marginHorizontal: 20, marginBottom: 10}}>
@@ -522,10 +537,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               })}
               
           </View>}
-          {Math.max(...passageStats.wordErrorsHeatMap) > 2 
+          {Math.max(...passageStats.wordErrorsHeatMap) > 1 
             && <Text key="HeatmapTitle" style={{...PEstyle.bodyMetaTextHeader, marginHorizontal: 20}}>{t("statsWrongWordsHeatmapHeader")} (0-{Math.max(...passageStats.wordErrorsHeatMap)})</Text>
             }
-          {Math.max(...passageStats.wordErrorsHeatMap) > 2 && <View  key={"heatmapView"} style={PEstyle.heatmapView}>
+          {Math.max(...passageStats.wordErrorsHeatMap) > 1 && <View  key={"heatmapView"} style={PEstyle.heatmapView}>
               {passage.verseText.split(" ").filter(w => w.length).map((w,i) => {
                 const max = Math.max(...passageStats.wordErrorsHeatMap)
                 const percent = (2 / max * (passageStats.wordErrorsHeatMap?.[i] || 0) || 0)
@@ -585,11 +600,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         <View style={PEstyle.reminderModalHeader}>
           {/* <Icon iconName={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/> */}
           <Text style={theme.theme.headerText}>{t("Repeat")}</Text>
-          <Pressable
+          {/* <Pressable
             onPress={handleReminderToggle}
           >
             <Checkbox theme={theme} isEnabled={tempPassage.isReminderOn} ></Checkbox>
-          </Pressable>
+          </Pressable> */}
         </View>
         <View style={PEstyle.reminderModalBody}>
           <Input
@@ -605,13 +620,16 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             style={theme.theme.headerText}
           >
             { 
-            tempPassage.minIntervalDaysNum 
-            ? t([
+            t([
                 "DaysLabelSingular", "DaysLabelTwoThreeFour", "DaysLabelMultiple"
-              ][multipleDaysVariation(tempPassage.minIntervalDaysNum)] as WORD) 
-            : t("Never")}
+              ][multipleDaysVariation(tempPassage.minIntervalDaysNum || 0)] as WORD) 
+            }
           </Text>
-        </View>
+          </View>
+          {tempPassage?.minIntervalDaysNum && 
+            <Text style={theme.theme.subText}>{t("NextRepeat")}: {dateToString(tempPassage.dateTested + tempPassage.minIntervalDaysNum * DAY * 1000)}</Text>
+          }
+        <Button theme={theme} type="main" color="green" onPress={() => setReminderModalShown(false)} title={t("Close")}></Button>
       </MiniModal>
     </Modal>
   );

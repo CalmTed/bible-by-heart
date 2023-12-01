@@ -239,7 +239,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                   }
                   type={!translationItem.isDefault ? "outline" : "transparent"}
                   disabled={translationItem.isDefault}
-                  title={t("TranslationSetDefault")}
+                  title={t(translationItem.isDefault ? "TranslationIsDefault" : "TranslationSetDefault")}
                 />
                 <Button
                   theme={theme}

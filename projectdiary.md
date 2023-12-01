@@ -77,7 +77,7 @@ boilerplate:
 - [x] #added passage stats calculating and rendering(general, per level, heatmap, wrong addresses) + state import feature + level5 wrong word calculating to get more data for heatmap + a little of calculating app stats
 2023-11-22
 - [x] #intent add stats screen with other global stats(time, sessions, stats by session, stats by level) 
-- [ ] #intent add upgradeDate to passage data so we could retrieve relative score for last two month + write time on udgrade/clear on downgrading (+) + get uprade time from history(for each passage if one is level lower but the next is higher set time of level of the highter one to the time of the lower one)(+)
+- [x] #intent add upgradeDate to passage data so we could retrieve relative score for last two month + write time on udgrade/clear on downgrading (+) + get uprade time from history(for each passage if one is level lower but the next is higher set time of level of the highter one to the time of the lower one)(+)
 - [x] #added stats screen with general stats and stats per level
 - [ ] #question do we include missing days in day/week awarage?
 - [ ] #idea we need to notify users that some stroke days might be lost due to clearing history of the removed passages
@@ -88,4 +88,12 @@ boilerplate:
 - [x] #intent check stroke calculating b.c. it removes some days on import
 - [ ] #idea add month showing with data for each day sessions
 - [x] #added upgraded passage model, added convertion from history for previus versions
-- [x] #added relative score, fixed perfect scrike for selected level, fixed downgrading bug, added level 4 error when selecting wrong word, 
+- [x] #added relative score, fixed perfect scrike for selected level, fixed downgrading bug, added level 4 error when selecting wrong word
+2023-11-25
+- [ ] #error level 11 shows options in different language(translation)
+- [x] #added manger svg for december 
+2023-11-29
+- [ ] #intent fix due to modal (add title, next due to date, remove NEVER thing)
+- [ ] #intent fix passage translation selector (add labels, "reimagine" passage editor)
+- [ ] #intent add daily and weekly stats(with relative percent), add week and month switcher
+- [ ] #intent add calendar view(month activity), sessions view(day range)

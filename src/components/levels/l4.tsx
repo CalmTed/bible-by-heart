@@ -99,9 +99,12 @@ export const L40: FC<LevelComponentModel> = ({
   //showAddressOrFirstWords: true => address false => first words
   const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
   const sentancesRange = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
-    ? sentences.slice(...test.d.sentenceRange)
-    : sentences;
-  const targetText = sentancesRange.join("");
+    ? (targetPassage?.verseText || "").slice(
+        sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
+        sentences.slice(...test.d.sentenceRange).join(".").length
+      )// sentences.slice(...test.d.sentenceRange)
+    : (targetPassage?.verseText || "");
+  const targetText = sentancesRange;
   const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
   const initialValue = test.d.showAddressOrFirstWords
     ? ""

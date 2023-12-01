@@ -47,6 +47,7 @@ export const en = {
   [SORTINGOPTION.oldestToTrain]: "Oldest to train",
   [SORTINGOPTION.resentlyCreated]: "Recently created",
   TranslationSetDefault: "Set as default",
+  TranslationIsDefault: "Translation is defualt",
 
   [THEMETYPE.auto]: "System default",
   [THEMETYPE.dark]: "Dark",
@@ -65,7 +66,8 @@ export const en = {
   settingsScreenTitle: "Settings",
   TitleSort: "Sorting",
   TitleFilters: "Filters",
-  Repeat: "Repeat",
+  Repeat: "Repeat every",
+  NextRepeat: "Next time",
 
   notificationTitle1: "Ready to practice verses?",
   notificationTitle2: "Don't forget to train Bible verses!",
@@ -81,6 +83,8 @@ export const en = {
   DateTested: "Date tested",
   Never: "Never",
   AddTag: "Add tag...",
+  TranslationLabel: "Translation",
+  LevelLabel: "Level",
   LevelSelectAddress: "Select address",
   LevelStartWritingPassage: "Start writing passage",
   LevelWritePassageText: "Write passage text",
@@ -203,6 +207,8 @@ export const en = {
   statsAddressesLearned: "Addresses learned",
   statsFullyLearned: "Fully learned",
   statsUpgradeDate: "Upgrade date",
+  statsDailyTime: "Average time per day",
+  statsWeeklyTime: "Average time per week",
 
   TranslationOther: "Other",
   hrs: "hrs",//hours

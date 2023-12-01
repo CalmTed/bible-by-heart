@@ -330,7 +330,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state.passages.length - sortedPassages.length
           }`}</Text>
         )}
-        {state.settings.devModeEnabled && (
+        {/* {state.settings.devModeEnabled && (
           <View style={listStyle.devStatsView}>
             <Text style={theme.theme.text}>
               {t("NumberOfPassages")}: {state.passages.length} {"( "}
@@ -403,7 +403,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 .reduce((ps, p) => ps + p.versesNumber, 0)}
             </Text>
           </View>
-        )}
+        )} */}
       </ScrollView>
       <MiniModal
         theme={theme}

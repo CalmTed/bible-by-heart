@@ -4,6 +4,7 @@ import addZero from "./addZero";
 import { DAY, PASSAGELEVEL, SETTINGS, STATSMETRICS } from "../constants";
 import { addressDistance } from "./addressDistance";
 import { testLevelToPassageLevel } from "./levelsConvertion";
+import { dateToString, timeStringFromMS, timeToString } from "./formatDateTime";
 
 const dayInMs = DAY * 1000;
 
@@ -242,7 +243,9 @@ interface AppStatsModel{
   totalTimeSpentMS: number
   totalTestsNumber: number
   avgDayDuration: number
+  avgDayDurationRelativePercent: number
   avgWeekDuration: number
+  avgWeekDurationRelativePercent: number
   maxStroke: number
   avgDurationMS: number
   avgDurationByLevel: Record<PASSAGELEVEL, testInfoByLevelModel>
@@ -276,16 +279,25 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
     errorNumber: number
   }[] = []
   // TODO get duration get number > calculate average  ???including missing days or not???
-  const allWeeksStats = []
-  const allDaysStats = []
+  const allWeeksStats:number[] = []
+  const allDaysStats:number[] = []
   state.testsHistory.forEach(th => {
-      //TODO derive from th timestamp
-      const weekNumber = 0;
-      const dayNumber = 0;
-
-
-      totalTestsNumber++
-      const durationMS = th.td[0][1] - th.td[0][0]
+    
+    totalTestsNumber++
+    const durationMS = th.td[0][1] - th.td[0][0];
+    
+    const weekNumber = Math.floor(th.td[0][1] / 1000 / DAY / 7);
+    const dayNumber = Math.floor(th.td[0][1] / 1000 / DAY);
+    if(!allDaysStats?.[dayNumber]){
+      allDaysStats[dayNumber] = durationMS
+    }else{
+      allDaysStats[dayNumber] += durationMS
+    }
+    if(!allWeeksStats?.[weekNumber]){
+      allWeeksStats[weekNumber] = durationMS
+    }else{
+      allWeeksStats[weekNumber] += durationMS
+    }
       //duration by level
       const passageLevel = testLevelToPassageLevel(th.l);
       avgDurationByLevel = {
@@ -316,16 +328,49 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
   const totalTimeSpentMS = Object.values(avgDurationByLevel).map(i => i.duration).reduce((ps,v) => ps += v, 0);
   const avgDurationMS = totalTimeSpentMS / (totalTestsNumber || 1);
   const now = new Date()
-  const absoluteScore = state.passages.reduce((ps, v) => ps + getPassageScore(v),0);
-  const startOfThisMonth = new Date(`${now.getFullYear()}-${now.getMonth() + 1}-01`).getTime()
-  const startOfPreviusMonth = startOfThisMonth - 1000 * DAY * 30;
-  const relativeScore =  getTimeBoundStats(state, startOfThisMonth, now.getTime()).maxScore - getTimeBoundStats(state, startOfPreviusMonth, startOfThisMonth).maxScore
+  //calculation strategy as for 2023-12-01
+  //get time from start of the month (12-01 0000 - 12-01 1220)
+  //get time from the same period from previus month (11-01 0000 - 11-01 1220)
+    //-month + same time range
+  //calculate maxScore for both ranges
+  const startOfThisMonth =  new Date(`${now.getFullYear()}-${now.getMonth() + 1}-01`).getTime() // state.statsDateRange.to ||
+  const timeFromTheMonthStart = now.getTime() - startOfThisMonth/// 1000 * DAY * 18;
+  const startOfPreviusMonth = startOfThisMonth - 1000 * DAY * 30;//state.statsDateRange.from ||
+  const currentScore = getTimeBoundStats(state, startOfThisMonth, startOfThisMonth + timeFromTheMonthStart);
+  // console.log(timeToString(startOfPreviusMonth), timeToString(startOfPreviusMonth + timeFromTheMonthStart))
+  const previusEpisodeScore = getTimeBoundStats(state, startOfPreviusMonth, startOfPreviusMonth + timeFromTheMonthStart);
+  
+  //by day & by week 
+  const allDefinedDaysDuration = allDaysStats.filter(d => d)
+  const allDefinedWeeksDuration = allWeeksStats.filter(w => w)
+  const thisMonthStartDay = Math.floor(startOfThisMonth / 1000 / DAY)
+  const previusEpisodeDays = allDaysStats.filter((d,i) => {
+    return d && i < thisMonthStartDay;
+  })
+  const thisMonthStartWeek = Math.floor(startOfThisMonth / 1000 / DAY / 7)
+  const previusEpisodeWeeks = allWeeksStats.filter((d,i) => {
+    return d && i < thisMonthStartWeek;
+  })
+  const getAverage: (sum: number, len: number) => number = (sum, len) => {
+    return sum / (len || 1);
+  }
+  const allDataAverageDayDuration = getAverage(allDefinedDaysDuration.reduce((ps,v) => ps+v,0), allDefinedDaysDuration.length)
+  const previusMonthAverageDayDuration = getAverage(previusEpisodeDays.reduce((ps,v) => ps+v,0), previusEpisodeDays.length)
+
+  const allDataAverageWeekDuration = getAverage(allDefinedWeeksDuration.reduce((ps,v) => ps+v,0), allDefinedWeeksDuration.length)
+  const previusMonthAverageWeekDuration = getAverage(previusEpisodeWeeks.reduce((ps,v) => ps+v,0), previusEpisodeWeeks.length)
+  // console.log(timeStringFromMS(allDataAverageDayDuration), timeStringFromMS(previusMonthAverageDayDuration))
+  const avgDayDurationRelativePercent = 100 - Math.round(100 / allDataAverageDayDuration * previusMonthAverageDayDuration); 
+  const avgWeekDurationRelativePercent = 100 - Math.round(100 / allDataAverageWeekDuration * previusMonthAverageWeekDuration); 
+  console.log(currentScore.maxScore, previusEpisodeScore.maxScore)
   return{
-    absoluteScore,
-    relativeScore,
-    avgDayDuration: 0,
-    avgWeekDuration: 0,
-    maxStroke: 0,
+    absoluteScore: currentScore.maxScore,
+    relativeScore: currentScore.maxScore - previusEpisodeScore.maxScore,
+    avgDayDuration: getAverage(allDefinedDaysDuration.reduce((ps,v) => ps+v,0), allDefinedDaysDuration.length),
+    avgDayDurationRelativePercent,
+    avgWeekDuration: getAverage(allDefinedWeeksDuration.reduce((ps,v) => ps+v,0), allDefinedWeeksDuration.length),
+    avgWeekDurationRelativePercent,
+    maxStroke: 0,//TODO
     totalTimeSpentMS,
     totalTestsNumber,
     avgDurationMS,
@@ -342,15 +387,17 @@ interface TimeRangeStats{
 }
 const getPassageScore: (passage: PassageModel, from?: number, to?: number) => number = (passage, from, to) => {
   if(!from || !to || from > to){
+    if(from && to && from > to){
+      console.log("getPassageScore: from cant be langer then to")
+    }
     return passage.versesNumber * (passage.maxLevel -1) * 2
   }else{
     const maxLevel = Object.values(PASSAGELEVEL)
       .filter(v => typeof v === "string")
       .map((v,p) => {
-        const targetLevel = p
+        const targetLevel = p;
         const isCorrect = 
         passage.upgradeDates[targetLevel as PASSAGELEVEL] !== 0 
-        && passage.upgradeDates[targetLevel as PASSAGELEVEL] > from 
         && passage.upgradeDates[targetLevel as PASSAGELEVEL] < to;
         return {
           p: targetLevel,
@@ -366,12 +413,16 @@ const getPassageScore: (passage: PassageModel, from?: number, to?: number) => nu
 //for last and this month
 const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: number) => TimeRangeStats = (state, fromMS, toMS) => {
   if(fromMS >= toMS){
-    console.warn("fromMS cant be more then or equal to toMS")
+    console.warn("getTimeBoundStats: fromMS cant be more then or equal to toMS")
     return {
       maxScore: 0  
     }
   }
-  const maxScore = state.passages.filter(p => p.dateCreated > fromMS).reduce((ps, v) => ps + getPassageScore(v,fromMS, toMS),0);
+  //filtering passages that wasn't created at that time
+  const passagesCreatedBeforeToDate = state.passages.filter( p => {
+    return p.dateCreated < toMS
+  })
+  const maxScore = passagesCreatedBeforeToDate.reduce((ps, v) => ps + getPassageScore(v,fromMS, toMS), 0);
   return {
     maxScore,
     // totalTime: 0,//for later
