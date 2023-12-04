@@ -239,7 +239,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         />
         <Text style={theme.theme.text}>{state.testsActive.filter(t => !t.td.length).length}x</Text>
     </View>
-
+    
   return (
     <View style={{ ...theme.theme.screen }}>
       <View

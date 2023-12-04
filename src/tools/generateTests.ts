@@ -361,24 +361,25 @@ const createL11Test: CreateTestMethodModel = ({
   history
 }) => {
   const optionsLength = 4;
-  //if passages.length < optionsLength then replace with L10
-  if (passages.length < optionsLength) {
-    return createL10Test({ initialTest, passages, history });
-  }
-  //passages from errors
   const targetPassage = passages.find(
     (p) => p.id === initialTest.pi
     ) as PassageModel;
+  const languageFilteredPassages = passages.filter(p => p.verseTranslation === targetPassage.verseTranslation)
+  //if passages.length < optionsLength then replace with L10
+  if (languageFilteredPassages.length < optionsLength) {
+    return createL10Test({ initialTest, passages, history });
+  }
+  //passages from errors
   const successStroke = getPerfectTestsNumber(history, targetPassage);
   const fromErrors = history
     .filter(ph => ph.pi === initialTest.pi || ph.wp || ph.wa)
     .filter(ph => ph.wp.includes(ph.i))
     .map((ph) =>
-      passages.filter((p) => ph.wp.includes(p.id) || ph.wa.find(wa => getAddressDifference(p.address, wa) === 0))
+      languageFilteredPassages.filter((p) => ph.wp.includes(p.id) || ph.wa.find(wa => getAddressDifference(p.address, wa) === 0))
     )
     .flat();
   //simular passages
-  const closestPassages = passages
+  const closestPassages = languageFilteredPassages
     .filter(p => addressDistance(targetPassage.address, p.address) !== 0 && !fromErrors.filter(frp => p.id === frp.id).length)
     .sort((a, b) => {
       let bias = 0;

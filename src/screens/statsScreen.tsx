@@ -7,7 +7,7 @@ import {
   Pressable
 } from "react-native";
 import { navigateWithState } from "../screeenManagement";
-import { PASSAGELEVEL, SCREEN } from "../constants";
+import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
@@ -145,7 +145,16 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               })
             }
           />,
-          <Text style={theme.theme.headerText}>{t("statsScreenTitle")}</Text>
+          <Text style={theme.theme.headerText}>{t("statsScreenTitle")}</Text>,
+          <IconButton
+            theme={theme}
+            icon={IconName.filter}
+            onPress={() =>  navigateWithState({
+              navigation,
+              screen: SCREEN.calendar,
+              state
+            })}
+          />
         ]}
       />
       <ScrollView style={statsStyle.listView}>

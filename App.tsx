@@ -27,6 +27,16 @@ export default function App() {
   const [textInputValue, setTextInputValue] = useState("");
   const [askedForHelp, setAskedForHelp] = useState(false);
 
+  useEffect(() => {
+    Linking.addEventListener("url", (link) => {
+      if(state.settings.devModeEnabled){
+        ToastAndroid.show("Recieved data:" + link, 1000)
+      }
+    })
+    return () => {
+      Linking.removeAllListeners("url")
+    }
+  })
   const loadState = () => {
     storage
       .load({

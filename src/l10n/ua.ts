@@ -71,6 +71,8 @@ export const ua: typeof en = {
   TitleFilters: "Фільтрування",
   Repeat: "Повторювати раз на",
   NextRepeat: "Натупне повторення",
+  calendarScreenTitle: "Календар",
+  dayStatsTitle: "Статистика дня",
 
   notificationTitle1: "Готовий повторити вірші?",
   notificationTitle2: "Не забув потренувати вірші сьогодні?",
@@ -117,6 +119,8 @@ export const ua: typeof en = {
   fetchPropositionText: "Підтягнути текст автоматично?",
   Loading: "Заванатження...",
   NotAFetchableTranslation: "Введи текст вірша тут",
+  NoDataForThisDay: "Для цього дня немає даних",
+
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",
@@ -239,6 +243,19 @@ export const ua: typeof en = {
   dayEveryday: "Кожного дня",
   dayWeekdays: "У будні дні",
   dayWeekends: "У вихідні",
+
+  Month_1: "Січень",
+  Month_2: "Лютий",
+  Month_3: "Березень",
+  Month_4: "Квітень",
+  Month_5: "Травень",
+  Month_6: "Червень",
+  Month_7: "Липень",
+  Month_8: "Серпень",
+  Month_9: "Вересень",
+  Month_10: "Жовтень",
+  Month_11: "Листопад",
+  Month_12: "Грудень",
 
   bGenShrt: "Бут",
   bGenLong: "Буття",

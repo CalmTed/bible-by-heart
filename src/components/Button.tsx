@@ -34,6 +34,9 @@ export const Button: FC<ButtonModel> = ({
   dot,
   iconAlign = "left"
 }) => {
+  if(!theme){
+    return <View></View>
+  }
   const gradientColors =
     type === "transparent"
       ? ["transparent", "transparent"]
@@ -142,7 +145,7 @@ export const IconButton: FC<IconButtonModel> = ({
       onPress={onPress}
       style={{ ...buttonStyles.iconButton, ...style }}
       disabled={disabled}
-      iconColor={color}
+      iconColor={disabled ? theme.colors.textSecond : color}
       dot={dot}
     />
   );

@@ -40,7 +40,7 @@ Roadmap
 - [x] save stats (tests result, stroke, weekly progress) v0.0.6
   - [x] stroke counter
   - [x] weekly progress
-- [ ] settings v0.0.7
+- [x] settings v0.0.7
   - [x] level 3 fix(sort,skip button, save right words)
   - [x] show wrong answer (l1, l2, l4, l5)
   - [x] state converter from v0.0.6 to v0.0.7
@@ -96,7 +96,7 @@ Roadmap
     - [-] add to passages and open list
   - [x] edit passage due to, sort main train mode by it
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
-  - [ ] all tests list, grouping by date and session
+  - [x] all tests list, grouping by date and session
   - [x] passage statistics in passage editor
      - [x] most common errors list with error numbers
      - [x] total tries tested, total time spent
@@ -126,6 +126,7 @@ Other ideas:
 - accomplishments
 - friends feature / feed
 - groups functionality(group stats, group passages, group quests)
+- web app
  
 Dev. rules
 ---

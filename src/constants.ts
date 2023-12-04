@@ -44,12 +44,13 @@ export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
 export enum SCREEN {
-home = "home",
+  home = "home",
   listPassage = "listPassage",
   stats = "stats",
   test = "test",
   testResults = "testResults",
-  settings = "settings"
+  settings = "settings",
+  calendar = "calendar"
 }
 
 export enum SORTINGOPTION {

@@ -7,6 +7,7 @@ import {
   iconCross,
   iconDone,
   iconFilter,
+  iconForward,
   iconSearch,
   iconSelectArrow,
   iconSort
@@ -23,7 +24,8 @@ export enum IconName {
   bellOutline = "iconBellOutline",
   bellGradient = "iconBellGradient",
   cross = "iconCross",
-  sort = "iconSort"
+  sort = "iconSort",
+  forward = "iconForward"
 }
 
 const IconData = {
@@ -36,7 +38,8 @@ const IconData = {
   [IconName.bellOutline]: iconBellOutline,
   [IconName.bellGradient]: iconBellGradient,
   [IconName.cross]: iconCross,
-  [IconName.sort]: iconSort
+  [IconName.sort]: iconSort,
+  [IconName.forward]: iconForward
 };
 
 export const Icon: FC<{ iconName: IconName; color?: string }> = ({

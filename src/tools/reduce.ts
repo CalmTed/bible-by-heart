@@ -316,13 +316,14 @@ export const reduce: (
       break;
     case ActionName.finishTesting:
       //updating last test finish time is finished flag
+      const finishingTime = new Date().getTime();
       const testsWithUpdatedLastTest = action.payload.tests.map((t) => {
         //clearing testing data
         //summing triesDuration up to one set from..to
         return {
           ...t,
           td: t.td.map((td) =>
-            td.length === 1 ? [...td, new Date().getTime()] : td
+            td.length === 1 ? [...td, finishingTime] : td
           ),
           f: true,
           d: {}
@@ -352,7 +353,7 @@ export const reduce: (
         const newUpgradeDates = flag 
           ? {
             ...p.upgradeDates,
-            [level]: new Date().getTime()
+            [level]: finishingTime
           }
           : p.upgradeDates
         const lastTest = testsWithUpdatedLastTest.find(

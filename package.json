@@ -7,7 +7,9 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "tsc --noEmit && eslint --ext .ts,.tsx ./src/",
-    "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix"
+    "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix",
+    "build": "eas build --platform android --profile production"
+    
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.18.2",
@@ -15,6 +17,7 @@
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "d": "^1.0.1",
     "eslint": "^8.45.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^8.8.0",

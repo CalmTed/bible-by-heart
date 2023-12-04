@@ -46,3 +46,7 @@ export const iconBellGradient = `<svg width="19" height="21" viewBox="0 0 19 21"
 export const iconSort = `<svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.5 8H13.5M1.5 1.5H16.5M1.5 14.5H10" stroke="#ECECEC" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
+
+export const iconForward = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 9H1M1 9L8.38462 1M1 9L8.38462 17" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180) translate(-18 -18)"/>
+</svg>`;

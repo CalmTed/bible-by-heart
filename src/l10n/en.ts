@@ -68,6 +68,8 @@ export const en = {
   TitleFilters: "Filters",
   Repeat: "Repeat every",
   NextRepeat: "Next time",
+  calendarScreenTitle: "Calendar",
+  dayStatsTitle: "Day statistics",
 
   notificationTitle1: "Ready to practice verses?",
   notificationTitle2: "Don't forget to train Bible verses!",
@@ -113,6 +115,7 @@ export const en = {
   fetchPropositionText: "Do you want to fetch passage text?",
   Loading: "Loading...",
   NotAFetchableTranslation: "Enter passage text here",
+  NoDataForThisDay: "No data for this day",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",
@@ -235,6 +238,19 @@ export const en = {
   dayEveryday: "Everyday",
   dayWeekdays: "Weekdays",
   dayWeekends: "Weekends",
+
+  Month_1: "January",
+  Month_2: "February",
+  Month_3: "March",
+  Month_4: "April",
+  Month_5: "May",
+  Month_6: "June",
+  Month_7: "July",
+  Month_8: "August",
+  Month_9: "September",
+  Month_10: "October",
+  Month_11: "November",
+  Month_12: "December",
 
   bGenShrt: "Gen",
   bGenLong: "Genesis",

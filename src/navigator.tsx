@@ -11,6 +11,7 @@ import { SettingsScreen } from "./screens/settingsScreen";
 import * as TaskManager from "expo-task-manager";
 import { ToastAndroid } from "react-native";
 import { StatsScreen } from "./screens/statsScreen";
+import { CalendarScreen } from "./screens/calendarScreen";
 
 const Stack = createStackNavigator();
 
@@ -28,7 +29,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         error,
         executionInfo
       );
-      ToastAndroid.show(JSON.stringify(data), 1000)
+      ToastAndroid.show("Received a notification in the background!" + JSON.stringify(data), 1000)
     }
   );
 
@@ -69,6 +70,11 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         <Stack.Screen
           name={SCREEN.stats}
           component={StatsScreen}
+          initialParams={{ ...state }}
+        />
+        <Stack.Screen
+          name={SCREEN.calendar}
+          component={CalendarScreen}
           initialParams={{ ...state }}
         />
       </Stack.Navigator>

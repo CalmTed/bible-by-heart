@@ -73,27 +73,36 @@ boilerplate:
 - [x] #intent complete new state model + state convertor + new devmode switcher + dev mode timeout check in reducer
 - [x] #intent start stats screen + stats tools + passage stats
 - [x] #added new state model, state converter, new devmode encoder, devmode timeout disabling, fixing visible errors in each file
-- [ ] #question how to get data for relative stats? we need to know when each passage was updated to the next level, may be add new parameter to passage model?
+- [x] #question how to get data for relative stats? we need to know when each passage was updated to the next level, may be add new parameter to passage model?
 - [x] #added passage stats calculating and rendering(general, per level, heatmap, wrong addresses) + state import feature + level5 wrong word calculating to get more data for heatmap + a little of calculating app stats
 2023-11-22
 - [x] #intent add stats screen with other global stats(time, sessions, stats by session, stats by level) 
 - [x] #intent add upgradeDate to passage data so we could retrieve relative score for last two month + write time on udgrade/clear on downgrading (+) + get uprade time from history(for each passage if one is level lower but the next is higher set time of level of the highter one to the time of the lower one)(+)
 - [x] #added stats screen with general stats and stats per level
-- [ ] #question do we include missing days in day/week awarage?
-- [ ] #idea we need to notify users that some stroke days might be lost due to clearing history of the removed passages
-- [ ] #idea we can add different WORD icon on the home screen in the Christmass seasona and another one for the Easter
+- [x] #question do we include missing days in day/week awarage? > NO
+- [x] #idea we need to notify users that some stroke days might be lost due to clearing history of the removed passages
+- [x] #idea we can add different WORD icon on the home screen in the Christmass seasona and another one for the Easter
 2023-11-23
 - [x] #added fixed bug with selecting level11 with single passage
 - [x] #added removed test,list,stats buttons in no passages, in this case showing "add passage"
 - [x] #intent check stroke calculating b.c. it removes some days on import
-- [ ] #idea add month showing with data for each day sessions
+- [x] #idea add month showing with data for each day sessions
 - [x] #added upgraded passage model, added convertion from history for previus versions
 - [x] #added relative score, fixed perfect scrike for selected level, fixed downgrading bug, added level 4 error when selecting wrong word
 2023-11-25
 - [ ] #error level 11 shows options in different language(translation)
 - [x] #added manger svg for december 
 2023-11-29
-- [ ] #intent fix due to modal (add title, next due to date, remove NEVER thing)
-- [ ] #intent fix passage translation selector (add labels, "reimagine" passage editor)
-- [ ] #intent add daily and weekly stats(with relative percent), add week and month switcher
-- [ ] #intent add calendar view(month activity), sessions view(day range)
+- [x] #intent fix due to modal (add title, next due to date, remove NEVER thing)
+- [x] #intent fix passage translation selector (add labels, "reimagine" passage editor)
+- [x] #intent add daily and weekly stats(with relative percent), add week and month switcher
+- [x] #intent add calendar view(month activity), sessions view(day range)
+- [x] #added fixed due to modal, added transtation label in PE, new stats masonary items, fixed relative stats, added daily stats
+2023-12-03
+- [x] #intent add calendar screen (link in stats, draw days, switch with swipe!)
+- [x] #added calendar screen + day stats variation NO data shown yet
+2023-12-04
+- [x] #intent add calendar days buttons, add day view(total duration, sessions timestamp & duration, passages list, leveling up)
+- [x] #added calendar buttons, day stats, swipe action
+- [ ] #test added new intent recieveing action
+- [ ] #intent add new icon for calendar icon

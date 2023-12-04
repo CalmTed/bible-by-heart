@@ -254,7 +254,8 @@ interface AppStatsModel{
     duration: number,
     testsNumber: number,
     errorNumber: number
-  }[]
+  }[],
+  allDaysStats: number[]
 }
 
 
@@ -329,8 +330,8 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
   const avgDurationMS = totalTimeSpentMS / (totalTestsNumber || 1);
   const now = new Date()
   //calculation strategy as for 2023-12-01
-  //get time from start of the month (12-01 0000 - 12-01 1220)
-  //get time from the same period from previus month (11-01 0000 - 11-01 1220)
+  //get time from start of the month (12-01 0000 - 12-05 1220)
+  //get time from the same period from previus month (11-01 0000 - 11-05 1220)
     //-month + same time range
   //calculate maxScore for both ranges
   const startOfThisMonth =  new Date(`${now.getFullYear()}-${now.getMonth() + 1}-01`).getTime() // state.statsDateRange.to ||
@@ -362,7 +363,7 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
   // console.log(timeStringFromMS(allDataAverageDayDuration), timeStringFromMS(previusMonthAverageDayDuration))
   const avgDayDurationRelativePercent = 100 - Math.round(100 / allDataAverageDayDuration * previusMonthAverageDayDuration); 
   const avgWeekDurationRelativePercent = 100 - Math.round(100 / allDataAverageWeekDuration * previusMonthAverageWeekDuration); 
-  console.log(currentScore.maxScore, previusEpisodeScore.maxScore)
+  // console.log(currentScore.maxScore, previusEpisodeScore.maxScore)
   return{
     absoluteScore: currentScore.maxScore,
     relativeScore: currentScore.maxScore - previusEpisodeScore.maxScore,
@@ -375,15 +376,16 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
     totalTestsNumber,
     avgDurationMS,
     avgDurationByLevel,
-    avgSessionDurationMS
+    avgSessionDurationMS,
+    allDaysStats
   }
 }
 
 interface TimeRangeStats{
   maxScore: number
-  // totalTime: number
-  // totalTests: number
-  // totalSessions: number
+  totalTime: number
+  totalTests: number
+  totalSessions: number
 }
 const getPassageScore: (passage: PassageModel, from?: number, to?: number) => number = (passage, from, to) => {
   if(!from || !to || from > to){
@@ -411,11 +413,14 @@ const getPassageScore: (passage: PassageModel, from?: number, to?: number) => nu
 }
 
 //for last and this month
-const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: number) => TimeRangeStats = (state, fromMS, toMS) => {
+export const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: number) => TimeRangeStats = (state, fromMS, toMS) => {
   if(fromMS >= toMS){
     console.warn("getTimeBoundStats: fromMS cant be more then or equal to toMS")
     return {
-      maxScore: 0  
+      maxScore: 0,
+      totalTime: 0,
+      totalSessions: 0,
+      totalTests: 0
     }
   }
   //filtering passages that wasn't created at that time
@@ -423,10 +428,25 @@ const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: number) =>
     return p.dateCreated < toMS
   })
   const maxScore = passagesCreatedBeforeToDate.reduce((ps, v) => ps + getPassageScore(v,fromMS, toMS), 0);
+  const filteredTests = state.testsHistory
+  .filter(h => h.td[0][0] > fromMS && h.td[0][1] < toMS);
+  const totalTime = 
+    filteredTests
+      .map(h => h.td[0][1] - h.td[0][0])
+      .reduce((ps,v) => ps + v,0);
+  const totalTests = 
+    filteredTests.length;
+  const totalSessions = 
+    filteredTests
+      .map(t => t.si)
+      .filter((v,i,arr) => {
+        return !arr.slice(0,i).includes(v)
+      }).length;
   return {
     maxScore,
-    // totalTime: 0,//for later
-    // totalTests: 0,//for later
-    // totalSessions: 0,//for later
+    totalTime,
+    totalTests,
+    totalSessions
   }
 }
+
