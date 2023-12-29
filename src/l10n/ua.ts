@@ -33,6 +33,7 @@ export const ua: typeof en = {
   Reset: "Заново",
   Fetch: "Підтягнути",
   Cancel: "Назад",
+  ExitTesting: "Завершити",
   Level: "Рівень",
   MaxLevel: "Доступний рівень",
   SelectedLevel: "Обраний рівень",
@@ -82,7 +83,7 @@ export const ua: typeof en = {
   notificationBody3:
     "Хоча, ти ж знаєш, що вільний час, це питання пріоритетів 😏",
 
-  //sub texts
+  //subtexts
   DateCreated: "Додано",
   DateEdited: "Остання зміна",
   DateTested: "Практиковано",
@@ -120,7 +121,7 @@ export const ua: typeof en = {
   Loading: "Заванатження...",
   NotAFetchableTranslation: "Введи текст вірша тут",
   NoDataForThisDay: "Для цього дня немає даних",
-
+  TestExitConfirmationText: "Пройдені завдання не будуть збережені",
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",

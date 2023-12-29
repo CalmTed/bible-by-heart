@@ -148,7 +148,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
           <Text style={theme.theme.headerText}>{t("statsScreenTitle")}</Text>,
           <IconButton
             theme={theme}
-            icon={IconName.filter}
+            icon={IconName.clock}
             onPress={() =>  navigateWithState({
               navigation,
               screen: SCREEN.calendar,

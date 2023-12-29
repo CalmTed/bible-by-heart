@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL } from "../constants";
 import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
@@ -18,6 +18,7 @@ import { LevelPicker } from "../components/LevelPicker";
 import { L40 } from "../components/levels/l4";
 import { L50 } from "../components/levels/l5";
 import { useApp } from "../tools/useApp";
+import { MiniModal } from "../components/miniModal";
 
 export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -26,6 +27,21 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   );
   const [activeTestIndex, setActiveTest] = useState(
     nextUnfinishedTestIndex !== -1 ? nextUnfinishedTestIndex : 0
+  );
+  const [showExitConfirm, setShowExitConfirm] = useState(false)
+  
+  useEffect(
+    () =>
+      // @ts-ignore
+      navigation.addListener('beforeRemove', (e) => {
+        if(showExitConfirm){
+          return;
+        }
+        setShowExitConfirm(true)
+        e.preventDefault();
+      }),
+    
+    [navigation, showExitConfirm]
   );
 
   const exitTests = () => {
@@ -260,7 +276,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             <IconButton
               theme={theme}
               icon={IconName.cross}
-              onPress={exitTests}
+              onPress={() => setShowExitConfirm(true)}
             />,
             <DottList/>
           ]}
@@ -351,6 +367,37 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         }} title={t("Pass")}/>
         } */}
       </View>
+      <MiniModal
+        theme={theme}
+        shown={showExitConfirm}
+        handleClose={() => setShowExitConfirm(false)}
+      >
+        <Text style={{...theme.theme.text, fontSize: 18}}>{t("TestExitConfirmationText")}</Text>
+        <View
+          style={{
+            ...theme.theme.rowView,
+            ...theme.theme.marginVertical,
+            ...theme.theme.gap20
+          }}
+        >
+          <Button
+            theme={theme}
+            onPress={() => setShowExitConfirm(false)}
+            type="secondary"
+            title={t("Cancel")}
+          />
+          <Button
+            theme={theme}
+            onPress={() => {
+              exitTests()
+              setShowExitConfirm(false)
+            }}
+            type="main"
+            color="green"
+            title={t("ExitTesting")}
+          />
+        </View>
+      </MiniModal>
     </View>
   );
 };

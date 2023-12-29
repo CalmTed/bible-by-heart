@@ -5,6 +5,7 @@ import { DAY, PASSAGELEVEL, SETTINGS, STATSMETRICS } from "../constants";
 import { addressDistance } from "./addressDistance";
 import { testLevelToPassageLevel } from "./levelsConvertion";
 import { dateToString, timeStringFromMS, timeToString } from "./formatDateTime";
+import { WORD } from "src/l10n";
 
 const dayInMs = DAY * 1000;
 
@@ -385,6 +386,7 @@ interface TimeRangeStats{
   maxScore: number
   totalTime: number
   totalTests: number
+  totalPassages: number
   totalSessions: number
 }
 const getPassageScore: (passage: PassageModel, from?: number, to?: number) => number = (passage, from, to) => {
@@ -420,7 +422,8 @@ export const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: num
       maxScore: 0,
       totalTime: 0,
       totalSessions: 0,
-      totalTests: 0
+      totalTests: 0,
+      totalPassages: 0
     }
   }
   //filtering passages that wasn't created at that time
@@ -429,13 +432,20 @@ export const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: num
   })
   const maxScore = passagesCreatedBeforeToDate.reduce((ps, v) => ps + getPassageScore(v,fromMS, toMS), 0);
   const filteredTests = state.testsHistory
-  .filter(h => h.td[0][0] > fromMS && h.td[0][1] < toMS);
+  .filter(h => (h?.td?.[0]?.[0] || 0) > fromMS && (h?.td?.[0]?.[1] || 0) < toMS);
   const totalTime = 
     filteredTests
-      .map(h => h.td[0][1] - h.td[0][0])
+      .map(h => (h?.td?.[0]?.[1] || 0) - (h?.td?.[0]?.[0] || 0))
       .reduce((ps,v) => ps + v,0);
   const totalTests = 
     filteredTests.length;
+  const passagesVerseNumber = state.passages.map(p => {
+    return {
+      id: p.id,
+      verseNUmber: p.versesNumber
+    }
+  })
+  const totalPassages = filteredTests.map(t => passagesVerseNumber.find(p => p.id === t.pi)?.verseNUmber || 0).reduce((ps,v) => ps + v,0)
   const totalSessions = 
     filteredTests
       .map(t => t.si)
@@ -446,6 +456,7 @@ export const getTimeBoundStats: (state: AppStateModel, fromMS: number, toMS: num
     maxScore,
     totalTime,
     totalTests,
+    totalPassages,
     totalSessions
   }
 }

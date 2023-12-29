@@ -4,6 +4,7 @@ import {
   iconBack,
   iconBellGradient,
   iconBellOutline,
+  iconClock,
   iconCross,
   iconDone,
   iconFilter,
@@ -25,7 +26,8 @@ export enum IconName {
   bellGradient = "iconBellGradient",
   cross = "iconCross",
   sort = "iconSort",
-  forward = "iconForward"
+  forward = "iconForward",
+  clock = "iconCLock"
 }
 
 const IconData = {
@@ -39,7 +41,8 @@ const IconData = {
   [IconName.bellGradient]: iconBellGradient,
   [IconName.cross]: iconCross,
   [IconName.sort]: iconSort,
-  [IconName.forward]: iconForward
+  [IconName.forward]: iconForward,
+  [IconName.clock]: iconClock
 };
 
 export const Icon: FC<{ iconName: IconName; color?: string }> = ({
@@ -51,7 +54,6 @@ export const Icon: FC<{ iconName: IconName; color?: string }> = ({
       xml={IconData[iconName].replace(/#ECECEC/gi, color)}
       width="18"
       height="18"
-      // stroke={color}
     />
   );
 };

@@ -31,7 +31,7 @@ export const getPassagesByTrainMode: (
     if(p.minIntervalDaysNum === null || !p.isReminderOn){
       return false;
     }
-    const lastTastedDate = state.testsHistory.filter(t => t.pi === p.id).sort((a,b) => b.td[0][1] - a.td[0][1])[0].td[0][1]
+    const lastTastedDate = state.testsHistory.filter(t => t.pi === p.id).sort((a,b) => (b?.td?.[0]?.[1] || 0) - (a?.td?.[0]?.[1] || 0))[0]?.td?.[0]?.[1] || 0
     const dayinMs = DAY * 1000;
     const targetNextTest = Math.floor((lastTastedDate + (p.minIntervalDaysNum * dayinMs))/ dayinMs)* dayinMs;
     return new Date().getTime() > targetNextTest;

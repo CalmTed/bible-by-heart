@@ -213,7 +213,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
   }
   const handleCalendarSwipe = (evt: any) => {
     const { nativeEvent } = evt;
-    LayoutAnimation.easeInEaseOut()
+    // LayoutAnimation.easeInEaseOut()
     if (nativeEvent.velocityX > 0) {
       handleSetPreviusMonth()
     } else {
@@ -251,7 +251,6 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
   })()
   
   const monthName = t(`Month_${new Date(selectedMonth).getMonth() + 1}` as WORD)
-
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       { !selectedDay && <Header
@@ -403,8 +402,8 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 <Text style={calendarStyle.masonaryItemSubtext}>{t("statsSessionNumber")}</Text>
               </View>
               <View style={calendarStyle.masonaryItemView}>
-                <Text style={calendarStyle.masonaryItemTitle}>{dayDetailedStats.totalTests}</Text>
-                <Text style={calendarStyle.masonaryItemSubtext}>{t("statsTotalTimesTested")}</Text>
+                <Text style={calendarStyle.masonaryItemTitle}>{dayDetailedStats.totalPassages}</Text>
+                <Text style={calendarStyle.masonaryItemSubtext}>{t("statsVersesNumber")}</Text>
               </View>
             </View>
             </PanGestureHandler>
@@ -415,18 +414,27 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 selectedDayTests.sort((a,b) => a.td[0][0] - b.td[0][0]).map((test,i,arr) => {
                   const ifFirstOfSession = !arr.slice(0,i).map(arrT => arrT.si).includes(test.si);
                   const sessionFinishTime = Math.max(...arr.filter(t => t.si === test.si).map(t => t.td[0][1]))
+                  const nextSessionStartTime = arr
+                  .filter(t => t.td[0][0] > sessionFinishTime && t.si !== test.si)
+                  .map(t => t.td[0][1])
+                  //in this case we want to have undefined (not an empty array) so we could use default value
+                  //we set default value to sessionFinishTime, so it whould self destruct when substracting later
+                  .slice(0,1)?.[0] || sessionFinishTime
                   const targetPassage = state.passages.filter(p => p.id === test.pi)[0];
                   const tagetTranslation = state.settings.translations.filter(translation => translation.id === targetPassage.verseTranslation)[0]
                   const tempT = createT(tagetTranslation.addressLanguage);
                   const promotionTime = targetPassage.upgradeDates?.[testLevelToPassageLevel(test.l) + 1 as PASSAGELEVEL] || 0
-                  const wasPromoted = Math.abs(promotionTime - test.td[0][1]) < MINUTE * 1000 * 5;
+                  //we need to get not just the same day of promotion but the same session 
+                  //b.c. user can repeat the same passage several times
+                  //so we find the maximum time: eather 5 MINS or untill the next session
+                  const wasPromoted = Math.abs(promotionTime - sessionFinishTime) < Math.max(MINUTE * 1000 * 5, nextSessionStartTime - sessionFinishTime);
                   const words = targetPassage.verseText.trim().split(" ").filter(w => w.length)
-                  
+                  const timeZoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
                   return <View
                     key={test.i}
                     style={{...( ifFirstOfSession ? calendarStyle.testsListItemWrapperFullWidth : calendarStyle.testsListItemWrapper)}}
                   >
-                    { ifFirstOfSession && <Text style={theme.theme.subText}>{timeStringFromMS(test.td[0][0] - selectedDay)} - {timeStringFromMS(sessionFinishTime - selectedDay)}</Text>}
+                    { ifFirstOfSession && <Text style={theme.theme.subText}>{timeStringFromMS(test.td[0][0] - selectedDay - timeZoneOffset)} - {timeStringFromMS(sessionFinishTime - selectedDay - timeZoneOffset)}</Text>}
                     <View style={{
                       ...calendarStyle.testsListItemContent,
                       ...(wasPromoted ? {borderWidth: 3, borderColor: theme.colors.mainColor} : {}),

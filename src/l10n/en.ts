@@ -30,6 +30,7 @@ export const en = {
   Reset: "Reset",
   Fetch: "Fetch",
   Cancel: "Cancel",
+  ExitTesting: "Exit",
   Level: "Level",
   MaxLevel: "Max level",
   SelectedLevel: "Selected level",
@@ -116,6 +117,7 @@ export const en = {
   Loading: "Loading...",
   NotAFetchableTranslation: "Enter passage text here",
   NoDataForThisDay: "No data for this day",
+  TestExitConfirmationText: "Are you sure? Passed tests will not be saved",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",

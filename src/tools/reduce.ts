@@ -99,18 +99,11 @@ export const reduce: (
               }
             : p
         );
-        //if tags changed add to filter new ones
-        const allTagsBefore = state.passages
+        
+        const newTags = changedPassages
           .map((p) => p.tags)
           .flat()
           .filter((v, i, arr) => !arr.slice(0, i).includes(v));
-        const allTagsAfter = changedPassages
-          .map((p) => p.tags)
-          .flat()
-          .filter((v, i, arr) => !arr.slice(0, i).includes(v));
-        //add new tags
-        //we do not remove old ones b.c. user might be using them
-        const newTags = allTagsAfter.filter((t) => !allTagsBefore.includes(t));
         //blocking to add more then 500 verses on english
         if (
           getNumberOfVersesInEnglish(
@@ -125,7 +118,7 @@ export const reduce: (
           passages: changedPassages,
           filters: {
             ...state.filters,
-            tags: [...state.filters.tags, ...newTags]
+            tags: newTags
           }
         };
       } else {

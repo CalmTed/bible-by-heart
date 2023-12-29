@@ -105,12 +105,12 @@ Roadmap
     - [x] overal learned
     - [x] global progress (learned passages score versesNumber*level)
     - [x] relative progress (score relative to last month)
-    - [ ] show different stats on home screen
-      - [ ] stroke first two weeks
-      - [ ] general progress 2 weeks to 1 month
-      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned... 
-    - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
-      - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday
+    - [ ] show different stats on home screen (LATER)
+      - [ ] stroke first two weeks (LATER)
+      - [ ] general progress 2 weeks to 1 month  (LATER)
+      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...  (LATER)
+    - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates) (LATER)
+      - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday (LATER)
   - [ ] updateMessages list: show unread modal on startup or show all in settings
   - [ ] login form and action with API
   - [ ] feedback form for authorirized users or telegram bot

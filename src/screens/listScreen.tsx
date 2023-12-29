@@ -85,7 +85,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     }
   };
   const handlePESubmit = (passage: PassageModel) => {
-    //reduce set pasage
     setState((prv) => {
       const newState = reduce(prv, {
         name: ActionName.setPassage,
@@ -153,7 +152,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       return newState ? newState : prv;
     });
   };
-
   const allTags = state.passages
     .map((p) => p.tags)
     .flat()
@@ -321,6 +319,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   handleListItemToggleTag(passage, state.settings.leftSwipeTag)
                 }
                 onLongPress={() => handleListItemLongPress(passage)}
+                onArchive={() => handleListItemToggleTag(passage, ARCHIVED_NAME)}
               />
             );
           })}
@@ -564,8 +563,9 @@ const ListItem: FC<{
   onToggleTag: () => void;
   onRemove: () => void;
   onLongPress: () => void;
+  onArchive: () => void
   state: AppStateModel;
-}> = ({ data, t, onPress, onToggleTag, onRemove, onLongPress, state }) => {
+}> = ({ data, t, onPress, onToggleTag, onRemove, onLongPress, state, onArchive }) => {
   const sort = state.sort;
   const theme = getTheme(state.settings.theme);
   const leftSwipeTag = state.settings.leftSwipeTag;
@@ -635,6 +635,22 @@ const ListItem: FC<{
     );
   };
   const renderRightActions = () => {
+    if(data.tags.includes(ARCHIVED_NAME)){
+      return <Animated.View
+      style={[
+        {
+          ...listItemStyle.swipeableAnimatedView
+        }
+      ]}
+    >
+      <Button
+        theme={theme}
+        title={t("Remove")}
+        onPress={onRemove}
+        color="red"
+      />
+    </Animated.View> 
+    }
     return (
       <Animated.View
         style={[
@@ -645,9 +661,9 @@ const ListItem: FC<{
       >
         <Button
           theme={theme}
-          title={t("Remove")}
-          onPress={onRemove}
-          color="red"
+          title={t("Archive")}
+          onPress={onArchive}
+          color="green"
         />
       </Animated.View>
     );

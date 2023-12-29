@@ -104,5 +104,42 @@ boilerplate:
 2023-12-04
 - [x] #intent add calendar days buttons, add day view(total duration, sessions timestamp & duration, passages list, leveling up)
 - [x] #added calendar buttons, day stats, swipe action
-- [ ] #test added new intent recieveing action
-- [ ] #intent add new icon for calendar icon
+- [x] #test added new intent recieveing action > dont work still >:(
+- [x] #intent add new icon for calendar icon
+2023-12-05
+- [x] #intent add icon
+- [x] #intent fix some labels, time bug, remove animation of calendar, remove input text after submiting
+- [x] #intent upgrage outline indication bug
+- [ ] #plan more optimized way to render passages list (not a priority now)
+- [ ] #idea add achivement flag when passage was trained 4 times in 5th level (NaP)
+- [ ] #idea new sorting option: most errored (NaP)
+- [x] #added as intentded exept wrong session time in labels 
+2023-12-07
+- [x] #intent fix session time labeling
+- [ ] #idea need to move more swiftly to finish 0.1.0 before 2024-12-31
+- [ ] #plan: 
+    - add update message screen
+    - create API scheeme for API 0.1.0, 
+    - create hooks using firebase
+    - auth feature (google auth + just email)
+    - feedback feature (for auth'ed)
+    - custom sync and and documentation (optional)
+    - paymnent feature
+- [x] #fixed session time label in day stats
+- [ ] #intent add different home screen labels (just stroke, absolute and relative score, whole numbers)
+    - stroke 1-11 month, 1-n years
+    - 10,25,50,100,250... verses learned (level 5)
+    - most duration in the last month/year (NaP)
+    - most passages upgraded per day for the last month/year (NaP)
+    - if several are true, show in order of priority
+    - compare todays and yesterdays stats to show only one day(detive thet it was acheved just today)
+2023-12-11
+- [x] #idea have no time for home screen stats
+- [ ] #intennt need to make API scheme
+ - unified userModel
+ - test model
+ - all hooks with required params and returns
+2023-12-29
+- [ ] #intent remove delete button (delete only if archived) (list, passage editor)
+- [ ] #indent ask/confirm before deleting, endning session, deleting data
+- [x] #added condition to show delete button, confirmation before exiting tests and preventing going back with a swipe

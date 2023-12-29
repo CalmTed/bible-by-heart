@@ -30,7 +30,6 @@ import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
 import { fetchESV } from "../tools/fetchESV";
 import { MiniModal } from "./miniModal";
-import { Checkbox } from "./Checkbox";
 import { Input } from "./Input";
 import { getPasageStats } from "../tools/getStats";
 import { timeStringFromMS } from "../tools/formatDateTime";
@@ -55,6 +54,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
+  const [newTagTempValue, setTempTagText] = useState("");
   const [fetchingInProgress, setFetchingInProgress] = useState(false)
   const [reminderModalShown, setReminderModalShown] = useState(false)
 
@@ -142,11 +142,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     setPassage((prv) => {
       return { ...prv, tags: prv.tags.filter((tg) => tg !== tag) };
     });
-  };
-  const handleReminderToggle = () => {
-      setPassage((prv) => {
-          return { ...prv, isReminderOn: !prv.isReminderOn };
-      });
   };
   const handleAddresChange = (newAdress: AddressType) => {
     const versesInEnglish = getNumberOfVersesInEnglish(
@@ -414,9 +409,14 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               style={PEstyle.tagListInput}
               placeholder={t("AddTag")}
               maxLength={15}
-              onSubmitEditing={(newVal) =>
+              value={newTagTempValue}
+              onChange={(e) => {
+                setTempTagText(e.nativeEvent.text)
+              }}
+              onSubmitEditing={(newVal) => {
                 handleTagAdd(newVal.nativeEvent.text.trim())
-              }
+                setTempTagText("")
+              }}
             />
           </View>
           <View style={PEstyle.bodyMeta}>
@@ -478,12 +478,15 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               }
               onPress={() => handleTagAdd(ARCHIVED_NAME)}
             />
-            <Button
-              theme={theme}
-              title={t("Remove")}
-              onPress={() => handleRemove(tempPassage.id)}
-              color="red"
-            />
+            {
+              tempPassage.tags.includes(ARCHIVED_NAME) && 
+              <Button
+                theme={theme}
+                title={t("Remove")}
+                onPress={() => handleRemove(tempPassage.id)}
+                color="red"
+              />
+            }
           </View>
           {passageStats.totalTimeSpentMS > 0 && <View style={{marginHorizontal: 20}}>
         

@@ -232,6 +232,7 @@ export const L21: FC<LevelComponentModel> = ({
 }) => {
   const [passagesOptions, setPassageOptions] = useState([] as PassageModel[]);
   const [errorValue, setErrorValue] = useState(null as number | null);
+  const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
     resetForm();
@@ -334,7 +335,10 @@ export const L21: FC<LevelComponentModel> = ({
                   color="green"
                   textStyle={levelComponentStyle.textTransformNone}
                   title={passageText}
-                  onPress={() => handlePassageCheck(p.id)}
+                  onPress={() => {
+                    setSearchText("");
+                    handlePassageCheck(p.id);
+                  }}
                   disabled={levelFinished}
                 />
               );
@@ -379,8 +383,14 @@ export const L21: FC<LevelComponentModel> = ({
           <Input
             theme={theme}
             placeholder={t("LevelStartWritingPassage")}
-            onChange={(value) => handleSearchPassages(value)}
-            onSubmit={() => {}}
+            value={searchText}
+            onChange={(value) => {
+              setSearchText(value)
+              handleSearchPassages(value)
+            }}
+            onSubmit={() => {
+              setSearchText("")
+            }}
           />
         )}
         {(test.en || 0) > ERRORS_TO_DOWNGRADE && (

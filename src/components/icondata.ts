@@ -50,3 +50,8 @@ export const iconSort = `<svg width="18" height="16" viewBox="0 0 18 16" fill="n
 export const iconForward = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M17 9H1M1 9L8.38462 1M1 9L8.38462 17" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180) translate(-18 -18)"/>
 </svg>`;
+
+export const iconClock = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 12L10 10V4" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="10" cy="10" r="9" stroke="#ECECEC" stroke-width="2"/>
+</svg>`

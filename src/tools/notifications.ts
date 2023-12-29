@@ -7,7 +7,7 @@ import { cancelScheduledNotificationAsync } from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
 
-const notificationDebug = true;
+const notificationDebug = false;
 
 export const schedulePushNotification = async (
   title: string = "Hi!",
