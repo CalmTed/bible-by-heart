@@ -3,10 +3,11 @@ import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./l1";
+import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { getTheme } from "../../tools/getTheme";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { getAddressDifference } from "src/tools/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -76,7 +77,7 @@ export const L30: FC<LevelComponentModel> = ({
   const lastErrorIsWrongAddress = test.et.length ? test.et[test.et.length - 1] === "wrongAddressToVerse" : false;
   const alreadyEnteredUntill =
     test.ww.length > 0
-      ? test.ww.sort((a, b) => b[0] - a[0])[0][0]
+      ? [...test.ww].sort((a, b) => b[0] - a[0])[0][0]
       : null;
   const targetPassage = state.passages.find((p) => p.id === test.pi);
   const missingWords = test.d.missingWords || [];
@@ -120,7 +121,8 @@ export const L30: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    if (JSON.stringify(targetPassage.address) === JSON.stringify(value)) {
+    
+    if (getAddressDifference(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }

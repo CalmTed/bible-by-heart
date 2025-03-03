@@ -1,4 +1,3 @@
-import { getVersesNumber } from "../initials";
 import { AddressType, AppStateModel, PassageModel, TestModel } from "../models";
 import addZero from "./addZero";
 import { DAY, PASSAGELEVEL, SETTINGS, STATSMETRICS } from "../constants";
@@ -6,12 +5,13 @@ import { addressDistance } from "./addressDistance";
 import { testLevelToPassageLevel } from "./levelsConvertion";
 import { dateToString, timeStringFromMS, timeToString } from "./formatDateTime";
 import { WORD } from "src/l10n";
+import { getNumberOfVerses } from "./getNumberOfVerses";
 
 const dayInMs = DAY * 1000;
 
 export const getStroke = (testHistory: TestModel[]) => {
   const nowD = new Date().getTime();
-  const allDays = testHistory
+  const allDays = [...testHistory]
     .sort(
       (a, b) =>
         Math.max(...b.td.flat()) -
@@ -99,7 +99,7 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
         return partialSum;
       }
       return (
-        partialSum + (passage.versesNumber || getVersesNumber(passage.address))
+        partialSum + (passage.versesNumber || getNumberOfVerses(passage.address))
       );
     }, 0);
     const minutesNumber = Math.ceil(
@@ -234,7 +234,7 @@ export const getPasageStats: (state: AppStateModel, passage: PassageModel) => Pa
     avgDurationMS,
     avgDurationByLevel,
     wordErrorsHeatMap,
-    mostOftenAdressErrors: mostOftenAdressErrors.sort((a,b) => b.errorNumber - a.errorNumber)
+    mostOftenAdressErrors: [...mostOftenAdressErrors].sort((a,b) => b.errorNumber - a.errorNumber)
   }
 }
 
@@ -396,7 +396,7 @@ const getPassageScore: (passage: PassageModel, from?: number, to?: number) => nu
     }
     return passage.versesNumber * (passage.maxLevel -1) * 2
   }else{
-    const maxLevel = Object.values(PASSAGELEVEL)
+    const maxLevel = [...Object.values(PASSAGELEVEL)
       .filter(v => typeof v === "string")
       .map((v,p) => {
         const targetLevel = p;
@@ -408,7 +408,7 @@ const getPassageScore: (passage: PassageModel, from?: number, to?: number) => nu
           isCorrect
         }}
       )
-      .filter(l => l.isCorrect)
+      .filter(l => l.isCorrect)]
       .sort((a,b) => b.p - a.p)
     return passage.versesNumber * ((maxLevel?.[0]?.p || 1) -1) * 2
   }

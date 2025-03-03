@@ -3,12 +3,13 @@ import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./l1";
+import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../tools/getSimularity";
 import { getTheme } from "../../tools/getTheme";
 import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
+import { getAddressDifference } from "src/tools/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -33,7 +34,7 @@ const levelComponentStyle = StyleSheet.create({
   passageTextView: {
     maxHeight: 100,
     height: "auto",
-    minHeight: 22,
+    minHeight: 100,
     borderRadius: 10,
     marginHorizontal: 10,
     marginBottom: 0,
@@ -68,7 +69,10 @@ const levelComponentStyle = StyleSheet.create({
   },
   inputWrapperStyle: {
     width: "100%",
-    height: "100%"
+    height: "100%",
+    display: "flex",
+    alignContent: "flex-start",
+    justifyContent: "flex-start"
   },
   inputStyle: {
     width: "100%",
@@ -96,15 +100,25 @@ export const L40: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
   const targetPassage = state.passages.find((p) => p.id === test.pi);
-  //showAddressOrFirstWords: true => address false => first words
-  const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
-  const sentancesRange = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
-    ? (targetPassage?.verseText || "").slice(
-        sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
-        sentences.slice(...test.d.sentenceRange).join(".").length
-      )// sentences.slice(...test.d.sentenceRange)
-    : (targetPassage?.verseText || "");
-  const targetText = sentancesRange;
+  //showAddressOrFirstWords: 
+  //  true => address 
+  //  false => first words
+  const targetPassageWholeText = (targetPassage?.verseText || "")
+  const sentences = targetPassageWholeText.split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
+  
+  //if we have defined range 
+  //true: slice to start to end
+  //false: full passage text
+  const sentancesRangeText = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
+    ? 
+    // targetPassageWholeText.slice(
+    //     sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
+    //     sentences.slice(...test.d.sentenceRange).join(".").length
+    //   )
+      sentences.slice(...test.d.sentenceRange).join(".")
+    : targetPassageWholeText;
+  
+  const targetText = sentancesRangeText;
   const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
   const initialValue = test.d.showAddressOrFirstWords
     ? ""
@@ -124,7 +138,7 @@ export const L40: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    if (JSON.stringify(targetPassage.address) === JSON.stringify(value)) {
+    if (getAddressDifference(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }
@@ -156,6 +170,7 @@ export const L40: FC<LevelComponentModel> = ({
     setSelectedAddress(address);
   };
   const handleTextChange = (text: string) => {
+    //if entering "enter"
     if (/\n/.test(text)) {
       const noEnterText = text.replace(/\n/, "");
       const lastWords = noEnterText.split(" ");
@@ -172,21 +187,21 @@ export const L40: FC<LevelComponentModel> = ({
       setPassageText(text);
     }
   };
-  const handleWordSelect = (text: string, word: string) => {
+  const handleWordSelect = (userProvidedText: string, selectedWord: string) => {
     //replace last unfinished word with the word provided
-    const passageWords = text.split(" ");
-    const nextWord = targetWords[passageWords.length];
+    const userProvidedWords = userProvidedText.split(" ");
+    const anticipatedCorrectWord = targetWords[userProvidedWords.length];
     const charIfNeeded =
-      word === targetWords[passageWords.length - 1] &&
-      ["—", "–", "-", ":", ";", ".", ","].includes(nextWord)
-        ? nextWord + " " // adding one more space here for a reason
+      selectedWord === targetWords[userProvidedWords.length - 1] &&
+      ["—", "–", "-", ":", ";", ".", ","].includes(anticipatedCorrectWord)
+        ? anticipatedCorrectWord + " " // adding one more space here for A REASON
         : "";
-    const newPassageText = [
-      ...passageWords.slice(0, -1),
-      word,
+    const newUserProvidedText = [
+      ...userProvidedWords.slice(0, -1),
+      selectedWord,
       charIfNeeded
     ].join(" ");
-    const isWordWasWrong = newPassageText.trim().split(" ")[passageWords.length - 1] !== targetWords[passageWords.length - 1]
+    const isWordWasWrong = newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1] !== targetWords[userProvidedWords.length - 1]
     if(isWordWasWrong){
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
@@ -197,14 +212,14 @@ export const L40: FC<LevelComponentModel> = ({
           ...test,
           en: (test.en || 0) + 1,
           et: [...test.et, "wrongWord"],
-          ww: [...test.ww, [passageWords.length - 1, newPassageText.trim().split(" ")[passageWords.length - 1]]]
+          ww: [...test.ww, [userProvidedWords.length - 1, newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1]]]
         }
       }); 
     }else{
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
       }
-      setPassageText(newPassageText);
+      setPassageText(newUserProvidedText);
     }
   };
   const handleDowngrade = () => {
@@ -228,7 +243,7 @@ export const L40: FC<LevelComponentModel> = ({
       ? currentWords[curentLastIndex]
       : "";
 
-  const wordOptions = targetWords
+  const wordOptions = [...targetWords
     .filter((w, i) =>
       //searching for autocomplete
       currentLastWord.length > 0
@@ -236,7 +251,7 @@ export const L40: FC<LevelComponentModel> = ({
           //filtering existing
           i >= curentLastIndex
         : false
-    )
+    )]
     //not randomly because of reactivness
     .sort(
       (a, b) =>
@@ -302,6 +317,7 @@ export const L40: FC<LevelComponentModel> = ({
           onChange={handleTextChange}
           wrapperStyle={levelComponentStyle.inputWrapperStyle}
           style={levelComponentStyle.inputStyle}
+          numberOfLines={4}
         />
       </View>
       {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length &&

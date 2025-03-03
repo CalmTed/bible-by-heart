@@ -58,7 +58,7 @@ const to009: ConverterType = (stateFrom) => {
       //speficaly: if upgrateTime for this TESTLEVEL.convertToPassageLevel() is 0
       //BE AWARE: we expect user to not to be able to train in a higher level then max level
       let previusOccurance: TestModel007 | undefined
-      fromHistory.sort((a,b) => a.triesDuration[0][1] - b.triesDuration[0][1]).forEach(fromT => {
+      [...fromHistory].sort((a,b) => a.triesDuration[0][1] - b.triesDuration[0][1]).forEach(fromT => {
         if(fromT.passageId === updatedPassage.id){
           const convertedPassageLevel = testLevelToPassageLevel(fromT.level)
           if(updatedPassage.upgradeDates[convertedPassageLevel] === 0){
@@ -234,7 +234,7 @@ const to007: ConverterType = (stateFrom) => {
         [SETTINGS.langCode]: from.langCode || initial007.settings.langCode,
         [SETTINGS.theme]: from.theme || initial007.settings.theme,
         devMode: from.devMode || initial007.settings.devMode,
-        [SETTINGS.remindersList]: [] || initial007.settings.remindersList, //there were no ways for user to edit this
+        [SETTINGS.remindersList]: initial007.settings.remindersList, //there were no ways for user to edit this
         [SETTINGS.chapterNumbering]:
           from.chapterNumbering || initial007.settings.chapterNumbering //this too, but who cares, right
       }

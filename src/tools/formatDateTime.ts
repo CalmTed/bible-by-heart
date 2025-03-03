@@ -29,3 +29,16 @@ export const timeToString: (timeStamp: number) => string = (timeStamp) => {
         d.getSeconds()
     )}`;
 };
+
+// console.time("tests");
+// const d1 = 0    
+// const d2 = null
+// const d3 = 1731077360208
+// console.log(d1)
+// console.log(timeToString(d1))
+// console.log(d2)
+//@ts-ignore
+// console.log(timeToString(d2))
+// console.log(d3)
+// console.log(timeToString(d3))
+// console.timeEnd("tests");

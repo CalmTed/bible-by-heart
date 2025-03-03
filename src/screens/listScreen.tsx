@@ -38,6 +38,7 @@ import { getTheme } from "../tools/getTheme";
 import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
 import { useApp } from "../tools/useApp";
 import { getAddressDifference } from "../tools/addressDifference";
+import { getAddresOrder } from "src/tools/addressOrder";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -196,10 +197,10 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       isTranslationsFilteringShown
     );
   });
-  const sortedPassages = filteredPassages.sort((a, b) => {
+  const sortedPassages = [...filteredPassages].sort((a, b) => {
     switch (state.sort) {
       case SORTINGOPTION.address:
-        return getAddressDifference(a.address, b.address);
+        return getAddresOrder(b.address) - getAddresOrder(a.address);
       case SORTINGOPTION.maxLevel:
         return b.maxLevel - a.maxLevel;
       case SORTINGOPTION.selectedLevel:

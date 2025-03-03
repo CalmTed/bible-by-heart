@@ -141,5 +141,65 @@ boilerplate:
  - all hooks with required params and returns
 2023-12-29
 - [ ] #intent remove delete button (delete only if archived) (list, passage editor)
-- [ ] #indent ask/confirm before deleting, endning session, deleting data
+- [ ] #intent ask/confirm before deleting, endning session, deleting data
 - [x] #added condition to show delete button, confirmation before exiting tests and preventing going back with a swipe
+2025-02-02
+- plan
+    - [ ] review all files and mark problems
+        - [ ] centralize context for theme, l10n,
+        - [ ] abstraction for passage: address methods, get sentanses, 
+        - [ ] themed text component l1.tsx:117
+        - [ ] unified error message
+        - [ ] separete files for each level
+        - [ ] vibration unil for auto check of setting.hapticsEnabled + same with sound
+    - [ ] recreate navigator for bottom menu and reanimated
+    - [ ] update l10n with package and layered data file
+
+    - [ ] optimize list and fix a bug
+    - [ ] recreate testing screen: animation, no dobling common buttons
+    - [ ] rewrite test creation add more abstraction for better calibration 
+    - [ ] add login screen and add basic features(just user data sync for now)
+
+
+    - [ ] add intent handler
+    - [ ] add language fetcher for non copyrighted traslations
+    - [ ] add paymment feature
+2025-02-04
+- the amount of tasks feals heavy... need to centralize all of them, categorize and sort the most important
+- what's my goal: create a tool to simplify learning by orgamizing, regular testing and analizing statistics
+2025-02-25
+- still very frustrated to do at least something
+- will try to categorize and prioritize all tasks tonight
+    - bug
+    - inconvenience
+    - new feature
+- defined next tasks as follows
+    1. [x] fix compare address bug
+    2. [x] fix autocompleted test on 4th level
+    3. [x] fix translation and first added passage bug
+    4. fix autocompleted test on 3rd level
+    5. fix awkward buttons on 3rd level (complete button?)
+    6. add login screen
+    7. estimate time of testing upfront
+    8. estimate test dificulty - make least number of hard ones or promotions
+    9. gradualy lower mex level after a long time without testing
+    10. store error long localy for debuging 
+    11. fix notificatio bug
+    12. fix svg bug
+    13. fix null in address errors
+- refactoring tasks
+    - break levels to separate parts and files
+    - add useContext for t()
+    - make address distance use exact number of verses
+    - make address difference return boll and check for non complete address(e.g. "Gen 1:1 === Gen 1:1-1:1" )
+    - should check for incoplete address on creation (in address picker) and convert it to complete address
+    - redo notofocation time triger and adaptation learning (date, week day, days after previus)
+    - useAddresPicker hook
+    - abstaction for passage to unify methons like get sentanses
+    - 
+2025-02-28
+- started fixing address comparison bug
+2025-03-04
+- fixed address bug
+- fixed level 4 completed bug
+- 

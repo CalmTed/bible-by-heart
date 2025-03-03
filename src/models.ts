@@ -191,8 +191,8 @@ export interface AddressType {
   bookIndex: number;
   startChapterNum: number;
   startVerseNum: number;
-  endChapterNum: number;
-  endVerseNum: number;
+  endChapterNum: number |null;//COULD BE NULL
+  endVerseNum: number | null;//COULD BE NULL
 }
 
 export enum ActionName {

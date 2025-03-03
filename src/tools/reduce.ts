@@ -166,6 +166,7 @@ export const reduce: (
       //if passages exists
       const nonArchivedPassages = state.passages.filter(p => !p.tags.includes(ARCHIVED_NAME))
       if(nonArchivedPassages.length === 0){
+        //TODO show the reason to user
          break;
       }
       //if trainMode filtered passages exists
@@ -179,6 +180,7 @@ export const reduce: (
       const slectedTrainModeWithPassageLanguage:TrainModeModel = {...selectedTrainMode, translation: nonArchivedPassages[0]?.verseTranslation}
       const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode)
       const filteredWithOtherTranslationPassages = getPassagesByTrainMode(state, slectedTrainModeWithPassageLanguage)
+      console.log(filteredWithOtherTranslationPassages)
       
       const generatedTests = filteredPassages.length ? generateTests(state, selectedTrainMode) : generateTests(state, slectedTrainModeWithPassageLanguage)
       
@@ -199,7 +201,7 @@ export const reduce: (
       }
     break;
     case ActionName.updateTest:
-      const updatedTests = state.testsActive
+      const updatedTests = [...state.testsActive
         .map((t) => {
           if (t.i === action.payload.test.i) {
             return {
@@ -212,7 +214,7 @@ export const reduce: (
             };
           }
           return t;
-        })
+        })]
         .sort((a) =>
           action.payload.isRight ? 0 : a.i === action.payload.test.i ? 1 : -1
         );

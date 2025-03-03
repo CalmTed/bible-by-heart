@@ -3,7 +3,7 @@ import { ActionName, AddressType, PassageModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./l1";
+import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../tools/getTheme";
@@ -343,7 +343,7 @@ export const L21: FC<LevelComponentModel> = ({
                 />
               );
             })}
-          {/* just right and wrond passages text options */}
+          {/* just right and wrong passages text options */}
           {!!errorValue && [
             state.passages
               .filter((p) => [targetPassage.id, errorValue].includes(p.id))

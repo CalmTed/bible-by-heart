@@ -7,7 +7,8 @@ import {
   Pressable,
   Animated,
   NativeModules,
-  LayoutAnimation
+  LayoutAnimation,
+  Platform
 } from "react-native";
 import { navigateWithState } from "../screeenManagement";
 import { DAY, MINUTE, PASSAGELEVEL, SCREEN, THEMETYPE } from "../constants";
@@ -25,10 +26,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { PanGestureHandler } from "react-native-gesture-handler";
 
 
-const {UIManager} = NativeModules;
+// const {UIManager} = NativeModules;
 
-UIManager.setLayoutAnimationEnabledExperimental &&
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+// if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+//     UIManager.setLayoutAnimationEnabledExperimental(true);
+// }
 
 export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -158,7 +160,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const selectedDayTests = !selectedDay ? null : state.testsHistory
     .filter(h => h.td[0][0] > selectedDay && h.td[0][1] < selectedDay + DAY * 1000 - 1000);
   const handleSetPreviusMonth = () => {
-    const closetDayBefore = daysStats.map((d,i) => i).filter(i => i < previusMonthLastDayNumber).sort().reverse()?.[0] || null;
+    const closetDayBefore = [...daysStats.map((d,i) => i).filter(i => i < previusMonthLastDayNumber)].sort().reverse()?.[0] || null;
     if(!closetDayBefore){
       return;
     }
@@ -167,7 +169,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
     setSelectedMonth(monthOfTheClosestDay.getTime());
   }
   const handleSetNextMonth = () => {
-    const closetDayAfter = daysStats.map((d,i) => i).filter(i => i >= nextMonthFirstDayNumber).sort()?.[0] || null;
+    const closetDayAfter = [...daysStats.map((d,i) => i).filter(i => i >= nextMonthFirstDayNumber)].sort()?.[0] || null;
     if(!closetDayAfter){
       return;
     }
@@ -179,7 +181,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
     if(!selectedDayNumber){
       return;
     }
-    const closetDayBefore = daysStats.map((d,i) => i).filter(i => i < selectedDayNumber).sort().reverse()?.[0] || null;
+    const closetDayBefore = [...daysStats.map((d,i) => i).filter(i => i < selectedDayNumber)].sort().reverse()?.[0] || null;
     if(!closetDayBefore){
       return;
     }
@@ -197,7 +199,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
     if(!selectedDayNumber){
       return;
     }
-    const closetDayBefore = daysStats.map((d,i) => i).filter(i => i > selectedDayNumber).sort()?.[0] || null;
+    const closetDayBefore = [...daysStats.map((d,i) => i).filter(i => i > selectedDayNumber)].sort()?.[0] || null;
     if(!closetDayBefore){
       return;
     }
@@ -326,6 +328,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   : [`rgba(63,111,26,${dayRatio})`,`rgba(26,134,158,${dayRatio})`]
                 return <LinearGradient
                   key={day}
+                  //@ts-ignore
                   colors={!!dayStats ? gradientColors : [theme.colors.bg, theme.colors.bg]}
                   start={{ x: 0.0, y: 0 }}
                   end={{ x: 0.0, y: 1.0 }}
@@ -411,7 +414,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
             {dayDuration && selectedDayTests && <ScrollView>
               <View style={calendarStyle.testsList}>
               {
-                selectedDayTests.sort((a,b) => a.td[0][0] - b.td[0][0]).map((test,i,arr) => {
+                [...selectedDayTests].sort((a,b) => a.td[0][0] - b.td[0][0]).map((test,i,arr) => {
                   const ifFirstOfSession = !arr.slice(0,i).map(arrT => arrT.si).includes(test.si);
                   const sessionFinishTime = Math.max(...arr.filter(t => t.si === test.si).map(t => t.td[0][1]))
                   const nextSessionStartTime = arr

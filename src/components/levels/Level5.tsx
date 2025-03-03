@@ -4,10 +4,11 @@ import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
 import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, MAX_L50_TRIES, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 import addressToString from "../../tools/addressToString";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./l1";
+import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../tools/getTheme";
+import { getAddressDifference } from "src/tools/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -144,7 +145,7 @@ export const L50: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    if (JSON.stringify(targetPassage.address) === JSON.stringify(value)) {
+    if (getAddressDifference(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }

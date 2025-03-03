@@ -12,8 +12,9 @@ import { IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
-import { createAddress, getVersesNumber } from "../initials";
+import { createAddress } from "../initials";
 import { ThemeAndColorsModel } from "../tools/getTheme";
+import { getNumberOfVerses } from "src/tools/getNumberOfVerses";
 
 interface AddressPickerModel {
   visible: boolean;
@@ -119,10 +120,10 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     isNaN(tempAddres.startChapterNum) ||
     isNaN(tempAddres.startVerseNum) ||
     (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum)) ||
-    getVersesNumber(tempAddres) > 500 ||
+    getNumberOfVerses(tempAddres) > 500 ||
     //if more then one chapter and more then half of the book
     (tempAddres.endChapterNum !== tempAddres.startChapterNum &&
-      getVersesNumber(tempAddres) > getVersesNumber(allBookAddress) / 2);
+      getNumberOfVerses(tempAddres) > getNumberOfVerses(allBookAddress) / 2);
   return (
     <Modal visible={visible}>
       {/* HEADER */}

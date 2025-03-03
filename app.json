@@ -8,6 +8,7 @@
     "userInterfaceStyle": "automatic",
     "primaryColor": "#1A9E37",
     "backgroundColor": "#272A27",
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -39,7 +40,7 @@
         "monochromeImage": "./assets/adaptive-icon.png"
       },
       "package": "com.CalmTed.bibleByHeart",
-      "versionCode": 2312290
+      "versionCode": 2503030
     },
     "web": {
       "favicon": "./assets/favicon.png"

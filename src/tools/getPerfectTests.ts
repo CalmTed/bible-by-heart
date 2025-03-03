@@ -5,8 +5,8 @@ export const getPerfectTestsNumber: (
   history: TestModel[],
   passage: PassageModel
 ) => number = (history, passage) => {
-  const lastFewTests = history
-    .filter((th) => th.pi === passage.id)
+  const lastFewTests = [...history
+    .filter((th) => th.pi === passage.id)]
     .sort(
       (a, b) =>
         b.td[0][1] -

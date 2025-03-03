@@ -43,16 +43,16 @@ export const getAutoTimeTrigger: (
       const d = new Date(histItem.td[0][0]);
       return [d.getHours(), d.getMinutes()];
     });
-  const mostCommonHour = new Array(24)
+  const mostCommonHour = [...new Array(24)
     .fill(0)
     //all hours grouped by hour
     .map((z, i) => hourAndMinutes.filter((h) => h[0] === i).length)
     //get time and index
-    .map((a, i) => [a, i])
+    .map((a, i) => [a, i])]
     //sort
     .sort((a, b) => b[0] - a[0])[0][1];
   const minutesGroups = 5;
-  const mostCommon5Minutes = new Array(60 / minutesGroups)
+  const mostCommon5Minutes = [...new Array(60 / minutesGroups)
     .fill(0)
     .map(
       (z, i) =>
@@ -63,7 +63,7 @@ export const getAutoTimeTrigger: (
             h[1] < (i + 1) * minutesGroups
         ).length
     )
-    .map((a, i) => [a, i])
+    .map((a, i) => [a, i])]
     .sort((a, b) => b[0] - a[0])[0][1];
   return {
     channelId: "Reminders",

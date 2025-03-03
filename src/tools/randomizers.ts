@@ -17,7 +17,7 @@ export const randomListRange: (
   length: number
 ) => (number | string | PassageModel)[] = (list, range) => {
   if (list.length < range) {
-    return list.sort(() => (Math.random() > 0.5 ? -1 : 1));
+    return [...list].sort(() => (Math.random() > 0.5 ? -1 : 1));
   }
-  return list.sort(() => (Math.random() > 0.5 ? -1 : 1)).slice(0, range);
+  return [...list].sort(() => (Math.random() > 0.5 ? -1 : 1)).slice(0, range);
 };

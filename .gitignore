@@ -18,3 +18,4 @@ web-build/
 .metro-health-check*
 *.code-workspace
 apit.ts
+.env

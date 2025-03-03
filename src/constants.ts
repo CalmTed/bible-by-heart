@@ -35,7 +35,7 @@ export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
 export const ERRORS_TO_DOWNGRADE = 2;
 export const DEFAULT_TRAINMODE_ID = 3;
-export const SENTENCE_SEPARATOR = /[.!?]/g
+export const SENTENCE_SEPARATOR = /[.!?;]/g
 export const MINIMUM_SENTENCE_LENGTH = 20;
 export const FIRST_FEW_WORDS = 4;
 

@@ -22,7 +22,6 @@ import { WORD, createT } from "../l10n";
 import addressToString from "../tools/addressToString";
 import { TextInput } from "react-native-gesture-handler";
 import { dateToString, timeToString } from "../tools/formatDateTime";
-import { getVersesNumber } from "../initials";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
 import { ThemeAndColorsModel, getTheme } from "../tools/getTheme";
@@ -33,6 +32,7 @@ import { MiniModal } from "./miniModal";
 import { Input } from "./Input";
 import { getPasageStats } from "../tools/getStats";
 import { timeStringFromMS } from "../tools/formatDateTime";
+import { getNumberOfVerses } from "src/tools/getNumberOfVerses";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -153,7 +153,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         return {
           ...prv,
           address: newAdress,
-          versesNumber: getVersesNumber(newAdress)
+          versesNumber: getNumberOfVerses(newAdress)
         };
       });
     }
@@ -239,7 +239,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       flexDirection: "row",
       height: 60,
       justifyContent: "space-between",
-      alignItem: "center"
+      alignItems: "center"
     },
     //address
     bodyTopAddress: {
@@ -372,7 +372,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <Pressable onPress={() => setAPVisible(true)}>
               <Text style={PEstyle.bodyTopAddress}>
                 {addressToString(tempPassage.address, tempT)}
-                {`(${getVersesNumber(tempPassage.address)})`}
+                {`(${getNumberOfVerses(tempPassage.address)})`}
               </Text>
             </Pressable>
             <IconButton

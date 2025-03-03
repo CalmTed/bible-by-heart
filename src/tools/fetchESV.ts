@@ -1,8 +1,11 @@
-import { ESVTOKEN } from "../apit";
+// import { ESVTOKEN } from "../apit";
+import Config from 'react-native-config';
 import { AddressType } from "../models";
 import addressToString from "./addressToString";
 import { LANGCODE } from "../constants";
 import { createT } from "../l10n";
+
+const ESVTOKEN = Config.API_KEY
 
 export const fetchESV: (address: AddressType) => Promise<string> = (
   address

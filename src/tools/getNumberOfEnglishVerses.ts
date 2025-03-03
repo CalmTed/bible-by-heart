@@ -1,6 +1,6 @@
 import { LANGCODE } from "../constants";
-import { getVersesNumber } from "../initials";
 import { PassageModel, TranslationModel } from "../models";
+import { getNumberOfVerses } from "./getNumberOfVerses";
 
 export const getNumberOfVersesInEnglish: (
   translations: TranslationModel[],
@@ -14,7 +14,7 @@ export const getNumberOfVersesInEnglish: (
       (p) =>
         p.verseTranslation && translationsInEnglish.includes(p.verseTranslation)
     )
-    .map((p) => getVersesNumber(p.address))
+    .map((p) => getNumberOfVerses(p.address))
     .reduce((ps, num) => ps + num, 0);
   return versesSumInEnglish;
 };

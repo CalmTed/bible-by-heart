@@ -85,7 +85,7 @@ export const Input: FC<InputModel> = ({
   icon,
   color = "gray",
   multiline = false,
-  numberOfLines = 1,
+  numberOfLines = undefined,
   selectTextOnFocus,
   autoCapitalize = "none",
   autoCorrect = true,
@@ -105,7 +105,8 @@ export const Input: FC<InputModel> = ({
   const InputStyles = StyleSheet.create({
     scrollView: {
       maxWidth: "100%",
-      width: "auto"
+      width: "auto",
+      height: "auto"
     },
     touch: {
       flexDirection: "row"
@@ -160,18 +161,18 @@ export const Input: FC<InputModel> = ({
           >
             <View
               style={{
+                ...style,
                 ...InputStyles.inner,
                 ...(!["main", "transparent"].includes(type)
                   ? InputStyles.innerShown
                   : InputStyles.innerHidden),
-                ...style
               }}
             >
               {icon && <Icon iconName={icon} color={color} />}
               <TextInput
                 style={{
+                  ...textStyle,
                   ...InputStyles.InputText,
-                  ...textStyle
                 }}
                 value={value}
                 onChangeText={onChange}

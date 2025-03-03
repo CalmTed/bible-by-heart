@@ -26,7 +26,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
 
-  const strokeData = getStroke(state.testsHistory);
+  let strokeData = getStroke(state.testsHistory);
   const activeTrainModes = state.settings.trainModesList.filter(
     (m) => m.enabled
   );
@@ -81,30 +81,32 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     //     return () => {}
     //   }
     // }, []);
+  const LogoBlock = () => (<View style={homeStyle.logoView}>
+    {
+      new Date().getMonth() !== 11 &&
+     <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
+    }
+    {
+      new Date().getMonth() === 11 &&
+     <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
+    }
+    <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
+      {t("appName")}
+    </Text>
+    <Text
+      style={{
+        ...theme.theme.text,
+        color: theme.colors.textSecond
+      }}
+    >
+      {t("DaysStroke")}: {strokeData.length}
+    </Text>
+    
+  </View>)
+
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
-      <View style={homeStyle.logoView}>
-        {
-          new Date().getMonth() !== 11 &&
-         <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
-        }
-        {
-          new Date().getMonth() === 11 &&
-         <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
-        }
-        <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
-          {t("appName")}
-        </Text>
-        <Text
-          style={{
-            ...theme.theme.text,
-            color: theme.colors.textSecond
-          }}
-        >
-          {t("DaysStroke")}: {strokeData.length}
-        </Text>
-        
-      </View>
+      <LogoBlock/>
       <WeekActivityComponent theme={theme} state={state} t={t} />
       <View style={homeStyle.buttonView}>
         {state.passages.length === 0 &&<Button
