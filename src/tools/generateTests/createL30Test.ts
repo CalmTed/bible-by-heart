@@ -2,9 +2,21 @@ import { MINIMUM_SENTENCE_LENGTH, PERFECT_TESTS_TO_PROCEED, SENTENCE_SEPARATOR }
 import { getPerfectTestsNumber } from "../getPerfectTests";
 import { CreateTestMethodModel } from "./createL10Test";
 import { getWordsFromErrors } from "./getWordsFromErrors";
-import { getErrorGradedSentences } from "./getErrorGradedSentences";
 import { randomRange } from "../randomizers";
 import { getSimularity } from "../getSimularity";
+import { getRandomSentencesRange } from "./createL40Test";
+
+const getWordsFromPassage = (text: string) => {
+  return text
+  .replace(/ {2,3}/g, " ")
+  .trim()
+  .split(" ");
+}
+const getSentencesFromPassage = (text: string) => {
+  return text
+  .split(SENTENCE_SEPARATOR)
+  .filter(s => s.length > 1);
+}
 
 export const createL30Test: CreateTestMethodModel = ({
     initialTest,
@@ -15,15 +27,14 @@ export const createL30Test: CreateTestMethodModel = ({
     if (!targetPassage) {
       return initialTest;
     }
-    const words = targetPassage.verseText
-      .replace(/ {2,3}/g, " ")
-      .trim()
-      .split(" ");
+    
+    const words = getWordsFromPassage(targetPassage.verseText)
+
     if (!words.length) {
       return initialTest;
     }
     const successStroke = getPerfectTestsNumber(history, targetPassage);
-    const sentances = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length > 1);
+    const sentences = getSentencesFromPassage(targetPassage.verseText)
     const wordsFromErrors = getWordsFromErrors(history, initialTest.pi)
     let missingWords: number[] = [];
     if(successStroke === PERFECT_TESTS_TO_PROCEED) { //last time before next level
@@ -31,31 +42,30 @@ export const createL30Test: CreateTestMethodModel = ({
       missingWords = words.map((w, i) => i);
     }else{
       if(
-        sentances.length > 2 
+        sentences.length > 2 
         && successStroke !== 0 
-        && sentances.join().length > MINIMUM_SENTENCE_LENGTH
+        && sentences.join().length > MINIMUM_SENTENCE_LENGTH
         && Math.random() > 0.3
       ){
-        //IF there are several sentances THEN add one or two to missing
-        if(Math.random() > 0.5){
-          const sentancesErrorGraded = getErrorGradedSentences(sentances, wordsFromErrors)
-          const totalErrorRateNumber = sentancesErrorGraded.map(s => s.errorRate).reduce((ps,r) => ps + r,0)
-          const randomNumber = randomRange(0,totalErrorRateNumber)
-          //first that is bigger b.c. there could be bug number that will not match === condition
-          const biasedRandomSentence = sentancesErrorGraded
-          .filter((s,i,arr) => {
-            arr.slice(0,i).reduce((ps,r) => ps + r.errorRate,0) >= randomNumber
-            }
-          )[0] || sentancesErrorGraded[0]
-          const sentanceIndexToAdd = biasedRandomSentence.sentanceIndex
-          const startingWordIndexStart = sentanceIndexToAdd === 0 ? 0 : sentances.slice(0,sentanceIndexToAdd).join("").trim().split(" ").length;
-          missingWords = Array(sentances[sentanceIndexToAdd].trim().split(" ").length).fill(0).map((v,i) => i + startingWordIndexStart)
+        //IF there are several sentences THEN add one or two to missing
+        if(Math.random() > 0.5 ){
+          //adding random range of sentences
+          const [startingSentanseIndex, endingSentenceIndex] = getRandomSentencesRange(sentences, wordsFromErrors, 1)
+          
+          const firstWordIndexOffset = startingSentanseIndex === 0 ? 0 :  getWordsFromPassage(sentences.slice(0, startingSentanseIndex).join("")).length
+          missingWords = getWordsFromPassage(
+            sentences.slice(startingSentanseIndex, endingSentenceIndex).join("")
+          )
+          //getting indexes of all the words, considering posible offset
+          .map((v,i) => i + firstWordIndexOffset)
+          console.log(sentences.length, startingSentanseIndex, endingSentenceIndex)
+          
         }else{
-  
-          const numberOfNiegbors = Math.random() > 0.5 ? 0 : 1;
-          const randomIndexToAdd = randomRange(0, Math.min(1, sentances.length - numberOfNiegbors))
-          const startingWordIndexStart = randomIndexToAdd === 0 ? 0 : sentances.slice(0,randomIndexToAdd).join("").trim().split(" ").length;
-          const wordsNumber = sentances[randomIndexToAdd]?.trim()?.split(" ")?.length || 1 //+ (sentances[randomIndexToAdd + numberOfNiegbors]?.trim()?.split(" ")?.length || 0)
+          //adding random isle of words
+          const numberOfNeigbors = Math.random() > 0.5 ? 0 : 1;
+          const randomIndexToAdd = randomRange(0, Math.min(1, sentences.length - numberOfNeigbors))
+          const startingWordIndexStart = randomIndexToAdd === 0 ? 0 : getWordsFromPassage(sentences.slice(0,randomIndexToAdd).join("")).length;
+          const wordsNumber = getWordsFromPassage(sentences[randomIndexToAdd]).length || 1 //+ (sentences[randomIndexToAdd + numberOfNiegbors]?.trim()?.split(" ")?.length || 0)
           missingWords = Array(wordsNumber).fill(0).map((v,i) => i + startingWordIndexStart)
         }
       }else{

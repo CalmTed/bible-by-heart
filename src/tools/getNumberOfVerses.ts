@@ -40,6 +40,6 @@ export const getNumberOfVerses: (adress: AddressType) => number = (address) => {
       .reduce((partialSum, a) => partialSum + a, 0);
     return fromStartingChapter + fromAllChaptersBetween + fromEndingChapter;
   }
-  console.error(JSON.stringify(address));
+  // console.error(JSON.stringify(address));
   return NaN;
 };

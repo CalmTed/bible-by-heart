@@ -177,29 +177,86 @@ boilerplate:
     1. [x] fix compare address bug
     2. [x] fix autocompleted test on 4th level
     3. [x] fix translation and first added passage bug
-    4. fix autocompleted test on 3rd level
-    5. fix awkward buttons on 3rd level (complete button?)
+    4. [x] fix autocompleted test on 3rd level (wasnt been able to recreate)
+    5. [x] fix awkward buttons on 3rd level (complete button?) (skipped - not important!)
+    11. [?] fix notification bug
+        - [x] fix timing
+        - [?] dismiss when trained today
+        - [x] add new labels
+    12. [x] fix svg bug
+    13. [x] fix null in address errors
+        - [x] return complete address from AP
+        - add convertion before using in each file 
+        - or at least add validation - checked where it coased problems
+    10. store error long localy for debuging 
+        - add logger util
+        - change all console.error
+        - set maximum size and erase overflow
+        - review and add logger.error() to potential breaking points
+            - generating tests
+            - finishing tests
+            - reducing
+            - navigating
+            - starting
+            - adding passage
+            - changing settings
     6. add login screen
+        - user settings icon (logged out, synced, not synced)
+        - login screen
+        - registration screen
+        - user settings screen
     7. estimate time of testing upfront
     8. estimate test dificulty - make least number of hard ones or promotions
-    9. gradualy lower mex level after a long time without testing
-    10. store error long localy for debuging 
-    11. fix notificatio bug
-    12. fix svg bug
-    13. fix null in address errors
+    9. gradualy lower max level after a long time without testing
+        - check on app opening how long its been sinse last test and show message of changes
 - refactoring tasks
-    - break levels to separate parts and files
+    - break test level components to separate parts and files
     - add useContext for t()
     - make address distance use exact number of verses
-    - make address difference return boll and check for non complete address(e.g. "Gen 1:1 === Gen 1:1-1:1" )
-    - should check for incoplete address on creation (in address picker) and convert it to complete address
-    - redo notofocation time triger and adaptation learning (date, week day, days after previus)
-    - useAddresPicker hook
+    - [x] make address difference return boll and check for non complete address(e.g. "Gen 1:1 === Gen 1:1-1:1" )
+    - [x] should check for incoplete address on creation (in address picker) and convert it to complete address
+    - redo notifocation time triger and adaptation learning (date, week day, days after previus)
+    - useAddressPicker hook
     - abstaction for passage to unify methons like get sentanses
-    - 
+    - refactoring long function to a set of short encapsulated ones
 2025-02-28
 - started fixing address comparison bug
 2025-03-04
 - fixed address bug
 - fixed level 4 completed bug
-- 
+2025-03-05
+- checked l30 creation 
+- skipped 3rd level inconvenience - will reacreate the whole test error design later
+- major refactoring potential plan (after next publishing)
+    - change strange state change or unchange
+        - change right on click
+        - propose undo if needed
+        - add save button just for better UX
+    - change navigation (with bottom menu, swipes etc.)
+        - consider deep linking
+    - rewrite design from scratch (modular generic but flexeble components)
+        - mainPage (home, list, settings, userSettings, stats)
+        - testing (each test result, final score, calling names:) and stats)
+        - syncable user data dinamic screen
+        - feedback messages with screenshot and state data
+        - fetch broadcast messages
+    - add other than .MainActivity for notification reaction and receiving intents
+    - add animation and animated swg
+    - abstration like Passage.methons() and Address.methods() or getSomthing(object)
+        - while state object as abstracted Object with methods
+    - milti-layered t() like t("homePage.title") with useContext()
+    - update AddressPicker 
+        - returns only complete address 
+        - longPress selects the whole chapter or only one verse
+        - fill all incomplete on next appState update
+    - updateNotification
+        - better learning based testing time and notification response
+        - propose to train favorite passage (get fav passage from stats)
+        - start training on notification click
+        - dont remind if already trained(or be fun about it at least)
+        - want about losing streak
+        - custom sound (hinmn melody or sword drawing)
+- tried to fix notification need to check on built version - dont work yet
+- fixed svg bug
+- fixed address inconvenience
+- went to sleep

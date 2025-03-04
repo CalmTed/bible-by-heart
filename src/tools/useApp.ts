@@ -80,13 +80,13 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
 
       notificationListener.current =
         Notifications.addNotificationResponseReceivedListener(
-          (notification) => {
-            //save to user reaction history
+          (responce) => {
+            //TODO save to user reaction history
             //weekday, time, success
             //on scheduling we do the same but with fail status
             console.log(
               "responce received",
-              notification.notification.request.content
+              responce.notification.request.content
             );
             //reschedule reminders
             checkSchedule(state);
@@ -98,7 +98,7 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
         handleNotification: async () => ({
           shouldShowAlert: true,
           shouldPlaySound: true,
-          shouldSetBadge: true
+          shouldSetBadge: false
         })
       });
     }

@@ -10,7 +10,7 @@ import {
 import { getAddresOrder } from "../addressOrder";
 import { createL10Test, CreateTestMethodModel } from "./createL10Test";
 import { createL11Test } from "./createL11Tests";
-import { createL20Test, createL21Test } from "./CreateL2XTest";
+import { createL20Test, createL21Test } from "./createL2XTest";
 import { createL30Test } from "./createL30Test";
 import { createL40Test } from "./createL40Test";
 import { createL50Test } from "./createL50Test";

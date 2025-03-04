@@ -328,7 +328,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
                     }}
                   />
                 </View>
-                <View style={settingsGroupStyle.remindersDaysListView}>
+                {/* <View style={settingsGroupStyle.remindersDaysListView}>
                   {Object.entries(reminderItem.days).map(([key, value]) => {
                     return (
                       <Button
@@ -349,7 +349,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
                       />
                     );
                   })}
-                </View>
+                </View> */}
                 <Button
                   theme={theme}
                   onPress={() => handleRemove(reminderItem)}
@@ -367,7 +367,7 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
             header={t("settsTestNotification")}
             subtext=""
             actionCallBack={async () => {
-              const randNum = randomRange(1, 3);
+              const randNum = randomRange(1, 13);
               schedulePushNotification(
                 t(`notificationTitle${randNum}` as WORD),
                 t(`notificationBody${randNum}` as WORD),

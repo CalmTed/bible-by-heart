@@ -6,16 +6,6 @@ const xmlData = `<svg width="141" height="130" viewBox="0 0 141 130" fill="none"
 </g>
 <path d="M92 108H48C46.8954 108 46 108.895 46 110V128C46 129.105 46.8954 130 48 130H92C93.1046 130 94 129.105 94 128V110C94 108.895 93.1046 108 92 108Z" fill="url(#paint1_linear_169_37)"/>
 <defs>
-<filter id="filter0_d_169_37" x="0.991699" y="0.5" width="139.034" height="112.011" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset/>
-<feGaussianBlur stdDeviation="2"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0.842054 0 0 0 0 0.741356 0 0 0 0 0.384335 0 0 0 0.25 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_169_37"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_169_37" result="shape"/>
-</filter>
 <linearGradient id="paint0_linear_169_37" x1="49" y1="-3" x2="97" y2="125.5" gradientUnits="userSpaceOnUse">
 <stop stop-color="#FED714"/>
 <stop offset="1" stop-color="#FEB289"/>

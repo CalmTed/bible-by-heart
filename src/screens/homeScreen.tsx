@@ -15,6 +15,7 @@ import { ActionName } from "../models";
 import { getPassagesByTrainMode } from "../tools/generateTests";
 import { reduce } from "../tools/reduce";
 import { MangerSVG } from "../svg/manger";
+import { FinishCupSVG } from "src/svg/finishCup";
 
 export interface ScreenModel {
   route: any;
@@ -84,11 +85,11 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const LogoBlock = () => (<View style={homeStyle.logoView}>
     {
       new Date().getMonth() !== 11 &&
-     <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
+      <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
     }
     {
       new Date().getMonth() === 11 &&
-     <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
+      <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
     }
     <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
       {t("appName")}

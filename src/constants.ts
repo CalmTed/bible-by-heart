@@ -77,7 +77,8 @@ export enum THEMETYPE {
 export const VIBRATION_PATTERNS = {
   testRight: [0, 20, 190, 20],
   testWrong: [0, 300],
-  wordClick: 10
+  wordClick: 10,
+  APSelectVerse: 10,
 };
 
 //TODO will make it later

@@ -180,7 +180,6 @@ export const reduce: (
       const slectedTrainModeWithPassageLanguage:TrainModeModel = {...selectedTrainMode, translation: nonArchivedPassages[0]?.verseTranslation}
       const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode)
       const filteredWithOtherTranslationPassages = getPassagesByTrainMode(state, slectedTrainModeWithPassageLanguage)
-      console.log(filteredWithOtherTranslationPassages)
       
       const generatedTests = filteredPassages.length ? generateTests(state, selectedTrainMode) : generateTests(state, slectedTrainModeWithPassageLanguage)
       

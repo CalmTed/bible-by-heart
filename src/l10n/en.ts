@@ -79,6 +79,29 @@ export const en = {
   notificationBody2: "And even if you did, here is a reminder for you ☝️",
   notificationBody3:
     "Surely you know that free time is a question of priorities 😏",
+  //AI generated :)
+  notificationTitle4: "Time for some Bible verse training?",
+  notificationTitle5: "A little practice goes a long way!",
+  notificationTitle6: "Your next verse awaits!",
+  notificationTitle7: "Let's keep those verses fresh in your mind!",
+  notificationTitle8: "Daily practice makes perfect!",
+  notificationTitle9: "It's always a good time to review Bible verses!",
+  notificationTitle10: "Stay sharp—train your memory!",
+  notificationTitle11: "A quick reminder for your verse training!",
+  notificationTitle12: "Let’s keep up the good work!",
+  notificationTitle13: "Scripture is best remembered daily!",
+
+  notificationBody4: "Just a few minutes can make a difference! ⏳",
+  notificationBody5: "A small effort today leads to great results tomorrow! 💪",
+  notificationBody6: "Stay consistent, and you’ll see amazing progress! 🙌",
+  notificationBody7: "Your spiritual growth is worth the time! ✨",
+  notificationBody8: "Even a quick review helps keep verses in your heart! ❤️",
+  notificationBody9: "Discipline today, wisdom tomorrow! 📖",
+  notificationBody10: "God’s word is worth remembering every day! 🙏",
+  notificationBody11: "No pressure, just a friendly reminder! 😊",
+  notificationBody12: "Your effort will pay off—keep going! 🚀",
+  notificationBody13: "A little focus now, lasting wisdom forever! 💡",
+
 
   //subtexts
   DateCreated: "Date created",

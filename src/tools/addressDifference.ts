@@ -425,10 +425,10 @@ const testAddressDifferece = () => {
   ]
   const cm = [...comparisonMatrix1, ...comparosonMatrix2, ...comparosonMatrix3]
   const counter = cm.filter( i => getAddressDifference(i.a, i.b) !== i.exp)
-  console.log(`${cm.length - counter.length}/${cm.length} tests passed`)
+  // console.log(`${cm.length - counter.length}/${cm.length} tests passed`)
   if(counter.length){
     counter.map(i => {
-      console.log(JSON.stringify(i))
+      // console.log(JSON.stringify(i))
     })
   }
 }

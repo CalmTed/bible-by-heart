@@ -340,7 +340,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                         ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
                         break;
                       }
-                      console.log(decodedData.version)
+                      // console.log(decodedData.version)
                       if(!decodedData?.version){
                         ToastAndroid.show("Wrong version", 1000);
                         break;

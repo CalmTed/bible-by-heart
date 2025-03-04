@@ -3,10 +3,11 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { COLOR_DARK, DAY, HOUR, LANGCODE, MINUTE } from "../constants";
 import { AppStateModel, ReminderModel, TestModel } from "../models";
-import { cancelScheduledNotificationAsync } from "expo-notifications";
+import { CalendarTriggerInput, cancelScheduledNotificationAsync, SchedulableTriggerInputTypes } from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
 
+//writes to console scheduling operations 
 const notificationDebug = false;
 
 export const schedulePushNotification = async (
@@ -27,10 +28,16 @@ export const schedulePushNotification = async (
 
 export const getAutoTimeTrigger: (
   history: TestModel[]
-) => Record<string, string | number | boolean> = (history) => {
+) => CalendarTriggerInput = (history) => {
   //if no history
   if (!history.length) {
-    return { channelId: "Reminders", hour: 8, minute: 0, repeats: true };
+    return {
+      type: SchedulableTriggerInputTypes.CALENDAR,
+      channelId: "Reminders",
+      hour: 8,
+      minute: 0,
+      repeats: true
+    };
   }
   //we cant do average and cant do just most common hour
   //but we need to find most probable second
@@ -65,18 +72,48 @@ export const getAutoTimeTrigger: (
     )
     .map((a, i) => [a, i])]
     .sort((a, b) => b[0] - a[0])[0][1];
+
+  const lastTest = [...history].sort((a,b) => b.td[0][0] - a.td[0][0])[0]
+  const now = new Date()
+  //if hours from last test are lesser than hour now
+  const didTrainToday = (new Date().getTime() - new Date(lastTest.td[0][0]).getTime())/1000/HOUR < now.getHours()
+  const targetDay = didTrainToday ? new Date().getDay() + 1 : new Date().getDay();
+  
+  // const seconds = now.getTime() + 60000
   return {
+    type: SchedulableTriggerInputTypes.CALENDAR,
     channelId: "Reminders",
+    // seconds,
+    day: targetDay,
     hour: mostCommonHour,
     minute: Math.max(0, (mostCommon5Minutes * minutesGroups) - 10),//10 minutes before or at 0
     repeats: true
   };
+
+  // channelId?: string;
+  // repeats?: boolean;
+  // seconds?: number;
+  // timezone?: string;
+  // year?: number;
+  // month?: number;
+  // weekday?: number;
+  // weekOfMonth?: number;
+  // weekOfYear?: number;
+  // weekdayOrdinal?: number;
+  // day?: number;
+  // hour?: number;
+  // minute?: number;
+  // second?: number;
 };
 
 //usualy activated from reducer
 export const checkSchedule = async (state: AppStateModel) => {
   //get all remiders
   const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
+  if (notificationDebug) {
+    console.log(`allScheduled.length: `, allScheduled.length)
+    console.log(`allScheduled: `, allScheduled)
+  }
   //get reminders from state
   const allUserSetted = state.settings.remindersList;
   allScheduled.map(async (scheduled) => {
@@ -108,15 +145,13 @@ export const checkSchedule = async (state: AppStateModel) => {
   }
 
   const t = createT(state?.settings?.langCode || LANGCODE.en);
-  const randNum = randomRange(1, 3);
+  const randNum = randomRange(1, 13);
 
-  // IF ENABLED BUT AUTOMATIC TIME
+  // If reminders are enabled but with auto time
   if (state.settings.remindersSmartTime) {
     const autoTimeTrigger = getAutoTimeTrigger(state.testsHistory);
     if (notificationDebug) {
-      console.log(
-        `Scheduling autonotification at ${autoTimeTrigger.hour}:${autoTimeTrigger.minute}`
-      );
+      console.log(`Scheduling autonotification at ${autoTimeTrigger.hour}:${autoTimeTrigger.minute}:${autoTimeTrigger.second}`);
     }
     await schedulePushNotification(
       t(`notificationTitle${randNum}` as WORD),
@@ -125,7 +160,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       autoTimeTrigger
     );
   } else {
-    //IF ENABLED AND NOT AUTOMATIC TIME
+    //if reminders are enabled but not auto time
     //get scheduled reminders
     const getNextActivationTime: (item: ReminderModel) => Date = (item) => {
       // what weekday today?
@@ -182,41 +217,51 @@ export const checkSchedule = async (state: AppStateModel) => {
           ? false
           : JSON.parse(scheduledItem.content.data.itemString).id === item.id
       );
-      if (!scheduledRiminder) {
-        //add reminder
-        console.log(
-          `Scheduling notification at ${Math.floor(
-            item.timeInSec / HOUR
-          )}:${Math.floor(
-            (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) / MINUTE
-          )}`
-        );
+      const schedule:(
+        randNum: number,
+        item: ReminderModel
+      ) => Promise<void> = async () => {
         await schedulePushNotification(
           t(`notificationTitle${randNum}` as WORD),
           t(`notificationBody${randNum}` as WORD),
           { itemString: JSON.stringify(item) },
-          getNextActivationTime(item)
+          //we dont care if we train today because its user defined reminder
+          {
+            type: SchedulableTriggerInputTypes.CALENDAR,
+            seconds: getNextActivationTime(item).getTime()/1000,
+            repeats: true
+          }
         );
+      }
+      if (!scheduledRiminder) {
+        //add reminder
+        if (notificationDebug) {
+          console.log(
+            `Scheduling notification at ${Math.floor(
+              item.timeInSec / HOUR
+            )}:${Math.floor(
+              (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) / MINUTE
+            )}`
+          );
+        }
+        await schedule(randNum, item)
       } else {
         //change reminder
         if (
           JSON.stringify(item) !== scheduledRiminder.content.data.itemString
         ) {
-          console.log(
-            `Changing notification at ${Math.floor(
-              item.timeInSec / HOUR
-            )}:${Math.floor(
-              (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) /
-                MINUTE
-            )}`
-          );
-          await cancelScheduledNotificationAsync(scheduledRiminder.identifier);
-          await schedulePushNotification(
-            t(`notificationTitle${randNum}` as WORD),
-            t(`notificationBody${randNum}` as WORD),
-            { itemString: JSON.stringify(item) },
-            getNextActivationTime(item)
-          );
+          if (notificationDebug) {
+            console.log(
+              `Changing notification at ${Math.floor(
+                item.timeInSec / HOUR
+              )}:${Math.floor(
+                (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) /
+                  MINUTE
+              )}`
+            );
+          }
+          await cancelScheduledNotificationAsync(scheduledRiminder.identifier);        
+          await schedule(randNum, item)
         }
       }
     });

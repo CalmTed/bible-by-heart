@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Vibration,
   View
 } from "react-native";
 import { AddressType } from "../models";
@@ -15,6 +16,7 @@ import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
 import { ThemeAndColorsModel } from "../tools/getTheme";
 import { getNumberOfVerses } from "src/tools/getNumberOfVerses";
+import { VIBRATION_PATTERNS } from "src/constants";
 
 interface AddressPickerModel {
   visible: boolean;
@@ -33,7 +35,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   onCancel,
   onConfirm,
   t,
-  theme
+  theme,
 }) => {
   const isNoAddress = !address;
   const isAddressNull =
@@ -46,84 +48,118 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       isNaN(address.startChapterNum) ||
       isNaN(address.startVerseNum));
   const isAddressProvided = !isNoAddress && !isAddressNull && !isAddressNaN;
-  const [tempAddres, setAddress] = useState(
+  const [tempAddress, setAddress] = useState(
     isAddressProvided ? address : createAddress()
   );
-  const [addresPart, setAddressPart] = useState(
+  //address part curently being edited
+  const [addressPart, setAddressPart] = useState(
     isAddressProvided
-      ? Object.keys(tempAddres)[Object.keys(tempAddres).length - 1]
-      : Object.keys(tempAddres)[0]
+      ? Object.keys(tempAddress)[Object.keys(tempAddress).length - 1]
+      : Object.keys(tempAddress)[0]
   );
   useEffect(() => {
     setAddressPart(
       isAddressProvided
-        ? Object.keys(tempAddres)[Object.keys(tempAddres).length - 1]
-        : Object.keys(tempAddres)[0]
+        ? Object.keys(tempAddress)[Object.keys(tempAddress).length - 1]
+        : Object.keys(tempAddress)[0]
     );
     setAddress(isAddressProvided ? address : createAddress());
   }, [visible]); //dont change this list please:)
-  const chaptersNumber = bibleReference[tempAddres.bookIndex]?.chapters.length;
+  const chaptersNumber = bibleReference[tempAddress.bookIndex]?.chapters.length;
   const versesNumber =
-    bibleReference[tempAddres.bookIndex]?.chapters[
-      tempAddres[
-        addresPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"
-      ]
+    bibleReference[tempAddress.bookIndex]?.chapters[
+      tempAddress[
+        addressPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"
+      ] || tempAddress.startChapterNum
     ];
   const handleBack = () => {
-    const curPartIndex = Object.keys(tempAddres).indexOf(addresPart);
+    const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
     switch (curPartIndex) {
       case -1:
       case 0:
         onCancel();
-        setAddressPart(Object.keys(tempAddres)[0]);
+        setAddressPart(Object.keys(tempAddress)[0]);
         break;
       default:
         setAddress((prv) => {
           return {
             ...prv,
-            [Object.keys(tempAddres)[curPartIndex - 1]]: NaN,
-            [Object.keys(tempAddres)[curPartIndex]]: NaN
+            [Object.keys(tempAddress)[curPartIndex - 1]]: NaN,
+            [Object.keys(tempAddress)[curPartIndex]]: NaN
           };
         });
-        setAddressPart(Object.keys(tempAddres)[curPartIndex - 1]);
+        setAddressPart(Object.keys(tempAddress)[curPartIndex - 1]);
     }
   };
   const handleListButtonPress: (index: number) => void = (index) => {
     setAddress((prv) => {
-      return { ...prv, [addresPart]: index };
+      return { ...prv, [addressPart]: index };
     });
-    const curPartIndex = Object.keys(tempAddres).indexOf(addresPart);
+    const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
     switch (curPartIndex) {
       case -1:
-        setAddressPart(Object.keys(tempAddres)[0]);
+        setAddressPart(Object.keys(tempAddress)[0]);
         break;
-      case Object.keys(tempAddres).length - 1:
+      case Object.keys(tempAddress).length - 1:
         //auto confirming address
         if (!isDoneDisabled) {
-          onConfirm({ ...tempAddres, [addresPart]: index });
+          handleConfirm({ ...tempAddress, [addressPart]: index });
         }
         break;
       default:
-        setAddressPart(Object.keys(tempAddres)[curPartIndex + 1]);
+        setAddressPart(Object.keys(tempAddress)[curPartIndex + 1]);
     }
   };
+
+  const handleListButtonLongPress: (index: number) => void = (index) => {
+    //if editing start verse - select just one verse (fill end values with start values)
+    
+    if(addressPart === "startVerseNum"){
+      handleConfirm({ ...tempAddress, [addressPart]: index });
+    }else{
+      handleListButtonPress(index)
+    }
+    Vibration.vibrate(VIBRATION_PATTERNS.APSelectVerse)
+  }
+
+  const handleConfirm: (a: AddressType) => void = (address) => {
+    if(address?.endChapterNum){
+      address.endChapterNum = address.startChapterNum
+    }
+    if(address?.endVerseNum){
+      address.endVerseNum = address.startVerseNum
+    }
+    onConfirm(address);
+  }
   const allBookAddress: AddressType = {
-    bookIndex: tempAddres.bookIndex,
+    bookIndex: tempAddress.bookIndex,
     startChapterNum: 0,
     startVerseNum: 0,
     endChapterNum: chaptersNumber,
     endVerseNum:
-      bibleReference[tempAddres.bookIndex]?.chapters[chaptersNumber - 1]
+      bibleReference[tempAddress.bookIndex]?.chapters[chaptersNumber - 1]
   };
   const isDoneDisabled =
-    isNaN(tempAddres.bookIndex) ||
-    isNaN(tempAddres.startChapterNum) ||
-    isNaN(tempAddres.startVerseNum) ||
-    (!isNaN(tempAddres.endChapterNum) && isNaN(tempAddres.endVerseNum)) ||
-    getNumberOfVerses(tempAddres) > 500 ||
+    isNaN(tempAddress.bookIndex) ||
+    isNaN(tempAddress.startChapterNum) ||
+    isNaN(tempAddress.startVerseNum) ||
+    // (!tempAddress.endChapterNum || !tempAddress.endVerseNum) ||
+    getNumberOfVerses(tempAddress) > 500 ||
     //if more then one chapter and more then half of the book
-    (tempAddres.endChapterNum !== tempAddres.startChapterNum &&
-      getNumberOfVerses(tempAddres) > getNumberOfVerses(allBookAddress) / 2);
+    (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
+      getNumberOfVerses(tempAddress) > getNumberOfVerses(allBookAddress) / 2);
+
+  const TitleLabel: (a:{addressPart: string, tempAddress: AddressType}) => React.JSX.Element = ({addressPart, tempAddress}) => {
+    const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
+    const book = curPartIndex < 1 ? t("APSelectBook") : t(bibleReference[tempAddress.bookIndex]?.longTitle as WORD);
+    const startChapter = curPartIndex < 2 ? "" : tempAddress?.startChapterNum + 1
+    const startVerse = curPartIndex < 3 ? "" : tempAddress?.startVerseNum + 1
+    const endChapter = curPartIndex < 4 ? "" : (tempAddress?.endChapterNum || tempAddress.startChapterNum) + 1
+    const endVerse = curPartIndex < 5 ? "" : (tempAddress?.endVerseNum || tempAddress.startVerseNum) + 1
+    return (<Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
+      {book} {startChapter}:{startVerse} - {endChapter}:{endVerse}
+    </Text>)
+  }
   return (
     <Modal visible={visible}>
       {/* HEADER */}
@@ -134,21 +170,13 @@ export const AddressPicker: FC<AddressPickerModel> = ({
           icon={IconName.back}
           onPress={handleBack}
         />
-        <Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
-          {addresPart === "bookIndex"
-            ? t("APSelectBook")
-            : `${t(bibleReference[tempAddres.bookIndex]?.longTitle as WORD)} ${
-                tempAddres.startChapterNum + 1 || " _ "
-              }:${tempAddres.startVerseNum + 1 || " _ "}-${
-                tempAddres.endChapterNum + 1 || " _ "
-              }:${tempAddres.endVerseNum + 1 || " _ "}`}
-        </Text>
+        <TitleLabel addressPart={addressPart} tempAddress={tempAddress}/>
         <IconButton
           theme={theme}
           style={APstyle.headerBotton}
           icon={IconName.done}
           onPress={() => {
-            onConfirm(tempAddres);
+            handleConfirm(tempAddress);
           }}
           disabled={isDoneDisabled}
         />
@@ -162,7 +190,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       >
         <ScrollView>
           <View style={APstyle.listView}>
-            {addresPart === "bookIndex" &&
+            {addressPart === "bookIndex" &&
               bookList.map((bookItem, i) => {
                 const title = bookItem as WORD;
                 return (
@@ -174,7 +202,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                   />
                 );
               })}
-            {["startChapterNum"].includes(addresPart) &&
+            {["startChapterNum"].includes(addressPart) &&
               Array.from({ length: chaptersNumber }, (v, i) => i).map(
                 (chapter, i) => {
                   const title = (chapter + 1).toString();
@@ -188,11 +216,11 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                   );
                 }
               )}
-            {["endChapterNum"].includes(addresPart) &&
+            {["endChapterNum"].includes(addressPart) &&
               Array.from({ length: chaptersNumber }, (v, i) => i).map(
                 (chapter, i) => {
                   const title = (chapter + 1).toString();
-                  if (i < tempAddres.startChapterNum) {
+                  if (i < tempAddress.startChapterNum) {
                     return;
                   }
                   return (
@@ -205,7 +233,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                   );
                 }
               )}
-            {["startVerseNum"].includes(addresPart) &&
+            {["startVerseNum"].includes(addressPart) &&
               Array.from({ length: versesNumber }, (v, i) => i).map(
                 (verse, i) => {
                   const title = (verse + 1).toString();
@@ -214,18 +242,19 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                       key={title}
                       title={title}
                       onPress={() => handleListButtonPress(i)}
+                      onLongPress={() => handleListButtonLongPress(i)}
                       theme={theme}
                     />
                   );
                 }
               )}
-            {["endVerseNum"].includes(addresPart) &&
+            {["endVerseNum"].includes(addressPart) &&
               Array.from({ length: versesNumber }, (v, i) => i).map(
                 (verse, i) => {
                   const title = (verse + 1).toString();
                   if (
-                    tempAddres.startChapterNum === tempAddres.endChapterNum &&
-                    i < tempAddres.startVerseNum
+                    tempAddress.startChapterNum === tempAddress.endChapterNum &&
+                    i < tempAddress.startVerseNum
                   ) {
                     return;
                   }
@@ -249,10 +278,11 @@ export const AddressPicker: FC<AddressPickerModel> = ({
 const ListButton: FC<{
   title: string;
   onPress: () => void;
+  onLongPress?: () => void;
   theme: ThemeAndColorsModel;
-}> = ({ title, onPress, theme }) => {
+}> = ({ title, onPress, onLongPress = () => {}, theme }) => {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
       <View style={APstyle.listButton}>
         <Text
           style={{
