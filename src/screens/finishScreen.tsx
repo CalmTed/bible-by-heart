@@ -5,7 +5,7 @@ import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
 import { FinishCupSVG } from "../svg/finishCup";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../tools/useApp";
+import { useApp } from "../utils/useApp";
 
 export const FinishScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme } = useApp({ route, navigation });

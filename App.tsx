@@ -4,7 +4,7 @@ import { AppStateModel } from "./src/models";
 import { Navigator } from "./src/navigator";
 import { createAppState } from "./src/initials";
 import storage from "./src/storage";
-import { convertState } from "./src/tools/stateVersionConvert";
+import { convertState } from "./src/utils/stateVersionConvert";
 import React, {
   Button,
   ToastAndroid,
@@ -13,8 +13,11 @@ import React, {
   Text,
   TextInput,
   Linking,
-  AppRegistry
+  AppRegistry,
+  useColorScheme
 } from "react-native";
+import { logger } from "src/utils/logger";
+
 
 export default function App() {
   const [isReady, setReady] = useState(false);
@@ -30,6 +33,7 @@ export default function App() {
   useEffect(() => {
     Linking.addEventListener("url", (link) => {
       if(state.settings.devModeEnabled){
+        logger.write(`[DEV] Recieved data: ${link}`)
         ToastAndroid.show("Recieved data:" + link, 1000)
       }
     })
@@ -97,13 +101,15 @@ export default function App() {
       });
   };
 
+  const theme = useColorScheme()
+
   useEffect(() => {
     loadState();
   });
   try {
     return <>{isReady && <Navigator state={state} />}</>;
   } catch (err) {
-    // ToastAndroid.show("Error with rendering state", 10000)
+    logger.error(`Error with rendering state on app start`)
     return (
       <ScrollView>
         <View
@@ -153,6 +159,7 @@ export default function App() {
                     }
                   });
               } catch (err) {
+                logger.error(`Error on bloading backup`)
                 ToastAndroid.show("😟 Nope. Error here too...", 10000);
               }
             }}
@@ -175,9 +182,11 @@ export default function App() {
                       ToastAndroid.show("Showing passages", 10000);
                     })
                     .catch((err) => {
+                      logger.error(`Error on encoding while exporting`)
                       ToastAndroid.show("😟 Nope. " + err, 10000);
                     });
-                } catch (err) {
+                  } catch (err) {
+                  logger.error(`Error while exporting`)
                   ToastAndroid.show("😟 Nope. " + err, 10000);
                 }
               } else {
@@ -191,9 +200,11 @@ export default function App() {
                       ToastAndroid.show("Showing state", 10000);
                     })
                     .catch((err) => {
+                      logger.error(`Error while getting data from storage`)
                       ToastAndroid.show("😟 Nope. " + err, 10000);
                     });
                 } catch (err) {
+                  logger.error(`Error while getting data from storage 2`)
                   ToastAndroid.show("😟 Nope. " + err, 10000);
                 }
               }
@@ -212,6 +223,7 @@ export default function App() {
                 setAskedForHelp(true);
                 Linking.openURL("https://t.me/BibleByHeartApp");
               } catch (err) {
+                logger.error(`Unable to open telegram link`)
                 ToastAndroid.show("😟 Nope. " + err, 10000);
               }
             }}
@@ -234,6 +246,7 @@ export default function App() {
                     ToastAndroid.show("Brand new data for you", 10000);
                   });
               } catch (err) {
+                logger.error(`Unable to create new state`)
                 ToastAndroid.show("😟 Nope. " + err, 10000);
               }
             }}

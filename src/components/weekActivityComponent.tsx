@@ -2,9 +2,9 @@ import React, { FC } from "react";
 import { View, Text, StyleSheet, DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppStateModel } from "../models";
-import { getWeeklyStats } from "../tools/getStats";
+import { getWeeklyStats } from "../utils/getStats";
 import { WORD } from "src/l10n";
-import { ThemeAndColorsModel } from "src/tools/getTheme";
+import { ThemeAndColorsModel } from "src/utils/getTheme";
 
 export const WeekActivityComponent: FC<{
   state: AppStateModel;
@@ -79,6 +79,7 @@ const DayActivityBar: FC<{
   return (
     <View style={DayActivityBarStyles.dayItemGroup}>
       <LinearGradient
+        //@ts-ignore
         colors={gradientColors}
         start={{ x: 0.0, y: 0 }}
         end={{ x: 0.0, y: 1.0 }}

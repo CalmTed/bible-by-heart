@@ -9,7 +9,7 @@ import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
-import { reduce } from "../tools/reduce";
+import { reduce } from "../utils/reduce";
 import { TestNavDott } from "../components/testNevDott";
 import { L10, L11 } from "../components/levels/Level1";
 import { L20, L21 } from "../components/levels/Level2";
@@ -17,7 +17,7 @@ import { L30 } from "../components/levels/Level3";
 import { LevelPicker } from "../components/LevelPicker";
 import { L40 } from "../components/levels/Level4";
 import { L50 } from "../components/levels/Level5";
-import { useApp } from "../tools/useApp";
+import { useApp } from "../utils/useApp";
 import { MiniModal } from "../components/miniModal";
 
 export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {

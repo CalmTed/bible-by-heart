@@ -19,20 +19,21 @@ import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { WORD, createT } from "../l10n";
-import addressToString from "../tools/addressToString";
+import addressToString from "../utils/addressToString";
 import { TextInput } from "react-native-gesture-handler";
-import { dateToString, timeToString } from "../tools/formatDateTime";
+import { dateToString, timeToString } from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
-import { ThemeAndColorsModel, getTheme } from "../tools/getTheme";
+import { ThemeAndColorsModel, getTheme } from "../utils/getTheme";
 import { Select } from "./Select";
-import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
-import { fetchESV } from "../tools/fetchESV";
+import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
+import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./miniModal";
 import { Input } from "./Input";
-import { getPasageStats } from "../tools/getStats";
-import { timeStringFromMS } from "../tools/formatDateTime";
-import { getNumberOfVerses } from "src/tools/getNumberOfVerses";
+import { getPasageStats } from "../utils/getStats";
+import { timeStringFromMS } from "../utils/formatDateTime";
+import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
+import { logger } from "src/utils/logger";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -65,7 +66,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       && tempPassage.address.startVerseNum !== null
     if (translationId && validAdress && TRANSLATIONS_TO_FETCH.includes(translationId)) {
       if(state.settings.devModeEnabled){
-        console.log("Fetching", tempPassage.address);
+        logger.write(`Fetching passage: ${JSON.stringify(tempPassage.address)}`)
       }
       setFetchingInProgress(true)
       fetchESV(tempPassage.address)
@@ -75,6 +76,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           });
         })
         .catch((e) => {
+          logger.error(`Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`)
           ToastAndroid.show(e, 10000);
         }).finally(() => {
           setFetchingInProgress(false)

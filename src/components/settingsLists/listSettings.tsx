@@ -14,14 +14,15 @@ import {
   OptionModel,
   TranslationModel
 } from "../../models";
-import { ThemeAndColorsModel } from "../../tools/getTheme";
-import { reduce } from "../../tools/reduce";
+import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { reduce } from "../../utils/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
-import { writeFile, readFile } from "../../tools/fileManager";
-import { LSVToArray, arrayToPassages, passagesToLSV } from "../../tools/handlePassageExport";
-import { schedulePushNotification } from "../../tools/notifications";
-import { dateToString } from "../../tools/formatDateTime";
+import { writeFile, readFile } from "../../utils/fileManager";
+import { LSVToArray, arrayToPassages, passagesToLSV } from "../../utils/handlePassageExport";
+import { schedulePushNotification } from "../../utils/notifications";
+import { dateToString } from "../../utils/formatDateTime";
+import { logger } from "src/utils/logger";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -269,11 +270,12 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           writeFile(fileName, content, "text/plain")
           .then((r) => {
             if(r){
+              logger.write(`Passages exported`)
               ToastAndroid.show(t("settsExported"),1000)
             }
           } 
           ).catch(err => {
-            console.error(err)
+            logger.error(`Error while writing file. Error: ${err}`)
             ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
           })
         }}
@@ -318,6 +320,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                     ToastAndroid.show(t("ErrorTurnOnRemindersOnImport"),1000)
                   }
                 }
+                logger.write(`Passages imported`)
                 ToastAndroid.show(`${t("settsImportedVerses")}: ${passages.length}`,1000)
                   setState(
                     (st) =>
@@ -333,7 +336,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             }
           })
           .catch(err => {
-            console.error(err)
+            logger.error(`Error while reading file. Error: ${err}`)
             ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
 
           })

@@ -1,6 +1,7 @@
 const { withAndroidManifest } = require("@expo/config-plugins");
 
 
+//TODO do we need this file??
 function addAttributesToMainActivity(androidManifest) {
   const { manifest } = androidManifest;
 

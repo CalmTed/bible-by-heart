@@ -1,13 +1,13 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
-import addressToString from "../../tools/addressToString";
+import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
-import { getTheme } from "../../tools/getTheme";
+import { getTheme } from "../../utils/getTheme";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
-import { getAddressDifference } from "src/tools/addressDifference";
+import { getAddressDifference } from "src/utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {

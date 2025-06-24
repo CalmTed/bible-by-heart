@@ -7,9 +7,9 @@ import {
   TestModel
 } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
-import addressToString from "../../tools/addressToString";
+import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
-import { getTheme } from "../../tools/getTheme";
+import { getTheme } from "../../utils/getTheme";
 import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
 
 export interface LevelComponentModel {

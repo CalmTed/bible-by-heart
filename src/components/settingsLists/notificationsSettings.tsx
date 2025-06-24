@@ -14,16 +14,16 @@ import {
   OptionModel,
   ReminderModel
 } from "../../models";
-import addZero from "../../tools/addZero";
-import { ThemeAndColorsModel } from "../../tools/getTheme";
-import { reduce } from "../../tools/reduce";
-import { secondsToString } from "../../tools/secondsToString";
+import addZero from "../../utils/addZero";
+import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { reduce } from "../../utils/reduce";
+import { secondsToString } from "../../utils/secondsToString";
 import {
   checkSchedule,
   getAutoTimeTrigger,
   schedulePushNotification
-} from "../../tools/notifications";
-import { randomRange } from "../../tools/randomizers";
+} from "../../utils/notifications";
+import { randomRange } from "../../utils/randomizers";
 import { MiniModal } from "../miniModal";
 
 interface NotificationsSettingsListModel {

@@ -12,6 +12,9 @@ import * as TaskManager from "expo-task-manager";
 import { ToastAndroid } from "react-native";
 import { StatsScreen } from "./screens/statsScreen";
 import { CalendarScreen } from "./screens/calendarScreen";
+import { logger } from "./utils/logger";
+import { LoginScreen } from "./screens/loginScreen";
+import { RegisterScreen } from "./screens/registerScreen";
 
 const Stack = createStackNavigator();
 
@@ -20,15 +23,11 @@ interface NavigatorModel {
 }
 
 export const Navigator: FC<NavigatorModel> = ({ state }) => {
+  //TODO handle open training
   TaskManager.defineTask(
     BACKGROUND_NOTIFICATION_NAME,
-    ({ data, error, executionInfo }) => {
-      console.log(
-        "Received a notification in the background!",
-        data,
-        error,
-        executionInfo
-      );
+    async ({ data, error, executionInfo }) => {
+      logger.write(`Received a notification in the background! Data: ${data}; Error: ${error}; Execution info: ${executionInfo}`)
       ToastAndroid.show("Received a notification in the background!" + JSON.stringify(data), 1000)
     }
   );
@@ -75,6 +74,16 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         <Stack.Screen
           name={SCREEN.calendar}
           component={CalendarScreen}
+          initialParams={{ ...state }}
+        />
+        <Stack.Screen
+          name={SCREEN.login}
+          component={LoginScreen}
+          initialParams={{ ...state }}
+        />
+        <Stack.Screen
+          name={SCREEN.register}
+          component={RegisterScreen}
           initialParams={{ ...state }}
         />
       </Stack.Navigator>

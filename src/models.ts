@@ -26,7 +26,7 @@ export interface AppStateModel009 {
     userName: string | null; 
     userPicture: string | null;
     birthDate: number | null
-    authToken: string | null
+    authToken: string | null//shoud be removed - saved in the expo-save-storage
     loginType: null | "email" | "google" | "apple" | "facebook"
     updateMessages: updateMessageModel[]//later could update it from API
     feedBackMessages: feedbackMessageModel[]
