@@ -14,12 +14,13 @@ import { DAY, VERSION } from "../../constants";
 import { createAppState } from "../../initials";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
-import { ThemeAndColorsModel } from "../../tools/getTheme";
-import { reduce } from "../../tools/reduce";
+import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { reduce } from "../../utils/reduce";
 import { IconName } from "../Icon";
-import { readFile, writeFile } from "../../tools/fileManager";
-import { convertState } from "../../tools/stateVersionConvert";
-import { dateToString } from "../../tools/formatDateTime";
+import { readFile, writeFile } from "../../utils/fileManager";
+import { convertState } from "../../utils/stateVersionConvert";
+import { dateToString } from "../../utils/formatDateTime";
+import { logger } from "src/utils/logger";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -95,6 +96,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
       );
     } else {
       setDevModeKey(getPassword());
+      logger.error(`Entered wrong dev mode password`)
       ToastAndroid.show("nope...", 1000);
     }
     setIsDevPasswordModalOpen(false);
@@ -306,11 +308,12 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 writeFile(fileName, content, "application/json")
                 .then((r) => {
                   if(r){
+                    logger.write(`State exported`)
                     ToastAndroid.show(t("settsExported"),1000)
                   }
                 } 
                 ).catch(err => {
-                  console.error(err)
+                  logger.error(`Error while exporting state. Error: ${err}`)
                   ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
                 })
               }}
@@ -330,6 +333,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 ])
                 .then((r) =>{
                   if(!r){
+                    logger.write(`State imported`)
                     ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
                     return;
                   }
@@ -340,7 +344,6 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                         ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
                         break;
                       }
-                      // console.log(decodedData.version)
                       if(!decodedData?.version){
                         ToastAndroid.show("Wrong version", 1000);
                         break;
@@ -360,21 +363,10 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   }
                 })
                 .catch(err => {
-                  console.error(err)
+                  logger.error(`Error while importing state. Error: ${err}`)
                   ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
       
                 })
-                // const content = JSON.stringify(state, null, " ");
-                // writeFile("BibleByHeartState.json", content, "application/json")
-                // .then((r) => {
-                //   if(r){
-                //     ToastAndroid.show(t("settsImported"),1000)
-                //   }
-                // } 
-                // ).catch(err => {
-                //   console.error(err)
-                //   ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
-                // })
               }}
             />
           </View>

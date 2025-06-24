@@ -189,22 +189,26 @@ boilerplate:
         - add convertion before using in each file 
         - or at least add validation - checked where it coased problems
     10. store error long localy for debuging 
-        - add logger util
-        - change all console.error
-        - set maximum size and erase overflow
+        - [x] add logger util
+        - [x] change all console.error
+        - [x] set maximum size and erase overflow
         - review and add logger.error() to potential breaking points
-            - generating tests
-            - finishing tests
-            - reducing
-            - navigating
-            - starting
-            - adding passage
-            - changing settings
+            - [x] generating tests
+            - [-] finishing tests
+            - [x] reducing
+            - [-] navigating
+            - [x] starting
+            - [-] adding passage
+            - [x] changing settings - dev mode
+    14. [x] bug with tags
     6. add login screen
-        - user settings icon (logged out, synced, not synced)
-        - login screen
-        - registration screen
-        - user settings screen
+        - [x] user settings icon (logged out, synced, not synced)
+        - [x] update settings screen - just add icon button
+        - add user settings - will redo it later so just bare minimum
+        - [x] login screen
+        - [x] registration screen
+        - [ ] login and registration functionality
+        
     7. estimate time of testing upfront
     8. estimate test dificulty - make least number of hard ones or promotions
     9. gradualy lower max level after a long time without testing
@@ -229,17 +233,20 @@ boilerplate:
 - skipped 3rd level inconvenience - will reacreate the whole test error design later
 - major refactoring potential plan (after next publishing)
     - change strange state change or unchange
-        - change right on click
+        - change localstorage right on click
         - propose undo if needed
         - add save button just for better UX
+        - add notification messages list to see history or errors or update messages...
     - change navigation (with bottom menu, swipes etc.)
         - consider deep linking
     - rewrite design from scratch (modular generic but flexeble components)
         - mainPage (home, list, settings, userSettings, stats)
+        - passage editor as a separate screen
         - testing (each test result, final score, calling names:) and stats)
         - syncable user data dinamic screen
         - feedback messages with screenshot and state data
         - fetch broadcast messages
+        - replace swipable
     - add other than .MainActivity for notification reaction and receiving intents
     - add animation and animated swg
     - abstration like Passage.methons() and Address.methods() or getSomthing(object)
@@ -256,7 +263,55 @@ boilerplate:
         - dont remind if already trained(or be fun about it at least)
         - want about losing streak
         - custom sound (hinmn melody or sword drawing)
+    - migrate to new eslint
 - tried to fix notification need to check on built version - dont work yet
 - fixed svg bug
 - fixed address inconvenience
 - went to sleep
+2025-03-05
+- added logger
+- changes tools forder to utils
+- fixed tags bug - just removed part in reducer - not sure why it was there
+- added clound icon
+2025-03-06
+- creating login feature requires longterm planing of state and syncing method. What i'm thinking about now is:
+    - split user data from history and passages so we whould not fetch all the data everytime
+    - OR we could have difference diriving method and update only changed parts of the full state
+    - we need a save of state on the last sync
+    - we need to check last update on the server (if server has a newer update we fetch it)
+    - so the general plan is
+        - save last sync state
+        - on sync(finishing, adding, changing user data, every 3 hours, manualy)
+            - we check if we authorized
+            - we check for connection
+            - we get difference from unchanges state object and save it in the trird place
+            - we try to sync changes
+        - login implementation
+            - api service
+                - check if token is valid (decode)
+                - refresh is expired (otherwise send only token itself)
+                - save on expo-save-storage
+                - remove both tokens on logout
+                - do these checks as a wrapper every api request
+            - methods
+                - ping / check API version
+                - register
+                - login
+                - get user data
+                - set user data
+                - refresh token
+                - logout
+                - remove user
+                - request another email
+                - request password reset
+-added basic fetch which somehow broke useColorScheme()
+-also coulds build with eas b.c. of some autolinking problem...
+2025-03-27
+- fixed little bug in reducer - critical error while changing language 
+- need to build prod version for play market before deadline of account inactivity
+- added test account
+- uploaded to play market
+2025-06-24
+- returned to work, refreshing memory on the current state of the app
+- plan to recreate navigator, add tests, normalize different brunches and add CI, update UI with animations
+- on backend I'm planning: change data base so it would wirk with docker, add tests, add docker, upgrade with CD/CI too

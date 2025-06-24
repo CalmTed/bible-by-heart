@@ -24,6 +24,7 @@ export enum LANGCODE {
 
 export const STORAGE_NAME = "data";
 export const STORAGE_BACKUP_NAME = "backup";
+export const STORAGE_LOGGER = "logs";
 
 export const ARCHIVED_NAME = "Archived";
 
@@ -43,6 +44,8 @@ export const MINUTE = 60;
 export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
+export const LOGGER_MAX_ARRAY_SIZE = 3000;
+
 export enum SCREEN {
   home = "home",
   listPassage = "listPassage",
@@ -50,7 +53,9 @@ export enum SCREEN {
   test = "test",
   testResults = "testResults",
   settings = "settings",
-  calendar = "calendar"
+  calendar = "calendar",
+  login = "login",
+  register = "register"
 }
 
 export enum SORTINGOPTION {
@@ -119,6 +124,20 @@ export const COLOR_LIGHT = {
   redGradient1: "#E77D7B",
   redGradient2: "#E49278"
 };
+
+export enum API_LINK {
+  apiVersion = "api/version",
+  icon = "static/logo.png",
+  createUser = "api/user/create",
+  login = "api/user/login",
+  refreshToken = "api/user/refreshToken",
+  logout = "api/user/logout",
+  getUserData = "api/user/get",
+  editUserData = "api/user/edit",
+  removeUser = "api/user/remove",
+  requestEmailComfirmation = "api/user/requestEmailConfirmation",
+  requestPasswordReset = "api/user/requestPaswordReset"
+}
 
 export const THEME_DARK = StyleSheet.create({
   screen: {

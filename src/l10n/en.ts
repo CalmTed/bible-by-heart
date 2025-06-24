@@ -71,6 +71,8 @@ export const en = {
   NextRepeat: "Next time",
   calendarScreenTitle: "Calendar",
   dayStatsTitle: "Day statistics",
+  loginScreenTitle: "Login",
+  registerScreenTitle: "Registration",
 
   notificationTitle1: "Ready to practice verses?",
   notificationTitle2: "Don't forget to train Bible verses!",
@@ -252,6 +254,16 @@ export const en = {
   ErrorInvalidIndexes: "Invalid indexes",
   ErrorConflictedIndexes: "Duplicates",
   ErrorTurnOnRemindersOnImport: "Turn on notifications to see import errors",
+
+  //login
+  provideEmailLabel: "email",
+  providePasswsordLabel: "password",
+  providePasswsordAgainLabel: "password again",
+  legalCheckLabel: "I agree with privacy policy and terms of service",
+  loginButton: "Login",
+  registerButton: "Register",
+  passwordRulesLabel: "Password should have al least one uppercase letter, one lowercase letter, one digit, one symbol from list:[@.#$!%*?&] and length of 8-40 chars",
+  ComingSoon: "Coming soon 😉",
 
   dayMO: "Mo",
   dayTU: "Tu",

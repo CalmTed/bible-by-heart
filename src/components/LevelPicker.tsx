@@ -9,8 +9,8 @@ import { WORD } from "../l10n";
 import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
 import { Button } from "./Button";
-import { getPerfectTestsNumber } from "../tools/getPerfectTests";
-import { getTheme } from "../tools/getTheme";
+import { getPerfectTestsNumber } from "../utils/getPerfectTests";
+import { getTheme } from "../utils/getTheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface LevelPickerModel {

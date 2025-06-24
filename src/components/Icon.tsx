@@ -5,10 +5,17 @@ import {
   iconBellGradient,
   iconBellOutline,
   iconClock,
+  iconCloud,
+  iconCloudAttention,
+  iconCloudError,
+  iconCloudLoading,
+  iconCloudSuccess,
   iconCross,
   iconDone,
   iconFilter,
   iconForward,
+  iconGreenCheck,
+  iconRedCross,
   iconSearch,
   iconSelectArrow,
   iconSort
@@ -27,7 +34,14 @@ export enum IconName {
   cross = "iconCross",
   sort = "iconSort",
   forward = "iconForward",
-  clock = "iconCLock"
+  clock = "iconCLock",
+  cloud = "iconCloud",
+  cloudAttention = "iconCloudAttention",
+  cloudLoading = "iconCloudLoading",
+  cloudSuccess = "iconCloudSuccess",
+  cloudError = "iconCloudError",
+  redCross = "iconRedCross",
+  greenCheck = "iconGreenCheck",
 }
 
 const IconData = {
@@ -42,18 +56,29 @@ const IconData = {
   [IconName.cross]: iconCross,
   [IconName.sort]: iconSort,
   [IconName.forward]: iconForward,
-  [IconName.clock]: iconClock
+  [IconName.clock]: iconClock,
+  [IconName.cloud]: iconCloud,
+  [IconName.cloudAttention]: iconCloudAttention,
+  [IconName.cloudLoading]: iconCloudLoading,
+  [IconName.cloudSuccess]: iconCloudSuccess,
+  [IconName.cloudError]: iconCloudError,
+  [IconName.redCross]: iconRedCross,
+  [IconName.greenCheck]: iconGreenCheck,
+
+
+
 };
 
-export const Icon: FC<{ iconName: IconName; color?: string }> = ({
+export const Icon: FC<{ iconName: IconName; color?: string; size?: number}> = ({
   iconName,
-  color = "#ECECEC"
+  color = "#ECECEC",
+  size = 18
 }) => {
   return (
     <SvgXml
       xml={IconData[iconName].replace(/#ECECEC/gi, color)}
-      width="18"
-      height="18"
+      width={size}
+      height={size}
     />
   );
 };

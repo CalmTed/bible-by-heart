@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from "react-native";
 import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../tools/getTheme";
+import { ThemeAndColorsModel } from "../utils/getTheme";
 
 interface HeaderModel {
   navigation?: StackNavigationHelpers;

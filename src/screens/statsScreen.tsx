@@ -12,10 +12,10 @@ import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../tools/useApp";
-import { getAppStats } from "../tools/getStats";
+import { useApp } from "../utils/useApp";
+import { getAppStats } from "../utils/getStats";
 import { MiniModal } from "../components/miniModal";
-import { timeStringFromMS } from "../tools/formatDateTime";
+import { timeStringFromMS } from "../utils/formatDateTime";
 
 export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });

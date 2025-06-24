@@ -14,8 +14,8 @@ import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
-import { ThemeAndColorsModel } from "../tools/getTheme";
-import { getNumberOfVerses } from "src/tools/getNumberOfVerses";
+import { ThemeAndColorsModel } from "../utils/getTheme";
+import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
 import { VIBRATION_PATTERNS } from "src/constants";
 
 interface AddressPickerModel {
@@ -123,10 +123,10 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   }
 
   const handleConfirm: (a: AddressType) => void = (address) => {
-    if(address?.endChapterNum){
+    if(address?.endChapterNum || isNaN(address?.endChapterNum || NaN)){
       address.endChapterNum = address.startChapterNum
     }
-    if(address?.endVerseNum){
+    if(address?.endVerseNum || isNaN(address?.endVerseNum || NaN)){
       address.endVerseNum = address.startVerseNum
     }
     onConfirm(address);
