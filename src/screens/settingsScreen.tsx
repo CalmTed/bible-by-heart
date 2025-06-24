@@ -1,13 +1,13 @@
 import React, { FC } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, ToastAndroid } from "react-native";
 import { SCREEN, LANGCODE, THEMETYPE } from "../constants";
 import { ActionName } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { createT } from "../l10n";
-import { IconButton } from "../components/Button";
-import { reduce } from "../tools/reduce";
+import { Button, IconButton } from "../components/Button";
+import { reduce } from "../utils/reduce";
 import { Header } from "../components/Header";
-import { IconName } from "../components/Icon";
+import { Icon, IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
 import { SettingsMenuItem } from "../components/setttingsMenuItem";
 import { StatusBar } from "expo-status-bar";
@@ -16,7 +16,8 @@ import { NotificationsSettingsList } from "../components/settingsLists/notificat
 import { AboutSettingsList } from "../components/settingsLists/aboutSettings";
 import { TestsSettingsList } from "../components/settingsLists/testsSettings";
 import { StatsSettingsList } from "../components/settingsLists/statsSettings";
-import { useApp } from "../tools/useApp";
+import { useApp } from "../utils/useApp";
+import { checkAPIVersion } from "src/services/checkAPIVersion";
 
 export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -28,6 +29,17 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       label: `${customT("name")} ${customT("flag")}`
     };
   });
+
+  const handleLoginPress = (v: string) => {
+    // ToastAndroid.showWithGravity(t("ComingSoon"), 5000, 0.5)
+    navigateWithState({
+      screen: SCREEN.login,
+      state,
+      navigation
+    })
+    // checkAPIVersion({localAPIVersion: v})
+  }
+
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
@@ -51,14 +63,14 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         ]}
       />
       <ScrollView style={settingsStyle.scrollView}>
-        {/* <View style={settingsStyle.topUserDataView}>
-                    <View style={{...settingsStyle.userImageView, backgroundColor: theme.colors.textSecond}}>
-
+        <View style={settingsStyle.topUserDataView}>
+                    <View style={{...settingsStyle.userImageView}}>
+                      <Icon iconName={IconName.cloudAttention} size={75} />
                     </View>
                     
-                    <Button theme={theme} onPress={() => {}} title="Login" type="transparent"/>
+                    <Button theme={theme} onPress={() => handleLoginPress(state.apiVersion)} title={t("loginButton")} type="transparent"/>
                     
-                </View> */}
+                </View>
         <View style={settingsStyle.menuItemsListView}>
           {/* MAIN */}
           <SettingsMenuItem

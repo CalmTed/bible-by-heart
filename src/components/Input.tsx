@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "src/tools/getTheme";
+import { ThemeAndColorsModel } from "src/utils/getTheme";
 
 interface InputModel {
   onChange: (value: string) => void;
@@ -70,6 +70,29 @@ interface InputModel {
     | "text"
     | "url";
   maxLength?: number;
+  secureTextEntry?: boolean;
+  keyboardType?:
+    'default'
+    | 'number-pad'
+    | 'decimal-pad'
+    | 'numeric'
+    | 'email-address'
+    | 'phone-pad'
+    | 'url';
+    textContentType?: 
+    'none'
+    | 'URL'
+    | 'emailAddress'
+    | 'name'
+    | 'nickname'
+    | 'telephoneNumber'
+    | 'username'
+    | 'password'
+    | 'newPassword'
+    | 'oneTimeCode'
+    | 'birthdate',
+  iconAfter?: IconName,
+  iconColor?: "green" | "red" | "gray"
 }
 
 export const Input: FC<InputModel> = ({
@@ -92,7 +115,12 @@ export const Input: FC<InputModel> = ({
   autoComplete,
   textStyle,
   inputMode,
-  maxLength
+  maxLength,
+  secureTextEntry,
+  keyboardType,
+  textContentType,
+  iconAfter,
+  iconColor
 }) => {
   const gradientColors =
     type === "transparent"
@@ -123,8 +151,12 @@ export const Input: FC<InputModel> = ({
     },
     inner: {
       borderRadius: 21,
-      justifyContent: "center",
-      alignContent: "center"
+      width: "100%",
+      paddingRight: 15,
+      justifyContent: "space-between",
+      alignContent: "space-between",
+      alignItems: "center",
+      flexDirection: "row",
     },
     innerShown: {
       backgroundColor: theme.colors.bgSecond
@@ -150,6 +182,7 @@ export const Input: FC<InputModel> = ({
       <View style={InputStyles.innerTouch}>
         {
           <LinearGradient
+            //@ts-ignore
             colors={gradientColors}
             start={{ x: 0.0, y: 0 }}
             end={{ x: 0.0, y: 1.0 }}
@@ -168,7 +201,7 @@ export const Input: FC<InputModel> = ({
                   : InputStyles.innerHidden),
               }}
             >
-              {icon && <Icon iconName={icon} color={color} />}
+              {icon && <Icon iconName={icon} color={iconColor || color} />}
               <TextInput
                 style={{
                   ...textStyle,
@@ -189,7 +222,11 @@ export const Input: FC<InputModel> = ({
                 cursorColor={theme.colors.mainColor}
                 inputMode={inputMode}
                 maxLength={maxLength}
+                secureTextEntry={secureTextEntry}
+                keyboardType={keyboardType}
+                textContentType={textContentType}
               />
+              {iconAfter && <Icon iconName={iconAfter} color={color}/>}
             </View>
           </LinearGradient>
         }

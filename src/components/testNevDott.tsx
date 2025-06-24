@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { FC } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
-import { ThemeAndColorsModel } from "src/tools/getTheme";
+import { ThemeAndColorsModel } from "src/utils/getTheme";
 
 interface TestNavDottModel {
   isCurrent: boolean;
@@ -50,6 +50,7 @@ export const TestNavDott: FC<TestNavDottModel> = ({
     <View style={testNavDottStyles.wrapper}>
       <Pressable onPress={() => (onPress ? onPress() : null)}>
         <LinearGradient
+          //@ts-ignore
           colors={colors}
           start={{ x: 0.0, y: 0 }}
           end={{ x: 0.0, y: 1.0 }}

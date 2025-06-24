@@ -29,7 +29,7 @@ import {
   TranslationModel
 } from "./models";
 import { createT } from "./l10n";
-import { getNumberOfVerses } from "./tools/getNumberOfVerses";
+import { getNumberOfVerses } from "./utils/getNumberOfVerses";
 
 const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
@@ -133,7 +133,7 @@ export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
       name: createT(lang)("DefaultTrainModeName"),
       enabled: true,
       length: TEST_LIST_NUMBER,
-      translation: 0,//if users selects other language
+      translation: 0,//its "other" language in case if there are passages in several translations 
       includeTags: [],
       excludeTags: [ARCHIVED_NAME],
       testAsLevel: null,

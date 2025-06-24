@@ -74,6 +74,8 @@ export const ua: typeof en = {
   NextRepeat: "Натупне повторення",
   calendarScreenTitle: "Календар",
   dayStatsTitle: "Статистика дня",
+  loginScreenTitle: "Увійти",
+  registerScreenTitle: "Реєстрація",
 
   notificationTitle1: "Готовий повторити вірші?",
   notificationTitle2: "Не забув потренувати вірші сьогодні?",
@@ -257,6 +259,16 @@ export const ua: typeof en = {
   ErrorInvalidIndexes: "Нерозпізнані строки",
   ErrorConflictedIndexes: "Дублікати",
   ErrorTurnOnRemindersOnImport: "Увімкніть нагадування щоб побачити помилки при імпортуванні",
+
+  //login
+  provideEmailLabel: "ел. пошта",
+  providePasswsordLabel: "пароль",
+  providePasswsordAgainLabel: "пароль ще раз",
+  legalCheckLabel: "Я згоден із умовами використання застосунку і політикою безпеки",
+  loginButton: "Увійти",
+  registerButton: "Реєсрація",
+  passwordRulesLabel: "Пароль повинен містити як мінімум одну заглавну літеру, одну строчну літеру, одну ціфру, один символ зі списку:[@.#$!%*?&]. Довжина 8-40 літер",
+  ComingSoon: "Скоро буде 😉",
 
   dayMO: "Пн",
   dayTU: "Вт",

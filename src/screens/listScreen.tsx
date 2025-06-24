@@ -29,16 +29,17 @@ import { AddressPicker } from "../components/AddressPicker";
 import { WORD, createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
 import { PassageEditor } from "../components/PassageEditor";
-import addressToString from "../tools/addressToString";
+import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
-import { reduce } from "../tools/reduce";
+import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
-import { timeToString } from "../tools/formatDateTime";
-import { getTheme } from "../tools/getTheme";
-import { getNumberOfVersesInEnglish } from "../tools/getNumberOfEnglishVerses";
-import { useApp } from "../tools/useApp";
-import { getAddressDifference } from "../tools/addressDifference";
-import { getAddresOrder } from "src/tools/addressOrder";
+import { timeToString } from "../utils/formatDateTime";
+import { getTheme } from "../utils/getTheme";
+import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
+import { useApp } from "../utils/useApp";
+import { getAddressDifference } from "../utils/addressDifference";
+import { getAddresOrder } from "src/utils/addressOrder";
+import { logger } from "src/utils/logger";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -82,6 +83,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       setSelectedPassage(newPassage);
       setPEOpen(true);
     } else {
+      logger.write("English verses number limit reached")
       ToastAndroid.show(t("ErrorCantAddMoreEngVerses"), 10000);
     }
   };

@@ -5,15 +5,15 @@ import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
 import { DaggerLogoSVG } from "../svg/daggetLogo";
-import { getStroke } from "../tools/getStats";
+import { getStroke } from "../utils/getStats";
 import { WeekActivityComponent } from "../components/weekActivityComponent";
 import { StatusBar } from "expo-status-bar";
-import { useApp } from "../tools/useApp";
+import { useApp } from "../utils/useApp";
 import { IconName } from "../components/Icon";
 import { SelectModal } from "../components/SelectModal";
 import { ActionName } from "../models";
-import { getPassagesByTrainMode } from "../tools/generateTests";
-import { reduce } from "../tools/reduce";
+import { getPassagesByTrainMode } from "../utils/generateTests";
+import { reduce } from "../utils/reduce";
 import { MangerSVG } from "../svg/manger";
 import { FinishCupSVG } from "src/svg/finishCup";
 
@@ -35,14 +35,12 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
   // Linking.getInitialURL().then((url) => {
   //   if (url) {
   //     ToastAndroid.show("Recieved text or link", 10000);
-  //     console.log(`shared string/text is: ${url}`);
   //     setInitialURL(url);
   //   }else{
   //     state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
   //   }
   // }).catch(err => {
   //   ToastAndroid.show("An error occurred on home screen no getting initial url", 10000);
-  //   console.error('An error occurred on home screen no getting initial url', err)
   // });
   // const [data, setData] = React.useState<ExpoIntentReceiver.IntentInfo[]>([]);
   // const refIntent = React.useRef(ExpoIntentReceiver.getInitialIntent());
@@ -61,11 +59,9 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     // ReceiveSharingIntent.getReceivedFiles((data:any)=> {
       //   ToastAndroid.show(`Received intent data ${data.length}`, 1000)
       //   initialIntent(data)
-      //   // console.log(data);
       // },
       // (err:any)=>{
         //   ToastAndroid.show(`Error while receiveing intents ${err}`, 1000)
-        //   console.log(err);
         // });
         
     //   React.useEffect(() => {
@@ -104,12 +100,10 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     </Text>
     
   </View>)
-
-  return (
-    <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
-      <LogoBlock/>
-      <WeekActivityComponent theme={theme} state={state} t={t} />
-      <View style={homeStyle.buttonView}>
+  const MainButtons = () => {
+    return (
+    <View style={homeStyle.buttonView}>
+    <View style={homeStyle.buttonView}>
         {state.passages.length === 0 &&<Button
             key={"addFirstPassageButton"}
             theme={theme}
@@ -215,35 +209,15 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
         }}
         theme={theme}
       />
-      <StatusBar
-        style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
-      />
-      {/* <MiniModal 
-        shown={!!initialIntent} 
-        handleClose={
-         () => setInitialIntent(undefined)
-        }
-        theme={theme}
-      >
-        <View style={homeStyle.sharingModalView}>
-          <Text style={{...homeStyle.sharingModalVerseText, ...theme.theme.text}}>{JSON.stringify(initialIntent)}</Text>
-           <Text style={{...homeStyle.sharingModalVerseText, ...theme.theme.text}}>{initialIntent ? JSON.stringify(addressFromString(initialIntent[0]. || "")) : ""}</Text>
-          <View style={theme.theme.rowView}>
-            <Button
-              title={t("Cancel")}
-              theme={theme}
-              onPress={() => setInitialIntent(undefined)}
-            />
-            <Button
-              type="main"
-              title={t("AddPassage")}
-              theme={theme}
-              onPress={() => {}}
-            />
-
-          </View>
-        </View>
-      </MiniModal> */}
+      </View>
+    )
+  }
+  return (
+    <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
+      <StatusBar style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}/>
+      <LogoBlock/>
+      <WeekActivityComponent theme={theme} state={state} t={t} />
+      <MainButtons/>
     </View>
   );
 };

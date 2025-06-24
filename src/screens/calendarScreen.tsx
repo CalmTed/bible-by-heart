@@ -16,12 +16,12 @@ import { Header } from "../components/Header";
 import { IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../tools/useApp";
-import { getAppStats, getTimeBoundStats } from "../tools/getStats";
-import { dateToString, timeStringFromMS } from "../tools/formatDateTime";
+import { useApp } from "../utils/useApp";
+import { getAppStats, getTimeBoundStats } from "../utils/getStats";
+import { dateToString, timeStringFromMS } from "../utils/formatDateTime";
 import { WORD, createT } from "../l10n";
-import addressToString from "../tools/addressToString";
-import { testLevelToPassageLevel } from "../tools/levelsConvertion";
+import addressToString from "../utils/addressToString";
+import { testLevelToPassageLevel } from "../utils/levelsConvertion";
 import { LinearGradient } from "expo-linear-gradient";
 import { PanGestureHandler } from "react-native-gesture-handler";
 

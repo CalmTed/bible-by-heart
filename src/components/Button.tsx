@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "src/tools/getTheme";
+import { ThemeAndColorsModel } from "src/utils/getTheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface ButtonModel {
@@ -66,6 +66,7 @@ export const Button: FC<ButtonModel> = ({
         }}
       >
         <LinearGradient
+          //@ts-ignore
           colors={gradientColors}
           start={{ x: 0.0, y: 0 }}
           end={{ x: 0.0, y: 1.0 }}
