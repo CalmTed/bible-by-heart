@@ -315,3 +315,6 @@ boilerplate:
 - returned to work, refreshing memory on the current state of the app
 - plan to recreate navigator, add tests, normalize different brunches and add CI, update UI with animations
 - on backend I'm planning: change data base so it would wirk with docker, add tests, add docker, upgrade with CD/CI too
+
+2025-06-25
+- fixing a bug for dear user-friends

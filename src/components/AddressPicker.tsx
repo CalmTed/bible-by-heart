@@ -1,9 +1,11 @@
 import React, { FC, useEffect, useState } from "react";
 import {
+  Alert,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   Vibration,
   View
@@ -17,6 +19,7 @@ import { createAddress } from "../initials";
 import { ThemeAndColorsModel } from "../utils/getTheme";
 import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
 import { VIBRATION_PATTERNS } from "src/constants";
+import addressToString from "src/utils/addressToString";
 
 interface AddressPickerModel {
   visible: boolean;
@@ -100,9 +103,10 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       case -1:
         setAddressPart(Object.keys(tempAddress)[0]);
         break;
-      case Object.keys(tempAddress).length - 1:
+      case Object.keys(tempAddress).length - 1:// why not to use exact name? b.c. its index.
         //auto confirming address
         if (!isDoneDisabled) {
+
           handleConfirm({ ...tempAddress, [addressPart]: index });
         }
         break;
@@ -123,10 +127,10 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   }
 
   const handleConfirm: (a: AddressType) => void = (address) => {
-    if(address?.endChapterNum || isNaN(address?.endChapterNum || NaN)){
+    if(!address?.endChapterNum){
       address.endChapterNum = address.startChapterNum
     }
-    if(address?.endVerseNum || isNaN(address?.endVerseNum || NaN)){
+    if(!address?.endVerseNum){
       address.endVerseNum = address.startVerseNum
     }
     onConfirm(address);

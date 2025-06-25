@@ -40,7 +40,7 @@ export default {
           monochromeImage: "./assets/adaptive-icon.png"
         },
         package: "com.CalmTed.bibleByHeart",
-        versionCode: 2503270
+        versionCode: 2506250
       },
       web: {
         favicon: "./assets/favicon.png"
