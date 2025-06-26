@@ -41,7 +41,7 @@ export enum IconName {
   cloudSuccess = "iconCloudSuccess",
   cloudError = "iconCloudError",
   redCross = "iconRedCross",
-  greenCheck = "iconGreenCheck",
+  greenCheck = "iconGreenCheck"
 }
 
 const IconData = {
@@ -63,17 +63,14 @@ const IconData = {
   [IconName.cloudSuccess]: iconCloudSuccess,
   [IconName.cloudError]: iconCloudError,
   [IconName.redCross]: iconRedCross,
-  [IconName.greenCheck]: iconGreenCheck,
-
-
-
+  [IconName.greenCheck]: iconGreenCheck
 };
 
-export const Icon: FC<{ iconName: IconName; color?: string; size?: number}> = ({
-  iconName,
-  color = "#ECECEC",
-  size = 18
-}) => {
+export const Icon: FC<{
+  iconName: IconName;
+  color?: string;
+  size?: number;
+}> = ({ iconName, color = "#ECECEC", size = 18 }) => {
   return (
     <SvgXml
       xml={IconData[iconName].replace(/#ECECEC/gi, color)}

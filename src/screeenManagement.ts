@@ -1,7 +1,7 @@
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { ActionModel, AppStateModel } from "./models";
 import { SCREEN } from "./constants";
 import { reduce } from "./utils/reduce";
+import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 
 export const navigateWithState: (arg: {
   navigation: StackNavigationHelpers;

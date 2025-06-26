@@ -14,9 +14,9 @@ interface InputModel {
   type?: "main" | "outline" | "secondary" | "transparent";
   icon?: IconName;
   color?: "green" | "red" | "gray";
-  wrapperStyle?: StyleSheet.NamedStyles<{}>;
-  style?: StyleSheet.NamedStyles<{}>;
-  textStyle?: StyleSheet.NamedStyles<{}>;
+  wrapperStyle?: StyleSheet.NamedStyles<object>;
+  style?: StyleSheet.NamedStyles<object>;
+  textStyle?: StyleSheet.NamedStyles<object>;
   multiline?: boolean;
   numberOfLines?: number;
   selectTextOnFocus?: boolean;
@@ -72,27 +72,27 @@ interface InputModel {
   maxLength?: number;
   secureTextEntry?: boolean;
   keyboardType?:
-    'default'
-    | 'number-pad'
-    | 'decimal-pad'
-    | 'numeric'
-    | 'email-address'
-    | 'phone-pad'
-    | 'url';
-    textContentType?: 
-    'none'
-    | 'URL'
-    | 'emailAddress'
-    | 'name'
-    | 'nickname'
-    | 'telephoneNumber'
-    | 'username'
-    | 'password'
-    | 'newPassword'
-    | 'oneTimeCode'
-    | 'birthdate',
-  iconAfter?: IconName,
-  iconColor?: "green" | "red" | "gray"
+    | "default"
+    | "number-pad"
+    | "decimal-pad"
+    | "numeric"
+    | "email-address"
+    | "phone-pad"
+    | "url";
+  textContentType?:
+    | "none"
+    | "URL"
+    | "emailAddress"
+    | "name"
+    | "nickname"
+    | "telephoneNumber"
+    | "username"
+    | "password"
+    | "newPassword"
+    | "oneTimeCode"
+    | "birthdate";
+  iconAfter?: IconName;
+  iconColor?: "green" | "red" | "gray";
 }
 
 export const Input: FC<InputModel> = ({
@@ -126,10 +126,10 @@ export const Input: FC<InputModel> = ({
     type === "transparent"
       ? ["transparent", "transparent"]
       : color === "gray"
-      ? [theme.colors.bgSecond, theme.colors.bgSecond]
-      : color === "green"
-      ? [theme.colors.gradient1, theme.colors.gradient2]
-      : [theme.colors.redGradient1, theme.colors.redGradient2];
+        ? [theme.colors.bgSecond, theme.colors.bgSecond]
+        : color === "green"
+          ? [theme.colors.gradient1, theme.colors.gradient2]
+          : [theme.colors.redGradient1, theme.colors.redGradient2];
   const InputStyles = StyleSheet.create({
     scrollView: {
       maxWidth: "100%",
@@ -156,7 +156,7 @@ export const Input: FC<InputModel> = ({
       justifyContent: "space-between",
       alignContent: "space-between",
       alignItems: "center",
-      flexDirection: "row",
+      flexDirection: "row"
     },
     innerShown: {
       backgroundColor: theme.colors.bgSecond
@@ -198,14 +198,14 @@ export const Input: FC<InputModel> = ({
                 ...InputStyles.inner,
                 ...(!["main", "transparent"].includes(type)
                   ? InputStyles.innerShown
-                  : InputStyles.innerHidden),
+                  : InputStyles.innerHidden)
               }}
             >
               {icon && <Icon iconName={icon} color={iconColor || color} />}
               <TextInput
                 style={{
                   ...textStyle,
-                  ...InputStyles.InputText,
+                  ...InputStyles.InputText
                 }}
                 value={value}
                 onChangeText={onChange}
@@ -226,7 +226,7 @@ export const Input: FC<InputModel> = ({
                 keyboardType={keyboardType}
                 textContentType={textContentType}
               />
-              {iconAfter && <Icon iconName={iconAfter} color={color}/>}
+              {iconAfter && <Icon iconName={iconAfter} color={color} />}
             </View>
           </LinearGradient>
         }

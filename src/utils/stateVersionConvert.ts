@@ -1,5 +1,9 @@
 import { PASSAGELEVEL, SETTINGS, VERSION } from "../../src/constants";
-import { createAppState007, createAppState008, createPassage009} from "../../src/initials";
+import {
+  createAppState007,
+  createAppState008,
+  createPassage009
+} from "../../src/initials";
 import {
   AppStateModel,
   AppStateModel006,
@@ -17,12 +21,14 @@ import { testLevelToPassageLevel } from "./levelsConvertion";
 type ConverterType = (stateFrom: any) => any;
 
 const to009: ConverterType = (stateFrom) => {
-  const from = stateFrom as AppStateModel008
-  const convertHistory: (listFrom: TestModel007[]) => TestModel009[] = (listFrom) => {
-    const passagesIds = from.passages.map(p => p.id)
+  const from = stateFrom as AppStateModel008;
+  const convertHistory: (listFrom: TestModel007[]) => TestModel009[] = (
+    listFrom
+  ) => {
+    const passagesIds = from.passages.map((p) => p.id);
     const listTo = listFrom
-      .filter(t => t.isFinished && passagesIds.includes(t.passageId))
-      .map(t => {
+      .filter((t) => t.isFinished && passagesIds.includes(t.passageId))
+      .map((t) => {
         return {
           i: t.id,
           si: t.sessionId,
@@ -34,69 +40,79 @@ const to009: ConverterType = (stateFrom) => {
           d: t.testData,
           en: t.errorNumber,
           et: t.errorType ? [t.errorType] : [],
-          wa: t.wrongAddress, 
+          wa: t.wrongAddress,
           wp: t.wrongPassagesId,
-          ww: t.wrongWords,
-        } as TestModel009
-      }).map(({i,si,pi,td,l,en,et,wa,wp,ww}) => {
+          ww: t.wrongWords
+        } as TestModel009;
+      })
+      .map(({ i, si, pi, td, l, en, et, wa, wp, ww }) => {
         //we ignore here here: ui,f,d
         //10 out of 13
-        return {i,si,pi,td,l,en,et,wa,wp,ww}
-      }) 
-    return listTo as TestModel009[]
-  }
-  const convertPassages: (fromPassages: PassageModel008[], fromHistory: TestModel007[]) => PassageModel009[] = (fromPassages, fromHistory) => {
-    return fromPassages.map(fromP => {
+        return { i, si, pi, td, l, en, et, wa, wp, ww };
+      });
+    return listTo as TestModel009[];
+  };
+  const convertPassages: (
+    fromPassages: PassageModel008[],
+    fromHistory: TestModel007[]
+  ) => PassageModel009[] = (fromPassages, fromHistory) => {
+    return fromPassages.map((fromP) => {
       let updatedPassage: PassageModel009 = {
         ...fromP,
         upgradeDates: {
           ...createPassage009(fromP.address).upgradeDates,
           [PASSAGELEVEL.l1]: fromP.dateCreated
         }
-      }
+      };
       //if this is first occurance of new level mark it as upgrade time
       //speficaly: if upgrateTime for this TESTLEVEL.convertToPassageLevel() is 0
       //BE AWARE: we expect user to not to be able to train in a higher level then max level
-      let previusOccurance: TestModel007 | undefined
-      [...fromHistory].sort((a,b) => a.triesDuration[0][1] - b.triesDuration[0][1]).forEach(fromT => {
-        if(fromT.passageId === updatedPassage.id){
-          const convertedPassageLevel = testLevelToPassageLevel(fromT.level)
-          if(updatedPassage.upgradeDates[convertedPassageLevel] === 0){
-            updatedPassage = {
-              ...updatedPassage,
-              upgradeDates: {
-                ...updatedPassage.upgradeDates,
-                [convertedPassageLevel]: previusOccurance ? previusOccurance.triesDuration[0][1] : fromT.triesDuration[0][1]
-              }
-            }            
+      let previusOccurance: TestModel007 | undefined;
+      [...fromHistory]
+        .sort((a, b) => a.triesDuration[0][1] - b.triesDuration[0][1])
+        .forEach((fromT) => {
+          if (fromT.passageId === updatedPassage.id) {
+            const convertedPassageLevel = testLevelToPassageLevel(fromT.level);
+            if (updatedPassage.upgradeDates[convertedPassageLevel] === 0) {
+              updatedPassage = {
+                ...updatedPassage,
+                upgradeDates: {
+                  ...updatedPassage.upgradeDates,
+                  [convertedPassageLevel]: previusOccurance
+                    ? previusOccurance.triesDuration[0][1]
+                    : fromT.triesDuration[0][1]
+                }
+              };
+            }
+            previusOccurance = fromT;
           }
-          previusOccurance = fromT
-        }
-      })
+        });
       //in the case if there are no history(for the most curius reasons :) )
-      if(updatedPassage.upgradeDates[updatedPassage.maxLevel] === 0){
-        updatedPassage.upgradeDates[updatedPassage.maxLevel] = new Date().getTime()
+      if (updatedPassage.upgradeDates[updatedPassage.maxLevel] === 0) {
+        updatedPassage.upgradeDates[updatedPassage.maxLevel] =
+          new Date().getTime();
       }
-      return updatedPassage
-    })
-  }
+      return updatedPassage;
+    });
+  };
   const to: AppStateModel009 = {
-    version: "0.0.9",//updated value
+    version: "0.0.9", //updated value
     lastChange: from.lastChange,
     lastBackup: from.lastBackup,
-    dateSyncTry: 0,//not implemented yet
-    dateSyncSuccess: 0,//not implemented yet
+    dateSyncTry: 0, //not implemented yet
+    dateSyncSuccess: 0, //not implemented yet
     apiVersion: from.apiVersion,
-    userData: {//new group
+    userData: {
+      //new group
       userId: null,
-      userName: null, 
+      userName: null,
       userPicture: null,
-      birthDate: null, 
+      birthDate: null,
       authToken: null,
       loginType: null,
       updateMessages: [
         //TODO add defaults ones here
-      ],//later could update it from API
+      ], //later could update it from API
       feedBackMessages: []
     },
     statsDateRange: {
@@ -104,19 +120,19 @@ const to009: ConverterType = (stateFrom) => {
       to: -1
     },
     passages: convertPassages(from.passages, from.testsHistory),
-    testsActive: [],//should be empty
+    testsActive: [], //should be empty
     testsHistory: convertHistory(from.testsHistory),
     filters: from.filters,
     sort: from.sort,
     settings: {
       [SETTINGS.langCode]: from.settings.langCode,
       [SETTINGS.theme]: from.settings.theme,
-      [SETTINGS.devModeEnabled]: false,//upadted value
+      [SETTINGS.devModeEnabled]: false, //upadted value
       [SETTINGS.devModeActivationTime]: null, //new parameter
-      [SETTINGS.chapterNumbering]: "vestern",//not implemented yet
+      [SETTINGS.chapterNumbering]: "vestern", //not implemented yet
       [SETTINGS.hapticsEnabled]: from.settings.hapticsEnabled,
-      [SETTINGS.soundsEnabled]: from.settings.soundsEnabled,//not implemented yet
-      [SETTINGS.compressOldTestsData]: true,//not implemented yet
+      [SETTINGS.soundsEnabled]: from.settings.soundsEnabled, //not implemented yet
+      [SETTINGS.compressOldTestsData]: true, //not implemented yet
       [SETTINGS.autoIncreeseLevel]: from.settings.autoIncreeseLevel,
       [SETTINGS.leftSwipeTag]: from.settings.leftSwipeTag, // options from existring tags, archive by default  TODO check on tag removing
 
@@ -130,9 +146,9 @@ const to009: ConverterType = (stateFrom) => {
       [SETTINGS.trainModesList]: from.settings.trainModesList,
       [SETTINGS.activeTrainModeId]: from.settings.activeTrainModeId
     }
-  }
+  };
   return to;
-}
+};
 
 const to008: ConverterType = (stateFrom) => {
   const from = stateFrom as AppStateModel007;

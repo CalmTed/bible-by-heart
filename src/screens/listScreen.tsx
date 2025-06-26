@@ -12,7 +12,12 @@ import {
   Vibration,
   ToastAndroid
 } from "react-native";
-import { ARCHIVED_NAME, PASSAGELEVEL, SORTINGOPTION } from "../constants";
+import {
+  ARCHIVED_NAME,
+  PASSAGELEVEL,
+  SORTINGOPTION,
+  SCREEN
+} from "../constants";
 import {
   ActionName,
   AddressType,
@@ -20,7 +25,7 @@ import {
   PassageModel
 } from "../models";
 import { navigateWithState } from "../screeenManagement";
-import { SCREEN } from "../constants";
+
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { Icon, IconName } from "../components/Icon";
@@ -37,7 +42,6 @@ import { timeToString } from "../utils/formatDateTime";
 import { getTheme } from "../utils/getTheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
-import { getAddressDifference } from "../utils/addressDifference";
 import { getAddresOrder } from "src/utils/addressOrder";
 import { logger } from "src/utils/logger";
 
@@ -45,7 +49,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);
-  const addingFirstPassage = state.passages.length === 0
+  const addingFirstPassage = state.passages.length === 0;
   const [isAPOpen, setAPOpen] = useState(addingFirstPassage);
 
   const [isPEOpen, setPEOpen] = useState(false);
@@ -83,7 +87,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       setSelectedPassage(newPassage);
       setPEOpen(true);
     } else {
-      logger.write("English verses number limit reached")
+      logger.write("English verses number limit reached");
       ToastAndroid.show(t("ErrorCantAddMoreEngVerses"), 10000);
     }
   };
@@ -170,8 +174,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       invertedTags.length > 0
         ? invertedTags.find((it) => p.tags.includes(it))
         : state.filters.tags.length === allTags.length
-        ? !p.tags.includes(ARCHIVED_NAME)
-        : true;
+          ? !p.tags.includes(ARCHIVED_NAME)
+          : true;
     const isSelectedLevelFilteringShown =
       state.filters.selectedLevels.filter(
         (SLFilter) => p.selectedLevel === SLFilter
@@ -215,7 +219,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         return 0;
     }
   });
-  const archivedPassages = state.passages.filter(p => p.tags.includes(ARCHIVED_NAME))
+  const archivedPassages = state.passages.filter((p) =>
+    p.tags.includes(ARCHIVED_NAME)
+  );
   const listStyle = StyleSheet.create({
     searchView: {
       flexDirection: "row",
@@ -261,6 +267,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         alignChildren="space-between"
         additionalChildren={[
           <IconButton
+            key="back"
             theme={theme}
             icon={IconName.back}
             onPress={() =>
@@ -271,8 +278,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               })
             }
           />,
-          <Text style={theme.theme.headerText}>{t("listScreenTitle")}</Text>,
+          <Text key="title" style={theme.theme.headerText}>
+            {t("listScreenTitle")}
+          </Text>,
           <IconButton
+            key="add"
             theme={theme}
             icon={IconName.add}
             onPress={handleAPOpen}
@@ -305,7 +315,10 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             icon={IconName.filter}
             onPress={() => setOpenFilters(true)}
             color={theme.colors.textSecond}
-            dot={state.passages.length - filteredPassages.length > archivedPassages.length}
+            dot={
+              state.passages.length - filteredPassages.length >
+              archivedPassages.length
+            }
           />
         </View>
         <View>
@@ -322,7 +335,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   handleListItemToggleTag(passage, state.settings.leftSwipeTag)
                 }
                 onLongPress={() => handleListItemLongPress(passage)}
-                onArchive={() => handleListItemToggleTag(passage, ARCHIVED_NAME)}
+                onArchive={() =>
+                  handleListItemToggleTag(passage, ARCHIVED_NAME)
+                }
               />
             );
           })}
@@ -490,8 +505,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                       state.filters.tags.length === allTags.length
                         ? "red"
                         : state.filters.tags.includes(option)
-                        ? "gray"
-                        : "green"
+                          ? "gray"
+                          : "green"
                     }
                     title={
                       option === ARCHIVED_NAME
@@ -545,7 +560,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         onConfirm={handleAPSubmit}
         t={t}
       />
-      {isPEOpen && 
+      {isPEOpen && (
         <PassageEditor
           state={state}
           visible={isPEOpen}
@@ -554,7 +569,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           onRemove={handlePERemove}
           t={t}
         />
-      }
+      )}
     </View>
   );
 };
@@ -566,9 +581,18 @@ const ListItem: FC<{
   onToggleTag: () => void;
   onRemove: () => void;
   onLongPress: () => void;
-  onArchive: () => void
+  onArchive: () => void;
   state: AppStateModel;
-}> = ({ data, t, onPress, onToggleTag, onRemove, onLongPress, state, onArchive }) => {
+}> = ({
+  data,
+  t,
+  onPress,
+  onToggleTag,
+  onRemove,
+  onLongPress,
+  state,
+  onArchive
+}) => {
   const sort = state.sort;
   const theme = getTheme(state.settings.theme);
   const leftSwipeTag = state.settings.leftSwipeTag;
@@ -622,8 +646,8 @@ const ListItem: FC<{
         ? t("Unrchive")
         : t("Archive")
       : data.tags.includes(leftSwipeTag)
-      ? limitLegth(`${t("Remove")}  ${leftSwipeTag}`)
-      : limitLegth(`${t("Add")} ${leftSwipeTag}`);
+        ? limitLegth(`${t("Remove")}  ${leftSwipeTag}`)
+        : limitLegth(`${t("Add")} ${leftSwipeTag}`);
   const renderLeftActions = () => {
     return (
       <Animated.View
@@ -638,21 +662,23 @@ const ListItem: FC<{
     );
   };
   const renderRightActions = () => {
-    if(data.tags.includes(ARCHIVED_NAME)){
-      return <Animated.View
-      style={[
-        {
-          ...listItemStyle.swipeableAnimatedView
-        }
-      ]}
-    >
-      <Button
-        theme={theme}
-        title={t("Remove")}
-        onPress={onRemove}
-        color="red"
-      />
-    </Animated.View> 
+    if (data.tags.includes(ARCHIVED_NAME)) {
+      return (
+        <Animated.View
+          style={[
+            {
+              ...listItemStyle.swipeableAnimatedView
+            }
+          ]}
+        >
+          <Button
+            theme={theme}
+            title={t("Remove")}
+            onPress={onRemove}
+            color="red"
+          />
+        </Animated.View>
+      );
     }
     return (
       <Animated.View

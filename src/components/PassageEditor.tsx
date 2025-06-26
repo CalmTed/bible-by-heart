@@ -21,7 +21,11 @@ import { IconName } from "./Icon";
 import { WORD, createT } from "../l10n";
 import addressToString from "../utils/addressToString";
 import { TextInput } from "react-native-gesture-handler";
-import { dateToString, timeToString } from "../utils/formatDateTime";
+import {
+  dateToString,
+  timeToString,
+  timeStringFromMS
+} from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
 import { ThemeAndColorsModel, getTheme } from "../utils/getTheme";
@@ -31,7 +35,7 @@ import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./miniModal";
 import { Input } from "./Input";
 import { getPasageStats } from "../utils/getStats";
-import { timeStringFromMS } from "../utils/formatDateTime";
+
 import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
 import { logger } from "src/utils/logger";
 
@@ -56,19 +60,26 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
   const [newTagTempValue, setTempTagText] = useState("");
-  const [fetchingInProgress, setFetchingInProgress] = useState(false)
-  const [reminderModalShown, setReminderModalShown] = useState(false)
+  const [fetchingInProgress, setFetchingInProgress] = useState(false);
+  const [reminderModalShown, setReminderModalShown] = useState(false);
 
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
-    const validAdress = tempPassage.address.bookIndex !== null 
-      && tempPassage.address.startChapterNum !== null
-      && tempPassage.address.startVerseNum !== null
-    if (translationId && validAdress && TRANSLATIONS_TO_FETCH.includes(translationId)) {
-      if(state.settings.devModeEnabled){
-        logger.write(`Fetching passage: ${JSON.stringify(tempPassage.address)}`)
+    const validAdress =
+      tempPassage.address.bookIndex !== null &&
+      tempPassage.address.startChapterNum !== null &&
+      tempPassage.address.startVerseNum !== null;
+    if (
+      translationId &&
+      validAdress &&
+      TRANSLATIONS_TO_FETCH.includes(translationId)
+    ) {
+      if (state.settings.devModeEnabled) {
+        logger.write(
+          `Fetching passage: ${JSON.stringify(tempPassage.address)}`
+        );
       }
-      setFetchingInProgress(true)
+      setFetchingInProgress(true);
       fetchESV(tempPassage.address)
         .then((data) => {
           setPassage((prevPassage) => {
@@ -76,20 +87,24 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           });
         })
         .catch((e) => {
-          logger.error(`Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`)
+          logger.error(
+            `Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`
+          );
           ToastAndroid.show(e, 10000);
-        }).finally(() => {
-          setFetchingInProgress(false)
         })
+        .finally(() => {
+          setFetchingInProgress(false);
+        });
     }
   };
 
   useEffect(() => {
     setPassage(passage);
     // const passageExists = state.passages.map(p => p.id).includes(tempPassage.id);
-    const addressExists = tempPassage.address.bookIndex !== null 
-      && tempPassage.address.startChapterNum !== null 
-      && tempPassage.address.startVerseNum !== null
+    const addressExists =
+      tempPassage.address.bookIndex !== null &&
+      tempPassage.address.startChapterNum !== null &&
+      tempPassage.address.startVerseNum !== null;
     const textIsEmpty = !tempPassage.verseText.length;
     if (visible && addressExists && textIsEmpty) {
       handleTextFetch();
@@ -98,12 +113,15 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 
   useEffect(() => {
     //checknig if data changed after first PE rendering
-    const fetchableTranslation = tempPassage.verseTranslation && TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation);
-    const addressORTranslationChanged = passage.verseTranslation !== tempPassage.verseTranslation 
-    || JSON.stringify(passage.address) !== JSON.stringify(tempPassage.address) 
-    const textEmpty = !tempPassage.verseText.length
+    const fetchableTranslation =
+      tempPassage.verseTranslation &&
+      TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation);
+    const addressORTranslationChanged =
+      passage.verseTranslation !== tempPassage.verseTranslation ||
+      JSON.stringify(passage.address) !== JSON.stringify(tempPassage.address);
+    const textEmpty = !tempPassage.verseText.length;
     //should ask user to fetch if verse taxt is not empty
-    if(fetchableTranslation && addressORTranslationChanged){
+    if (fetchableTranslation && addressORTranslationChanged) {
       if (!textEmpty) {
         setFetchPropositionOpen(true);
       } else {
@@ -182,27 +200,29 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     });
   };
   const handleFetchConfirm = () => {
-    handleTextFetch()
-    setFetchPropositionOpen(false)
-  }
+    handleTextFetch();
+    setFetchPropositionOpen(false);
+  };
   const handleRepeatingIntervalChange = (newNumber: string) => {
-    const parsed = parseInt(newNumber,10);
-    const valid = !isNaN(parseInt(newNumber,10))
-    && parseInt(newNumber,10) > 0
-    && parseInt(newNumber,10) < 100
-    if(newNumber.length != 0 && !valid){
+    const parsed = parseInt(newNumber, 10);
+    const valid =
+      !isNaN(parseInt(newNumber, 10)) &&
+      parseInt(newNumber, 10) > 0 &&
+      parseInt(newNumber, 10) < 100;
+    if (newNumber.length !== 0 && !valid) {
       return;
     }
     const newValue = newNumber.length ? parsed : null;
-    const reminderToggleValue = newNumber.length !== 0 || newValue ? true : false;
+    const reminderToggleValue =
+      newNumber.length !== 0 || newValue ? true : false;
     setPassage((prv) => {
       return {
         ...prv,
         minIntervalDaysNum: newValue,
-        isReminderOn: reminderToggleValue 
+        isReminderOn: reminderToggleValue
       };
     });
-  }
+  };
   const theme = getTheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
@@ -311,22 +331,22 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       marginHorizontal: 30,
       marginTop: 30,
       flexDirection: "row",
-      gap: 20,
+      gap: 20
     },
     reminderModalBody: {
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "center",
       gap: 20,
-      marginBottom: 30,
+      marginBottom: 30
     },
-    heatmapView:{
+    heatmapView: {
       flexDirection: "row",
       flexWrap: "wrap",
       margin: 20,
       marginTop: 5
     },
-    heatmapViewWord:{
+    heatmapViewWord: {
       backgroundColor: theme.colors.mainColor,
       color: theme.colors.textSecond,
       paddingHorizontal: 2.5,
@@ -342,20 +362,20 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     // ends with with 1, exept 11
     // ends with 2-4, exept 12-14
     // 5-0
-    const lastDight = parseInt(n.toString()[n.toString().length-1], 10)
-    if(isNaN(lastDight)){
+    const lastDight = parseInt(n.toString()[n.toString().length - 1], 10);
+    if (isNaN(lastDight)) {
       return 2;
     }
-    if(lastDight === 1 && n !== 11){
-      return 0
-    }else if(lastDight > 1 && lastDight < 5 && ![12,13,14].includes(n)){
-      return 1
-    }else{
+    if (lastDight === 1 && n !== 11) {
+      return 0;
+    } else if (lastDight > 1 && lastDight < 5 && ![12, 13, 14].includes(n)) {
+      return 1;
+    } else {
       return 2;
     }
-  }
+  };
 
-  const passageStats = getPasageStats(state, passage)
+  const passageStats = getPasageStats(state, passage);
   return (
     <Modal visible={visible}>
       <View style={{ ...theme.theme.view, ...PEstyle.headerView }}>
@@ -379,7 +399,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             </Pressable>
             <IconButton
               onPress={() => setReminderModalShown(true)}
-              icon={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}
+              icon={
+                tempPassage.isReminderOn
+                  ? IconName.bellGradient
+                  : IconName.bellOutline
+              }
               theme={theme}
             />
           </View>
@@ -389,7 +413,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               multiline
               numberOfLines={8}
               onChangeText={handleTextChange}
-              placeholder={!tempPassage.verseTranslation || !TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation) ? t("NotAFetchableTranslation") : ""}
+              placeholder={
+                !tempPassage.verseTranslation ||
+                !TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation)
+                  ? t("NotAFetchableTranslation")
+                  : ""
+              }
               placeholderTextColor={theme.colors.textSecond}
             >
               {fetchingInProgress ? t("Loading") : tempPassage.verseText}
@@ -413,11 +442,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               maxLength={15}
               value={newTagTempValue}
               onChange={(e) => {
-                setTempTagText(e.nativeEvent.text)
+                setTempTagText(e.nativeEvent.text);
               }}
               onSubmitEditing={(newVal) => {
-                handleTagAdd(newVal.nativeEvent.text.trim())
-                setTempTagText("")
+                handleTagAdd(newVal.nativeEvent.text.trim());
+                setTempTagText("");
               }}
             />
           </View>
@@ -460,14 +489,14 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               />
             </View>
             <View style={PEstyle.selectorSectionWrapper}>
-            <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
+              <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
               <LevelPicker
                 t={t}
                 targetPassage={tempPassage}
                 handleChange={handleLevelChange}
                 handleOpen={handleLevelPickerOpen}
                 state={state}
-                />
+              />
             </View>
           </View>
           <View style={PEstyle.bodyButtons}>
@@ -480,85 +509,140 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               }
               onPress={() => handleTagAdd(ARCHIVED_NAME)}
             />
-            {
-              tempPassage.tags.includes(ARCHIVED_NAME) && 
+            {tempPassage.tags.includes(ARCHIVED_NAME) && (
               <Button
                 theme={theme}
                 title={t("Remove")}
                 onPress={() => handleRemove(tempPassage.id)}
                 color="red"
               />
-            }
+            )}
           </View>
-          {passageStats.totalTimeSpentMS > 0 && <View style={{marginHorizontal: 20}}>
-        
+          {passageStats.totalTimeSpentMS > 0 && (
+            <View style={{ marginHorizontal: 20 }}>
               <Text style={PEstyle.bodyMetaText}>
                 {t("statsTotalTimesTested")}: {passageStats.totalTestsNumber}
               </Text>
-            
+
               <Text style={PEstyle.bodyMetaText}>
-                {t("statsTotalTimeSpent")}: {timeStringFromMS(passageStats.totalTimeSpentMS)}
-              </Text>
-            
-              <Text style={PEstyle.bodyMetaText}>
-                {t("statsAverageDuration")}: {timeStringFromMS(passageStats.avgDurationMS)}
+                {t("statsTotalTimeSpent")}:{" "}
+                {timeStringFromMS(passageStats.totalTimeSpentMS)}
               </Text>
 
-              { Object.keys(passageStats.avgDurationByLevel).map((key) => {
+              <Text style={PEstyle.bodyMetaText}>
+                {t("statsAverageDuration")}:{" "}
+                {timeStringFromMS(passageStats.avgDurationMS)}
+              </Text>
+
+              {Object.keys(passageStats.avgDurationByLevel).map((key) => {
                 const level = key as unknown as PASSAGELEVEL;
-                return passage.upgradeDates[level] > 0 
-                ? [
-                  <Text key={level + "title"} style={PEstyle.bodyMetaTextHeader}>{t("Level")} {level}</Text>,
-                  <Text key={level + "times"} style={PEstyle.bodyMetaText}>
-                    {t("statsTimesTested")}: {passageStats.avgDurationByLevel[level].number}
-                  </Text>,
-                  <Text key={level + "duration"} style={PEstyle.bodyMetaText}>
-                    {t("statsTimeSpent")}: {timeStringFromMS(passageStats.avgDurationByLevel[level].duration)}
-                  </Text>,
-                  <Text key={level + "avgDuration"} style={PEstyle.bodyMetaText}>
-                    {t("statsAverageDuration")}: {timeStringFromMS(passageStats.avgDurationByLevel[level].duration / (passageStats.avgDurationByLevel[level].number || 1))}
-                  </Text>,
-                  <Text key={level + "avgUpgradeTime"} style={PEstyle.bodyMetaText}>
-                    {t("statsUpgradeDate")}: {timeToString(passage?.upgradeDates?.[level] || passage.dateCreated)}
-                  </Text>,
-                  // <Text key={level + "errors"}  style={PEstyle.bodyMetaText}>
-                  //   {t("Errors")} {passageStats.avgDurationByLevel[level].errorRate}
-                  // </Text>
-                ] 
-                : <View key={level+"none"}></View>
-              }) }
-              
-          </View>}
-          {Math.max(...passageStats.mostOftenAdressErrors.map(i => i.errorNumber)) > 1
-            && <Text key="AddressesTitle" style={{...PEstyle.bodyMetaTextHeader, marginHorizontal: 20}}>{t("statsMostCommonAddressErrorHeader")}</Text>
-            }
-          {passageStats.mostOftenAdressErrors.length > 1 && <View key="wrongAddressesView" style={{ marginHorizontal: 20, marginBottom: 10}}>
-              {passageStats.mostOftenAdressErrors.slice(0,10).map((w,i) => {
+                return passage.upgradeDates[level] > 0 ? (
+                  [
+                    <Text
+                      key={level + "title"}
+                      style={PEstyle.bodyMetaTextHeader}
+                    >
+                      {t("Level")} {level}
+                    </Text>,
+                    <Text key={level + "times"} style={PEstyle.bodyMetaText}>
+                      {t("statsTimesTested")}:{" "}
+                      {passageStats.avgDurationByLevel[level].number}
+                    </Text>,
+                    <Text key={level + "duration"} style={PEstyle.bodyMetaText}>
+                      {t("statsTimeSpent")}:{" "}
+                      {timeStringFromMS(
+                        passageStats.avgDurationByLevel[level].duration
+                      )}
+                    </Text>,
+                    <Text
+                      key={level + "avgDuration"}
+                      style={PEstyle.bodyMetaText}
+                    >
+                      {t("statsAverageDuration")}:{" "}
+                      {timeStringFromMS(
+                        passageStats.avgDurationByLevel[level].duration /
+                          (passageStats.avgDurationByLevel[level].number || 1)
+                      )}
+                    </Text>,
+                    <Text
+                      key={level + "avgUpgradeTime"}
+                      style={PEstyle.bodyMetaText}
+                    >
+                      {t("statsUpgradeDate")}:{" "}
+                      {timeToString(
+                        passage?.upgradeDates?.[level] || passage.dateCreated
+                      )}
+                    </Text>
+                    // <Text key={level + "errors"}  style={PEstyle.bodyMetaText}>
+                    //   {t("Errors")} {passageStats.avgDurationByLevel[level].errorRate}
+                    // </Text>
+                  ]
+                ) : (
+                  <View key={level + "none"}></View>
+                );
+              })}
+            </View>
+          )}
+          {Math.max(
+            ...passageStats.mostOftenAdressErrors.map((i) => i.errorNumber)
+          ) > 1 && (
+            <Text
+              key="AddressesTitle"
+              style={{ ...PEstyle.bodyMetaTextHeader, marginHorizontal: 20 }}
+            >
+              {t("statsMostCommonAddressErrorHeader")}
+            </Text>
+          )}
+          {passageStats.mostOftenAdressErrors.length > 1 && (
+            <View
+              key="wrongAddressesView"
+              style={{ marginHorizontal: 20, marginBottom: 10 }}
+            >
+              {passageStats.mostOftenAdressErrors.slice(0, 10).map((w, i) => {
                 const addressString = addressToString(w.address, tempT);
-                return <Text
-                  key={addressString.replace(/( |:|-)/g,"") + "address"}
-                  style={PEstyle.bodyMetaText}
-                >{addressString}: {w.errorNumber}</Text>
+                return (
+                  <Text
+                    key={addressString.replace(/( |:|-)/g, "") + "address"}
+                    style={PEstyle.bodyMetaText}
+                  >
+                    {addressString}: {w.errorNumber}
+                  </Text>
+                );
               })}
-              
-          </View>}
-          {Math.max(...passageStats.wordErrorsHeatMap) > 1 
-            && <Text key="HeatmapTitle" style={{...PEstyle.bodyMetaTextHeader, marginHorizontal: 20}}>{t("statsWrongWordsHeatmapHeader")} (0-{Math.max(...passageStats.wordErrorsHeatMap)})</Text>
-            }
-          {Math.max(...passageStats.wordErrorsHeatMap) > 1 && <View  key={"heatmapView"} style={PEstyle.heatmapView}>
-              {passage.verseText.split(" ").filter(w => w.length).map((w,i) => {
-                const max = Math.max(...passageStats.wordErrorsHeatMap)
-                const percent = (2 / max * (passageStats.wordErrorsHeatMap?.[i] || 0) || 0)
-                return <Text
-                  key={w+"-"+i}
-                  style={{
-                    ...PEstyle.heatmapViewWord,
-                    backgroundColor: `rgba(114,44,29,${percent})` 
-                  }}
-                >{w}</Text>
-              })}
-          </View>}
-
+            </View>
+          )}
+          {Math.max(...passageStats.wordErrorsHeatMap) > 1 && (
+            <Text
+              key="HeatmapTitle"
+              style={{ ...PEstyle.bodyMetaTextHeader, marginHorizontal: 20 }}
+            >
+              {t("statsWrongWordsHeatmapHeader")} (0-
+              {Math.max(...passageStats.wordErrorsHeatMap)})
+            </Text>
+          )}
+          {Math.max(...passageStats.wordErrorsHeatMap) > 1 && (
+            <View key={"heatmapView"} style={PEstyle.heatmapView}>
+              {passage.verseText
+                .split(" ")
+                .filter((w) => w.length)
+                .map((w, i) => {
+                  const max = Math.max(...passageStats.wordErrorsHeatMap);
+                  const percent =
+                    (2 / max) * (passageStats.wordErrorsHeatMap?.[i] || 0) || 0;
+                  return (
+                    <Text
+                      key={w + "-" + i}
+                      style={{
+                        ...PEstyle.heatmapViewWord,
+                        backgroundColor: `rgba(114,44,29,${percent})`
+                      }}
+                    >
+                      {w}
+                    </Text>
+                  );
+                })}
+            </View>
+          )}
         </ScrollView>
       </View>
       <AddressPicker
@@ -599,7 +683,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       </MiniModal>
       <MiniModal
         shown={reminderModalShown}
-        handleClose={() => setReminderModalShown(false)} 
+        handleClose={() => setReminderModalShown(false)}
         theme={theme}
       >
         <View style={PEstyle.reminderModalHeader}>
@@ -617,24 +701,38 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             placeholder={"0"}
             theme={theme}
             value={tempPassage.minIntervalDaysNum?.toString() || ""}
-            textStyle={{minWidth: 50, width: 50}}
+            textStyle={{ minWidth: 50, width: 50 }}
             inputMode="numeric"
             onSubmit={() => setReminderModalShown(false)}
           />
-          <Text
-            style={theme.theme.headerText}
-          >
-            { 
-            t([
-                "DaysLabelSingular", "DaysLabelTwoThreeFour", "DaysLabelMultiple"
-              ][multipleDaysVariation(tempPassage.minIntervalDaysNum || 0)] as WORD) 
-            }
+          <Text style={theme.theme.headerText}>
+            {t(
+              [
+                "DaysLabelSingular",
+                "DaysLabelTwoThreeFour",
+                "DaysLabelMultiple"
+              ][
+                multipleDaysVariation(tempPassage.minIntervalDaysNum || 0)
+              ] as WORD
+            )}
           </Text>
-          </View>
-          {tempPassage?.minIntervalDaysNum && 
-            <Text style={theme.theme.subText}>{t("NextRepeat")}: {dateToString(tempPassage.dateTested + tempPassage.minIntervalDaysNum * DAY * 1000)}</Text>
-          }
-        <Button theme={theme} type="main" color="green" onPress={() => setReminderModalShown(false)} title={t("Close")}></Button>
+        </View>
+        {tempPassage?.minIntervalDaysNum && (
+          <Text style={theme.theme.subText}>
+            {t("NextRepeat")}:{" "}
+            {dateToString(
+              tempPassage.dateTested +
+                tempPassage.minIntervalDaysNum * DAY * 1000
+            )}
+          </Text>
+        )}
+        <Button
+          theme={theme}
+          type="main"
+          color="green"
+          onPress={() => setReminderModalShown(false)}
+          title={t("Close")}
+        ></Button>
       </MiniModal>
     </Modal>
   );

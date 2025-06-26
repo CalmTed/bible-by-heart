@@ -25,7 +25,7 @@ export const iconBellOutline_old = `<svg width="19" height="21" viewBox="0 0 19 
 </svg>`;
 export const iconBellOutline = `<svg width="19" height="21" viewBox="0 0 19 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M10.5 0.999997C10.5 0.447712 10.0523 -1.84344e-06 9.5 0C8.94772 1.84345e-06 8.5 0.447719 8.50001 1L10.5 0.999997ZM1.50001 16.5L1.94722 17.3944L1.94722 17.3944L1.50001 16.5ZM17.5 16.5L17.1286 17.4285L17.1286 17.4285L17.5 16.5ZM10.5 19L11.3944 19.4472L12.118 18H10.5V19ZM8.5 19V18H6.88197L7.60557 19.4472L8.5 19ZM8.50001 1L8.50001 3L10.5 3L10.5 0.999997L8.50001 1ZM9.50001 2C5.97175 2 3.00001 4.724 3.00001 8.5H5.00001C5.00001 5.876 7.02829 4 9.50001 4V2ZM3.00001 8.5C3.00001 9.95788 2.8773 11.6177 2.52986 13.0075C2.16472 14.468 1.62932 15.3173 1.05279 15.6056L1.94722 17.3944C3.37067 16.6827 4.08528 15.032 4.47015 13.4925C4.87272 11.8823 5.00001 10.0421 5.00001 8.5H3.00001ZM1.05279 15.6056C0.438302 15.9128 0.124993 16.5258 0.125 17.0938C0.125003 17.3832 0.20716 17.7301 0.453856 18.0231C0.719729 18.3388 1.10144 18.5 1.50001 18.5V16.5C1.64858 16.5 1.84278 16.5675 1.98365 16.7348C2.10535 16.8793 2.125 17.0231 2.125 17.0937C2.125 17.2242 2.06169 17.3372 1.94722 17.3944L1.05279 15.6056ZM1.50001 18.5H17.5V16.5H1.50001V18.5ZM17.5 18.5C17.922 18.5 18.3057 18.3172 18.5621 17.9965C18.7972 17.7028 18.875 17.36 18.875 17.075C18.875 16.5251 18.5734 15.8523 17.8714 15.5715L17.1286 17.4285C16.9266 17.3477 16.875 17.1749 16.875 17.075C16.875 17.015 16.8903 16.8847 17.0004 16.7472C17.1318 16.5828 17.328 16.5 17.5 16.5V18.5ZM17.8714 15.5715C17.1022 15.2638 16.584 14.4503 16.2915 13.046C16.0039 11.6658 16 10.0241 16 8.5H14C14 9.97588 13.9961 11.8342 14.3335 13.454C14.666 15.0497 15.3978 16.7362 17.1286 17.4285L17.8714 15.5715ZM16 8.5C16 6.96106 15.2981 5.35241 14.1785 4.13545C13.0481 2.90673 11.4194 2 9.50001 2V4C10.7608 4 11.8821 4.59327 12.7066 5.48955C13.542 6.39759 14 7.53894 14 8.5H16ZM9.60557 18.5528C9.53911 18.6857 9.4792 18.7389 9.4587 18.7538C9.44186 18.766 9.45733 18.75 9.5 18.75C9.54267 18.75 9.55814 18.766 9.5413 18.7538C9.5208 18.7389 9.46089 18.6857 9.39443 18.5528L7.60557 19.4472C7.96908 20.1742 8.63561 20.75 9.5 20.75C10.3644 20.75 11.0309 20.1742 11.3944 19.4472L9.60557 18.5528ZM8.5 20H10.5V18H8.5V20Z" fill="#A0A0A0"/>
-</svg>`
+</svg>`;
 export const iconBellGradient = `<svg width="19" height="21" viewBox="0 0 19 21" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4.00001 8.5C4.00001 5.3 6.50002 3 9.50001 3C12.6802 3 15 6 15 8.5C15 11.5 15 15.5 17.5 16.5C18 16.7 18 17.5 17.5 17.5H1.50001C1.00001 17.5 0.999987 16.75 1.50001 16.5C3.49999 15.5 4.00001 11.5 4.00001 8.5Z" fill="url(#paint0_linear_15_768)"/>
 <path d="M10.5 19C10 20 9 20 8.5 19H10.5Z" fill="url(#paint1_linear_15_768)"/>
@@ -57,11 +57,11 @@ export const iconForward = `<svg width="18" height="18" viewBox="0 0 18 18" fill
 export const iconClock = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M13 12L10 10V4" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="10" cy="10" r="9" stroke="#ECECEC" stroke-width="2"/>
-</svg>`
+</svg>`;
 
 export const iconCloud = `<svg width="23" height="15" viewBox="0 0 23 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M4.53066 6.02715L5.15328 5.95458L5.35932 5.36257C6.24374 2.82137 8.66046 1 11.5 1C14.9438 1 17.7628 3.67882 17.9858 7.06568L18.0473 8H18.9836H19C20.6569 8 22 9.34315 22 11C22 12.6569 20.6569 14 19 14H5C2.79086 14 1 12.2091 1 10C1 7.94992 2.54313 6.25881 4.53066 6.02715Z" stroke="#A0A0A0" stroke-width="2"/>
-</svg>`
+</svg>`;
 
 export const iconCloudAttention = `<svg width="23" height="15" viewBox="0 0 23 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="path-1-inside-1_466_78" fill="white">
@@ -70,7 +70,7 @@ export const iconCloudAttention = `<svg width="23" height="15" viewBox="0 0 23 1
 <path d="M4.41488 5.03387L4.64643 7.02042L5.89168 6.87528L6.30376 5.69126L4.41488 5.03387ZM18.9836 7L16.9879 7.13136L17.1109 9H18.9836V7ZM19 13H11.5V17H19V13ZM11.5 13H5V17H11.5V13ZM5 13C3.34315 13 2 11.6569 2 10H-2C-2 13.866 1.13401 17 5 17V13ZM2 10C2 8.46332 3.15709 7.19402 4.64643 7.02042L4.18334 3.04732C0.701226 3.45319 -2 6.4097 -2 10H2ZM6.30376 5.69126C7.05263 3.53953 9.09911 2 11.5 2V-2C7.34451 -2 3.81707 0.666893 2.52601 4.37648L6.30376 5.69126ZM11.5 2C14.4136 2 16.7994 4.26666 16.9879 7.13136L20.9793 6.86864C20.6533 1.9153 16.5347 -2 11.5 -2V2ZM18.9836 9H19V5H18.9836V9ZM19 9C20.1046 9 21 9.89543 21 11H25C25 7.68629 22.3137 5 19 5V9ZM21 11C21 12.1046 20.1046 13 19 13V17C22.3137 17 25 14.3137 25 11H21Z" fill="#A0A0A0" mask="url(#path-1-inside-1_466_78)"/>
 <path d="M11.5 5.5L11.5 6.5L11.5 8M11.5 10.5L11.5 10.51" stroke="#A0A0A0" stroke-width="2" stroke-linecap="round"/>
 </svg>
-`
+`;
 
 export const iconCloudLoading = `<svg width="23" height="15" viewBox="0 0 23 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="path-1-inside-1_466_80" fill="white">
@@ -81,7 +81,7 @@ export const iconCloudLoading = `<svg width="23" height="15" viewBox="0 0 23 15"
 <circle cx="14" cy="9" r="1" fill="#A0A0A0"/>
 <circle cx="11" cy="9" r="1" fill="#A0A0A0"/>
 </svg>
-`
+`;
 
 export const iconCloudSuccess = `<svg width="23" height="15" viewBox="0 0 23 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="path-1-inside-1_466_82" fill="white">
@@ -95,7 +95,7 @@ export const iconCloudSuccess = `<svg width="23" height="15" viewBox="0 0 23 15"
 <stop offset="1" stop-color="#1A869E"/>
 </linearGradient>
 </defs>
-</svg>`
+</svg>`;
 
 export const iconCloudError = `<svg width="23" height="15" viewBox="0 0 23 15" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="path-1-inside-1_466_81" fill="white">
@@ -110,7 +110,7 @@ export const iconCloudError = `<svg width="23" height="15" viewBox="0 0 23 15" f
 <stop offset="1" stop-color="#E49278"/>
 </linearGradient>
 </defs>
-</svg>`
+</svg>`;
 
 export const iconRedCross = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1 1L9 9M17 17L9 9M9 9L1 17M9 9L17 1" stroke="url(#paint0_linear_58_1768)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -121,7 +121,7 @@ export const iconRedCross = `<svg width="18" height="18" viewBox="0 0 18 18" fil
 <stop offset="1" stop-color="#E49278"/>
 </linearGradient>
 </defs>
-</svg>`
+</svg>`;
 
 export const iconGreenCheck = `<svg width="21" height="14" viewBox="0 0 21 14" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1.45166 8L8.26618 13L19.2742 1" stroke="url(#paint0_linear_58_1742)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -131,4 +131,4 @@ export const iconGreenCheck = `<svg width="21" height="14" viewBox="0 0 21 14" f
 <stop offset="1" stop-color="#1A869E"/>
 </linearGradient>
 </defs>
-</svg>`
+</svg>`;

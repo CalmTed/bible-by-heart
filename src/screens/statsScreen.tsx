@@ -1,11 +1,5 @@
 import React, { FC, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
@@ -18,21 +12,21 @@ import { MiniModal } from "../components/miniModal";
 import { timeStringFromMS } from "../utils/formatDateTime";
 
 export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, setState, t, theme } = useApp({ route, navigation });
-  const [ hintModalOpen, openHintModal ] = useState(false)
+  const { state, t, theme } = useApp({ route, navigation });
+  const [hintModalOpen, openHintModal] = useState(false);
 
   const statsStyle = StyleSheet.create({
     listView: {
       width: "100%"
     },
-    statsView:{
+    statsView: {
       width: "100%"
     },
     mainScoreView: {
       flexDirection: "column",
       alignItems: "center",
       width: "100%",
-      marginTop: 50,
+      marginTop: 50
     },
     absoluteScoreTextView: {
       flexDirection: "row",
@@ -47,7 +41,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     },
     absoluteScoreTextSubtext: {
       fontSize: 20,
-      color: theme.colors.textSecond,
+      color: theme.colors.textSecond
     },
     relativeScoreTextView: {
       flexDirection: "row"
@@ -60,7 +54,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     },
     relativeScoreTextSubtext: {
       fontSize: 20,
-      color: theme.colors.textSecond,
+      color: theme.colors.textSecond
     },
     absoluteScoreTextSubtextHint: {
       paddingHorizontal: 6,
@@ -79,7 +73,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       flexWrap: "wrap",
       alignContent: "center",
       justifyContent: "center",
-      marginTop: 20,
+      marginTop: 20
     },
     masonaryItemView: {
       flexBasis: "50%",
@@ -90,7 +84,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       flexDirection: "column",
       height: 100,
       alignItems: "center",
-      justifyContent: "center",
+      justifyContent: "center"
     },
     masonaryItemViewTitleSet: {
       flexDirection: "row"
@@ -120,12 +114,13 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       fontWeight: "bold"
     }
   });
-  const statsData = getAppStats(state)
-  const relativeScoreColor = statsData.relativeScore === 0 
-    ? theme.colors.textSecond
-    : statsData.relativeScore > 0
-    ? theme.colors.mainColor
-    : theme.colors.textDanger
+  const statsData = getAppStats(state);
+  const relativeScoreColor =
+    statsData.relativeScore === 0
+      ? theme.colors.textSecond
+      : statsData.relativeScore > 0
+        ? theme.colors.mainColor
+        : theme.colors.textDanger;
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
@@ -135,6 +130,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
+            key="back"
             theme={theme}
             icon={IconName.back}
             onPress={() =>
@@ -145,132 +141,223 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               })
             }
           />,
-          <Text style={theme.theme.headerText}>{t("statsScreenTitle")}</Text>,
+          <Text key="title" style={theme.theme.headerText}>
+            {t("statsScreenTitle")}
+          </Text>,
           <IconButton
+            key="calendar"
             theme={theme}
             icon={IconName.clock}
-            onPress={() =>  navigateWithState({
-              navigation,
-              screen: SCREEN.calendar,
-              state
-            })}
+            onPress={() =>
+              navigateWithState({
+                navigation,
+                screen: SCREEN.calendar,
+                state
+              })
+            }
           />
         ]}
       />
       <ScrollView style={statsStyle.listView}>
         <View style={statsStyle.mainScoreView}>
           <View style={statsStyle.absoluteScoreTextView}>
-            <Text style={statsStyle.absoluteScoreTextNumber}>{statsData.absoluteScore}</Text>
-            <Text style={{...statsStyle.relativeScoreTextNumber, color: relativeScoreColor}}>{statsData.relativeScore >= 0 ? "+" : ""}{statsData.relativeScore}</Text>
+            <Text style={statsStyle.absoluteScoreTextNumber}>
+              {statsData.absoluteScore}
+            </Text>
+            <Text
+              style={{
+                ...statsStyle.relativeScoreTextNumber,
+                color: relativeScoreColor
+              }}
+            >
+              {statsData.relativeScore >= 0 ? "+" : ""}
+              {statsData.relativeScore}
+            </Text>
           </View>
           <View style={statsStyle.relativeScoreTextView}>
-            <Text style={statsStyle.absoluteScoreTextSubtext}>{t("statsAbsoluteScoreSubtext")}</Text>
+            <Text style={statsStyle.absoluteScoreTextSubtext}>
+              {t("statsAbsoluteScoreSubtext")}
+            </Text>
             <Pressable onPress={() => openHintModal(true)}>
               <Text style={statsStyle.absoluteScoreTextSubtextHint}>?</Text>
             </Pressable>
           </View>
         </View>
         <View style={statsStyle.masonaryListView}>
-        <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{state.passages.length}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsPassagesNumber")}</Text>
+          <View style={statsStyle.masonaryItemView}>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {state.passages.length}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsPassagesNumber")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{state.passages.reduce((ps, v) => ps + v.versesNumber,0)}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsVersesNumber")}</Text>
-          </View>
-          <View style={statsStyle.masonaryItemView}>
-            <View style={statsStyle.masonaryItemViewTitleSet}>
-              <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(statsData.avgDayDuration)}</Text>
-              <Text 
-                style={{
-                  ...statsStyle.masonaryItemTitleSubtext,
-                  color: 
-                    statsData?.avgDayDurationRelativePercent 
-                      ? statsData?.avgDayDurationRelativePercent > 0 
-                        ? theme.colors.mainColor  
-                        : theme.colors.textDanger  
-                      : theme.colors.textSecond
-                }}>
-              {statsData?.avgDayDurationRelativePercent 
-                ? statsData.avgDayDurationRelativePercent > 0 
-                  ? `+${statsData.avgDayDurationRelativePercent}` 
-                  : `${statsData.avgDayDurationRelativePercent}`
-                : 0}
-              %</Text>
-            </View>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsDailyTime")}</Text>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {state.passages.reduce((ps, v) => ps + v.versesNumber, 0)}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsVersesNumber")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
             <View style={statsStyle.masonaryItemViewTitleSet}>
-              <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(statsData.avgWeekDuration)}</Text>
-              <Text 
+              <Text style={statsStyle.masonaryItemTitle}>
+                {timeStringFromMS(statsData.avgDayDuration)}
+              </Text>
+              <Text
                 style={{
                   ...statsStyle.masonaryItemTitleSubtext,
-                  color: 
-                    statsData?.avgWeekDurationRelativePercent 
-                      ? statsData?.avgWeekDurationRelativePercent > 0 
-                        ? theme.colors.mainColor  
-                        : theme.colors.textDanger  
-                      : theme.colors.textSecond
-                }}>
-              {statsData?.avgWeekDurationRelativePercent 
-                ? statsData.avgWeekDurationRelativePercent > 0 
-                  ? `+${statsData.avgWeekDurationRelativePercent / 1000}` 
-                  : `${statsData.avgWeekDurationRelativePercent / 1000}`
-                : 0}
-              %</Text>
+                  color: statsData?.avgDayDurationRelativePercent
+                    ? statsData?.avgDayDurationRelativePercent > 0
+                      ? theme.colors.mainColor
+                      : theme.colors.textDanger
+                    : theme.colors.textSecond
+                }}
+              >
+                {statsData?.avgDayDurationRelativePercent
+                  ? statsData.avgDayDurationRelativePercent > 0
+                    ? `+${statsData.avgDayDurationRelativePercent}`
+                    : `${statsData.avgDayDurationRelativePercent}`
+                  : 0}
+                %
+              </Text>
             </View>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsWeeklyTime")}</Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsDailyTime")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(statsData.avgDurationMS)}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsAverageTestDuration")}</Text>
+            <View style={statsStyle.masonaryItemViewTitleSet}>
+              <Text style={statsStyle.masonaryItemTitle}>
+                {timeStringFromMS(statsData.avgWeekDuration)}
+              </Text>
+              <Text
+                style={{
+                  ...statsStyle.masonaryItemTitleSubtext,
+                  color: statsData?.avgWeekDurationRelativePercent
+                    ? statsData?.avgWeekDurationRelativePercent > 0
+                      ? theme.colors.mainColor
+                      : theme.colors.textDanger
+                    : theme.colors.textSecond
+                }}
+              >
+                {statsData?.avgWeekDurationRelativePercent
+                  ? statsData.avgWeekDurationRelativePercent > 0
+                    ? `+${statsData.avgWeekDurationRelativePercent / 1000}`
+                    : `${statsData.avgWeekDurationRelativePercent / 1000}`
+                  : 0}
+                %
+              </Text>
+            </View>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsWeeklyTime")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(statsData.avgSessionDurationMS.reduce((ps, v) => ps + v.duration,0) / (statsData.avgSessionDurationMS.length || 1))}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsAverageSessionDuration")}</Text>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {timeStringFromMS(statsData.avgDurationMS)}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsAverageTestDuration")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(statsData.totalTimeSpentMS)}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsTimeSpent")}</Text>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {timeStringFromMS(
+                statsData.avgSessionDurationMS.reduce(
+                  (ps, v) => ps + v.duration,
+                  0
+                ) / (statsData.avgSessionDurationMS.length || 1)
+              )}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsAverageSessionDuration")}
+            </Text>
           </View>
           <View style={statsStyle.masonaryItemView}>
-            <Text style={statsStyle.masonaryItemTitle}>{statsData.avgSessionDurationMS.length}</Text>
-            <Text style={statsStyle.masonaryItemSubtext}>{t("statsSessionNumber")}</Text>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {timeStringFromMS(statsData.totalTimeSpentMS)}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsTimeSpent")}
+            </Text>
+          </View>
+          <View style={statsStyle.masonaryItemView}>
+            <Text style={statsStyle.masonaryItemTitle}>
+              {statsData.avgSessionDurationMS.length}
+            </Text>
+            <Text style={statsStyle.masonaryItemSubtext}>
+              {t("statsSessionNumber")}
+            </Text>
           </View>
         </View>
-        {Object.values(statsData.avgDurationByLevel).map((data,i) => {
-          if(data.number <= 0){
-            return <View key={`level-${i}`}></View>
+        {Object.values(statsData.avgDurationByLevel).map((data, i) => {
+          if (data.number <= 0) {
+            return <View key={`level-${i}`}></View>;
           }
-          return <View style={statsStyle.levelGroup} key={`level-${i}`}>
-            <Text style={statsStyle.levelHeader}>{t("Level")} {i+1}</Text>
-            <View style={statsStyle.masonaryListView}>
-              <View style={statsStyle.masonaryItemView}>
-                <Text style={statsStyle.masonaryItemTitle}>{state.passages.filter(p => p.selectedLevel === i+1).length}</Text>
-                <Text style={statsStyle.masonaryItemSubtext}>{t("statsPassagesNumber")}</Text>
-              </View>
-              <View style={statsStyle.masonaryItemView}>
-                <Text style={statsStyle.masonaryItemTitle}>{state.passages.filter(p => p.selectedLevel === i+1).reduce((ps, v) => ps + v.versesNumber,0)}</Text>
-                <Text style={statsStyle.masonaryItemSubtext}>{t("statsVersesNumber")}</Text>
-              </View>
-              <View style={statsStyle.masonaryItemView}>
-                <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(data.duration)}</Text>
-                <Text style={statsStyle.masonaryItemSubtext}>{t("statsTimeSpent")}</Text>
-              </View>
-              <View style={statsStyle.masonaryItemView}>
-                <Text style={statsStyle.masonaryItemTitle}>{timeStringFromMS(data.duration / data.number)}</Text>
-                <Text style={statsStyle.masonaryItemSubtext}>{t("statsAverageDuration")}</Text>
+          return (
+            <View style={statsStyle.levelGroup} key={`level-${i}`}>
+              <Text style={statsStyle.levelHeader}>
+                {t("Level")} {i + 1}
+              </Text>
+              <View style={statsStyle.masonaryListView}>
+                <View style={statsStyle.masonaryItemView}>
+                  <Text style={statsStyle.masonaryItemTitle}>
+                    {
+                      state.passages.filter((p) => p.selectedLevel === i + 1)
+                        .length
+                    }
+                  </Text>
+                  <Text style={statsStyle.masonaryItemSubtext}>
+                    {t("statsPassagesNumber")}
+                  </Text>
+                </View>
+                <View style={statsStyle.masonaryItemView}>
+                  <Text style={statsStyle.masonaryItemTitle}>
+                    {state.passages
+                      .filter((p) => p.selectedLevel === i + 1)
+                      .reduce((ps, v) => ps + v.versesNumber, 0)}
+                  </Text>
+                  <Text style={statsStyle.masonaryItemSubtext}>
+                    {t("statsVersesNumber")}
+                  </Text>
+                </View>
+                <View style={statsStyle.masonaryItemView}>
+                  <Text style={statsStyle.masonaryItemTitle}>
+                    {timeStringFromMS(data.duration)}
+                  </Text>
+                  <Text style={statsStyle.masonaryItemSubtext}>
+                    {t("statsTimeSpent")}
+                  </Text>
+                </View>
+                <View style={statsStyle.masonaryItemView}>
+                  <Text style={statsStyle.masonaryItemTitle}>
+                    {timeStringFromMS(data.duration / data.number)}
+                  </Text>
+                  <Text style={statsStyle.masonaryItemSubtext}>
+                    {t("statsAverageDuration")}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
+          );
         })}
-        </ScrollView>
-        <MiniModal shown={hintModalOpen} handleClose={() => openHintModal(false)} theme={theme} >
-          <Text style={{...theme.theme.text, fontSize: 17}}>{t("statsScoreCalculatingHintText")}</Text>
-          <Button theme={theme} onPress={() => openHintModal(false)} title={t("Close")}/>
-        </MiniModal>
+      </ScrollView>
+      <MiniModal
+        shown={hintModalOpen}
+        handleClose={() => openHintModal(false)}
+        theme={theme}
+      >
+        <Text style={{ ...theme.theme.text, fontSize: 17 }}>
+          {t("statsScoreCalculatingHintText")}
+        </Text>
+        <Button
+          theme={theme}
+          onPress={() => openHintModal(false)}
+          title={t("Close")}
+        />
+      </MiniModal>
     </View>
   );
 };

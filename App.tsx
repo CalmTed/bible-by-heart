@@ -16,7 +16,7 @@ import React, {
   AppRegistry,
   useColorScheme
 } from "react-native";
-import { logger } from "src/utils/logger";
+import { logger } from "./src/utils/logger";
 
 
 export default function App() {
@@ -101,7 +101,7 @@ export default function App() {
       });
   };
 
-  const theme = useColorScheme()
+  // const theme = useColorScheme()
 
   useEffect(() => {
     loadState();

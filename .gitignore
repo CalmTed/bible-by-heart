@@ -10,6 +10,7 @@ npm-debug.*
 *.orig.*
 web-build/
 *.log
+yarn.lock
 
 # macOS
 .DS_Store

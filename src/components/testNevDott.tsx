@@ -20,10 +20,10 @@ export const TestNavDott: FC<TestNavDottModel> = ({
     color === "gray"
       ? [theme.colors.textSecond, theme.colors.textSecond]
       : color === "red"
-      ? [theme.colors.redGradient1, theme.colors.redGradient2]
-      : color === "text"
-      ? [theme.colors.text, theme.colors.textSecond]
-      : [theme.colors.gradient1, theme.colors.gradient2];
+        ? [theme.colors.redGradient1, theme.colors.redGradient2]
+        : color === "text"
+          ? [theme.colors.text, theme.colors.textSecond]
+          : [theme.colors.gradient1, theme.colors.gradient2];
   const testNavDottStyles = StyleSheet.create({
     wrapper: {
       width: 18,

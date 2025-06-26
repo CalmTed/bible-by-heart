@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, Text, StyleSheet, ScrollView, ToastAndroid } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SCREEN, LANGCODE, THEMETYPE } from "../constants";
 import { ActionName } from "../models";
 import { navigateWithState } from "../screeenManagement";
@@ -17,7 +17,6 @@ import { AboutSettingsList } from "../components/settingsLists/aboutSettings";
 import { TestsSettingsList } from "../components/settingsLists/testsSettings";
 import { StatsSettingsList } from "../components/settingsLists/statsSettings";
 import { useApp } from "../utils/useApp";
-import { checkAPIVersion } from "src/services/checkAPIVersion";
 
 export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -36,9 +35,9 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       screen: SCREEN.login,
       state,
       navigation
-    })
+    });
     // checkAPIVersion({localAPIVersion: v})
-  }
+  };
 
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
@@ -49,6 +48,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
+            key="back"
             theme={theme}
             icon={IconName.back}
             onPress={() =>
@@ -59,18 +59,24 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               })
             }
           />,
-          <Text style={theme.theme.headerText}>{t("settingsScreenTitle")}</Text>
+          <Text key="title" style={theme.theme.headerText}>
+            {t("settingsScreenTitle")}
+          </Text>
         ]}
       />
       <ScrollView style={settingsStyle.scrollView}>
         <View style={settingsStyle.topUserDataView}>
-                    <View style={{...settingsStyle.userImageView}}>
-                      <Icon iconName={IconName.cloudAttention} size={75} />
-                    </View>
-                    
-                    <Button theme={theme} onPress={() => handleLoginPress(state.apiVersion)} title={t("loginButton")} type="transparent"/>
-                    
-                </View>
+          <View style={{ ...settingsStyle.userImageView }}>
+            <Icon iconName={IconName.cloudAttention} size={75} />
+          </View>
+
+          <Button
+            theme={theme}
+            onPress={() => handleLoginPress(state.apiVersion)}
+            title={t("loginButton")}
+            type="transparent"
+          />
+        </View>
         <View style={settingsStyle.menuItemsListView}>
           {/* MAIN */}
           <SettingsMenuItem

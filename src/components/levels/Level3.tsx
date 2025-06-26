@@ -35,7 +35,7 @@ const levelComponentStyle = StyleSheet.create({
   variableWord: {
     marginHorizontal: 2,
     margin: 2,
-    borderBottomWidth: 2,
+    borderBottomWidth: 2
   },
   hiddenWordText: {
     color: "transparent"
@@ -74,11 +74,11 @@ export const L30: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
 
-  const lastErrorIsWrongAddress = test.et.length ? test.et[test.et.length - 1] === "wrongAddressToVerse" : false;
+  const lastErrorIsWrongAddress = test.et.length
+    ? test.et[test.et.length - 1] === "wrongAddressToVerse"
+    : false;
   const alreadyEnteredUntill =
-    test.ww.length > 0
-      ? [...test.ww].sort((a, b) => b[0] - a[0])[0][0]
-      : null;
+    test.ww.length > 0 ? [...test.ww].sort((a, b) => b[0] - a[0])[0][0] : null;
   const targetPassage = state.passages.find((p) => p.id === test.pi);
   const missingWords = test.d.missingWords || [];
 
@@ -86,8 +86,8 @@ export const L30: FC<LevelComponentModel> = ({
   const defaultSelectedWords: number[] = lastErrorIsWrongAddress
     ? words.map((w, i) => i)
     : alreadyEnteredUntill
-    ? words.map((w, i) => i).slice(0, alreadyEnteredUntill)
-    : [];
+      ? words.map((w, i) => i).slice(0, alreadyEnteredUntill)
+      : [];
   const [selectedWords, setSelectedWords] = useState(defaultSelectedWords);
   const [errorIndex, setErrorIndex] = useState(null as number | null);
   const [wrongAddress, setWrongAddress] = useState(null as AddressType | null);
@@ -121,7 +121,7 @@ export const L30: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    
+
     if (getAddressDifference(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);

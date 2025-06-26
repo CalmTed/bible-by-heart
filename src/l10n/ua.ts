@@ -98,16 +98,17 @@ export const ua: typeof en = {
   notificationTitle13: "Писання найкраще запам’ятовується щодня!",
 
   notificationBody4: "Лише кілька хвилин можуть змінити все! ⏳",
-  notificationBody5: "Невелике зусилля сьогодні принесе великі результати завтра! 💪",
+  notificationBody5:
+    "Невелике зусилля сьогодні принесе великі результати завтра! 💪",
   notificationBody6: "Будь послідовним, і ти побачиш дивовижний прогрес! 🙌",
   notificationBody7: "Твій духовний ріст вартий витраченого часу! ✨",
-  notificationBody8: "Навіть швидкий повтор допоможе зберегти вірші в серці! ❤️",
+  notificationBody8:
+    "Навіть швидкий повтор допоможе зберегти вірші в серці! ❤️",
   notificationBody9: "Дисципліна сьогодні — мудрість завтра! 📖",
   notificationBody10: "Боже Слово варто пам’ятати щодня! 🙏",
   notificationBody11: "Без тиску, просто дружнє нагадування! 😊",
   notificationBody12: "Твої зусилля окупляться—продовжуй! 🚀",
   notificationBody13: "Трохи уваги зараз — вічна мудрість у майбутньому! 💡",
-
 
   //subtexts
   DateCreated: "Додано",
@@ -174,10 +175,10 @@ export const ua: typeof en = {
   settingsImportPassages: "Імпортувати вірші",
   settsExportPassagesSubtext: "Записати вірші у txt файл",
   settsImportPassagesSubtext: "Зчитати вірші із спеціального txt файлу",
-  settsExported: "Експортовано!", 
-  settsImportedVerses: "Імпортовано віршів", 
-  settsImported: "Імпортовано!", 
-  settsCleared: "Видалено!", 
+  settsExported: "Експортовано!",
+  settsImportedVerses: "Імпортовано віршів",
+  settsImported: "Імпортовано!",
+  settsCleared: "Видалено!",
   settsClearHistory: "Видалити історію",
   settsClearPassages: "Видалити список віршів",
   settsClearData: "Видалити всі дані",
@@ -236,7 +237,8 @@ export const ua: typeof en = {
   statsMostCommonAddressErrorHeader: "Найчастіші помилкові адреси",
   statsWrongWordsHeatmapHeader: "Карта найчастіших помилок у словах",
   statsAbsoluteScoreSubtext: "Загальна оцінка",
-  statsScoreCalculatingHintText: "Загальна оцінка - це сума оцінок всіх текстів (кількість_віршів * (доступний_рівень - 1) * 2) \n\nВідносна оцінка (друге число) - це різниця загальної оцінки цього місяця і минулого",
+  statsScoreCalculatingHintText:
+    "Загальна оцінка - це сума оцінок всіх текстів (кількість_віршів * (доступний_рівень - 1) * 2) \n\nВідносна оцінка (друге число) - це різниця загальної оцінки цього місяця і минулого",
   statsPassagesNumber: "Текстів",
   statsVersesNumber: "Віршів",
   statsAddressesLearned: "Адрес вивчено",
@@ -246,7 +248,7 @@ export const ua: typeof en = {
   statsWeeklyTime: "Часу на тиждень",
 
   TranslationOther: "Інший",
-  hrs: "год",//hours
+  hrs: "год", //hours
 
   ErrorCantAddMoreEngVerses: "Не можна додавати більше 500 віршів англійською",
   ErrorNoPassagesForThisTrainMode:
@@ -255,19 +257,23 @@ export const ua: typeof en = {
   ErrorWhileWritingFile: "Помилка запису у файл",
   ErrorWhileEncoding: "Помилка форматування",
   ErrorWhileDecoding: "Помилка розшифровування",
-  CantGenerateTestsForThisTrainMode: "Не вдалось згенерувати завдання для обраного режиму",
+  CantGenerateTestsForThisTrainMode:
+    "Не вдалось згенерувати завдання для обраного режиму",
   ErrorInvalidIndexes: "Нерозпізнані строки",
   ErrorConflictedIndexes: "Дублікати",
-  ErrorTurnOnRemindersOnImport: "Увімкніть нагадування щоб побачити помилки при імпортуванні",
+  ErrorTurnOnRemindersOnImport:
+    "Увімкніть нагадування щоб побачити помилки при імпортуванні",
 
   //login
   provideEmailLabel: "ел. пошта",
   providePasswsordLabel: "пароль",
   providePasswsordAgainLabel: "пароль ще раз",
-  legalCheckLabel: "Я згоден із умовами використання застосунку і політикою безпеки",
+  legalCheckLabel:
+    "Я згоден із умовами використання застосунку і політикою безпеки",
   loginButton: "Увійти",
   registerButton: "Реєсрація",
-  passwordRulesLabel: "Пароль повинен містити як мінімум одну заглавну літеру, одну строчну літеру, одну ціфру, один символ зі списку:[@.#$!%*?&]. Довжина 8-40 літер",
+  passwordRulesLabel:
+    "Пароль повинен містити як мінімум одну заглавну літеру, одну строчну літеру, одну ціфру, один символ зі списку:[@.#$!%*?&]. Довжина 8-40 літер",
   ComingSoon: "Скоро буде 😉",
 
   dayMO: "Пн",
