@@ -1,7 +1,13 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType } from "../../models";
 import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
-import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, MAX_L50_TRIES, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
+import {
+  ERRORS_TO_DOWNGRADE,
+  FIRST_FEW_WORDS,
+  MAX_L50_TRIES,
+  SENTENCE_SEPARATOR,
+  VIBRATION_PATTERNS
+} from "../../constants";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
@@ -86,28 +92,33 @@ export const L50: FC<LevelComponentModel> = ({
   );
   const targetPassage = state.passages.find((p) => p.id === test.pi);
   //showAddressOrFirstWords: true => address false => first words
-  const sentences = (targetPassage?.verseText || "").split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
-  const sentancesRange = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
-    ? (targetPassage?.verseText || "").slice(
-        sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
-        sentences.slice(...test.d.sentenceRange).join(".").length
-      )
-    : (targetPassage?.verseText || "");
+  const sentences = (targetPassage?.verseText || "")
+    .split(SENTENCE_SEPARATOR)
+    .filter((s) => s.length > 0);
+  const sentancesRange =
+    test.d?.sentenceRange && test.d.sentenceRange.length === 2
+      ? (targetPassage?.verseText || "").slice(
+          sentences
+            .slice(0, sentences.slice(...test.d.sentenceRange).join(".").length)
+            .join(".").length,
+          sentences.slice(...test.d.sentenceRange).join(".").length
+        )
+      : targetPassage?.verseText || "";
   const targetText = sentancesRange;
-  const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
-  const initialValue = test.d.showAddressOrFirstWords
-    ? ""
-    : firstFewWords;
+  const firstFewWords =
+    targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
+  const initialValue = test.d.showAddressOrFirstWords ? "" : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
-  const sentancesRangeLength =  test.d?.sentenceRange && test.d.sentenceRange.length === 2 
-    ? test.d.sentenceRange[1] - test.d.sentenceRange[0]
-    : sentences.length;
+  const sentancesRangeLength =
+    test.d?.sentenceRange && test.d.sentenceRange.length === 2
+      ? test.d.sentenceRange[1] - test.d.sentenceRange[0]
+      : sentences.length;
   const maxTriesBonus =
-    targetPassage && sentancesRangeLength > 2
-      ? sentancesRangeLength - 2
-      : 0;
+    targetPassage && sentancesRangeLength > 2 ? sentancesRangeLength - 2 : 0;
   const [tries, setTries] = useState(MAX_L50_TRIES + maxTriesBonus);
-  const lastErrorIsWrongAddress = test.et.length ? test.et[test.et.length - 1] === "wrongAddressToVerse" : false;
+  const lastErrorIsWrongAddress = test.et.length
+    ? test.et[test.et.length - 1] === "wrongAddressToVerse"
+    : false;
   const [isCorrect, setIsCorrect] = useState(
     lastErrorIsWrongAddress ? true : false
   );
@@ -134,7 +145,7 @@ export const L50: FC<LevelComponentModel> = ({
       modifiedTest: {
         ...test,
         en: (test.en || 0) + 1,
-        et: [...test.et,"wrongAddressToVerse"],
+        et: [...test.et, "wrongAddressToVerse"],
         wa: [...test.wa, value]
       }
     });
@@ -177,9 +188,7 @@ export const L50: FC<LevelComponentModel> = ({
         .replace(/[,|.|-|:|;|!|?|'|"]/g, "");
       return output;
     };
-    if (
-      simplifyString(passageText) === simplifyString(targetText)
-    ) {
+    if (simplifyString(passageText) === simplifyString(targetText)) {
       setIsCorrect(true);
       if (passageText !== targetText) {
         setPassageText(targetText);
@@ -206,13 +215,18 @@ export const L50: FC<LevelComponentModel> = ({
         if (state.settings.hapticsEnabled) {
           Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
         }
-        const words = targetText.split(" ")
-        const userWords = passageText.split(" ")
-        const wrongWordIndex = words.map((w,i) => {
-          const iterationtText = words.slice(0,i).join(" ")
-          const passageSliced = userWords.slice(0,i).join(" ")
-          return simplifyString(iterationtText) === simplifyString(passageSliced)
-        }).filter(w => !!w).length - 1//length is corrisponging to the last word user got right
+        const words = targetText.split(" ");
+        const userWords = passageText.split(" ");
+        const wrongWordIndex =
+          words
+            .map((w, i) => {
+              const iterationtText = words.slice(0, i).join(" ");
+              const passageSliced = userWords.slice(0, i).join(" ");
+              return (
+                simplifyString(iterationtText) === simplifyString(passageSliced)
+              );
+            })
+            .filter((w) => !!w).length - 1; //length is corrisponging to the last word user got right
         submitTest({
           isRight: false,
           modifiedTest: {
@@ -300,18 +314,20 @@ export const L50: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 &&
+      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 && (
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             {test.d.sentenceRange[0] > 3 ? "..." : ""}
-            {sentences.slice(
-              test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
-              test.d.sentenceRange[0]
-            ).join("")}
+            {sentences
+              .slice(
+                test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
+                test.d.sentenceRange[0]
+              )
+              .join("")}
             ...
-            </Text>
+          </Text>
         </View>
-      }
+      )}
       <View style={levelComponentStyle.passageTextView}>
         <Input
           theme={theme}
@@ -328,15 +344,20 @@ export const L50: FC<LevelComponentModel> = ({
           textStyle={levelComponentStyle.inputTextStyle}
         />
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length &&
+      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length && (
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             ...
-            {sentences.slice(test.d.sentenceRange[1], Math.min(test.d.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences
+              .slice(
+                test.d.sentenceRange[1],
+                Math.min(test.d.sentenceRange[1] + 3, sentences.length)
+              )
+              .join("")}
             {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
-            </Text>
+          </Text>
         </View>
-      }
+      )}
       <View style={levelComponentStyle.optionButtonsWrapper}>
         {/* text is not entered */}
         {!isCorrect && (
@@ -363,7 +384,7 @@ export const L50: FC<LevelComponentModel> = ({
           />
         )}
         {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-          (new Date().getTime() - test.td[0][0]) > (1000*60*10)) && (
+          new Date().getTime() - test.td[0][0] > 1000 * 60 * 10) && (
           <Button
             theme={theme}
             type="secondary"

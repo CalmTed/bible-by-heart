@@ -8,7 +8,7 @@ const addressToString: (
   t: (w: WORD) => string
 ) => string = (address, t) => {
   if (!address) {
-    logger.error(`Addres not defined in addressToString`)
+    logger.error(`Addres not defined in addressToString`);
     return "-";
   }
   //empty
@@ -39,7 +39,7 @@ const addressToString: (
   ) {
     return `${t(bibleReference[address.bookIndex]?.longTitle)} ${
       address.startChapterNum + 1
-    }:${address.startVerseNum + 1}-${(address?.endVerseNum || address.startVerseNum ) + 1}`;
+    }:${address.startVerseNum + 1}-${(address?.endVerseNum || address.startVerseNum) + 1}`;
   }
   //diff chapter and diff verses
   return `${t(bibleReference[address.bookIndex]?.longTitle)} ${

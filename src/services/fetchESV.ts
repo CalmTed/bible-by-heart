@@ -2,15 +2,15 @@ import { AddressType } from "../models";
 import addressToString from "../utils/addressToString";
 import { LANGCODE } from "../constants";
 import { createT } from "../l10n";
-import { logger } from '../utils/logger';
+import { logger } from "../utils/logger";
 import Constants from "expo-constants";
 
-const ESVTOKEN = Constants.expoConfig?.extra?.ESVTOKEN || ""
+const ESVTOKEN = Constants.expoConfig?.extra?.ESVTOKEN || "";
 
 export const fetchESV: (address: AddressType) => Promise<string> = async (
   address
 ) => {
-  if(!ESVTOKEN){
+  if (!ESVTOKEN) {
     return "";
   }
   const addressString = addressToString(address, createT(LANGCODE.en));
@@ -57,7 +57,7 @@ export const fetchESV: (address: AddressType) => Promise<string> = async (
         .replace(/“|”|„|‟/g, '"');
     })
     .catch((error) => {
-      logger.error(`Unable to get passage text: ${error}`)
+      logger.error(`Unable to get passage text: ${error}`);
       throw new Error("Unable to get passage text" + error);
     });
 };

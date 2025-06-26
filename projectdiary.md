@@ -317,4 +317,6 @@ boilerplate:
 - on backend I'm planning: change data base so it would wirk with docker, add tests, add docker, upgrade with CD/CI too
 
 2025-06-25
-- fixing a bug for dear user-friends
+- fixed a bug for dear user-friends
+2025-06-26 
+- added lint with pretier and testing workflow

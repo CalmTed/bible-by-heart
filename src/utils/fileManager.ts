@@ -1,49 +1,65 @@
-import * as FileSystem from 'expo-file-system';
-import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from "expo-file-system";
+import * as DocumentPicker from "expo-document-picker";
 
+import { StorageAccessFramework } from "expo-file-system";
+import { logger } from "./logger";
 
-import { StorageAccessFramework } from 'expo-file-system';
-import { logger } from './logger';
+export const writeFile: (
+  name: string,
+  content: string,
+  fileMIME?: string
+) => Promise<boolean> = async (fileName, content, fileMIME = "text/plain") => {
+  try {
+    const folder =
+      await StorageAccessFramework.requestDirectoryPermissionsAsync(
+        FileSystem.documentDirectory
+      );
 
-
-export const writeFile: (name: string, content: string, fileMIME?: string) => Promise<boolean>  = async (fileName, content, fileMIME = 'text/plain') => {
-  try{
-    const folder = await StorageAccessFramework.requestDirectoryPermissionsAsync(FileSystem.documentDirectory);
-
-    if(!folder.granted){
+    if (!folder.granted) {
       return false;
     }
-    const selectedURI = await StorageAccessFramework.createFileAsync(folder.directoryUri, fileName, fileMIME)
-    if(!selectedURI){
-      return false
+    const selectedURI = await StorageAccessFramework.createFileAsync(
+      folder.directoryUri,
+      fileName,
+      fileMIME
+    );
+    if (!selectedURI) {
+      return false;
     }
-    
-    await FileSystem.writeAsStringAsync(selectedURI, content, { encoding: FileSystem.EncodingType.UTF8 });
-    return true;
 
+    await FileSystem.writeAsStringAsync(selectedURI, content, {
+      encoding: FileSystem.EncodingType.UTF8
+    });
+    return true;
   } catch (error) {
     logger.error(`File manager writing error: ${error}`);
-    return false
+    return false;
   }
-}
+};
 
-export const readFile: (fileMIME?: string | string[]) => Promise<{content: string, mimeType: string} | false>  = async (fileMIME = "text/plain") => {
-  try{
+export const readFile: (
+  fileMIME?: string | string[]
+) => Promise<{ content: string; mimeType: string } | false> = async (
+  fileMIME = "text/plain"
+) => {
+  try {
     const file = await DocumentPicker.getDocumentAsync({
       multiple: false,
       type: fileMIME
     });
-    if(file.canceled || !file.assets[0].uri || !file.assets[0].mimeType){
+    if (file.canceled || !file.assets[0].uri || !file.assets[0].mimeType) {
       return false;
     }
-    const text = await StorageAccessFramework.readAsStringAsync(file.assets[0].uri);
+    const text = await StorageAccessFramework.readAsStringAsync(
+      file.assets[0].uri
+    );
 
     return {
       content: text,
       mimeType: file.assets[0].mimeType
-    }
+    };
   } catch (error) {
-    logger.error(`File manager reading error: ${error}`)
-    return false
+    logger.error(`File manager reading error: ${error}`);
+    return false;
   }
-}
+};

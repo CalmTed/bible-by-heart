@@ -86,7 +86,9 @@ const DayActivityBar: FC<{
         locations={[0, 1]}
         style={{ ...DayActivityBarStyles.itemBar, height: barHeight }}
       >
-        <Text style={DayActivityBarStyles.itemNumberText}>{value < 1000 ? value : `${Math.round(value / 1000)}k`}</Text>
+        <Text style={DayActivityBarStyles.itemNumberText}>
+          {value < 1000 ? value : `${Math.round(value / 1000)}k`}
+        </Text>
       </LinearGradient>
       <Text
         style={{

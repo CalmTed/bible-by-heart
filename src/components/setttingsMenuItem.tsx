@@ -160,7 +160,10 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
           </View>
           <View>
-            <Checkbox isEnabled={data.checkBoxState} theme={data.theme}></Checkbox>
+            <Checkbox
+              isEnabled={data.checkBoxState}
+              theme={data.theme}
+            ></Checkbox>
           </View>
         </Pressable>
       )}

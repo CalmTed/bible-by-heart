@@ -19,7 +19,11 @@ import { reduce } from "../../utils/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
 import { writeFile, readFile } from "../../utils/fileManager";
-import { LSVToArray, arrayToPassages, passagesToLSV } from "../../utils/handlePassageExport";
+import {
+  LSVToArray,
+  arrayToPassages,
+  passagesToLSV
+} from "../../utils/handlePassageExport";
 import { schedulePushNotification } from "../../utils/notifications";
 import { dateToString } from "../../utils/formatDateTime";
 import { logger } from "src/utils/logger";
@@ -240,7 +244,11 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                   }
                   type={!translationItem.isDefault ? "outline" : "transparent"}
                   disabled={translationItem.isDefault}
-                  title={t(translationItem.isDefault ? "TranslationIsDefault" : "TranslationSetDefault")}
+                  title={t(
+                    translationItem.isDefault
+                      ? "TranslationIsDefault"
+                      : "TranslationSetDefault"
+                  )}
                 />
                 <Button
                   theme={theme}
@@ -255,95 +263,98 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           }}
         />
         <SettingsMenuItem
-        theme={theme}
-        type="action"
-        header={t("settingsExportPassages")}
-        subtext={t("settsExportPassagesSubtext")}
-        disabled={!state.passages.length}
-        actionCallBack={() => {
-          const content = passagesToLSV(state)//line separated values
-          if(!content){
-            ToastAndroid.show(t("ErrorWhileEncoding"), 1000)
-            return;
-          }
-          const fileName = `BibleByHeartPassages_${dateToString(new Date().getTime())}.txt`;
-          writeFile(fileName, content, "text/plain")
-          .then((r) => {
-            if(r){
-              logger.write(`Passages exported`)
-              ToastAndroid.show(t("settsExported"),1000)
-            }
-          } 
-          ).catch(err => {
-            logger.error(`Error while writing file. Error: ${err}`)
-            ToastAndroid.show(t("ErrorWhileWritingFile"), 1000)
-          })
-        }}
-      />
-              <SettingsMenuItem
-        theme={theme}
-        type="action"
-        header={t("settingsImportPassages")}
-        subtext={t("settsImportPassagesSubtext")}
-        actionCallBack={() => {
-          readFile([
-            "text/plain"
-          ])
-          .then((r) =>{
-            if(!r){
-              ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
+          theme={theme}
+          type="action"
+          header={t("settingsExportPassages")}
+          subtext={t("settsExportPassagesSubtext")}
+          disabled={!state.passages.length}
+          actionCallBack={() => {
+            const content = passagesToLSV(state); //line separated values
+            if (!content) {
+              ToastAndroid.show(t("ErrorWhileEncoding"), 1000);
               return;
             }
-            switch(r.mimeType){
-              case "text/plain":
-                const decodedData = LSVToArray(r.content)
-                if(!decodedData){
-                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
-                  break;
+            const fileName = `BibleByHeartPassages_${dateToString(new Date().getTime())}.txt`;
+            writeFile(fileName, content, "text/plain")
+              .then((r) => {
+                if (r) {
+                  logger.write(`Passages exported`);
+                  ToastAndroid.show(t("settsExported"), 1000);
                 }
-                const convertedData = arrayToPassages(decodedData, state);
-                if(!convertedData){
-                  ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
-                  break;
+              })
+              .catch((err) => {
+                logger.error(`Error while writing file. Error: ${err}`);
+                ToastAndroid.show(t("ErrorWhileWritingFile"), 1000);
+              });
+          }}
+        />
+        <SettingsMenuItem
+          theme={theme}
+          type="action"
+          header={t("settingsImportPassages")}
+          subtext={t("settsImportPassagesSubtext")}
+          actionCallBack={() => {
+            readFile(["text/plain"])
+              .then((r) => {
+                if (!r) {
+                  ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+                  return;
                 }
-                const {passages, invalidIndexes, conflictedIndexes} = convertedData;
-                if(invalidIndexes.length || conflictedIndexes.length){
-                  const errorDataString = 
-                    `${invalidIndexes.length ? t("ErrorInvalidIndexes") + ": " + invalidIndexes.join(",") : "" } \n ${conflictedIndexes.length ? t("ErrorConflictedIndexes") + ": " + conflictedIndexes.join(",") : "" }`;
-                  if(state.settings.remindersEnabled){
-                    schedulePushNotification(
-                      t("ErrorWhileDecoding"),
-                      errorDataString,
-                      {}
+                switch (r.mimeType) {
+                  case "text/plain":
+                    const decodedData = LSVToArray(r.content);
+                    if (!decodedData) {
+                      ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                      break;
+                    }
+                    const convertedData = arrayToPassages(decodedData, state);
+                    if (!convertedData) {
+                      ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                      break;
+                    }
+                    const { passages, invalidIndexes, conflictedIndexes } =
+                      convertedData;
+                    if (invalidIndexes.length || conflictedIndexes.length) {
+                      const errorDataString = `${invalidIndexes.length ? t("ErrorInvalidIndexes") + ": " + invalidIndexes.join(",") : ""} \n ${conflictedIndexes.length ? t("ErrorConflictedIndexes") + ": " + conflictedIndexes.join(",") : ""}`;
+                      if (state.settings.remindersEnabled) {
+                        schedulePushNotification(
+                          t("ErrorWhileDecoding"),
+                          errorDataString,
+                          {}
+                        );
+                      } else {
+                        ToastAndroid.show(
+                          t("ErrorTurnOnRemindersOnImport"),
+                          1000
+                        );
+                      }
+                    }
+                    logger.write(`Passages imported`);
+                    ToastAndroid.show(
+                      `${t("settsImportedVerses")}: ${passages.length}`,
+                      1000
                     );
-                  }else{
-                    ToastAndroid.show(t("ErrorTurnOnRemindersOnImport"),1000)
-                  }
+                    setState(
+                      (st) =>
+                        reduce(st, {
+                          name: ActionName.importPassages,
+                          payload: {
+                            passages
+                          }
+                        }) || st
+                    );
+                    break;
+                  default:
+                    ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
                 }
-                logger.write(`Passages imported`)
-                ToastAndroid.show(`${t("settsImportedVerses")}: ${passages.length}`,1000)
-                  setState(
-                    (st) =>
-                      reduce(st, {
-                        name: ActionName.importPassages,
-                        payload: {
-                          passages
-                        }
-                      }) || st
-                  );
-                break; 
-              default: ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
-            }
-          })
-          .catch(err => {
-            logger.error(`Error while reading file. Error: ${err}`)
-            ToastAndroid.show(t("ErrorWhileReadingFile"), 1000)
-
-          })
-        }}
-      />
+              })
+              .catch((err) => {
+                logger.error(`Error while reading file. Error: ${err}`);
+                ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+              });
+          }}
+        />
       </MiniModal>
-      
     </View>
   );
 };

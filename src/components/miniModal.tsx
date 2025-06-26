@@ -7,7 +7,7 @@ interface MiniModalModel {
   handleClose: () => void;
   theme: ThemeAndColorsModel;
   children?: React.ReactNode;
-  style?: StyleSheet.NamedStyles<{}>;
+  style?: StyleSheet.NamedStyles<object>;
 }
 
 export const MiniModal: FC<MiniModalModel> = ({

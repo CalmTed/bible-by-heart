@@ -1,9 +1,9 @@
 import React, { FC } from "react";
 import { StyleSheet, View, Text } from "react-native";
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { ThemeAndColorsModel } from "../utils/getTheme";
+import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 
 interface HeaderModel {
   navigation?: StackNavigationHelpers;

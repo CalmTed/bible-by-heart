@@ -1,5 +1,4 @@
 import { getLocales } from "expo-localization";
-import { bibleReference } from "./bibleReference";
 import {
   API_VERSION,
   LANGCODE,
@@ -47,9 +46,9 @@ export const createAppState009: () => AppStateModel009 = () => {
     apiVersion: API_VERSION,
     userData: {
       userId: null,
-      userName: null, 
+      userName: null,
       userPicture: null,
-      birthDate: null, 
+      birthDate: null,
       authToken: null,
       loginType: null,
       updateMessages: [
@@ -133,7 +132,7 @@ export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
       name: createT(lang)("DefaultTrainModeName"),
       enabled: true,
       length: TEST_LIST_NUMBER,
-      translation: 0,//its "other" language in case if there are passages in several translations 
+      translation: 0, //its "other" language in case if there are passages in several translations
       includeTags: [],
       excludeTags: [ARCHIVED_NAME],
       testAsLevel: null,
@@ -162,12 +161,12 @@ export const createPassage009: (
     minIntervalDaysNum: null,
     selectedLevel: PASSAGELEVEL.l1,
     maxLevel: PASSAGELEVEL.l1,
-    upgradeDates:{
+    upgradeDates: {
       [PASSAGELEVEL.l1]: birthTime,
       [PASSAGELEVEL.l2]: 0,
       [PASSAGELEVEL.l3]: 0,
       [PASSAGELEVEL.l4]: 0,
-      [PASSAGELEVEL.l5]: 0,
+      [PASSAGELEVEL.l5]: 0
     },
     isNewLevelAwalible: false,
     tags: [],

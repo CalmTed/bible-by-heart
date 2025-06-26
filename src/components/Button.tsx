@@ -8,8 +8,8 @@ import { DotIndicator } from "./DotIndicator";
 interface ButtonModel {
   theme: ThemeAndColorsModel;
   onPress: () => void;
-  style?: StyleSheet.NamedStyles<{}>;
-  textStyle?: StyleSheet.NamedStyles<{}>;
+  style?: StyleSheet.NamedStyles<object>;
+  textStyle?: StyleSheet.NamedStyles<object>;
   title?: string;
   disabled?: boolean;
   type?: "main" | "outline" | "secondary" | "transparent";
@@ -34,24 +34,24 @@ export const Button: FC<ButtonModel> = ({
   dot,
   iconAlign = "left"
 }) => {
-  if(!theme){
-    return <View></View>
+  if (!theme) {
+    return <View></View>;
   }
   const gradientColors =
     type === "transparent"
       ? ["transparent", "transparent"]
       : color === "gray"
-      ? [theme.colors.bgSecond, theme.colors.bgSecond]
-      : color === "green"
-      ? [theme.colors.gradient1, theme.colors.gradient2]
-      : [theme.colors.redGradient1, theme.colors.redGradient2];
+        ? [theme.colors.bgSecond, theme.colors.bgSecond]
+        : color === "green"
+          ? [theme.colors.gradient1, theme.colors.gradient2]
+          : [theme.colors.redGradient1, theme.colors.redGradient2];
   const textColor =
     type === "transparent"
       ? color === "red"
         ? theme.colors.textDanger
         : color === "gray"
-        ? theme.colors.text
-        : theme.colors.mainColor
+          ? theme.colors.text
+          : theme.colors.mainColor
       : theme.colors.text;
   return (
     <View style={buttonStyles.touch}>
@@ -124,7 +124,7 @@ interface IconButtonModel {
   icon: IconName;
   onPress: () => void;
   theme: ThemeAndColorsModel;
-  style?: StyleSheet.NamedStyles<{}>;
+  style?: StyleSheet.NamedStyles<object>;
   disabled?: boolean;
   color?: string;
   dot?: boolean;

@@ -34,11 +34,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-#      - name: Lint code with ESLint
-#        run: yarn lint
+      - name: Lint code with ESLint
+        run: yarn lint
 
       - name: TypeScript check
         run: yarn tsc --noEmit
 
-#      - name: Run Jest tests
-#        run: yarn test --passWithNoTests
+      - name: Run Jest tests
+        run: yarn test --passWithNoTests
