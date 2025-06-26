@@ -341,7 +341,7 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
                   subtext={`${t("settsTrainModeLevelSubtext")}: ${
                     trainModeItem.testAsLevel === null
                       ? t("settsAsSelectedLevelOption")
-                      : (trainModeItem.testAsLevel).toString()
+                      : trainModeItem.testAsLevel.toString()
                   }`}
                   type="select"
                   options={levelsOptions}

@@ -7,7 +7,11 @@ import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../utils/getTheme";
-import { ERRORS_TO_DOWNGRADE, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
+import {
+  ERRORS_TO_DOWNGRADE,
+  SENTENCE_SEPARATOR,
+  VIBRATION_PATTERNS
+} from "../../constants";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -118,7 +122,7 @@ export const L20: FC<LevelComponentModel> = ({
   const handleDowngrade = () => {
     dispatch({
       name: ActionName.downgradePassage,
-      payload: {test}
+      payload: { test }
     });
   };
   const targetPassage = state.passages.find((p) => p.id === test.pi);
@@ -127,11 +131,15 @@ export const L20: FC<LevelComponentModel> = ({
   }
   const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
-  const sentences = targetPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
+  const sentences = targetPassage.verseText
+    .split(SENTENCE_SEPARATOR)
+    .filter((s) => s.length);
   const slicingStart = test.d?.sentenceRange?.[0] || 0;
   const slicingEnd = test.d?.sentenceRange?.[1] || sentences.length;
-  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
-  const verseText = test.d?.sentenceRange?.length ? slicedPassageText : targetPassage.verseText
+  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`;
+  const verseText = test.d?.sentenceRange?.length
+    ? slicedPassageText
+    : targetPassage.verseText;
   return (
     <View style={levelComponentStyle.levelComponentView}>
       <ScrollView style={levelComponentStyle.passageTextView}>
@@ -216,8 +224,7 @@ export const L20: FC<LevelComponentModel> = ({
         onCancel={handleAddressCancel}
         onConfirm={handleAddressSelect}
         t={t}
-        />
-        
+      />
     </View>
   );
 };
@@ -385,11 +392,11 @@ export const L21: FC<LevelComponentModel> = ({
             placeholder={t("LevelStartWritingPassage")}
             value={searchText}
             onChange={(value) => {
-              setSearchText(value)
-              handleSearchPassages(value)
+              setSearchText(value);
+              handleSearchPassages(value);
             }}
             onSubmit={() => {
-              setSearchText("")
+              setSearchText("");
             }}
           />
         )}

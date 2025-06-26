@@ -27,8 +27,13 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
   TaskManager.defineTask(
     BACKGROUND_NOTIFICATION_NAME,
     async ({ data, error, executionInfo }) => {
-      logger.write(`Received a notification in the background! Data: ${data}; Error: ${error}; Execution info: ${executionInfo}`)
-      ToastAndroid.show("Received a notification in the background!" + JSON.stringify(data), 1000)
+      logger.write(
+        `Received a notification in the background! Data: ${data}; Error: ${error}; Execution info: ${executionInfo}`
+      );
+      ToastAndroid.show(
+        "Received a notification in the background!" + JSON.stringify(data),
+        1000
+      );
     }
   );
 

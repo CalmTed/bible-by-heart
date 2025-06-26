@@ -1,4 +1,3 @@
-import { StackNavigationHelpers } from "@react-navigation/stack/src/types";
 import { useEffect, useRef, useState } from "react";
 import { AppStateModel } from "../models";
 import { ThemeAndColorsModel, getTheme } from "./getTheme";
@@ -19,6 +18,7 @@ import {
 import { navigateWithState } from "../screeenManagement";
 import { ToastAndroid } from "react-native";
 import { logger } from "./logger";
+import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 
 type UseAppModel = (arg: {
   route: any;
@@ -48,7 +48,7 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
         data: { ...state }
       })
       .catch((e) => {
-        logger.error(`Error on geting data in useApp e:${e}`)
+        logger.error(`Error on geting data in useApp e:${e}`);
         ToastAndroid.show(e, 10000);
       });
 
@@ -81,23 +81,25 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
       registerForPushNotificationsAsync(); //.then(token => setExpoPushToken(token));
 
       notificationListener.current =
-        Notifications.addNotificationResponseReceivedListener(
-          (responce) => {
-            //TODO save to user reaction history
-            //weekday, time, success
-            //on scheduling we do the same but with fail status
-            logger.write(`Notification responce received. ${responce.notification.request.content}`)
-            //reschedule reminders
-            checkSchedule(state);
-          }
-        );
+        Notifications.addNotificationResponseReceivedListener((responce) => {
+          //TODO save to user reaction history
+          //weekday, time, success
+          //on scheduling we do the same but with fail status
+          logger.write(
+            `Notification responce received. ${responce.notification.request.content}`
+          );
+          //reschedule reminders
+          checkSchedule(state);
+        });
 
       // Notifications.registerTaskAsync(backgroundNotificationName);
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
           shouldShowAlert: true,
           shouldPlaySound: true,
-          shouldSetBadge: false
+          shouldSetBadge: false,
+          shouldShowBanner: false,
+          shouldShowList: false
         })
       });
     }

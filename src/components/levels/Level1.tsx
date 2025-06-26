@@ -10,7 +10,11 @@ import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { getTheme } from "../../utils/getTheme";
-import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
+import {
+  MINIMUM_SENTENCE_LENGTH,
+  SENTENCE_SEPARATOR,
+  VIBRATION_PATTERNS
+} from "../../constants";
 
 export interface LevelComponentModel {
   test: TestModel;
@@ -106,11 +110,15 @@ export const L10: FC<LevelComponentModel> = ({
   };
   const levelFinished = test.f;
   const theme = getTheme(state.settings.theme);
-  const sentences = rightPassage.verseText.split(SENTENCE_SEPARATOR).filter(s => s.length);
+  const sentences = rightPassage.verseText
+    .split(SENTENCE_SEPARATOR)
+    .filter((s) => s.length);
   const slicingStart = test.d?.sentenceRange?.[0] || 0;
   const slicingEnd = test.d?.sentenceRange?.[1] || sentences.length;
-  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`
-  const verseText = test.d?.sentenceRange?.length ? slicedPassageText : rightPassage.verseText
+  const slicedPassageText = `${slicingStart === 0 ? "" : "..."}${sentences.slice(slicingStart, slicingEnd).join().trim()}${slicingEnd === sentences.length ? "" : "..."}`;
+  const verseText = test.d?.sentenceRange?.length
+    ? slicedPassageText
+    : rightPassage.verseText;
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
       <ScrollView style={{ ...levelComponentStyle.passageTextView }}>
@@ -141,9 +149,7 @@ export const L10: FC<LevelComponentModel> = ({
               );
             } else {
               //if there is an error
-              const rightPassage = state.passages.find(
-                (p) => p.id === test.pi
-              );
+              const rightPassage = state.passages.find((p) => p.id === test.pi);
               if (!rightPassage) {
                 return <></>;
               }
@@ -252,20 +258,22 @@ export const L11: FC<LevelComponentModel> = ({
             //joined range is more then MIN_SENTENCE
             //else show full
             const rangeStart = test.d?.sentenceRange
-            ? sentences.length > test.d.sentenceRange[0] 
-              ? test.d.sentenceRange[0]
-              : sentences.length > 1 && test.d.sentenceRange[0] > 0
-                ? 1
-                : 0
-            : 0;
-            const rangeEnd = test.d?.sentenceRange 
-            ? sentences.length >= test.d.sentenceRange[1] 
-            ? test.d.sentenceRange[1]
-            : sentences.length
-            : sentences.length;
-            const slicedTitle = sentences.slice(rangeStart, rangeEnd).join().length > MINIMUM_SENTENCE_LENGTH
-              ? `${rangeStart ? "..." : ""}${sentences.slice(rangeStart, rangeEnd).join().trim()}${rangeEnd != sentences.length ? "..." : ""}`
-              : op.verseText;
+              ? sentences.length > test.d.sentenceRange[0]
+                ? test.d.sentenceRange[0]
+                : sentences.length > 1 && test.d.sentenceRange[0] > 0
+                  ? 1
+                  : 0
+              : 0;
+            const rangeEnd = test.d?.sentenceRange
+              ? sentences.length >= test.d.sentenceRange[1]
+                ? test.d.sentenceRange[1]
+                : sentences.length
+              : sentences.length;
+            const slicedTitle =
+              sentences.slice(rangeStart, rangeEnd).join().length >
+              MINIMUM_SENTENCE_LENGTH
+                ? `${rangeStart ? "..." : ""}${sentences.slice(rangeStart, rangeEnd).join().trim()}${rangeEnd !== sentences.length ? "..." : ""}`
+                : op.verseText;
             const limitedTitle =
               slicedTitle.length < 50
                 ? slicedTitle

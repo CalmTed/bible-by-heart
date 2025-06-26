@@ -36,11 +36,13 @@ export const LevelPicker: FC<LevelPickerModel> = ({
   const closeLevelPicker = () => {
     setLevelPickerShown(false);
   };
-  const passageLevelFromTestLevel = parseInt(testLevel?.toString().substring(0, 1) as string, 10) as PASSAGELEVEL || NaN;
+  const passageLevelFromTestLevel =
+    (parseInt(
+      testLevel?.toString().substring(0, 1) as string,
+      10
+    ) as PASSAGELEVEL) || NaN;
   const handleLabelPress = () => {
-    if (
-      !isNaN(passageLevelFromTestLevel)
-    ) {
+    if (!isNaN(passageLevelFromTestLevel)) {
       // return;
     }
     setLevelPickerShown(true);
@@ -69,7 +71,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
       gap: 5
     },
     buttonStyle: {
-      margin: 0,
+      margin: 0
     },
     levelPickerWrapper: {
       flexDirection: "row",
@@ -84,9 +86,9 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           title={`${t("Level")} ${
             isNaN(passageLevelFromTestLevel)
               ? targetPassage.selectedLevel
-              : passageLevelFromTestLevel === targetPassage.selectedLevel 
-              ? passageLevelFromTestLevel
-              : passageLevelFromTestLevel //+ " ("+targetPassage.selectedLevel+")" 
+              : passageLevelFromTestLevel === targetPassage.selectedLevel
+                ? passageLevelFromTestLevel
+                : passageLevelFromTestLevel //+ " ("+targetPassage.selectedLevel+")"
           }`}
           // icon={IconName.selectArrow}
           onPress={handleLabelPress}
@@ -117,7 +119,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
                 type={disabled ? "secondary" : "outline"}
                 color={color}
                 style={levelPickerStyles.buttonStyle}
-                textStyle={{...disabled ? {opacity: 0.5} : {}}}
+                textStyle={{ ...(disabled ? { opacity: 0.5 } : {}) }}
                 key={n}
                 title={n.toString()}
                 onPress={() => handleChange(n, targetPassage.id)}
@@ -150,14 +152,16 @@ export const LevelPicker: FC<LevelPickerModel> = ({
               {PERFECT_TESTS_TO_PROCEED})
             </Text>
           )}
-        {testLevel && isNaN(passageLevelFromTestLevel) &&
+        {testLevel &&
+          isNaN(passageLevelFromTestLevel) &&
           targetPassage.selectedLevel.toString() !==
             testLevel.toString().slice(0, 1) && (
             <Text style={levelPickerStyles.subText}>
               {t("LevelPickerSubtextSecond")}
             </Text>
           )}
-        {testLevel && isNaN(passageLevelFromTestLevel) &&
+        {testLevel &&
+          isNaN(passageLevelFromTestLevel) &&
           handleRestart &&
           targetPassage.selectedLevel.toString() !==
             testLevel.toString().slice(0, 1) && (

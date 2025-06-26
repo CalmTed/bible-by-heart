@@ -1,5 +1,3 @@
-import { logger } from "./logger";
-
 const addZero: (number: number, length?: number) => string = (
   number,
   length = 2
@@ -9,7 +7,7 @@ const addZero: (number: number, length?: number) => string = (
       .fill("0")
       .join("")}${Math.abs(number)}`;
   } catch (e) {
-    logger.write(`Error with add zero to: ${number}`)
+    console.error(e);
     return number.toString();
   }
 };

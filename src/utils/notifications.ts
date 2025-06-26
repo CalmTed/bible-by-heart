@@ -3,11 +3,15 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { COLOR_DARK, DAY, HOUR, LANGCODE, MINUTE } from "../constants";
 import { AppStateModel, ReminderModel, TestModel } from "../models";
-import { CalendarTriggerInput, cancelScheduledNotificationAsync, SchedulableTriggerInputTypes } from "expo-notifications";
+import {
+  CalendarTriggerInput,
+  cancelScheduledNotificationAsync,
+  SchedulableTriggerInputTypes
+} from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
 
-//writes to console scheduling operations 
+//writes to console scheduling operations
 const notificationDebug = true;
 
 export const schedulePushNotification = async (
@@ -43,42 +47,50 @@ export const getAutoTimeTrigger: (
   //but we need to find most probable second
   const hourAndMinutes = history
     .filter(
-      (histItem) =>
-        new Date().getTime() - histItem.td[0][0] < DAY * 30000
+      (histItem) => new Date().getTime() - histItem.td[0][0] < DAY * 30000
     ) //just last month
     .map((histItem) => {
       const d = new Date(histItem.td[0][0]);
       return [d.getHours(), d.getMinutes()];
     });
-  const mostCommonHour = [...new Array(24)
-    .fill(0)
-    //all hours grouped by hour
-    .map((z, i) => hourAndMinutes.filter((h) => h[0] === i).length)
-    //get time and index
-    .map((a, i) => [a, i])]
+  const mostCommonHour = [
+    ...new Array(24)
+      .fill(0)
+      //all hours grouped by hour
+      .map((z, i) => hourAndMinutes.filter((h) => h[0] === i).length)
+      //get time and index
+      .map((a, i) => [a, i])
+  ]
     //sort
     .sort((a, b) => b[0] - a[0])[0][1];
   const minutesGroups = 5;
-  const mostCommon5Minutes = [...new Array(60 / minutesGroups)
-    .fill(0)
-    .map(
-      (z, i) =>
-        hourAndMinutes.filter(
-          (h) =>
-            h[0] === mostCommonHour &&
-            h[1] > i * minutesGroups &&
-            h[1] < (i + 1) * minutesGroups
-        ).length
-    )
-    .map((a, i) => [a, i])]
-    .sort((a, b) => b[0] - a[0])[0][1];
+  const mostCommon5Minutes = [
+    ...new Array(60 / minutesGroups)
+      .fill(0)
+      .map(
+        (z, i) =>
+          hourAndMinutes.filter(
+            (h) =>
+              h[0] === mostCommonHour &&
+              h[1] > i * minutesGroups &&
+              h[1] < (i + 1) * minutesGroups
+          ).length
+      )
+      .map((a, i) => [a, i])
+  ].sort((a, b) => b[0] - a[0])[0][1];
 
-  const lastTest = [...history].sort((a,b) => b.td[0][0] - a.td[0][0])[0]
-  const now = new Date()
+  const lastTest = [...history].sort((a, b) => b.td[0][0] - a.td[0][0])[0];
+  const now = new Date();
   //if hours from last test are lesser than hour now
-  const didTrainToday = (new Date().getTime() - new Date(lastTest.td[0][0]).getTime())/1000/HOUR < now.getHours()
-  const targetDay = didTrainToday ? new Date().getDay() + 1 : new Date().getDay();
-  
+  const didTrainToday =
+    (new Date().getTime() - new Date(lastTest.td[0][0]).getTime()) /
+      1000 /
+      HOUR <
+    now.getHours();
+  const targetDay = didTrainToday
+    ? new Date().getDay() + 1
+    : new Date().getDay();
+
   // const seconds = now.getTime() + 60000
   return {
     type: SchedulableTriggerInputTypes.CALENDAR,
@@ -86,7 +98,7 @@ export const getAutoTimeTrigger: (
     // seconds,
     day: targetDay,
     hour: mostCommonHour,
-    minute: Math.max(0, (mostCommon5Minutes * minutesGroups) - 10),//10 minutes before or at 0
+    minute: Math.max(0, mostCommon5Minutes * minutesGroups - 10), //10 minutes before or at 0
     repeats: true
   };
 
@@ -111,8 +123,8 @@ export const checkSchedule = async (state: AppStateModel) => {
   //get all remiders
   const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
   if (notificationDebug) {
-    console.debug(`allScheduled.length: `, allScheduled.length)
-    console.debug(`allScheduled: `, allScheduled)
+    console.debug(`allScheduled.length: `, allScheduled.length);
+    console.debug(`allScheduled: `, allScheduled);
   }
   //get reminders from state
   const allUserSetted = state.settings.remindersList;
@@ -128,7 +140,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       return;
     }
     const itemData = JSON.parse(
-      scheduled.content.data.itemString
+      scheduled.content.data.itemString?.toString()
     ) as ReminderModel;
     const fromState = allUserSetted.find((setted) => setted.id === itemData.id);
     if (removeAll || !fromState || !fromState?.enabled) {
@@ -151,7 +163,9 @@ export const checkSchedule = async (state: AppStateModel) => {
   if (state.settings.remindersSmartTime) {
     const autoTimeTrigger = getAutoTimeTrigger(state.testsHistory);
     if (notificationDebug) {
-      console.debug(`Scheduling autonotification at ${autoTimeTrigger.hour}:${autoTimeTrigger.minute}:${autoTimeTrigger.second}`);
+      console.debug(
+        `Scheduling autonotification at ${autoTimeTrigger.hour}:${autoTimeTrigger.minute}:${autoTimeTrigger.second}`
+      );
     }
     await schedulePushNotification(
       t(`notificationTitle${randNum}` as WORD),
@@ -195,8 +209,8 @@ export const checkSchedule = async (state: AppStateModel) => {
         ? item.timeInSec > timeNow
           ? 0
           : days.filter((d) => d[1]).length <= 1
-          ? 7
-          : nextIndexWithoutToday
+            ? 7
+            : nextIndexWithoutToday
         : nextIndex;
       // what time to do it
       const trigger = new Date(d2.getTime() + daysInFuture * DAY * 1000);
@@ -215,9 +229,10 @@ export const checkSchedule = async (state: AppStateModel) => {
       const scheduledRiminder = allScheduled.find((scheduledItem) =>
         !scheduledItem.content.data.itemString
           ? false
-          : JSON.parse(scheduledItem.content.data.itemString).id === item.id
+          : JSON.parse(scheduledItem.content.data.itemString.toString()).id ===
+            item.id
       );
-      const schedule:(
+      const schedule: (
         randNum: number,
         item: ReminderModel
       ) => Promise<void> = async () => {
@@ -228,11 +243,11 @@ export const checkSchedule = async (state: AppStateModel) => {
           //we dont care if we train today because its user defined reminder
           {
             type: SchedulableTriggerInputTypes.CALENDAR,
-            seconds: getNextActivationTime(item).getTime()/1000,
+            seconds: getNextActivationTime(item).getTime() / 1000,
             repeats: true
           }
         );
-      }
+      };
       if (!scheduledRiminder) {
         //add reminder
         if (notificationDebug) {
@@ -240,11 +255,12 @@ export const checkSchedule = async (state: AppStateModel) => {
             `Scheduling notification at ${Math.floor(
               item.timeInSec / HOUR
             )}:${Math.floor(
-              (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) / MINUTE
+              (item.timeInSec - Math.floor(item.timeInSec / HOUR) * HOUR) /
+                MINUTE
             )}`
           );
         }
-        await schedule(randNum, item)
+        await schedule(randNum, item);
       } else {
         //change reminder
         if (
@@ -260,8 +276,8 @@ export const checkSchedule = async (state: AppStateModel) => {
               )}`
             );
           }
-          await cancelScheduledNotificationAsync(scheduledRiminder.identifier);        
-          await schedule(randNum, item)
+          await cancelScheduledNotificationAsync(scheduledRiminder.identifier);
+          await schedule(randNum, item);
         }
       }
     });

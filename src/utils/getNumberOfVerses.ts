@@ -5,7 +5,8 @@ import { logger } from "./logger";
 export const getNumberOfVerses: (adress: AddressType) => number = (address) => {
   //if one verse (end == null || end == start)
   if (
-    !address.endChapterNum || !address.endVerseNum ||
+    !address.endChapterNum ||
+    !address.endVerseNum ||
     (address.endChapterNum === address.startChapterNum &&
       address.endVerseNum === address.startVerseNum)
   ) {
@@ -42,6 +43,8 @@ export const getNumberOfVerses: (adress: AddressType) => number = (address) => {
     return fromStartingChapter + fromAllChaptersBetween + fromEndingChapter;
   }
 
-  logger.error(`Unable to get number of verses. Address: ${JSON.stringify(address)}`)
+  logger.error(
+    `Unable to get number of verses. Address: ${JSON.stringify(address)}`
+  );
   return NaN;
 };

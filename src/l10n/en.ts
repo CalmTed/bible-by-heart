@@ -104,7 +104,6 @@ export const en = {
   notificationBody12: "Your effort will pay off—keep going! 🚀",
   notificationBody13: "A little focus now, lasting wisdom forever! 💡",
 
-
   //subtexts
   DateCreated: "Date created",
   DateEdited: "Date edited",
@@ -154,10 +153,10 @@ export const en = {
   settingsImportPassages: "Import passages",
   settsExportPassagesSubtext: "Write passales to .txt file",
   settsImportPassagesSubtext: "Read passales from special .txt file",
-  settsExported: "Exported!", 
-  settsImportedVerses: "Imported verses", 
-  settsImported: "Imported!", 
-  settsCleared: "Cleared!", 
+  settsExported: "Exported!",
+  settsImportedVerses: "Imported verses",
+  settsImported: "Imported!",
+  settsCleared: "Cleared!",
   settsDevMode: "Dev mode",
   settsHaptics: "Haptics vibration",
   settsLeftSwipeTag: "Right swipe category",
@@ -231,7 +230,8 @@ export const en = {
   statsMostCommonAddressErrorHeader: "Most common adderss error",
   statsWrongWordsHeatmapHeader: "Wrong words heatmap",
   statsAbsoluteScoreSubtext: "Total score",
-  statsScoreCalculatingHintText: "Absolute score is is a sum of all passage scores (number_of_verses * (max_level - 1) * 2). \n\nRelative score(second number) is a difference of this month absolute score and the prevous month",
+  statsScoreCalculatingHintText:
+    "Absolute score is is a sum of all passage scores (number_of_verses * (max_level - 1) * 2). \n\nRelative score(second number) is a difference of this month absolute score and the prevous month",
   statsPassagesNumber: "Passages",
   statsVersesNumber: "Verses",
   statsAddressesLearned: "Addresses learned",
@@ -241,7 +241,7 @@ export const en = {
   statsWeeklyTime: "Average time per week",
 
   TranslationOther: "Other",
-  hrs: "hrs",//hours
+  hrs: "hrs", //hours
 
   ErrorCantAddMoreEngVerses: "Can't add more then 500 verses in English",
   ErrorNoPassagesForThisTrainMode:
@@ -250,7 +250,8 @@ export const en = {
   ErrorWhileWritingFile: "Error occured while writing file",
   ErrorWhileEncoding: "Error occured while encoding",
   ErrorWhileDecoding: "Error occured while decoding",
-  CantGenerateTestsForThisTrainMode: "Can't generate tests for selected train mode",
+  CantGenerateTestsForThisTrainMode:
+    "Can't generate tests for selected train mode",
   ErrorInvalidIndexes: "Invalid indexes",
   ErrorConflictedIndexes: "Duplicates",
   ErrorTurnOnRemindersOnImport: "Turn on notifications to see import errors",
@@ -262,7 +263,8 @@ export const en = {
   legalCheckLabel: "I agree with privacy policy and terms of service",
   loginButton: "Login",
   registerButton: "Register",
-  passwordRulesLabel: "Password should have al least one uppercase letter, one lowercase letter, one digit, one symbol from list:[@.#$!%*?&] and length of 8-40 chars",
+  passwordRulesLabel:
+    "Password should have al least one uppercase letter, one lowercase letter, one digit, one symbol from list:[@.#$!%*?&] and length of 8-40 chars",
   ComingSoon: "Coming soon 😉",
 
   dayMO: "Mo",

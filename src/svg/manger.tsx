@@ -25,13 +25,9 @@ const xmlData2 = `
 `;
 
 export const MangerSVG: FC<{ isOutline?: boolean; color: string }> = ({
-    isOutline,
-    color = "#ECECEC"
+  isOutline,
+  color = "#ECECEC"
 }) => {
-    const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
-    return <SvgXml xml={data} width="255" height="160" />;
+  const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
+  return <SvgXml xml={data} width="255" height="160" />;
 };
-
-
-
-

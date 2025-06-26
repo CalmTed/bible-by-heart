@@ -35,7 +35,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   onCancel,
   onConfirm,
   t,
-  theme,
+  theme
 }) => {
   const isNoAddress = !address;
   const isAddressNull =
@@ -100,7 +100,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       case -1:
         setAddressPart(Object.keys(tempAddress)[0]);
         break;
-      case Object.keys(tempAddress).length - 1:
+      case Object.keys(tempAddress).length - 1: // why not to use exact name? b.c. its index.
         //auto confirming address
         if (!isDoneDisabled) {
           handleConfirm({ ...tempAddress, [addressPart]: index });
@@ -113,24 +113,24 @@ export const AddressPicker: FC<AddressPickerModel> = ({
 
   const handleListButtonLongPress: (index: number) => void = (index) => {
     //if editing start verse - select just one verse (fill end values with start values)
-    
-    if(addressPart === "startVerseNum"){
+
+    if (addressPart === "startVerseNum") {
       handleConfirm({ ...tempAddress, [addressPart]: index });
-    }else{
-      handleListButtonPress(index)
+    } else {
+      handleListButtonPress(index);
     }
-    Vibration.vibrate(VIBRATION_PATTERNS.APSelectVerse)
-  }
+    Vibration.vibrate(VIBRATION_PATTERNS.APSelectVerse);
+  };
 
   const handleConfirm: (a: AddressType) => void = (address) => {
-    if(address?.endChapterNum || isNaN(address?.endChapterNum || NaN)){
-      address.endChapterNum = address.startChapterNum
+    if (!address?.endChapterNum) {
+      address.endChapterNum = address.startChapterNum;
     }
-    if(address?.endVerseNum || isNaN(address?.endVerseNum || NaN)){
-      address.endVerseNum = address.startVerseNum
+    if (!address?.endVerseNum) {
+      address.endVerseNum = address.startVerseNum;
     }
     onConfirm(address);
-  }
+  };
   const allBookAddress: AddressType = {
     bookIndex: tempAddress.bookIndex,
     startChapterNum: 0,
@@ -149,17 +149,32 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
       getNumberOfVerses(tempAddress) > getNumberOfVerses(allBookAddress) / 2);
 
-  const TitleLabel: (a:{addressPart: string, tempAddress: AddressType}) => React.JSX.Element = ({addressPart, tempAddress}) => {
+  const TitleLabel: (a: {
+    addressPart: string;
+    tempAddress: AddressType;
+  }) => React.JSX.Element = ({ addressPart, tempAddress }) => {
     const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
-    const book = curPartIndex < 1 ? t("APSelectBook") : t(bibleReference[tempAddress.bookIndex]?.longTitle as WORD);
-    const startChapter = curPartIndex < 2 ? "" : tempAddress?.startChapterNum + 1
-    const startVerse = curPartIndex < 3 ? "" : tempAddress?.startVerseNum + 1
-    const endChapter = curPartIndex < 4 ? "" : (tempAddress?.endChapterNum || tempAddress.startChapterNum) + 1
-    const endVerse = curPartIndex < 5 ? "" : (tempAddress?.endVerseNum || tempAddress.startVerseNum) + 1
-    return (<Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
-      {book} {startChapter}:{startVerse} - {endChapter}:{endVerse}
-    </Text>)
-  }
+    const book =
+      curPartIndex < 1
+        ? t("APSelectBook")
+        : t(bibleReference[tempAddress.bookIndex]?.longTitle as WORD);
+    const startChapter =
+      curPartIndex < 2 ? "" : tempAddress?.startChapterNum + 1;
+    const startVerse = curPartIndex < 3 ? "" : tempAddress?.startVerseNum + 1;
+    const endChapter =
+      curPartIndex < 4
+        ? ""
+        : (tempAddress?.endChapterNum || tempAddress.startChapterNum) + 1;
+    const endVerse =
+      curPartIndex < 5
+        ? ""
+        : (tempAddress?.endVerseNum || tempAddress.startVerseNum) + 1;
+    return (
+      <Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
+        {book} {startChapter}:{startVerse} - {endChapter}:{endVerse}
+      </Text>
+    );
+  };
   return (
     <Modal visible={visible}>
       {/* HEADER */}
@@ -170,7 +185,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
           icon={IconName.back}
           onPress={handleBack}
         />
-        <TitleLabel addressPart={addressPart} tempAddress={tempAddress}/>
+        <TitleLabel addressPart={addressPart} tempAddress={tempAddress} />
         <IconButton
           theme={theme}
           style={APstyle.headerBotton}

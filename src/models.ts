@@ -21,27 +21,29 @@ export interface AppStateModel009 {
   passages: PassageModel009[];
   testsActive: TestModel009[];
   testsHistory: TestModel009[];
-  userData: { // not implemented yet
+  userData: {
+    // not implemented yet
     userId: number | null;
-    userName: string | null; 
+    userName: string | null;
     userPicture: string | null;
-    birthDate: number | null
-    authToken: string | null//shoud be removed - saved in the expo-save-storage
-    loginType: null | "email" | "google" | "apple" | "facebook"
-    updateMessages: updateMessageModel[]//later could update it from API
-    feedBackMessages: feedbackMessageModel[]
-  }
+    birthDate: number | null;
+    authToken: string | null; //shoud be removed - saved in the expo-save-storage
+    loginType: null | "email" | "google" | "apple" | "facebook";
+    updateMessages: updateMessageModel[]; //later could update it from API
+    feedBackMessages: feedbackMessageModel[];
+  };
   filters: {
     tags: string[];
     selectedLevels: PASSAGELEVEL[];
     maxLevels: PASSAGELEVEL[];
     translations: number[];
-  }
-  sort: SORTINGOPTION
-  statsDateRange: {//negative number for relative value(from now), positive number for timestamp
-    from: number
-    to: number
-  }
+  };
+  sort: SORTINGOPTION;
+  statsDateRange: {
+    //negative number for relative value(from now), positive number for timestamp
+    from: number;
+    to: number;
+  };
   settings: {
     [SETTINGS.langCode]: LANGCODE;
     [SETTINGS.theme]: THEMETYPE;
@@ -68,10 +70,8 @@ export interface AppStateModel009 {
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
     [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
-  }
+  };
 }
-
-
 
 export type PassageModel = PassageModel009;
 
@@ -87,8 +87,8 @@ export interface PassageModel009 {
   dateTested: number;
   selectedLevel: PASSAGELEVEL;
   maxLevel: PASSAGELEVEL; //set on the end of testing according to history of tests
-  upgradeDates: Record<PASSAGELEVEL, number>//number of upgrade to derive relative score
-  minIntervalDaysNum: number | null;//aka reminder number of days
+  upgradeDates: Record<PASSAGELEVEL, number>; //number of upgrade to derive relative score
+  minIntervalDaysNum: number | null; //aka reminder number of days
   isNewLevelAwalible: boolean;
   tags: string[]; //archive and custom
   isReminderOn: boolean;
@@ -111,7 +111,7 @@ export interface TestModel009 {
   pi: number;
   //user id
   ui: number | null;
-  //tries duration 
+  //tries duration
   td: number[][]; // start and finish
   //is finished
   f: boolean;
@@ -123,20 +123,20 @@ export interface TestModel009 {
     passagesOptions?: PassageModel[];
     missingWords?: number[]; //word index
     showAddressOrFirstWords?: boolean;
-    sentenceRange?: number[];//from..to. Default undefinded or [] is [0,-1]
+    sentenceRange?: number[]; //from..to. Default undefinded or [] is [0,-1]
   };
   //error number
   en: number | null; // 0 if passed without error
   //error types list
-  et:(
-      | "wrongAddressToVerse"
-      | "wrongVerseToAddress"
-      | "wrongWord"
-      | "wrongFirstWord"
-      | "moreThenOneCharacter"
-      | "downgrading"
-      | "other"
-    )[];
+  et: (
+    | "wrongAddressToVerse"
+    | "wrongVerseToAddress"
+    | "wrongWord"
+    | "wrongFirstWord"
+    | "moreThenOneCharacter"
+    | "downgrading"
+    | "other"
+  )[];
   //wrong addresses
   wa: AddressType[];
   //wrong passage ids
@@ -191,8 +191,8 @@ export interface AddressType {
   bookIndex: number;
   startChapterNum: number;
   startVerseNum: number;
-  endChapterNum: number |null;//COULD BE NULL
-  endVerseNum: number | null;//COULD BE NULL
+  endChapterNum: number | null; //COULD BE NULL
+  endVerseNum: number | null; //COULD BE NULL
 }
 
 export enum ActionName {
@@ -254,9 +254,9 @@ export type ActionModel =
       name: ActionName.clearActiveTests;
     }
   | {
-    name: ActionName.generateTests
-    trainModeId?: number;
-  }
+      name: ActionName.generateTests;
+      trainModeId?: number;
+    }
   | {
       name: ActionName.updateTest;
       payload: {
@@ -315,41 +315,35 @@ export type ActionModel =
   | {
       name: ActionName.setTrainModesList;
       payload: TrainModeModel[];
-    } 
+    }
   | {
       name: ActionName.importPassages;
       payload: {
-        passages: PassageModel[]
-      }
-  };
-  interface updateMessageModel {
-    id: number
-    header: WORD
-    text: WORD
-    buttonHeader: WORD
-    image: string //small base64 file or external link
-    link: string
-    isRead: boolean
-  } 
+        passages: PassageModel[];
+      };
+    };
+interface updateMessageModel {
+  id: number;
+  header: WORD;
+  text: WORD;
+  buttonHeader: WORD;
+  image: string; //small base64 file or external link
+  link: string;
+  isRead: boolean;
+}
 
-  interface feedbackMessageModel {
-    id: number
-    creatorUserId: number
-    timeCreated: number
-    timeRead: number | null
-    text: string
-    //for future
-    attachmentLink: string | null
-    attechmentType: "photo" | "video" | "file" | "other"
-  }
-
-
-
-
-
+interface feedbackMessageModel {
+  id: number;
+  creatorUserId: number;
+  timeCreated: number;
+  timeRead: number | null;
+  text: string;
+  //for future
+  attachmentLink: string | null;
+  attechmentType: "photo" | "video" | "file" | "other";
+}
 
 /* state archive */
-
 
 export interface PassageModel008 {
   id: number;
@@ -361,7 +355,7 @@ export interface PassageModel008 {
   dateCreated: number;
   dateEdited: number;
   dateTested: number;
-  minIntervalDaysNum: number | null;//aka reminder number of days
+  minIntervalDaysNum: number | null; //aka reminder number of days
   selectedLevel: PASSAGELEVEL;
   maxLevel: PASSAGELEVEL; //set on end by a history of tests
   isNewLevelAwalible: boolean;
@@ -391,7 +385,7 @@ export interface AppStateModel008 {
   settings: {
     [SETTINGS.langCode]: LANGCODE;
     [SETTINGS.theme]: THEMETYPE;
-    "devMode": boolean;//just devMode settings name was removed
+    devMode: boolean; //just devMode settings name was removed
     [SETTINGS.chapterNumbering]: "eastern" | "vestern"; //not implemented yet
     [SETTINGS.hapticsEnabled]: boolean;
     [SETTINGS.soundsEnabled]: boolean; //not implemented yet
@@ -430,7 +424,7 @@ export interface TestModel007 {
     passagesOptions?: PassageModel008[];
     missingWords?: number[]; //word index
     showAddressOrFirstWords?: boolean;
-    sentenceRange?: number[];//from..to. Default undefinded or [] is [0,-1]
+    sentenceRange?: number[]; //from..to. Default undefinded or [] is [0,-1]
   };
   errorNumber: number | null; // 0 if passed without error
   errorType:

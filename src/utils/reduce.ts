@@ -4,8 +4,7 @@ import {
   TESTLEVEL,
   DEFAULT_TRAINMODE_ID,
   ARCHIVED_NAME,
-  DAY,
-  LANGCODE
+  DAY
 } from "../constants";
 import {
   ActionModel,
@@ -16,10 +15,13 @@ import {
   TrainModeModel
 } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
-import { getNumberOfVersesInEnglish } from "./getNumberOfEnglishVerses";
 import { checkSchedule } from "./notifications";
 import { ToastAndroid } from "react-native";
-import { generateATest, generateTests, getPassagesByTrainMode } from "./generateTests";
+import {
+  generateATest,
+  generateTests,
+  getPassagesByTrainMode
+} from "./generateTests";
 import { createTest } from "../initials";
 import { logger } from "./logger";
 
@@ -31,40 +33,52 @@ export const reduce: (
 
   switch (action.name) {
     case ActionName.setLang:
-      let defaultLangChanged = false//this flag is to set new default translation only once, if there are few translations in the same language
-      const noPassages = !state.passages.length
-      const updatedTranslations = state.settings.translations.map(translation => {
-        const isDefault = translation.isDefault
-        const isTransLangSameAsInterface = action.payload === translation.addressLanguage;
-        if(!isDefault && isTransLangSameAsInterface && !defaultLangChanged){
-          defaultLangChanged = true
-          return {...translation, isDefault: true}
+      let defaultLangChanged = false; //this flag is to set new default translation only once, if there are few translations in the same language
+      const noPassages = !state.passages.length;
+      const updatedTranslations = state.settings.translations.map(
+        (translation) => {
+          const isDefault = translation.isDefault;
+          const isTransLangSameAsInterface =
+            action.payload === translation.addressLanguage;
+          if (!isDefault && isTransLangSameAsInterface && !defaultLangChanged) {
+            defaultLangChanged = true;
+            return { ...translation, isDefault: true };
+          }
+          if (isDefault && !isTransLangSameAsInterface) {
+            return { ...translation, isDefault: false };
+          }
+          return translation;
         }
-        if(isDefault && !isTransLangSameAsInterface){
-          return {...translation, isDefault: false}
+      );
+      const updatedTrainModesList = state.settings.trainModesList.map(
+        (trainMode) => {
+          const isDefault = trainMode.id === DEFAULT_TRAINMODE_ID;
+          const modeTranslationLangauge = state.settings.translations.filter(
+            (translation) => translation.id === trainMode.translation
+          )?.[0]?.addressLanguage; //seting undefined if there are no corresponding translation
+          const isModeLangSameAsInterface =
+            action.payload === modeTranslationLangauge;
+          const defaultTranslation = updatedTranslations.filter(
+            (translation) => translation.isDefault
+          )[0];
+          if (isDefault && !isModeLangSameAsInterface) {
+            return { ...trainMode, translation: defaultTranslation.id };
+          } else {
+            return trainMode;
+          }
         }
-        return translation;
-      })
-      const updatedTrainModesList = state.settings.trainModesList.map(trainMode => {
-        const isDefault = trainMode.id === DEFAULT_TRAINMODE_ID;
-        const modeTranslationLangauge = state.settings.translations.filter(translation => 
-            translation.id === trainMode.translation
-          )?.[0]?.addressLanguage;//seting undefined if there are no corresponding translation
-        const isModeLangSameAsInterface = action.payload === modeTranslationLangauge;
-        const defaultTranslation = updatedTranslations.filter(translation => translation.isDefault)[0]
-        if(isDefault && !isModeLangSameAsInterface){
-          return {...trainMode, translation: defaultTranslation.id}
-        }else{
-          return trainMode;
-        }
-      })
+      );
       changedState = {
         ...state,
         settings: {
           ...state.settings,
           langCode: action.payload,
-          translations: noPassages ? updatedTranslations : state.settings.translations,
-          trainModesList: noPassages ? updatedTrainModesList : state.settings.trainModesList
+          translations: noPassages
+            ? updatedTranslations
+            : state.settings.translations,
+          trainModesList: noPassages
+            ? updatedTrainModesList
+            : state.settings.trainModesList
         }
       };
       break;
@@ -103,7 +117,7 @@ export const reduce: (
               }
             : p
         );
-        
+
         //why do we get teags only from changes passages
         //why do we need to cahnge tags at all??
         // const newTags = changedPassages
@@ -124,10 +138,10 @@ export const reduce: (
         // console.log(JSON.stringify(newTags), JSON.stringify(state.filters.tags))
         changedState = {
           ...state,
-          passages: changedPassages,
+          passages: changedPassages
           // filters: {
-            // ...state.filters,
-            //tags: JSON.stringify(newTags) !== JSON.stringify(state.filters.tags) ? newTags : state.filters.tags
+          // ...state.filters,
+          //tags: JSON.stringify(newTags) !== JSON.stringify(state.filters.tags) ? newTags : state.filters.tags
           // }
         };
       } else {
@@ -144,26 +158,25 @@ export const reduce: (
       };
       break;
     case ActionName.setDevMode:
-      logger.write(`[DEV] Changing dev mode to ${action.payload ? 'true' : 'false'}`)
+      logger.write(
+        `[DEV] Changing dev mode to ${action.payload ? "true" : "false"}`
+      );
       changedState = {
         ...state,
         settings: {
           ...state.settings,
           devModeEnabled: action.payload,
           devModeActivationTime:
-            action.payload 
-            && !state.settings.devModeActivationTime 
-            ? new Date().getTime() 
-            : state.settings.devModeActivationTime
+            action.payload && !state.settings.devModeActivationTime
+              ? new Date().getTime()
+              : state.settings.devModeActivationTime
         }
       };
       break;
     case ActionName.removePassage:
       changedState = {
         ...state,
-        testsHistory: state.testsHistory.filter(
-          (t) => t.pi !== action.payload
-        ),
+        testsHistory: state.testsHistory.filter((t) => t.pi !== action.payload),
         passages: state.passages.filter((p) => p.id !== action.payload)
       };
       break;
@@ -172,61 +185,79 @@ export const reduce: (
         changedState = { ...state, testsActive: [] };
       }
       break;
-    case ActionName.generateTests: 
+    case ActionName.generateTests:
       //if passages exists
-      const nonArchivedPassages = state.passages.filter(p => !p.tags.includes(ARCHIVED_NAME))
-      if(nonArchivedPassages.length === 0){
+      const nonArchivedPassages = state.passages.filter(
+        (p) => !p.tags.includes(ARCHIVED_NAME)
+      );
+      if (nonArchivedPassages.length === 0) {
         //TODO show the reason to user
-         break;
+        break;
       }
       //if trainMode filtered passages exists
       //selected or default(settings.activeMode)
-      const selectedTrainMode = 
-        state.settings.trainModesList.filter(t => 
-          action.trainModeId 
-          ? t.id === action.trainModeId 
+      const selectedTrainMode = state.settings.trainModesList.filter((t) =>
+        action.trainModeId
+          ? t.id === action.trainModeId
           : t.id === state.settings.activeTrainModeId
-        )[0]
-      const slectedTrainModeWithPassageLanguage:TrainModeModel = {...selectedTrainMode, translation: nonArchivedPassages[0]?.verseTranslation}
-      const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode)
-      const filteredWithOtherTranslationPassages = getPassagesByTrainMode(state, slectedTrainModeWithPassageLanguage)
-      
-      const generatedTests = filteredPassages.length ? generateTests(state, selectedTrainMode) : generateTests(state, slectedTrainModeWithPassageLanguage)
-      
-      let changedDefaultTrainMode: TrainModeModel
+      )[0];
+      const slectedTrainModeWithPassageLanguage: TrainModeModel = {
+        ...selectedTrainMode,
+        translation: nonArchivedPassages[0]?.verseTranslation
+      };
+      const filteredPassages = getPassagesByTrainMode(state, selectedTrainMode);
+      const filteredWithOtherTranslationPassages = getPassagesByTrainMode(
+        state,
+        slectedTrainModeWithPassageLanguage
+      );
+
+      const generatedTests = filteredPassages.length
+        ? generateTests(state, selectedTrainMode)
+        : generateTests(state, slectedTrainModeWithPassageLanguage);
+
+      let changedDefaultTrainMode: TrainModeModel;
       //if there are no passages other then in unknown translation set default mode language to this language
-      if(!filteredPassages.length && filteredWithOtherTranslationPassages.length && !selectedTrainMode.editable){
-        changedDefaultTrainMode = slectedTrainModeWithPassageLanguage
+      if (
+        !filteredPassages.length &&
+        filteredWithOtherTranslationPassages.length &&
+        !selectedTrainMode.editable
+      ) {
+        changedDefaultTrainMode = slectedTrainModeWithPassageLanguage;
       }
       const changedSettings = {
         ...state.settings,
-        trainModesList: state.settings.trainModesList.map(tm => tm.id === selectedTrainMode.id ? changedDefaultTrainMode ?? tm : tm),
+        trainModesList: state.settings.trainModesList.map((tm) =>
+          tm.id === selectedTrainMode.id ? (changedDefaultTrainMode ?? tm) : tm
+        ),
         activeTrainModeId: selectedTrainMode.id
+      };
+      if (generatedTests) {
+        changedState = {
+          ...state,
+          testsActive: generatedTests,
+          settings: changedSettings
+        };
+      } else {
+        logger.error("Unable to generate tests");
       }
-      if(generatedTests){
-        changedState = { ...state, testsActive: generatedTests, settings: changedSettings}
-      }else{
-        logger.error("Unable to generate tests")
-      }
-    break;
+      break;
     case ActionName.updateTest:
-      const updatedTests = [...state.testsActive
-        .map((t) => {
+      const updatedTests = [
+        ...state.testsActive.map((t) => {
           if (t.i === action.payload.test.i) {
             return {
               ...action.payload.test,
               f: action.payload.isRight ? true : t.f,
-              td: action.payload.test.td.map(
-                (td, i, a) =>
-                  i === a.length - 1 ? [...td, new Date().getTime()] : td
+              td: action.payload.test.td.map((td, i, a) =>
+                i === a.length - 1 ? [...td, new Date().getTime()] : td
               )
             };
           }
           return t;
-        })]
-        .sort((a) =>
-          action.payload.isRight ? 0 : a.i === action.payload.test.i ? 1 : -1
-        );
+        })
+      ].sort((a) =>
+        action.payload.isRight ? 0 : a.i === action.payload.test.i ? 1 : -1
+      );
       //sorting active tests to float last wrong one to the end
       const sortedTests = action.payload.isRight
         ? updatedTests
@@ -268,7 +299,7 @@ export const reduce: (
       const newUpgradeDates = {
         ...targetPassage.upgradeDates,
         [targetPassage.maxLevel]: 0
-      }
+      };
       const updatedPassages = state.passages.map((p) =>
         p.id === action.payload.test.pi
           ? ({
@@ -281,11 +312,12 @@ export const reduce: (
           : p
       );
       //regenerate test with new level
-      const targetTest: TestModel = state.testsActive.filter((t) =>
-      t.i === action.payload.test.i)[0]
-      
-      const recreatedTest:TestModel = {
-        ...generateATest (
+      const targetTest: TestModel = state.testsActive.filter(
+        (t) => t.i === action.payload.test.i
+      )[0];
+
+      const recreatedTest: TestModel = {
+        ...generateATest(
           createTest(targetTest.si, targetTest.pi, newPassageLevel),
           state.passages,
           newPassageLevel,
@@ -294,11 +326,9 @@ export const reduce: (
         wa: targetTest.wa,
         ww: targetTest.ww,
         wp: targetTest.wp
-      }
+      };
       const updatedActiveTests: TestModel[] = state.testsActive.map((t) =>
-        t.i === action.payload.test.i
-          ? recreatedTest
-          : t
+        t.i === action.payload.test.i ? recreatedTest : t
       );
       const updatedTestHistory: TestModel[] = [
         ...state.testsHistory,
@@ -310,7 +340,7 @@ export const reduce: (
           en: action.payload.test.en || 0 + 1,
           et: [...action.payload.test.et, "downgrading"]
         }
-      ]
+      ];
       changedState = {
         ...state,
         testsHistory: updatedTestHistory,
@@ -326,9 +356,7 @@ export const reduce: (
         //summing triesDuration up to one set from..to
         return {
           ...t,
-          td: t.td.map((td) =>
-            td.length === 1 ? [...td, finishingTime] : td
-          ),
+          td: t.td.map((td) => (td.length === 1 ? [...td, finishingTime] : td)),
           f: true,
           d: {}
         };
@@ -354,15 +382,13 @@ export const reduce: (
             : p.maxLevel;
         //if new max level is not the current one
         const flag = level !== p.maxLevel;
-        const newUpgradeDates = flag 
+        const newUpgradeDates = flag
           ? {
-            ...p.upgradeDates,
-            [level]: finishingTime
-          }
-          : p.upgradeDates
-        const lastTest = testsWithUpdatedLastTest.find(
-          (t) => t.pi === p.id
-        );
+              ...p.upgradeDates,
+              [level]: finishingTime
+            }
+          : p.upgradeDates;
+        const lastTest = testsWithUpdatedLastTest.find((t) => t.pi === p.id);
         //update passages last tested time
         const lastTestedTime = lastTest
           ? lastTest.td[lastTest.td.length - 1]?.[1]
@@ -474,26 +500,26 @@ export const reduce: (
       };
       break;
     case ActionName.importPassages:
-      if(!action?.payload?.passages?.length){
+      if (!action?.payload?.passages?.length) {
         break;
       }
       const importedPassages = action.payload.passages;
       changedState = {
         ...state,
         passages: [...state.passages, ...importedPassages]
-      }
+      };
       break;
     default:
       logger.error(`unknown action name: ${action}`);
   }
   if (changedState) {
     const timeOfChange = new Date().getTime();
-    if(
-      changedState.settings.devModeActivationTime 
-      && changedState.settings.devModeActivationTime + (DAY * 1000) < timeOfChange
-      ){
-      changedState.settings.devModeActivationTime = null
-      changedState.settings.devModeEnabled = false
+    if (
+      changedState.settings.devModeActivationTime &&
+      changedState.settings.devModeActivationTime + DAY * 1000 < timeOfChange
+    ) {
+      changedState.settings.devModeActivationTime = null;
+      changedState.settings.devModeEnabled = false;
     }
     changedState.lastChange = timeOfChange;
   }
@@ -502,7 +528,7 @@ export const reduce: (
     const safeObject: AppStateModel = JSON.parse(JSON.stringify(changedState));
     return safeObject;
   } catch (err) {
-    logger.error(`Cant change app state ${err}`)
+    logger.error(`Cant change app state ${err}`);
     ToastAndroid.show("Cant change app state " + err, 10000);
     return state;
   }

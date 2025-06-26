@@ -8,7 +8,12 @@ import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
 import { getTheme } from "../../utils/getTheme";
-import { ERRORS_TO_DOWNGRADE, FIRST_FEW_WORDS, SENTENCE_SEPARATOR, VIBRATION_PATTERNS } from "../../constants";
+import {
+  ERRORS_TO_DOWNGRADE,
+  FIRST_FEW_WORDS,
+  SENTENCE_SEPARATOR,
+  VIBRATION_PATTERNS
+} from "../../constants";
 import { getAddressDifference } from "src/utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
@@ -19,7 +24,7 @@ const levelComponentStyle = StyleSheet.create({
   },
   addressTextView: {
     alignContent: "flex-start",
-    justifyContent: "center",
+    justifyContent: "center"
   },
   addressText: {
     fontSize: 22,
@@ -100,29 +105,30 @@ export const L40: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
   const targetPassage = state.passages.find((p) => p.id === test.pi);
-  //showAddressOrFirstWords: 
-  //  true => address 
+  //showAddressOrFirstWords:
+  //  true => address
   //  false => first words
-  const targetPassageWholeText = (targetPassage?.verseText || "")
-  const sentences = targetPassageWholeText.split(SENTENCE_SEPARATOR).filter(s => s.length > 0)
-  
-  //if we have defined range 
+  const targetPassageWholeText = targetPassage?.verseText || "";
+  const sentences = targetPassageWholeText
+    .split(SENTENCE_SEPARATOR)
+    .filter((s) => s.length > 0);
+
+  //if we have defined range
   //true: slice to start to end
   //false: full passage text
-  const sentancesRangeText = test.d?.sentenceRange && test.d.sentenceRange.length === 2 
-    ? 
-    // targetPassageWholeText.slice(
-    //     sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
-    //     sentences.slice(...test.d.sentenceRange).join(".").length
-    //   )
-      sentences.slice(...test.d.sentenceRange).join(".")
-    : targetPassageWholeText;
-  
+  const sentancesRangeText =
+    test.d?.sentenceRange && test.d.sentenceRange.length === 2
+      ? // targetPassageWholeText.slice(
+        //     sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
+        //     sentences.slice(...test.d.sentenceRange).join(".").length
+        //   )
+        sentences.slice(...test.d.sentenceRange).join(".")
+      : targetPassageWholeText;
+
   const targetText = sentancesRangeText;
-  const firstFewWords = targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
-  const initialValue = test.d.showAddressOrFirstWords
-    ? ""
-    : firstFewWords;
+  const firstFewWords =
+    targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
+  const initialValue = test.d.showAddressOrFirstWords ? "" : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
   useEffect(() => {
     setPassageText(initialValue);
@@ -201,8 +207,10 @@ export const L40: FC<LevelComponentModel> = ({
       selectedWord,
       charIfNeeded
     ].join(" ");
-    const isWordWasWrong = newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1] !== targetWords[userProvidedWords.length - 1]
-    if(isWordWasWrong){
+    const isWordWasWrong =
+      newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1] !==
+      targetWords[userProvidedWords.length - 1];
+    if (isWordWasWrong) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
       }
@@ -212,10 +220,18 @@ export const L40: FC<LevelComponentModel> = ({
           ...test,
           en: (test.en || 0) + 1,
           et: [...test.et, "wrongWord"],
-          ww: [...test.ww, [userProvidedWords.length - 1, newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1]]]
+          ww: [
+            ...test.ww,
+            [
+              userProvidedWords.length - 1,
+              newUserProvidedText.trim().split(" ")[
+                userProvidedWords.length - 1
+              ]
+            ]
+          ]
         }
-      }); 
-    }else{
+      });
+    } else {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
       }
@@ -243,15 +259,16 @@ export const L40: FC<LevelComponentModel> = ({
       ? currentWords[curentLastIndex]
       : "";
 
-  const wordOptions = [...targetWords
-    .filter((w, i) =>
+  const wordOptions = [
+    ...targetWords.filter((w, i) =>
       //searching for autocomplete
       currentLastWord.length > 0
         ? w.toLowerCase().startsWith(currentLastWord.toLowerCase()) &&
           //filtering existing
           i >= curentLastIndex
         : false
-    )]
+    )
+  ]
     //not randomly because of reactivness
     .sort(
       (a, b) =>
@@ -289,18 +306,20 @@ export const L40: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 &&
+      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 && (
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             {test.d.sentenceRange[0] > 3 ? "..." : ""}
-            {sentences.slice(
-              test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
-              test.d.sentenceRange[0]
-            ).join("")}
+            {sentences
+              .slice(
+                test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
+                test.d.sentenceRange[0]
+              )
+              .join("")}
             ...
-            </Text>
+          </Text>
         </View>
-      }
+      )}
       <View
         style={{
           ...levelComponentStyle.passageTextView
@@ -320,24 +339,29 @@ export const L40: FC<LevelComponentModel> = ({
           numberOfLines={4}
         />
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length &&
+      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length && (
         <View style={levelComponentStyle.otherSentencesTextView}>
           <Text style={theme.theme.text}>
             ...
-            {sentences.slice(test.d.sentenceRange[1], Math.min(test.d.sentenceRange[1] + 3, sentences.length)).join("")}
+            {sentences
+              .slice(
+                test.d.sentenceRange[1],
+                Math.min(test.d.sentenceRange[1] + 3, sentences.length)
+              )
+              .join("")}
             {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
-            </Text>
+          </Text>
         </View>
-      }
+      )}
       {!!wordOptions.length && currentWords.length < 5 && (
-      <Text
+        <Text
           style={{
             ...levelComponentStyle.inputSubtext,
             color: theme.colors.textSecond
           }}
         >
           {t("LevelL40Hint")}
-      </Text>
+        </Text>
       )}
       {passageText.length >= targetText.length && isCorrect && (
         <View style={levelComponentStyle.optionButtonsWrapper}>
@@ -395,7 +419,7 @@ export const L40: FC<LevelComponentModel> = ({
         </View>
       </ScrollView>
       {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-        (new Date().getTime() - test.td[0][0]) > (1000*60*5)) && (
+        new Date().getTime() - test.td[0][0] > 1000 * 60 * 5) && (
         <Button
           theme={theme}
           type="secondary"
