@@ -32,3 +32,5 @@ jobs:
         run: eas build --profile staging --platform android --auto-submit-with-profile staging
         env:
           APP_ENV: "staging"
+          token: ${{ secrets.EXPO_TOKEN }}
+          
