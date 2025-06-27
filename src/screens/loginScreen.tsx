@@ -16,7 +16,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [tempPassword, setTempPassword] = useState("p@ssTest");
 
   const handleLoginSubmit = () => {
-        Alert.alert("Work in progress", "Soon, but not yet")
+    Alert.alert("Work in progress", "Soon, but not yet");
   };
 
   const handleRegisterClick = () => {

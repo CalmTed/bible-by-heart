@@ -18,4 +18,4 @@ jobs:
     #submit
     steps:
       - name: Call eas build
-        run: eas build  --profile staging --platform android --auto-submit-with-profile staging
+        run: npx eas build  --profile staging --platform android --auto-submit-with-profile staging

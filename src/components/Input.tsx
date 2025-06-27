@@ -170,7 +170,7 @@ export const Input: FC<InputModel> = ({
       paddingHorizontal: 14,
       paddingVertical: 7,
       fontWeight: "500",
-      minWidth: 100,
+      minWidth: 100
     },
     iconInput: {
       height: "100%",

@@ -35,7 +35,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Lint code with ESLint
-        run: yarn lint
+        run: yarn lint --fix
 
       - name: TypeScript check
         run: yarn tsc --noEmit

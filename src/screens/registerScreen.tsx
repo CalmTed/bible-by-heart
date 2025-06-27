@@ -21,7 +21,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   // const handleLoginImputChange = () => {};
 
   const handleRegisterSubmit = () => {
-    Alert.alert("Work in progress", "Soon, but not yet")
+    Alert.alert("Work in progress", "Soon, but not yet");
   };
 
   const handleLoginClick = () => {
