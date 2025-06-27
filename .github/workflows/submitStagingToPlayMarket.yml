@@ -10,7 +10,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    #submit
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -19,20 +18,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+          cache: yarn
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
         with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Call eas build
-        run: npx eas build  --profile staging --platform android --auto-submit-with-profile staging
+        run: eas build --profile staging --platform android --auto-submit-with-profile staging
         env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           APP_ENV: "staging"
