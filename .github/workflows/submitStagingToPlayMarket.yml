@@ -10,11 +10,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    #auth to eas
-    env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      APP_ENV: "staging"
-    
     #submit
     steps:
       - name: Checkout repository
@@ -35,6 +30,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-        
+
       - name: Call eas build
         run: npx eas build  --profile staging --platform android --auto-submit-with-profile staging
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          APP_ENV: "staging"
