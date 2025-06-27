@@ -40,7 +40,7 @@ export default {
           monochromeImage: "./assets/adaptive-icon.png"
         },
         package: process.env.APP_ENV === 'production' ? 'com.CalmTed.bibleByHeart' : 'com.CalmTed.bibleByHeartStaging',
-        versionCode: new Date().toISOString().slice(2,16).replace(/[-T:]/g,'') //format is yymmddhhmm like 2506271021 for +0 UMT
+        versionCode: parseInt(new Date().toISOString().slice(2,16).replace(/[-T:]/g,''), 10) //format is yymmddhhmm like 2506271021 for +0 UMT
       },
       web: {
         favicon: "./assets/favicon.png"
