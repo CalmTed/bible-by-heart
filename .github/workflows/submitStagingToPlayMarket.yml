@@ -29,8 +29,5 @@ jobs:
         run: yarn install
 
       - name: Call eas build
-        run: eas build --profile staging --platform android --auto-submit-with-profile staging
-        env:
-          APP_ENV: "staging"
-          token: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive
           
