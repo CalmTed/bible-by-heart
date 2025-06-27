@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { ScreenModel } from "./homeScreen";
 import { useApp } from "src/utils/useApp";
 import { Header } from "src/components/Header";
@@ -20,7 +20,9 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
 
   // const handleLoginImputChange = () => {};
 
-  const handleRegisterSubmit = () => {};
+  const handleRegisterSubmit = () => {
+    Alert.alert("Work in progress", "Soon, but not yet")
+  };
 
   const handleLoginClick = () => {
     navigateWithState({
@@ -133,7 +135,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           theme={theme}
           type="main"
           color="green"
-          disabled={regPossible}
+          disabled={!regPossible}
           onPress={handleRegisterSubmit}
         />
       </View>
@@ -164,6 +166,11 @@ const registerStyle = StyleSheet.create({
     // paddingTop: "50%",
   },
   passwordRulesLabel: {},
-  legalCheckWrapper: {},
+  legalCheckWrapper: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 20,
+    paddingHorizontal: 40
+  },
   legal: {}
 });

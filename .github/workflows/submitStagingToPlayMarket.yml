@@ -1,0 +1,21 @@
+name: Submit to eas to submit to Play Store
+
+on:
+  push:
+    branches:
+      - staging
+  pull_request:
+    branches:
+      - staging
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    #auth to eas
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      APP_ENV: "staging"
+    
+    #submit
+    steps:
+      - name: Call eas build
+        run: eas build  --profile staging --platform android --auto-submit-with-profile staging

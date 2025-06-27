@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScreenModel } from "./homeScreen";
 import { useApp } from "src/utils/useApp";
 import { Header } from "src/components/Header";
@@ -15,7 +15,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
   const [tempPassword, setTempPassword] = useState("p@ssTest");
 
-  const handleLoginSubmit = () => {};
+  const handleLoginSubmit = () => {
+        Alert.alert("Work in progress", "Soon, but not yet")
+  };
 
   const handleRegisterClick = () => {
     navigateWithState({

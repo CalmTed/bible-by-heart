@@ -1,16 +1,16 @@
 export default {
     expo: {
-      name: "Bible by heart",
+      name: process.env.APP_ENV === 'production' ? 'Bible by heart' : 'BBH dev',
       slug: "bible-by-heart",
       version: "0.0.9",
       orientation: "portrait",
-      icon: "./assets/icon.png",
+      icon: process.env.APP_ENV === 'production' ? "./assets/icon.png" : "./assets/dev.png",
       userInterfaceStyle: "automatic",
       primaryColor: "#1A9E37",
       backgroundColor: "#272A27",
       newArchEnabled: true,
       splash: {
-        image: "./assets/splash.png",
+        image: process.env.APP_ENV === 'production' ? "./assets/icon.png" : "./assets/dev.png",
         resizeMode: "contain",
         backgroundColor: "#272A27"
       },
@@ -39,8 +39,8 @@ export default {
           backgroundColor: "#ECECEC",
           monochromeImage: "./assets/adaptive-icon.png"
         },
-        package: "com.CalmTed.bibleByHeart",
-        versionCode: 2506250
+        package: process.env.APP_ENV === 'production' ? 'com.CalmTed.bibleByHeart' : 'com.CalmTed.bibleByHeartStaging',
+        versionCode: new Date().toISOString().slice(2,16).replace(/[-T:]/g,'') //format is yymmddhhmm like 2506271021 for +0 UMT
       },
       web: {
         favicon: "./assets/favicon.png"

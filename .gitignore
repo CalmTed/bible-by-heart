@@ -20,3 +20,4 @@ yarn.lock
 *.code-workspace
 apit.ts
 .env
+.agent_key.json
