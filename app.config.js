@@ -39,8 +39,8 @@ export default {
           backgroundColor: "#ECECEC",
           monochromeImage: "./assets/adaptive-icon.png"
         },
-        package: process.env.APP_ENV === "production" ? "com.CalmTed.bibleByHeart" : "com.CalmTed.bibleByHeartStaging",  
-        versionCode: 2506283
+        package: "com.CalmTed.bibleByHeart",  
+        versionCode: 2506285
       },
       web: {
         favicon: "./assets/favicon.png"
