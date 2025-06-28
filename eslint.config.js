@@ -9,7 +9,8 @@ module.exports = defineConfig([
     ignores: ["dist/*"],
     rules: {
       "react-hooks/exhaustive-deps": "off",
-      "react-hooks/rules-of-hooks": "off"
+      "react-hooks/rules-of-hooks": "off",
+      "linebreak-style": "off",
     }
-  },
+  }
 ]);

@@ -9,7 +9,7 @@
     "lint": "tsc --noEmit && eslint --ext .ts,.tsx ./src/",
     "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix",
     "test": "jest",
-    "build-dev": "eas build --platform android --profile development",
+    "build-dev": "eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive",
     "build": "eas build --platform android --profile production",
     "doctor": "npx @react-native-community/cli doctor",
     "expo-doctor": "npx expo-doctor"
