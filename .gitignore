@@ -21,3 +21,4 @@ yarn.lock
 apit.ts
 .env
 .agent_key.json
+android/

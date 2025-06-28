@@ -2,10 +2,14 @@ const versionCode = parseInt(
   new Date().toISOString().slice(2, 14).replace(/[-T:]/g, ""),
   10
 );
+//in the format of yymmddhh. Can ont be larger than 2147483647. Must be an integer. Time is UMT+0
 
 export default {
   expo: {
-    name: process.env.APP_ENV === "production" ? "Bible by heart" : "BBH dev",
+    name:
+      process.env.APP_ENV === "production"
+        ? "Bible by heart"
+        : `BBH dev ${versionCode}`,
     slug: "bible-by-heart",
     version: "0.0.9",
     orientation: "portrait",
@@ -41,9 +45,16 @@ export default {
         }
       ],
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ECECEC",
-        monochromeImage: "./assets/adaptive-icon.png"
+        foregroundImage:
+          process.env.APP_ENV === "production"
+            ? "./assets/adaptive-icon.png"
+            : "./assets/adaptive-dev.png",
+        backgroundColor:
+          process.env.APP_ENV === "production" ? "#ECECEC" : "#434343",
+        monochromeImage:
+          process.env.APP_ENV === "production"
+            ? "./assets/adaptive-icon.png"
+            : "./assets/adaptive-dev.png",
       },
       package: "com.CalmTed.bibleByHeart",
       versionCode: versionCode
