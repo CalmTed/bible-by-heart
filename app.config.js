@@ -4,13 +4,13 @@ export default {
       slug: "bible-by-heart",
       version: "0.0.9",
       orientation: "portrait",
-      icon: process.env.APP_ENV === 'production' ? "./assets/icon.png" : "./assets/dev.png",
+      icon: process.env.APP_ENV === "production" ? "./assets/icon.png" : "./assets/dev.png",
       userInterfaceStyle: "automatic",
       primaryColor: "#1A9E37",
       backgroundColor: "#272A27",
       newArchEnabled: true,
       splash: {
-        image: process.env.APP_ENV === 'production' ? "./assets/icon.png" : "./assets/dev.png",
+        image: process.env.APP_ENV === "production" ? "./assets/icon.png" : "./assets/dev.png",
         resizeMode: "contain",
         backgroundColor: "#272A27"
       },
@@ -39,8 +39,8 @@ export default {
           backgroundColor: "#ECECEC",
           monochromeImage: "./assets/adaptive-icon.png"
         },
-        package: process.env.APP_ENV === 'production' ? 'com.CalmTed.bibleByHeart' : 'com.CalmTed.bibleByHeartStaging',
-        versionCode: parseInt(new Date().toISOString().slice(2,16).replace(/[-T:]/g,''), 10) //format is yymmddhhmm like 2506271021 for +0 UMT
+        package: process.env.APP_ENV === "production" ? "com.CalmTed.bibleByHeart" : "com.CalmTed.bibleByHeartStaging",  
+        versionCode: 2506283
       },
       web: {
         favicon: "./assets/favicon.png"
