@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { FC } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getTheme";
 
 interface TestNavDottModel {
   isCurrent: boolean;

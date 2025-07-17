@@ -2,13 +2,13 @@ import {
   FIRST_FEW_WORDS,
   PERFECT_TESTS_TO_PROCEED,
   SENTENCE_SEPARATOR
-} from "src/constants";
+} from "../../constants";
 import { getPerfectTestsNumber } from "../getPerfectTests";
 import { CreateTestMethodModel } from "./createL10Test";
 import { ErrorGradedWord, getWordsFromErrors } from "./getWordsFromErrors";
 import { getErrorGradedSentences } from "./getErrorGradedSentences";
 import { randomItem, randomRange } from "../randomizers";
-import { TestModel } from "src/models";
+import { TestModel } from "../../models";
 
 export const getRandomSentencesRange: (
   sentences: string[],

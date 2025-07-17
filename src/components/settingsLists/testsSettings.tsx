@@ -100,17 +100,17 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
           theme={theme}
           header={t("settsAutoIncreseLevel")}
           subtext={t(
-            state.settings.autoIncreeseLevel ? "settsEnabled" : "settsDisabled"
+            state.settings.autoIncreaseLevel ? "settsEnabled" : "settsDisabled"
           )}
           type="checkbox"
-          checkBoxState={state.settings.autoIncreeseLevel}
+          checkBoxState={state.settings.autoIncreaseLevel}
           onClick={(value) => {
             setState(
               (st) =>
                 reduce(st, {
                   name: ActionName.setSettingsParam,
                   payload: {
-                    param: SETTINGS.autoIncreeseLevel,
+                    param: SETTINGS.autoIncreaseLevel,
                     value: value
                   }
                 }) || st

@@ -21,7 +21,7 @@
     "staging": {
       "android": {
         "track": "internal"
-      } 
+      }
     },
     "production": {
       "android": {

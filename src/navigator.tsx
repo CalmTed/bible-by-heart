@@ -1,6 +1,9 @@
 import React, { FC } from "react";
+import * as TaskManager from "expo-task-manager";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { ToastAndroid } from "react-native";
+
 import { AppStateModel } from "./models";
 import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
 import { HomeScreen } from "./screens/homeScreen";
@@ -8,13 +11,12 @@ import { ListScreen } from "./screens/listScreen";
 import { TestsScreen } from "./screens/testsScreen";
 import { FinishScreen } from "./screens/finishScreen";
 import { SettingsScreen } from "./screens/settingsScreen";
-import * as TaskManager from "expo-task-manager";
-import { ToastAndroid } from "react-native";
 import { StatsScreen } from "./screens/statsScreen";
 import { CalendarScreen } from "./screens/calendarScreen";
-import { logger } from "./utils/logger";
 import { LoginScreen } from "./screens/loginScreen";
 import { RegisterScreen } from "./screens/registerScreen";
+
+import { logger } from "./utils/logger";
 
 const Stack = createStackNavigator();
 

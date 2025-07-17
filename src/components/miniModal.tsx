@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getTheme";
 
 interface MiniModalModel {
   shown: boolean;

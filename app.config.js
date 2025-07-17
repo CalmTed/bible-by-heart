@@ -54,7 +54,7 @@ export default {
         monochromeImage:
           process.env.APP_ENV === "production"
             ? "./assets/adaptive-icon.png"
-            : "./assets/adaptive-dev.png",
+            : "./assets/adaptive-dev.png"
       },
       package: "com.CalmTed.bibleByHeart",
       versionCode: versionCode

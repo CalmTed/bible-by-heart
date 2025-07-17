@@ -42,8 +42,8 @@ import { timeToString } from "../utils/formatDateTime";
 import { getTheme } from "../utils/getTheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
-import { getAddresOrder } from "src/utils/addressOrder";
-import { logger } from "src/utils/logger";
+import { getAddresOrder } from "../utils/addressOrder";
+import { logger } from "../utils/logger";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });

@@ -1,13 +1,13 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "src/utils/useApp";
-import { Header } from "src/components/Header";
-import { Button, IconButton } from "src/components/Button";
-import { navigateWithState } from "src/screeenManagement";
-import { IconName } from "src/components/Icon";
-import { SCREEN } from "src/constants";
-import { Input } from "src/components/Input";
+import { useApp } from "../utils/useApp";
+import { Header } from "../components/Header";
+import { Button, IconButton } from "../components/Button";
+import { navigateWithState } from "../screeenManagement";
+import { IconName } from "../components/Icon";
+import { SCREEN } from "../constants";
+import { Input } from "../components/Input";
 
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme } = useApp({ route, navigation });

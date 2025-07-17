@@ -26,7 +26,7 @@ import {
 } from "../../utils/handlePassageExport";
 import { schedulePushNotification } from "../../utils/notifications";
 import { dateToString } from "../../utils/formatDateTime";
-import { logger } from "src/utils/logger";
+import { logger } from "../../utils/logger";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;

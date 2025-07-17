@@ -14,7 +14,7 @@ import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getTheme } from "../../utils/getTheme";
-import { getAddressDifference } from "src/utils/addressDifference";
+import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {

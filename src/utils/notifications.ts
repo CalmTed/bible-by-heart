@@ -120,6 +120,9 @@ export const getAutoTimeTrigger: (
 
 //usualy activated from reducer
 export const checkSchedule = async (state: AppStateModel) => {
+  if (!Device.isDevice) {
+    return false;
+  }
   //get all remiders
   const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
   if (notificationDebug) {
@@ -128,6 +131,9 @@ export const checkSchedule = async (state: AppStateModel) => {
   }
   //get reminders from state
   const allUserSetted = state.settings.remindersList;
+  if (typeof allScheduled === "undefined") {
+    return false;
+  }
   allScheduled.map(async (scheduled) => {
     //if removed, disabled, autotimed, or disabledAll
     const removeAll =
@@ -235,7 +241,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       const schedule: (
         randNum: number,
         item: ReminderModel
-      ) => Promise<void> = async () => {
+      ) => Promise<void> = async (randNum, item) => {
         await schedulePushNotification(
           t(`notificationTitle${randNum}` as WORD),
           t(`notificationBody${randNum}` as WORD),
@@ -282,6 +288,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       }
     });
   }
+  return true;
 };
 
 export const registerForPushNotificationsAsync = async () => {

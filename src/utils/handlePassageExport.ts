@@ -2,7 +2,7 @@ import { createT } from "../l10n";
 import { PASSAGE_ROWS_TO_EXPORT } from "../constants";
 import { AppStateModel, PassageModel } from "../models";
 import addressToString from "./addressToString";
-import { addressFromString } from "./addressFromString";
+import addressFromString from "./addressFromString";
 import { createPassage } from "../initials";
 import { getAddressDifference } from "./addressDifference";
 import { logger } from "./logger";

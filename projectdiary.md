@@ -320,3 +320,45 @@ boilerplate:
 - fixed a bug for dear user-friends
 2025-06-26 
 - added lint with pretier and testing workflow
+2025-06-28
+- finaly make github action work!
+    - version code must be an integer not too big
+    - first submition must be manual(interactive)
+    - must have the same package name
+    - etc. 12 attempts in total
+2025-07-05
+- finished API CI/CD
+- plan for bbh app
+    - add tests for critical parts
+    - recreate navigator
+    - refactor all components - add animation
+    - implement login
+2025-07-11
+- stuck in indecisiveness of where to start
+- main features we need to test
+    - creatinmg new state
+    - creating new passage
+    - generating tests
+    - submiting tests
+    - getting stats
+- plan 
+    - app rendering(render main menu, go to another screen)
+    - initial state
+    - reducer
+        - in future do all the methods
+        - for now only crucial and buggy(downgraading passage)
+    - fetch (ESV, API)
+    - common components
+        - button
+        - input
+        - address picker
+        - checkbox
+        - header
+        - icon
+        - mini modal
+        - select
+        - settings menu item
+2025-07-17
+- finished reducer tests, coverage at 16%
+- did some more utils - 26%
+- struggling with testing components

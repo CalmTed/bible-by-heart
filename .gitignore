@@ -22,3 +22,5 @@ apit.ts
 .env
 .agent_key.json
 android/
+coverage/
+assets/coverage/

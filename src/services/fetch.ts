@@ -1,6 +1,6 @@
 import Constants from "expo-constants";
-import { API_LINK } from "src/constants";
-import { logger } from "src/utils/logger";
+import { API_LINK } from "../constants";
+import { logger } from "../utils/logger";
 
 const HOST = Constants.expoConfig?.extra?.HOST || "";
 

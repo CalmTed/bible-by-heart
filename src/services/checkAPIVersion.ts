@@ -1,4 +1,4 @@
-import { API_LINK } from "src/constants";
+import { API_LINK } from "../constants";
 import { fetchAPI } from "./fetch";
 
 export const checkAPIVersion: (a: {

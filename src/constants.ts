@@ -255,7 +255,8 @@ export enum SETTINGS {
   soundsEnabled = "soundsEnabled",
   compressOldTestsData = "compressOldTestsData",
   leftSwipeTag = "leftSwipeTag",
-  autoIncreeseLevel = "autoIncreeseLevel",
+  //TODO not sure wheather its implemented
+  autoIncreaseLevel = "autoIncreaseLevel",
 
   translations = "translations",
   homeScreenStatsType = "homeScreenStatsType",

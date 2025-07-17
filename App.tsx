@@ -1,5 +1,5 @@
 import { VERSION, STORAGE_BACKUP_NAME, STORAGE_NAME } from "./src/constants";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { act, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AppStateModel } from "./src/models";
 import { Navigator } from "./src/navigator";
 import { createAppState } from "./src/initials";
@@ -18,7 +18,6 @@ import React, {
 } from "react-native";
 import { logger } from "./src/utils/logger";
 
-
 export default function App() {
   const [isReady, setReady] = useState(false);
   const [state, setState]: [
@@ -32,15 +31,15 @@ export default function App() {
 
   useEffect(() => {
     Linking.addEventListener("url", (link) => {
-      if(state.settings.devModeEnabled){
-        logger.write(`[DEV] Recieved data: ${link}`)
-        ToastAndroid.show("Recieved data:" + link, 1000)
+      if (state.settings.devModeEnabled) {
+        logger.write(`[DEV] Recieved data: ${link}`);
+        ToastAndroid.show("Recieved data:" + link, 1000);
       }
-    })
+    });
     return () => {
-      Linking.removeAllListeners("url")
-    }
-  })
+      Linking.removeAllListeners("url");
+    };
+  });
   const loadState = () => {
     storage
       .load({
@@ -95,9 +94,12 @@ export default function App() {
           .save({
             key: `${STORAGE_NAME}`,
             data: state
-          }).then(() => {
-            setReady(true);
           })
+          .then(() => {
+            act(() => {
+              setReady(true);
+            });
+          });
       });
   };
 
@@ -109,7 +111,7 @@ export default function App() {
   try {
     return <>{isReady && <Navigator state={state} />}</>;
   } catch (err) {
-    logger.error(`Error with rendering state on app start`)
+    logger.error(`Error with rendering state on app start`);
     return (
       <ScrollView>
         <View
@@ -159,7 +161,7 @@ export default function App() {
                     }
                   });
               } catch (err) {
-                logger.error(`Error on bloading backup`)
+                logger.error(`Error on bloading backup`);
                 ToastAndroid.show("😟 Nope. Error here too...", 10000);
               }
             }}
@@ -182,11 +184,11 @@ export default function App() {
                       ToastAndroid.show("Showing passages", 10000);
                     })
                     .catch((err) => {
-                      logger.error(`Error on encoding while exporting`)
+                      logger.error(`Error on encoding while exporting`);
                       ToastAndroid.show("😟 Nope. " + err, 10000);
                     });
-                  } catch (err) {
-                  logger.error(`Error while exporting`)
+                } catch (err) {
+                  logger.error(`Error while exporting`);
                   ToastAndroid.show("😟 Nope. " + err, 10000);
                 }
               } else {
@@ -200,11 +202,11 @@ export default function App() {
                       ToastAndroid.show("Showing state", 10000);
                     })
                     .catch((err) => {
-                      logger.error(`Error while getting data from storage`)
+                      logger.error(`Error while getting data from storage`);
                       ToastAndroid.show("😟 Nope. " + err, 10000);
                     });
                 } catch (err) {
-                  logger.error(`Error while getting data from storage 2`)
+                  logger.error(`Error while getting data from storage 2`);
                   ToastAndroid.show("😟 Nope. " + err, 10000);
                 }
               }
@@ -223,7 +225,7 @@ export default function App() {
                 setAskedForHelp(true);
                 Linking.openURL("https://t.me/BibleByHeartApp");
               } catch (err) {
-                logger.error(`Unable to open telegram link`)
+                logger.error(`Unable to open telegram link`);
                 ToastAndroid.show("😟 Nope. " + err, 10000);
               }
             }}
@@ -246,7 +248,7 @@ export default function App() {
                     ToastAndroid.show("Brand new data for you", 10000);
                   });
               } catch (err) {
-                logger.error(`Unable to create new state`)
+                logger.error(`Unable to create new state`);
                 ToastAndroid.show("😟 Nope. " + err, 10000);
               }
             }}
@@ -265,6 +267,5 @@ export default function App() {
     );
   }
 }
-
 
 AppRegistry.registerComponent("Bible by heart", () => App);

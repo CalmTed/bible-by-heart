@@ -7,7 +7,7 @@ import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { getTheme } from "../../utils/getTheme";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
-import { getAddressDifference } from "src/utils/addressDifference";
+import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {

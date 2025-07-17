@@ -11,7 +11,7 @@ interface addressToStringReturnType {
   addressString: string;
 }
 
-export const addressFromString: (
+const addressFromString: (
   string: string
 ) => addressToStringReturnType | false = (string) => {
   const defaultAddress = createAddress();
@@ -112,3 +112,5 @@ export const addressFromString: (
     addressString: fullAddressString
   };
 };
+
+export default addressFromString;

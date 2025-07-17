@@ -14,7 +14,7 @@ import {
   SENTENCE_SEPARATOR,
   VIBRATION_PATTERNS
 } from "../../constants";
-import { getAddressDifference } from "src/utils/addressDifference";
+import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {

@@ -1,4 +1,4 @@
-import { AddressType, PassageModel } from "src/models";
+import { AddressType, PassageModel } from "../models";
 
 export const randomRange: (from: number, to: number) => number = (from, to) => {
   return Math.round(Math.random() * (to - from)) + from;

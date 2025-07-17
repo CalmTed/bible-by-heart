@@ -79,7 +79,7 @@ export const createAppState009: () => AppStateModel009 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
-      [SETTINGS.autoIncreeseLevel]: false,
+      [SETTINGS.autoIncreaseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: true,
@@ -329,6 +329,7 @@ export const createAppState008: () => AppStateModel008 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
+      //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
@@ -373,6 +374,7 @@ export const createAppState007: () => AppStateModel007 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
+      //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 

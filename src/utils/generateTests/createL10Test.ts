@@ -1,9 +1,9 @@
-import { AddressType, PassageModel, TestModel } from "src/models";
+import { AddressType, PassageModel, TestModel } from "../../models";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { SENTENCE_SEPARATOR } from "src/constants";
+import { SENTENCE_SEPARATOR } from "../../constants";
 import { randomItem, randomRange } from "../randomizers";
 import { getAddressDifference } from "../addressDifference";
-import { bibleReference } from "src/bibleReference";
+import { bibleReference } from "../../bibleReference";
 
 export interface CreateTestInputModel {
   initialTest: TestModel;

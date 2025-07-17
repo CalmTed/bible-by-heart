@@ -8,14 +8,23 @@
     "web": "expo start --web",
     "lint": "tsc --noEmit && eslint --ext .ts,.tsx ./src/",
     "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix",
-    "test": "jest",
+    "test": "jest --coverage",
     "build-dev": "eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive",
     "build": "eas build --platform android --profile production",
     "doctor": "npx @react-native-community/cli doctor",
     "expo-doctor": "npx expo-doctor"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native|@react-native|@react-navigation|expo(nent)?|expo-modules-core|expo-dev-menu|@expo|react-native-reanimated|react-native-gesture-handler)"
+    ]
   },
   "expo.doctor.reactNativeDirectoryCheck.listUnknownPackages": false,
   "dependencies": {
@@ -74,7 +83,7 @@
     "eslint-plugin-react-native": "^5.0.0",
     "jest": "~29.7.0",
     "jest-expo": "~53.0.7",
-    "prettier": "^3.6.1",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.2"
   },
   "private": true

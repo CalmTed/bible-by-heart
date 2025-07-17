@@ -15,7 +15,7 @@ import { IconName } from "../Icon";
 import { readFile, writeFile } from "../../utils/fileManager";
 import { convertState } from "../../utils/stateVersionConvert";
 import { dateToString } from "../../utils/formatDateTime";
-import { logger } from "src/utils/logger";
+import { logger } from "../../utils/logger";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;

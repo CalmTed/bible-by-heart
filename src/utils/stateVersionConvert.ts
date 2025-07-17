@@ -133,7 +133,8 @@ const to009: ConverterType = (stateFrom) => {
       [SETTINGS.hapticsEnabled]: from.settings.hapticsEnabled,
       [SETTINGS.soundsEnabled]: from.settings.soundsEnabled, //not implemented yet
       [SETTINGS.compressOldTestsData]: true, //not implemented yet
-      [SETTINGS.autoIncreeseLevel]: from.settings.autoIncreeseLevel,
+      //@ts-ignore
+      [SETTINGS.autoIncreaseLevel]: from.settings.autoIncreaseLevel,
       [SETTINGS.leftSwipeTag]: from.settings.leftSwipeTag, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: from.settings.remindersEnabled,
@@ -212,7 +213,7 @@ const to007: ConverterType = (stateFrom) => {
       tests.dateFinished
   + added: settings object
       langCode, theme, devMode, remindersList, chapterNumbering,
-      remindersEnabled, remindersSmartTime, hapticsEnabled, soundsEnabled, compressOldTestsData, leftSwipeTag, autoIncreeseLevel, translations,
+      remindersEnabled, remindersSmartTime, hapticsEnabled, soundsEnabled, compressOldTestsData, leftSwipeTag, autoIncreaseLevel, translations,
     filters.translation
     tests.triesDuration
 

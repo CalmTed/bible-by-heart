@@ -53,7 +53,7 @@ export interface AppStateModel009 {
     [SETTINGS.hapticsEnabled]: boolean;
     [SETTINGS.soundsEnabled]: boolean; //not implemented yet
     [SETTINGS.compressOldTestsData]: boolean; //not implemented yet
-    [SETTINGS.autoIncreeseLevel]: boolean;
+    [SETTINGS.autoIncreaseLevel]: boolean;
     [SETTINGS.leftSwipeTag]: string;
 
     [SETTINGS.remindersEnabled]: boolean;
@@ -390,6 +390,7 @@ export interface AppStateModel008 {
     [SETTINGS.hapticsEnabled]: boolean;
     [SETTINGS.soundsEnabled]: boolean; //not implemented yet
     [SETTINGS.compressOldTestsData]: boolean; //not implemented yet
+    //@ts-ignore
     [SETTINGS.autoIncreeseLevel]: boolean;
     [SETTINGS.leftSwipeTag]: string;
 
@@ -467,6 +468,7 @@ export interface AppStateModel007 {
     [SETTINGS.hapticsEnabled]: boolean;
     [SETTINGS.soundsEnabled]: boolean;
     [SETTINGS.compressOldTestsData]: boolean;
+    //@ts-ignore
     [SETTINGS.autoIncreeseLevel]: boolean;
     [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
 

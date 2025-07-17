@@ -34,10 +34,10 @@ import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./miniModal";
 import { Input } from "./Input";
-import { getPasageStats } from "../utils/getStats";
+import { getPassageStats } from "../utils/getStats";
 
-import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
-import { logger } from "src/utils/logger";
+import { getNumberOfVerses } from "../utils/getNumberOfVerses";
+import { logger } from "../utils/logger";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -375,7 +375,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     }
   };
 
-  const passageStats = getPasageStats(state, passage);
+  const passageStats = getPassageStats(state, passage);
   return (
     <Modal visible={visible}>
       <View style={{ ...theme.theme.view, ...PEstyle.headerView }}>

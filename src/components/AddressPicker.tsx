@@ -15,8 +15,8 @@ import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
 import { ThemeAndColorsModel } from "../utils/getTheme";
-import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
-import { VIBRATION_PATTERNS } from "src/constants";
+import { getNumberOfVerses } from "../utils/getNumberOfVerses";
+import { VIBRATION_PATTERNS } from "../constants";
 
 interface AddressPickerModel {
   visible: boolean;

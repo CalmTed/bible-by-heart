@@ -86,7 +86,8 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
         <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
       )}
       <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
-        {t("appName")}
+        Bible by heart
+        {/* {t("appName")} */}
       </Text>
       <Text
         style={{

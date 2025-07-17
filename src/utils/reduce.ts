@@ -30,7 +30,6 @@ export const reduce: (
   action: ActionModel
 ) => AppStateModel | null = (state, action) => {
   let changedState: AppStateModel | null = null;
-
   switch (action.name) {
     case ActionName.setLang:
       let defaultLangChanged = false; //this flag is to set new default translation only once, if there are few translations in the same language
@@ -158,6 +157,7 @@ export const reduce: (
       };
       break;
     case ActionName.setDevMode:
+      //TODO: conflicts with set settings param (can change dev mode withount setting time)
       logger.write(
         `[DEV] Changing dev mode to ${action.payload ? "true" : "false"}`
       );
@@ -295,7 +295,7 @@ export const reduce: (
       }
       //change selected level
       const newPassageLevel = levelDowngradingMap[targetPassage.selectedLevel];
-      //remove date of upgrading to mex level
+      //remove date of upgrading to max level
       const newUpgradeDates = {
         ...targetPassage.upgradeDates,
         [targetPassage.maxLevel]: 0
@@ -304,7 +304,7 @@ export const reduce: (
         p.id === action.payload.test.pi
           ? ({
               ...p,
-              //we taking from selectedLevel, b.c. if selected to hard then max is even harder
+              //we taking from selectedLevel, b.c. if selected is hard then max is even harder
               selectedLevel: newPassageLevel,
               maxLevel: newPassageLevel,
               upgradeDates: newUpgradeDates
@@ -397,7 +397,7 @@ export const reduce: (
           ...p,
           maxLevel: level,
           selectedLevel:
-            state.settings.autoIncreeseLevel && level !== p.selectedLevel
+            state.settings.autoIncreaseLevel && level !== p.selectedLevel
               ? level
               : p.selectedLevel,
           isNewLevelAwalible: flag,
@@ -433,7 +433,7 @@ export const reduce: (
       changedState = { ...state, sort: action.payload };
       break;
     case ActionName.toggleFilter:
-      //id existed add or remove from list
+      //if existed, add or remove from list
       const newTags = action.payload.tag
         ? state.filters.tags.includes(action.payload.tag)
           ? state.filters.tags.filter((c) => c !== action.payload.tag)
@@ -451,6 +451,7 @@ export const reduce: (
           ? state.filters.maxLevels.filter((c) => c !== action.payload.maxLevel)
           : [...state.filters.maxLevels, action.payload.maxLevel]
         : state.filters.maxLevels;
+      //TODO check if translation exists
       const newTranslationFilters = action.payload.translationId
         ? state.filters.translations.includes(action.payload.translationId)
           ? state.filters.translations.filter(
@@ -504,6 +505,7 @@ export const reduce: (
         break;
       }
       const importedPassages = action.payload.passages;
+      //TODO check for conflicts
       changedState = {
         ...state,
         passages: [...state.passages, ...importedPassages]
