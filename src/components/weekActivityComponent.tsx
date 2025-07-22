@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppStateModel } from "../models";
 import { getWeeklyStats } from "../utils/getStats";
 import { WORD } from "../l10n";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 export const WeekActivityComponent: FC<{
   state: AppStateModel;

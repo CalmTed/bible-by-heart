@@ -14,7 +14,7 @@ import {
   OptionModel,
   TranslationModel
 } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";

@@ -1,7 +1,7 @@
 import React, { LinearGradient } from "expo-linear-gradient";
 import { FC } from "react";
 import { View, StyleSheet } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 export const DotIndicator: FC<{
   theme: ThemeAndColorsModel;

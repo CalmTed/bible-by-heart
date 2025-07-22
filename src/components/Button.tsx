@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface ButtonModel {

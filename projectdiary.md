@@ -362,3 +362,24 @@ boilerplate:
 - finished reducer tests, coverage at 16%
 - did some more utils - 26%
 - struggling with testing components
+2025-07-18
+- I doint need 100% coverage just not, just need to set up snapshots working for
+    - button
+    - input
+    - header
+    - minimodal
+    - checkbox
+2025-07-22
+- finaly understood the problem with testing components - LLM recomended "react-test-render", but it is deprecated. Switched to "@testing-library/react-native"
+- did button
+- tomorrow snapshot testing
+    - input
+    - all the levels
+    - address picker
+    - checkbux
+    - header
+    - icon
+    - mini modal
+    - select
+    - settings menu item
+- then finally will switch to finishing login feature!

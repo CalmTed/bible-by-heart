@@ -13,7 +13,7 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getTheme } from "../../utils/getTheme";
+import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
@@ -279,7 +279,7 @@ export const L50: FC<LevelComponentModel> = ({
 
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>

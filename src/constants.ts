@@ -125,20 +125,6 @@ export const COLOR_LIGHT = {
   redGradient2: "#E49278"
 };
 
-export enum API_LINK {
-  apiVersion = "api/version",
-  icon = "static/logo.png",
-  createUser = "api/user/create",
-  login = "api/user/login",
-  refreshToken = "api/user/refreshToken",
-  logout = "api/user/logout",
-  getUserData = "api/user/get",
-  editUserData = "api/user/edit",
-  removeUser = "api/user/remove",
-  requestEmailComfirmation = "api/user/requestEmailConfirmation",
-  requestPasswordReset = "api/user/requestPaswordReset"
-}
-
 export const THEME_DARK = StyleSheet.create({
   screen: {
     paddingTop: 30,
@@ -274,3 +260,17 @@ export const PASSAGE_ROWS_TO_EXPORT = [
 ] as (keyof PassageModel)[];
 
 export const TRANSLATIONS_TO_FETCH = [1];
+
+export enum API_LINK {
+  apiVersion = "api/version",
+  icon = "static/logo.png",
+  createUser = "api/user/create",
+  login = "api/user/login",
+  refreshToken = "api/user/refreshToken",
+  logout = "api/user/logout",
+  getUserData = "api/user/get",
+  editUserData = "api/user/edit",
+  removeUser = "api/user/remove",
+  requestEmailComfirmation = "api/user/requestEmailConfirmation",
+  requestPasswordReset = "api/user/requestPaswordReset"
+}

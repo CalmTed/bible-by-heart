@@ -1,12 +1,12 @@
-import renderer from "react-test-renderer";
+import { render } from "@testing-library/react-native";
 import { LANGCODE, PASSAGELEVEL } from "../../../src/constants";
 import { L10, L11 } from "../../../src/components/levels/Level1";
 import { createT } from "../../../src/l10n";
 import { AppStateModel, PassageModel } from "../../../src/models";
 import { createAppState, createTest } from "../../../src/initials";
 
-describe("tesrting level 1 rendering", () => {
-  it("Level 1 renders correctly", () => {
+describe("testing level 1 rendering", () => {
+  it("Level 1 renders correctly", async () => {
     const testState = {
       ...createAppState(),
       passages: [
@@ -46,30 +46,25 @@ describe("tesrting level 1 rendering", () => {
     } as AppStateModel;
     const test = createTest(123123, 212610751, PASSAGELEVEL.l1);
     const t = createT(LANGCODE.en);
-    const level10Tree = renderer
-      .create(
-        <L10
-          test={test}
-          state={testState}
-          t={t}
-          submitTest={() => {}}
-          dispatch={(action) => {}}
-        />
-      )
-      .toJSON();
-    console.log(level10Tree);
+    const level10Tree = render(
+      <L10
+        test={test}
+        state={testState}
+        t={t}
+        submitTest={() => {}}
+        dispatch={(action) => {}}
+      />
+    ).toJSON();
     expect(level10Tree).toMatchSnapshot();
-    // const level11Tree = renderer
-    //   .create(
-    //     <L11
-    //       test={test}
-    //       state={testState}
-    //       t={t}
-    //       submitTest={() => {}}
-    //       dispatch={(action) => {}}
-    //     />
-    //   )
-    //   .toJSON();
-    // expect(level11Tree).toMatchSnapshot();
+    const level11Tree = render(
+      <L11
+        test={test}
+        state={testState}
+        t={t}
+        submitTest={() => {}}
+        dispatch={(action) => {}}
+      />
+    ).toJSON();
+    expect(level11Tree).toMatchSnapshot();
   });
 });

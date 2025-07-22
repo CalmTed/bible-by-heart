@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 interface InputModel {
   onChange: (value: string) => void;

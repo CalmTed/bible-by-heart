@@ -1,7 +1,7 @@
 import React, { FC, useState } from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { SelectModal } from "./SelectModal";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { OptionModel } from "../models";
 
 interface SelectModel {

@@ -7,7 +7,7 @@ import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
-import { getTheme } from "../../utils/getTheme";
+import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import {
   ERRORS_TO_DOWNGRADE,
   FIRST_FEW_WORDS,
@@ -281,7 +281,7 @@ export const L40: FC<LevelComponentModel> = ({
 
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>

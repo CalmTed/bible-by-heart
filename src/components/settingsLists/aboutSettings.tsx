@@ -9,7 +9,7 @@ import { DAY, VERSION } from "../../constants";
 import { createAppState } from "../../initials";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { IconName } from "../Icon";
 import { readFile, writeFile } from "../../utils/fileManager";

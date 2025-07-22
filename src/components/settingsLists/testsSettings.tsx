@@ -14,7 +14,7 @@ import {
   OptionModel,
   TrainModeModel
 } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { SettingsListWrapper } from "../settingsListWrapper";
 import { createTrainMode } from "../../initials";

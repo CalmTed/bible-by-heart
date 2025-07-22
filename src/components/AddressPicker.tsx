@@ -14,7 +14,7 @@ import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { VIBRATION_PATTERNS } from "../constants";
 

@@ -39,7 +39,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
 import { timeToString } from "../utils/formatDateTime";
-import { getTheme } from "../utils/getTheme";
+import { getThemeFromScheme } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
 import { getAddresOrder } from "../utils/addressOrder";
@@ -594,7 +594,7 @@ const ListItem: FC<{
   onArchive
 }) => {
   const sort = state.sort;
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   const leftSwipeTag = state.settings.leftSwipeTag;
   const additionalStyles = data.isCollapsed
     ? { overflow: "visible" }

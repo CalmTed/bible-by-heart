@@ -2,7 +2,7 @@ import React, { FC, useState } from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { OptionModel } from "../models";
 import { SelectModal } from "./SelectModal";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { Input } from "./Input";
 import { TagItem } from "./PassageEditor";
 import { ARCHIVED_NAME } from "../constants";

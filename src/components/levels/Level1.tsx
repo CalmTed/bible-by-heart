@@ -9,7 +9,7 @@ import {
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
-import { getTheme } from "../../utils/getTheme";
+import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import {
   MINIMUM_SENTENCE_LENGTH,
   SENTENCE_SEPARATOR,
@@ -109,7 +109,7 @@ export const L10: FC<LevelComponentModel> = ({
     }
   };
   const levelFinished = test.f;
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   const sentences = rightPassage.verseText
     .split(SENTENCE_SEPARATOR)
     .filter((s) => s.length);
@@ -236,7 +236,7 @@ export const L11: FC<LevelComponentModel> = ({
     return <View />;
   }
   const levelFinished = test.f;
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
       <View style={{ ...levelComponentStyle.addressTextView }}>

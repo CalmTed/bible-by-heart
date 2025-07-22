@@ -28,7 +28,7 @@ import {
 } from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
-import { ThemeAndColorsModel, getTheme } from "../utils/getTheme";
+import { ThemeAndColorsModel, getThemeFromScheme } from "../utils/getThemeFromScheme";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
@@ -223,7 +223,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       };
     });
   };
-  const theme = getTheme(state.settings.theme);
+  const theme = getThemeFromScheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
     headerView: {

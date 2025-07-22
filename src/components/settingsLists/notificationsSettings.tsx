@@ -15,7 +15,7 @@ import {
   ReminderModel
 } from "../../models";
 import addZero from "../../utils/addZero";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { secondsToString } from "../../utils/secondsToString";
 import {

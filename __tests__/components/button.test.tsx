@@ -1,14 +1,13 @@
-import renderer from "react-test-renderer";
 import { Button } from "../../src/components/Button";
-import { getTheme } from "../../src/utils/getTheme";
+import { render } from "@testing-library/react-native";
+import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { THEMETYPE } from "../../src/constants";
 
 describe("testinmg button", () => {
-  it("Button renders correctly", () => {
-    const theme = getTheme(THEMETYPE.dark);
-    const tree = renderer
-      .create(<Button theme={theme} onPress={() => {}} />)
-      .toJSON();
+  it("Button renders correctly", async () => {
+    const theme = getThemeFromScheme(THEMETYPE.dark);
+    const tree = render(<Button theme={theme} onPress={() => {}} />).toJSON();
+
     expect(tree).toMatchSnapshot();
   });
 });
