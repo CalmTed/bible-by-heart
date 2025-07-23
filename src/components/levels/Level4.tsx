@@ -419,7 +419,7 @@ export const L40: FC<LevelComponentModel> = ({
         </View>
       </ScrollView>
       {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-        new Date().getTime() - test.td[0][0] > 1000 * 60 * 5) && (
+        new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 5) && (
         <Button
           theme={theme}
           type="secondary"

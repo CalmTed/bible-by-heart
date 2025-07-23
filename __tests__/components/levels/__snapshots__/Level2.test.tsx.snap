@@ -1,0 +1,431 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "width": "100%",
+    }
+  }
+>
+  <RCTScrollView
+    style={
+      {
+        "alignContent": "center",
+        "flex": 1,
+      }
+    }
+  >
+    <View>
+      <Text
+        style={
+          {
+            "backgroundColor": "#D0DDD0",
+            "borderRadius": 10,
+            "color": "#323933",
+            "fontSize": 18,
+            "letterSpacing": 0.5,
+            "marginHorizontal": 20,
+            "marginVertical": 10,
+            "padding": 10,
+          }
+        }
+      >
+        Знаємо, що тим, які люблять Бога, котрі покликані за Його постановою, все сприяє до добра.
+      </Text>
+    </View>
+  </RCTScrollView>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 2,
+        "gap": 10,
+        "justifyContent": "center",
+        "paddingHorizontal": 20,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4293385995,
+              4286570036,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 20,
+              "elevation": 5,
+              "justifyContent": "center",
+              "padding": 2,
+              "shadowColor": "#000",
+              "shadowOffset": {
+                "height": 2,
+                "width": 0,
+              },
+              "shadowOpacity": 0.25,
+              "shadowRadius": 4,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#D0DDD0",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "paddingLeft": 18,
+                "paddingRight": 28,
+                "paddingVertical": 14,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#323933",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "paddingLeft": 10,
+                  "paddingRight": 5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Select address
+            </Text>
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": true,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4291878352,
+              4291878352,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 20,
+              "elevation": 5,
+              "justifyContent": "center",
+              "padding": 2,
+              "shadowColor": "#000",
+              "shadowOffset": {
+                "height": 2,
+                "width": 0,
+              },
+              "shadowOpacity": 0.25,
+              "shadowRadius": 4,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "transparent",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "paddingLeft": 18,
+                "paddingRight": 28,
+                "paddingVertical": 14,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#323933",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "paddingLeft": 10,
+                  "paddingRight": 5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Submit
+            </Text>
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`testing level 2 rendering Level 2 renders correctly 2`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignContent": "center",
+        "justifyContent": "center",
+        "maxHeight": 200,
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#323933",
+          "fontSize": 22,
+          "fontWeight": "500",
+          "textAlign": "center",
+          "textTransform": "uppercase",
+        }
+      }
+    >
+      Romans 8:28
+    </Text>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 2,
+        "gap": 10,
+        "justifyContent": "center",
+        "paddingHorizontal": 20,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "gap": 10,
+        }
+      }
+    />
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "opacity": 1,
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4291878352,
+              4291878352,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 22,
+              "justifyContent": "center",
+              "padding": 2,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignContent": "space-between",
+                "alignItems": "center",
+                "backgroundColor": "#D0DDD0",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "paddingRight": 15,
+                "width": "100%",
+              }
+            }
+          >
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={true}
+              cursorColor="#7FDE34"
+              editable={true}
+              multiline={false}
+              onChangeText={[Function]}
+              onSubmitEditing={[Function]}
+              placeholder="Start writing passage"
+              placeholderTextColor="#898989"
+              style={
+                {
+                  "color": "#323933",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "minWidth": 100,
+                  "paddingHorizontal": 14,
+                  "paddingVertical": 7,
+                }
+              }
+              value=""
+            />
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+  </View>
+</View>
+`;

@@ -384,7 +384,7 @@ export const L50: FC<LevelComponentModel> = ({
           />
         )}
         {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-          new Date().getTime() - test.td[0][0] > 1000 * 60 * 10) && (
+          new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 10) && (
           <Button
             theme={theme}
             type="secondary"

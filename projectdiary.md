@@ -232,6 +232,7 @@ boilerplate:
 - checked l30 creation 
 - skipped 3rd level inconvenience - will reacreate the whole test error design later
 - major refactoring potential plan (after next publishing)
+    - put all of components in the index file to simplify imports
     - change strange state change or unchange
         - change localstorage right on click
         - propose undo if needed
@@ -373,13 +374,35 @@ boilerplate:
 - finaly understood the problem with testing components - LLM recomended "react-test-render", but it is deprecated. Switched to "@testing-library/react-native"
 - did button
 - tomorrow snapshot testing
-    - input
-    - all the levels
-    - address picker
-    - checkbux
-    - header
-    - icon
-    - mini modal
-    - select
-    - settings menu item
+    - [x] input
+    - [x] icon
+    - [x] header
+    - [x] select
+    - [x] checkbox
+    - [x] mini modal
+    - [x] address picker
+    - [x] settings menu item 6/6
+    - [x] all the levels 5/5
 - then finally will switch to finishing login feature!
+2025-07-23
+- test for settingsMenuItem doents sees valid coverage for some reason... renders allright though
+- did tests as planned, 35.6%
+- whats next
+    - finish login ang register screen
+    - push to staging, test, to production
+    - do other tasks - refactor
+        - rewrite navigator
+            - update design
+            - deep linking
+        - abstraction for objects? (how to unite reducer with OOP?)
+        - put all components in one index file
+        - state change unintuitive behaivour (change on click)
+        - update t()
+        - update swipable?
+    - updates
+        - breadcast messages
+        - feedback/support messager
+        - syncing data
+        - other activity and reciving tests
+        - update notifications to be smarter
+        - update addressPicker

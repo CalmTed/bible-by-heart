@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testinmg button Button renders correctly 1`] = `
+exports[`testing button Button renders correctly 1`] = `
 <View
   style={
     {

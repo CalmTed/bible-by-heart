@@ -1,0 +1,1057 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing settings menu item renders action correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#ECECEC",
+          "fontSize": 21,
+          "fontWeight": "600",
+        }
+      }
+    >
+      Видалити список віршів
+    </Text>
+    <Text
+      style={
+        {
+          "color": "#A0A0A0",
+          "fontSize": 14,
+        }
+      }
+    >
+      ⚠️ Данні буде втрачано без можливості відновлення
+    </Text>
+  </View>
+</View>
+`;
+
+exports[`testing settings menu item renders checkbox correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "flexDirection": "row",
+        "justifyContent": "space-between",
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "maxWidth": "80%",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#ECECEC",
+            "fontSize": 21,
+            "fontWeight": "600",
+          }
+        }
+      >
+        Режим розробника
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#A0A0A0",
+            "fontSize": 14,
+          }
+        }
+      >
+        Увімкнено
+      </Text>
+    </View>
+    <View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "#efe",
+            "borderRadius": 50,
+            "flexDirection": "row",
+            "height": 30,
+            "justifyContent": "center",
+            "overflow": "hidden",
+            "width": 55,
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4279928478,
+              4279934519,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "padding": 3,
+              "width": "100%",
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "aspectRatio": 1,
+                "backgroundColor": "#ECECEC",
+                "borderRadius": 50,
+                "height": "100%",
+                "marginLeft": "50%",
+              }
+            }
+          />
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`testing settings menu item renders label correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "flex-end",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingBottom": 0,
+      "paddingTop": 25,
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <Text
+    style={
+      {
+        "color": "#A0A0A0",
+        "fontSize": 14,
+        "fontWeight": "600",
+        "textTransform": "uppercase",
+      }
+    }
+  >
+    Про додаток
+  </Text>
+</View>
+`;
+
+exports[`testing settings menu item renders select correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onBlur={[Function]}
+      onClick={[Function]}
+      onFocus={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={{}}
+    >
+      <Text
+        style={
+          {
+            "color": "#ECECEC",
+            "fontSize": 21,
+            "fontWeight": "600",
+          }
+        }
+      >
+        Присвоєння категорії свайпом вправо
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#A0A0A0",
+            "fontSize": 14,
+          }
+        }
+      >
+        Архівовано
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`testing settings menu item renders tagList correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#A0A0A0",
+          "fontSize": 14,
+        }
+      }
+    >
+      Включаючи категорії(якщо не обрано жодного, відображаються всі)
+      :
+    </Text>
+    <View
+      style={
+        {
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "borderColor": "#1A9E37",
+            "borderRadius": 50,
+            "borderWidth": 2,
+            "flexDirection": "row",
+            "height": 40,
+            "margin": 3,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <ViewManagerAdapter_ExpoLinearGradient
+              colors={
+                [
+                  0,
+                  0,
+                ]
+              }
+              endPoint={
+                [
+                  0,
+                  1,
+                ]
+              }
+              locations={
+                [
+                  0,
+                  1,
+                ]
+              }
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "alignItems": "center",
+                  "aspectRatio": 1,
+                  "borderRadius": 20,
+                  "height": "100%",
+                  "justifyContent": "center",
+                  "padding": 2,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "aspectRatio": 1,
+                    "backgroundColor": "transparent",
+                    "borderRadius": 21,
+                    "flexDirection": "row",
+                    "height": "100%",
+                    "justifyContent": "center",
+                    "paddingLeft": 18,
+                    "paddingRight": 28,
+                    "paddingVertical": 14,
+                  }
+                }
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={18}
+                  bbWidth={18}
+                  fill="none"
+                  focusable={false}
+                  height={18}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 18,
+                        "width": 18,
+                      },
+                    ]
+                  }
+                  vbHeight={18}
+                  vbWidth={18}
+                  width={18}
+                  xml="<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 9H9M17 9H9M9 9V17M9 9V1" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                      ]
+                    }
+                  >
+                    <RNSVGPath
+                      d="M1 9H9M17 9H9M9 9V17M9 9V1"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "stroke",
+                          "strokeWidth",
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4293717228,
+                          "type": 0,
+                        }
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                      strokeWidth={2}
+                    />
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </ViewManagerAdapter_ExpoLinearGradient>
+          </View>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "borderColor": "#A0A0A0",
+            "borderRadius": 50,
+            "borderWidth": 2,
+            "flexDirection": "row",
+            "height": 40,
+            "margin": 3,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#ECECEC",
+              "fontSize": 16,
+            }
+          }
+        >
+           
+          tag1
+        </Text>
+        <View
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <ViewManagerAdapter_ExpoLinearGradient
+              colors={
+                [
+                  0,
+                  0,
+                ]
+              }
+              endPoint={
+                [
+                  0,
+                  1,
+                ]
+              }
+              locations={
+                [
+                  0,
+                  1,
+                ]
+              }
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "alignItems": "center",
+                  "aspectRatio": 1,
+                  "borderRadius": 20,
+                  "height": "100%",
+                  "justifyContent": "center",
+                  "padding": 2,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "aspectRatio": 1,
+                    "backgroundColor": "transparent",
+                    "borderRadius": 21,
+                    "flexDirection": "row",
+                    "height": "100%",
+                    "justifyContent": "center",
+                    "paddingLeft": 18,
+                    "paddingRight": 28,
+                    "paddingVertical": 14,
+                  }
+                }
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={18}
+                  bbWidth={18}
+                  fill="none"
+                  focusable={false}
+                  height={18}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 18,
+                        "width": 18,
+                      },
+                    ]
+                  }
+                  vbHeight={18}
+                  vbWidth={18}
+                  width={18}
+                  xml="<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 1L9 9M17 17L9 9M9 9L1 17M9 9L17 1" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                      ]
+                    }
+                  >
+                    <RNSVGPath
+                      d="M1 1L9 9M17 17L9 9M9 9L1 17M9 9L17 1"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "stroke",
+                          "strokeWidth",
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4293717228,
+                          "type": 0,
+                        }
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                      strokeWidth={2}
+                    />
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </ViewManagerAdapter_ExpoLinearGradient>
+          </View>
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "borderColor": "#A0A0A0",
+            "borderRadius": 50,
+            "borderWidth": 2,
+            "flexDirection": "row",
+            "height": 40,
+            "margin": 3,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <Text
+          style={
+            {
+              "color": "#ECECEC",
+              "fontSize": 16,
+            }
+          }
+        >
+           
+          tag2
+        </Text>
+        <View
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": false,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <ViewManagerAdapter_ExpoLinearGradient
+              colors={
+                [
+                  0,
+                  0,
+                ]
+              }
+              endPoint={
+                [
+                  0,
+                  1,
+                ]
+              }
+              locations={
+                [
+                  0,
+                  1,
+                ]
+              }
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "alignItems": "center",
+                  "aspectRatio": 1,
+                  "borderRadius": 20,
+                  "height": "100%",
+                  "justifyContent": "center",
+                  "padding": 2,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "aspectRatio": 1,
+                    "backgroundColor": "transparent",
+                    "borderRadius": 21,
+                    "flexDirection": "row",
+                    "height": "100%",
+                    "justifyContent": "center",
+                    "paddingLeft": 18,
+                    "paddingRight": 28,
+                    "paddingVertical": 14,
+                  }
+                }
+              >
+                <RNSVGSvgView
+                  align="xMidYMid"
+                  bbHeight={18}
+                  bbWidth={18}
+                  fill="none"
+                  focusable={false}
+                  height={18}
+                  meetOrSlice={0}
+                  minX={0}
+                  minY={0}
+                  style={
+                    [
+                      {
+                        "backgroundColor": "transparent",
+                        "borderWidth": 0,
+                      },
+                      {
+                        "flex": 0,
+                        "height": 18,
+                        "width": 18,
+                      },
+                    ]
+                  }
+                  vbHeight={18}
+                  vbWidth={18}
+                  width={18}
+                  xml="<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1 1L9 9M17 17L9 9M9 9L1 17M9 9L17 1" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <RNSVGGroup
+                    fill={null}
+                    propList={
+                      [
+                        "fill",
+                      ]
+                    }
+                  >
+                    <RNSVGPath
+                      d="M1 1L9 9M17 17L9 9M9 9L1 17M9 9L17 1"
+                      fill={
+                        {
+                          "payload": 4278190080,
+                          "type": 0,
+                        }
+                      }
+                      propList={
+                        [
+                          "stroke",
+                          "strokeWidth",
+                          "strokeLinecap",
+                          "strokeLinejoin",
+                        ]
+                      }
+                      stroke={
+                        {
+                          "payload": 4293717228,
+                          "type": 0,
+                        }
+                      }
+                      strokeLinecap={1}
+                      strokeLinejoin={1}
+                      strokeWidth={2}
+                    />
+                  </RNSVGGroup>
+                </RNSVGSvgView>
+              </View>
+            </ViewManagerAdapter_ExpoLinearGradient>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`testing settings menu item renders textInput correctly 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "flexDirection": "row",
+      "justifyContent": "space-between",
+      "paddingVertical": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View
+    style={
+      {
+        "width": "100%",
+      }
+    }
+  >
+    <Text
+      style={
+        {
+          "color": "#A0A0A0",
+          "fontSize": 14,
+        }
+      }
+    >
+      Назва режиму
+      :
+    </Text>
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "opacity": 1,
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4281085996,
+              4281085996,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 22,
+              "justifyContent": "center",
+              "padding": 2,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignContent": "space-between",
+                "alignItems": "center",
+                "backgroundColor": "#2C302C",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+                "paddingRight": 15,
+                "width": "100%",
+              }
+            }
+          >
+            <TextInput
+              autoCapitalize="none"
+              autoCorrect={true}
+              cursorColor="#1A9E37"
+              editable={true}
+              maxLength={20}
+              multiline={false}
+              onChangeText={[Function]}
+              onSubmitEditing={[Function]}
+              placeholder="Назва режиму"
+              placeholderTextColor="#A0A0A0"
+              style={
+                {
+                  "color": "#ECECEC",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "minWidth": 100,
+                  "paddingHorizontal": 14,
+                  "paddingVertical": 7,
+                }
+              }
+              value="trainModeName"
+            />
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+  </View>
+</View>
+`;

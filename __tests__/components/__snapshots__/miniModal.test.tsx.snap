@@ -1,0 +1,332 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing mini modal renders correctly 1`] = `
+<Modal
+  animationType="slide"
+  hardwareAccelerated={false}
+  onRequestClose={[Function]}
+  transparent={true}
+  visible={true}
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "backfaceVisibility": "hidden",
+        "backgroundColor": "#272A2799",
+        "flex": 1,
+        "justifyContent": "center",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#272A27",
+          "borderRadius": 10,
+          "elevation": 5,
+          "gap": 10,
+          "margin": 0,
+          "paddingHorizontal": 15,
+          "paddingVertical": 10,
+          "shadowColor": "#272A2799",
+          "shadowOffset": {
+            "height": 0,
+            "width": 0,
+          },
+          "shadowOpacity": 0.5,
+          "shadowRadius": 10,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#ECECEC",
+            "fontSize": 21,
+            "fontWeight": "700",
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Підтягнути текст автоматично?
+      </Text>
+      <View
+        style={
+          {
+            "flexDirection": "row",
+            "flexWrap": "wrap",
+            "gap": 20,
+            "marginVertical": 20,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <ViewManagerAdapter_ExpoLinearGradient
+              colors={
+                [
+                  4281085996,
+                  4281085996,
+                ]
+              }
+              endPoint={
+                [
+                  0,
+                  1,
+                ]
+              }
+              locations={
+                [
+                  0,
+                  1,
+                ]
+              }
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "alignItems": "center",
+                  "borderRadius": 20,
+                  "elevation": 5,
+                  "justifyContent": "center",
+                  "padding": 2,
+                  "shadowColor": "#000",
+                  "shadowOffset": {
+                    "height": 2,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.25,
+                  "shadowRadius": 4,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "#2C302C",
+                    "borderRadius": 21,
+                    "flexDirection": "row",
+                    "justifyContent": "center",
+                    "paddingLeft": 18,
+                    "paddingRight": 28,
+                    "paddingVertical": 14,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#ECECEC",
+                      "fontSize": 18,
+                      "fontWeight": "500",
+                      "paddingLeft": 10,
+                      "paddingRight": 5,
+                      "textTransform": "uppercase",
+                    }
+                  }
+                >
+                  Назад
+                </Text>
+              </View>
+            </ViewManagerAdapter_ExpoLinearGradient>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessibilityValue={
+              {
+                "max": undefined,
+                "min": undefined,
+                "now": undefined,
+                "text": undefined,
+              }
+            }
+            accessible={true}
+            collapsable={false}
+            focusable={true}
+            onBlur={[Function]}
+            onClick={[Function]}
+            onFocus={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <ViewManagerAdapter_ExpoLinearGradient
+              colors={
+                [
+                  4279934519,
+                  4279928478,
+                ]
+              }
+              endPoint={
+                [
+                  0,
+                  1,
+                ]
+              }
+              locations={
+                [
+                  0,
+                  1,
+                ]
+              }
+              startPoint={
+                [
+                  0,
+                  0,
+                ]
+              }
+              style={
+                {
+                  "alignItems": "center",
+                  "borderRadius": 20,
+                  "elevation": 5,
+                  "justifyContent": "center",
+                  "padding": 2,
+                  "shadowColor": "#000",
+                  "shadowOffset": {
+                    "height": 2,
+                    "width": 0,
+                  },
+                  "shadowOpacity": 0.25,
+                  "shadowRadius": 4,
+                }
+              }
+            >
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "backgroundColor": "transparent",
+                    "borderRadius": 21,
+                    "flexDirection": "row",
+                    "justifyContent": "center",
+                    "paddingLeft": 18,
+                    "paddingRight": 28,
+                    "paddingVertical": 14,
+                  }
+                }
+              >
+                <Text
+                  style={
+                    {
+                      "color": "#ECECEC",
+                      "fontSize": 18,
+                      "fontWeight": "500",
+                      "paddingLeft": 10,
+                      "paddingRight": 5,
+                      "textTransform": "uppercase",
+                    }
+                  }
+                >
+                  Підтягнути
+                </Text>
+              </View>
+            </ViewManagerAdapter_ExpoLinearGradient>
+          </View>
+        </View>
+      </View>
+    </View>
+  </View>
+</Modal>
+`;

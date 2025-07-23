@@ -1,13 +1,14 @@
-import { Button } from "../../src/components/Button";
+import { Input } from "../../src/components/Input";
 import { render } from "@testing-library/react-native";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { THEMETYPE } from "../../src/constants";
 
-describe("testing button", () => {
-  it("Button renders correctly", async () => {
+describe("testing input", () => {
+  it("renders correctly", async () => {
     const theme = getThemeFromScheme(THEMETYPE.dark);
-    const tree = render(<Button theme={theme} onPress={() => {}} />).toJSON();
-
+    const tree = render(
+      <Input onChange={() => {}} placeholder={""} theme={theme} />
+    ).toJSON();
     expect(tree).toMatchSnapshot();
   });
 });
