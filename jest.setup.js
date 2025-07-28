@@ -17,7 +17,6 @@ jest.mock("expo-task-manager", () => ({
 jest.mock("expo-notifications", () => ({
   addNotificationReceivedListener: jest.fn(),
   addNotificationResponseReceivedListener: jest.fn(),
-  removeNotificationSubscription: jest.fn(),
   getPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
   requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
   scheduleNotificationAsync: jest.fn(),

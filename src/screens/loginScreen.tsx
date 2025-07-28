@@ -6,8 +6,11 @@ import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { navigateWithState } from "../screeenManagement";
 import { IconName } from "../components/Icon";
-import { SCREEN } from "../constants";
+import { ACCESS_TOKEN_NAME, API_LINK, REFRESH_TOKEN_NAME, SCREEN } from "../constants";
 import { Input } from "../components/Input";
+import { logger } from "src/utils/logger";
+import { fetchAPI } from "src/services/fetch";
+import * as SecureStore from "expo-secure-store";
 
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme } = useApp({ route, navigation });
@@ -15,8 +18,64 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
   const [tempPassword, setTempPassword] = useState("p@ssTest");
 
-  const handleLoginSubmit = () => {
-    Alert.alert("Work in progress", "Soon, but not yet");
+  const handleLoginSubmit = async (loginPossible: boolean, email: string, password: string) => {
+    if(loginPossible){
+      try{
+        const result = await fetchAPI({
+          link: API_LINK.login,
+          method: "POST",
+          body: {
+            email,
+            password
+          }
+        })
+        if(typeof result === "undefined"){
+          Alert.alert(`Unknown error with authorization!`);
+          return;
+        }
+        switch(result.response.status){
+          case 200:
+            if(result?.data){
+              //save auth keys
+              SecureStore.setItem(ACCESS_TOKEN_NAME, result.data.token);
+              SecureStore.setItem(REFRESH_TOKEN_NAME, result.data.refreshToken);
+              //fetch user data
+              const userData = await fetchAPI({
+                link: API_LINK.getUserData,
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${result.data.token}`
+                }
+              })
+              if(typeof userData === "undefined"){
+                Alert.alert(`Unknown error`,`Unable to get user data`);
+                return;
+              }
+              switch(result.response.status){
+                case 200: 
+                  //write data to state 
+                  //go to settings screen
+                break;
+                case 401: break;
+                case 403: break;
+                case 406: break;
+                case 500: break;
+              }
+              
+            }else{
+              Alert.alert(`Unknown server error`,`Recieved status 200 with no data`);
+            }
+          break;
+          case 400: Alert.alert(`Bad request data 400`,`${result.response.statusText}`);break;
+          case 401: Alert.alert(`Unable to login 401`,`${result.response.statusText}`);break;
+          case 500: Alert.alert(`Server error 500`,`${result.response.statusText}`);break;
+        }
+      }catch(err){
+        logger.error(`Cant login. Error: ${err}`);
+        Alert.alert(`Unknown error with authorization!`, `${err}`);
+        console.log(err)
+      }
+    }
   };
 
   const handleRegisterClick = () => {
@@ -99,7 +158,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!loginPossible}
-          onPress={handleLoginSubmit}
+          onPress={() => handleLoginSubmit(loginPossible, tempEmail, tempPassword)}
         />
       </View>
       <Button

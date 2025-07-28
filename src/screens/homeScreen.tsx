@@ -33,47 +33,47 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
 
   // Linking.getInitialURL().then((url) => {
   //   if (url) {
-  //     ToastAndroid.show("Recieved text or link", 10000);
+  //     toastShow("Recieved text or link", 10000);
   //     setInitialURL(url);
   //   }else{
-  //     state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
+  //     state.settings.devMode ? toastShow("No initial link", 10000) : null;
   //   }
   // }).catch(err => {
-  //   ToastAndroid.show("An error occurred on home screen no getting initial url", 10000);
+  //   toastShow("An error occurred on home screen no getting initial url", 10000);
   // });
   // const [data, setData] = React.useState<ExpoIntentReceiver.IntentInfo[]>([]);
   // const refIntent = React.useRef(ExpoIntentReceiver.getInitialIntent());
 
   // if(!initialIntent && refIntent.current){
   //   setInitialIntent(refIntent.current);
-  //   ToastAndroid.show(`Recieved intent ${JSON.stringify(refIntent.current[0])}`, 10000);
+  //   toastShow(`Recieved intent ${JSON.stringify(refIntent.current[0])}`, 10000);
   // }
   // if(!refIntent.current){
-  //   state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
+  //   state.settings.devMode ? toastShow("No initial link", 10000) : null;
   // }
   // const subscription = ExpoIntentReceiver.addChangeListener(({ data }) => {
   //   setData((currentData) => [...currentData, ...data])
   // })
   // return () => subscription.remove();
   // ReceiveSharingIntent.getReceivedFiles((data:any)=> {
-  //   ToastAndroid.show(`Received intent data ${data.length}`, 1000)
+  //   toastShow(`Received intent data ${data.length}`, 1000)
   //   initialIntent(data)
   // },
   // (err:any)=>{
-  //   ToastAndroid.show(`Error while receiveing intents ${err}`, 1000)
+  //   toastShow(`Error while receiveing intents ${err}`, 1000)
   // });
 
   //   React.useEffect(() => {
   //     try{
   //     DeviceEventEmitter.addListener("result", message => {
-  //       state.settings.devMode ? ToastAndroid.show( message,1000) : null
+  //       state.settings.devMode ? toastShow( message,1000) : null
   //       setInitialIntent(message)
   //     })
   //     return () => {
   //       DeviceEventEmitter.removeAllListeners()
   //     }
   //   }catch(e){
-  //     state.settings.devMode ? ToastAndroid.show(`Error while calling module`, 1000) : null
+  //     state.settings.devMode ? toastShow(`Error while calling module`, 1000) : null
   //     return () => {}
   //   }
   // }, []);

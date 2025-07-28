@@ -30,7 +30,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   });
 
   const handleLoginPress = (v: string) => {
-    // ToastAndroid.showWithGravity(t("ComingSoon"), 5000, 0.5)
+    // toastShowWithGravity(t("ComingSoon"), 5000, 0.5)
     navigateWithState({
       screen: SCREEN.login,
       state,

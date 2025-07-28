@@ -2,17 +2,17 @@
   "name": "bible-by-heart",
   "version": "0.0.9",
   "scripts": {
-    "start": "expo start",
+    "dev": "NODE_ENV=local expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "tsc --noEmit && eslint --ext .ts,.tsx ./src/",
     "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix",
     "test": "jest --coverage",
-    "build-dev": "eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive",
-    "build": "eas build --platform android --profile production",
     "doctor": "npx @react-native-community/cli doctor",
-    "expo-doctor": "npx expo-doctor"
+    "expo-doctor": "npx expo-doctor",
+    "build-dev": "eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive",
+    "build-prod": "eas build --platform android --profile production"
   },
   "jest": {
     "preset": "jest-expo",
@@ -43,6 +43,7 @@
     "expo-notifications": "~0.31.3",
     "expo-random": "^14.0.1",
     "expo-router": "^5.1.0",
+    "expo-secure-store": "^14.2.3",
     "expo-splash-screen": "~0.30.3",
     "expo-status-bar": "~2.2.3",
     "expo-task-manager": "^13.1.5",

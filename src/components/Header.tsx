@@ -36,7 +36,7 @@ export const Header: FC<HeaderModel> = ({
 
   const headerStyle = StyleSheet.create({
     view: {
-      height: 60,
+      height: 80,
       width: "100%",
       flexDirection: "row",
       justifyContent: alignChildren || "flex-end",

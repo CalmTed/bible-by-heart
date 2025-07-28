@@ -16,7 +16,6 @@ import {
 } from "../models";
 import { getPerfectTestsNumber } from "./getPerfectTests";
 import { checkSchedule } from "./notifications";
-import { ToastAndroid } from "react-native";
 import {
   generateATest,
   generateTests,
@@ -24,6 +23,7 @@ import {
 } from "./generateTests";
 import { createTest } from "../initials";
 import { logger } from "./logger";
+import toastShow from "./toastShow";
 
 export const reduce: (
   state: AppStateModel,
@@ -531,7 +531,7 @@ export const reduce: (
     return safeObject;
   } catch (err) {
     logger.error(`Cant change app state ${err}`);
-    ToastAndroid.show("Cant change app state " + err, 10000);
+    toastShow("Cant change app state " + err, 10000);
     return state;
   }
 };

@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { ToastAndroid, View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
@@ -16,6 +16,7 @@ import { readFile, writeFile } from "../../utils/fileManager";
 import { convertState } from "../../utils/stateVersionConvert";
 import { dateToString } from "../../utils/formatDateTime";
 import { logger } from "../../utils/logger";
+import toastShow from "src/utils/toastShow";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -92,7 +93,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
     } else {
       setDevModeKey(getPassword());
       logger.error(`Entered wrong dev mode password`);
-      ToastAndroid.show("nope...", 1000);
+      toastShow("nope...", 1000);
     }
     setIsDevPasswordModalOpen(false);
   };
@@ -257,7 +258,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               inputMode="numeric"
               theme={theme}
               onSubmit={(text) => {
-                ToastAndroid.show(`${encodeDevKey(parseInt(text, 10))}`, 1000);
+                toastShow(`${encodeDevKey(parseInt(text, 10))}`, 1000);
               }}
               placeholder="1234"
               onChange={() => {}}
@@ -312,12 +313,12 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   .then((r) => {
                     if (r) {
                       logger.write(`State exported`);
-                      ToastAndroid.show(t("settsExported"), 1000);
+                      toastShow(t("settsExported"), 1000);
                     }
                   })
                   .catch((err) => {
                     logger.error(`Error while exporting state. Error: ${err}`);
-                    ToastAndroid.show(t("ErrorWhileWritingFile"), 1000);
+                    toastShow(t("ErrorWhileWritingFile"), 1000);
                   });
               }}
             />
@@ -335,7 +336,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   .then((r) => {
                     if (!r) {
                       logger.write(`State imported`);
-                      ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+                      toastShow(t("ErrorWhileReadingFile"), 1000);
                       return;
                     }
                     switch (r.mimeType) {
@@ -345,11 +346,11 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                             r.content.replace(/_ /g, " ")
                           ) as AppStateModel) || undefined;
                         if (!decodedData) {
-                          ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                          toastShow(t("ErrorWhileDecoding"), 1000);
                           break;
                         }
                         if (!decodedData?.version) {
-                          ToastAndroid.show("Wrong version", 1000);
+                          toastShow("Wrong version", 1000);
                           break;
                         }
                         const validData =
@@ -357,22 +358,22 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                             ? decodedData
                             : convertState(decodedData);
                         if (!validData) {
-                          ToastAndroid.show(
+                          toastShow(
                             `Unable to convert to current version ${decodedData.version}>${VERSION}`,
                             1000
                           );
                           break;
                         }
-                        ToastAndroid.show(`${t("settsImported")}`, 1000);
+                        toastShow(`${t("settsImported")}`, 1000);
                         setState(() => validData);
                         break;
                       default:
-                        ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                        toastShow(t("ErrorWhileDecoding"), 1000);
                     }
                   })
                   .catch((err) => {
                     logger.error(`Error while importing state. Error: ${err}`);
-                    ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+                    toastShow(t("ErrorWhileReadingFile"), 1000);
                   });
               }}
             />
@@ -389,7 +390,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 setState((prv) => {
                   return { ...prv, passages: [], testsHistory: [] };
                 });
-                ToastAndroid.show(t("settsCleared"), 1000);
+                toastShow(t("settsCleared"), 1000);
               }}
             />
             <SettingsMenuItem
@@ -401,7 +402,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 setState(() => {
                   return createAppState();
                 });
-                ToastAndroid.show(t("settsCleared"), 1000);
+                toastShow(t("settsCleared"), 1000);
               }}
             />
           </View>

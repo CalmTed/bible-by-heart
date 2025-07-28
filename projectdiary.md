@@ -400,9 +400,40 @@ boilerplate:
         - update t()
         - update swipable?
     - updates
-        - breadcast messages
+        - broadcast messages
         - feedback/support messager
         - syncing data
         - other activity and reciving tests
         - update notifications to be smarter
         - update addressPicker
+2025-07-28
+- now working on mac, need to build for iOS
+    - [x] abstraction for android toast
+    - [x] notification - good for now - need to redesign later
+    - [x] fix navigator(animation and top space)
+    - [x] fix address selector
+- fixed a bug with dinamic theme change and PE theme
+- completer registration workflow and started working on login
+- next time
+    - update state for 0.1.0: add user data, prapare for syncing workflow
+    - react to errors while getting user data
+    - add token refresh feature
+    - add logout, etit account, delete accont features
+    - push to staging
+    - test all workflows
+    - publish for ios?
+- later
+    - refactor: navigator, state change behaivour, update t(), apdate swipable and animations
+    - update
+        - address picker
+        - recieving passage texts
+        - broadcast messages
+        - feedback messager + admin UI
+        - syncing data
+        - update notification
+        - example passages lists
+        - payment update
+        - friends feature, feed, reactions
+        - login with google or other 3rd party
+        - groups and shared lists
+        - 

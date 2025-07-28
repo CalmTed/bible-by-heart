@@ -31,7 +31,8 @@ export default {
     },
     assetBundlePatterns: ["**/*"],
     ios: {
-      supportsTablet: false
+      supportsTablet: false,
+      bundleIdentifier: "com.CalmTed.bibleByHeart"
     },
     android: {
       intentFilters: [

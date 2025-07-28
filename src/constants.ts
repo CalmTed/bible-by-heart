@@ -46,6 +46,9 @@ export const DAY = HOUR * 24;
 
 export const LOGGER_MAX_ARRAY_SIZE = 3000;
 
+export const ACCESS_TOKEN_NAME = "accessToken";
+export const REFRESH_TOKEN_NAME = "refreshToken";
+
 export enum SCREEN {
   home = "home",
   listPassage = "listPassage",

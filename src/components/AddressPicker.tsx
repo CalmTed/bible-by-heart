@@ -313,7 +313,8 @@ const ListButton: FC<{
 };
 const APstyle = StyleSheet.create({
   headerView: {
-    height: 60,
+    height: 100,
+    paddingTop: 50,
     alignContent: "center",
     width: "100%",
     flexDirection: "row",

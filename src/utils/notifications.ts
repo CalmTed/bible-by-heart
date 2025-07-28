@@ -1,4 +1,4 @@
-import { Platform, ToastAndroid } from "react-native";
+import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { COLOR_DARK, DAY, HOUR, LANGCODE, MINUTE } from "../constants";
@@ -10,6 +10,7 @@ import {
 } from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
+import toastShow from "./toastShow";
 
 //writes to console scheduling operations
 const notificationDebug = true;
@@ -312,12 +313,12 @@ export const registerForPushNotificationsAsync = async () => {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      ToastAndroid.show("Failed to get token for notification!", 10000);
+      toastShow("Failed to get token for notification!", 10000);
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
-    ToastAndroid.show("Must use physical device for Push Notifications", 10000);
+    toastShow("Must use physical device for Push Notifications", 10000);
   }
 
   return token;

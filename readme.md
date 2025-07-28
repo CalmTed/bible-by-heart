@@ -110,7 +110,7 @@ Another app for learning Bible passages but with some personalization
   - [ ] updateMessages list: show unread modal on startup or show all in settings
   - [ ] login form and action with API
   - [ ] feedback form for authorirized users or telegram bot
-  - [ ] change data safety settings and privacy policy
+  - [x] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0
   - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
@@ -148,8 +148,8 @@ _Instaling:_
 
 _Running:_
 
-- run `npm start` to start expo (a - run on android, r - reload...)
+- run `yarn start` to start expo (a - run on android, r - reload...)
 
 _Building:_
-
-- `eas build --platform android --profile [preview | production]` to build apk(preview) or aab(production) file (need exp/eas account)
+- One needs to be authorized in expo account to be able to buld with eas.
+- `yarn build-dev` or `yarn build-prod` to build the app. It automaticaly publishes to application shop for testers or main audience

@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  ToastAndroid,
   View
 } from "react-native";
 import {
@@ -38,6 +37,7 @@ import { getPassageStats } from "../utils/getStats";
 
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { logger } from "../utils/logger";
+import toastShow from "src/utils/toastShow";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -45,11 +45,13 @@ interface PassageEditorModel {
   onConfirm: (passage: PassageModel) => void;
   onRemove: (arg: number) => void;
   t: (w: WORD) => string;
+  theme: ThemeAndColorsModel;
   state: AppStateModel;
 }
 
 export const PassageEditor: FC<PassageEditorModel> = ({
   visible,
+  theme,
   passage,
   onConfirm,
   onRemove,
@@ -90,7 +92,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           logger.error(
             `Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`
           );
-          ToastAndroid.show(e, 10000);
+          toastShow(e, 10000);
         })
         .finally(() => {
           setFetchingInProgress(false);
@@ -223,11 +225,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       };
     });
   };
-  const theme = getThemeFromScheme(state.settings.theme);
+  // const theme = getThemeFromScheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
     headerView: {
-      height: 60,
+      height: 100,
+      paddingTop: 50,
       alignContent: "center",
       width: "100%",
       flexDirection: "row",

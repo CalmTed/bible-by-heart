@@ -275,6 +275,9 @@ export const ua: typeof en = {
   passwordRulesLabel:
     "Пароль повинен містити як мінімум одну заглавну літеру, одну строчну літеру, одну ціфру, один символ зі списку:[@.#$!%*?&]. Довжина 8-40 літер",
   ComingSoon: "Скоро буде 😉",
+  //register
+  openLegalPrivacyPolicy: "Політика безпеки(eng)",
+  openLegalTermsOfService: "Умови використання(eng)",
 
   dayMO: "Пн",
   dayTU: "Вт",

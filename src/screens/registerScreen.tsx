@@ -1,27 +1,71 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from "react-native";
 import { ScreenModel } from "./homeScreen";
 import { useApp } from "..//utils/useApp";
 import { Header } from "..//components/Header";
 import { Button, IconButton } from "..//components/Button";
 import { navigateWithState } from "..//screeenManagement";
 import { IconName } from "..//components/Icon";
-import { SCREEN } from "..//constants";
+import { API_LINK, SCREEN } from "..//constants";
 import { Input } from "..//components/Input";
 import { Checkbox } from "..//components/Checkbox";
+import { fetchAPI } from "../services/fetch"
+import { logger } from "src/utils/logger";
 
 export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme } = useApp({ route, navigation });
 
-  const [tempEmail, setTempEmail] = useState("");
-  const [tempPassword, setTempPassword] = useState("");
-  const [tempPasswordRepeat, setTempPasswordRepeat] = useState("");
+  const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
+  const [tempPassword, setTempPassword] = useState("passwordA@2");
+  const [tempPasswordRepeat, setTempPasswordRepeat] = useState("passwordA@2");
   const [legalCheckBox, setLegalCheckBox] = useState(false);
 
-  // const handleLoginImputChange = () => {};
+  const handleOpenLink = async (url: string) => {
+    await Linking.openURL(url)
+  }
 
-  const handleRegisterSubmit = () => {
-    Alert.alert("Work in progress", "Soon, but not yet");
+  const handleRegisterSubmit = async (regPossible: boolean, email: string, password: string) => {
+    if(regPossible){
+      try{
+        const result = await fetchAPI({
+          link: API_LINK.createUser,
+          method: "POST",
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: {
+              userName: email.split("@")[0],
+              password: password,
+              email: email,
+              appLanguage: state.settings.langCode
+          }
+        })
+        if(typeof result === "undefined"){
+          Alert.alert(`Unknown error with registration!`);
+          return;
+        }
+        switch(result.response.status){
+          case 200: 
+            Alert.alert(`Success!`,`Welcome! Now you can login`);
+            navigateWithState({
+              navigation,
+              screen: SCREEN.login,
+              state
+            });
+             break;
+          case 400:
+            Alert.alert(`Bad request data 400`,`${result.response.statusText}`);break;
+          case 409:
+            Alert.alert(`Unable to create user 409`,`${result.response.statusText}`);break;
+          case 500:
+            Alert.alert(`Server error 500`,`${result.response.statusText}`);break;
+        }
+      }catch(err){
+        logger.error(`Cant register. Error: ${err}`);
+        console.log(err)
+      }
+    }
   };
 
   const handleLoginClick = () => {
@@ -117,12 +161,20 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             {t("passwordRulesLabel")}
           </Text>
         )}
+        <View style={registerStyle.legalLinkList}>
+          <TouchableOpacity onPress={() => handleOpenLink("https://biblebyheart.app/static/bible-by-heart-terms-of-service.html")}>
+            <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalTermsOfService")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleOpenLink("https://biblebyheart.app/static/bible-by-heart-privacy-policy.html")}>
+            <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalPrivacyPolicy")}</Text>
+          </TouchableOpacity>
+        </View>
         <View style={registerStyle.legalCheckWrapper}>
+          
           <TouchableOpacity
             onPress={() => {
               setLegalCheckBox(!legalCheckBox);
             }}
-            style={registerStyle.legal}
           >
             <Checkbox isEnabled={legalCheckBox} theme={theme} />
           </TouchableOpacity>
@@ -136,7 +188,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!regPossible}
-          onPress={handleRegisterSubmit}
+          onPress={() => handleRegisterSubmit(regPossible, tempEmail, tempPassword)}
         />
       </View>
       <Button
@@ -172,5 +224,11 @@ const registerStyle = StyleSheet.create({
     gap: 20,
     paddingHorizontal: 40
   },
-  legal: {}
+  legalLinkList: {
+    flexDirection: "column",
+    gap: 10,
+  },
+  legalLinkText: {
+    textDecorationLine: "underline"
+  }
 });

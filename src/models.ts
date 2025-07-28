@@ -24,13 +24,27 @@ export interface AppStateModel009 {
   userData: {
     // not implemented yet
     userId: number | null;
+    //email
+    //reg date
+    //app lang
+    //email confirmed
+    // last sync in state root
+    // app lang in state.settings
     userName: string | null;
+    //user title
     userPicture: string | null;
     birthDate: number | null;
+    //user rights
+    //is profile public
+    //is data public
+    //friend requests
+    //friends
+    //blocked users
+    //sessions
+    loginType: null | "email" | "google" | "apple" | "facebook";//replace with array
+    updateMessages: updateMessageModel[]; //move to root
+    feedBackMessages: feedbackMessageModel[]; //move to root
     authToken: string | null; //shoud be removed - saved in the expo-save-storage
-    loginType: null | "email" | "google" | "apple" | "facebook";
-    updateMessages: updateMessageModel[]; //later could update it from API
-    feedBackMessages: feedbackMessageModel[];
   };
   filters: {
     tags: string[];

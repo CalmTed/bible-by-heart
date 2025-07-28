@@ -266,6 +266,9 @@ export const en = {
   passwordRulesLabel:
     "Password should have al least one uppercase letter, one lowercase letter, one digit, one symbol from list:[@.#$!%*?&] and length of 8-40 chars",
   ComingSoon: "Coming soon 😉",
+  //register
+  openLegalPrivacyPolicy: "Privacy policy",
+  openLegalTermsOfService: "Terms of service",
 
   dayMO: "Mo",
   dayTU: "Tu",
