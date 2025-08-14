@@ -215,6 +215,7 @@ export const en = {
   DefaultTrainModeName: "Default training mode",
   NewTrainModeName: "New training mode",
   settsPrivacyPolicyHeader: "Privacy policy",
+  settsTermsOfServiceHeader: "Terms of service",
   OpenExternalLink: "Open external link",
   DaysLabelSingular: "day",
   DaysLabelTwoThreeFour: "days",

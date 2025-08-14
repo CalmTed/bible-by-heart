@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { PassageModel } from "./models";
 
-export const VERSION = "0.0.9";
+export const VERSION = "0.1.0";
 
 export const alowedStateVersions = [
   "0.0.4",
@@ -9,6 +9,7 @@ export const alowedStateVersions = [
   "0.0.6",
   "0.0.7",
   "0.0.8",
+  "0.0.9",
   VERSION
 ]; //make translators for imported data
 
@@ -48,6 +49,9 @@ export const LOGGER_MAX_ARRAY_SIZE = 3000;
 
 export const ACCESS_TOKEN_NAME = "accessToken";
 export const REFRESH_TOKEN_NAME = "refreshToken";
+
+export const PRIVACY_POLICY_LINK = "https://biblebyheart.app/static/bible-by-heart-privacy-policy.html";
+export const TERMS_OF_SERVICE_LINK = "https://biblebyheart.app/static/bible-by-heart-terms-of-service.html";
 
 export enum SCREEN {
   home = "home",

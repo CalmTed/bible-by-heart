@@ -65,6 +65,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L30: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -194,7 +195,6 @@ export const L30: FC<LevelComponentModel> = ({
   const unselectedWords = missingWords.filter(
     (mwi) => !selectedWords.includes(mwi)
   );
-  const theme = getThemeFromScheme(state.settings.theme);
 
   if (!targetPassage || !missingWords) {
     submitTest({ isRight: true, modifiedTest: test });

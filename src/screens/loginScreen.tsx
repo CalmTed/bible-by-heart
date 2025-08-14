@@ -11,31 +11,45 @@ import { Input } from "../components/Input";
 import { logger } from "src/utils/logger";
 import { fetchAPI } from "src/services/fetch";
 import * as SecureStore from "expo-secure-store";
+import { ActionName, AppStateModel, AppStateModel010 } from "src/models";
+import { reduce } from "src/utils/reduce";
 
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+  const { state, t, setState, theme } = useApp({ route, navigation });
 
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
-  const [tempPassword, setTempPassword] = useState("p@ssTest");
+  const [tempPassword, setTempPassword] = useState("passwordA@2");
+
+  //if session is already defined?
+  //- then login button will be blocked, 
+  // but if you for some reason anready here, you can login again
+
 
   const handleLoginSubmit = async (loginPossible: boolean, email: string, password: string) => {
-    if(loginPossible){
-      try{
+    if (loginPossible) {
+      try {
         const result = await fetchAPI({
           link: API_LINK.login,
           method: "POST",
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
           body: {
             email,
             password
+          },
+          logoutMethods: {
+            state, setState, navigation, screen: SCREEN.settings
           }
         })
-        if(typeof result === "undefined"){
+        if (typeof result === "undefined") {
           Alert.alert(`Unknown error with authorization!`);
           return;
         }
-        switch(result.response.status){
+        switch (result.response.status) {
           case 200:
-            if(result?.data){
+            if (result?.data) {
               //save auth keys
               SecureStore.setItem(ACCESS_TOKEN_NAME, result.data.token);
               SecureStore.setItem(REFRESH_TOKEN_NAME, result.data.refreshToken);
@@ -45,32 +59,67 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 method: "GET",
                 headers: {
                   Authorization: `Bearer ${result.data.token}`
+                },
+                logoutMethods: {
+                  state, setState, navigation, screen: SCREEN.settings
                 }
               })
-              if(typeof userData === "undefined"){
-                Alert.alert(`Unknown error`,`Unable to get user data`);
+              if (typeof userData === "undefined") {
+                Alert.alert(`Unknown error`, `Unable to get user data`);
                 return;
               }
-              switch(result.response.status){
-                case 200: 
-                  //write data to state 
-                  //go to settings screen
-                break;
-                case 401: break;
-                case 403: break;
-                case 406: break;
-                case 500: break;
+              switch (userData.response.status) {
+                case 200:
+                  const udd = userData.data as Record< keyof AppStateModel["userData"] | "appLanguage", any>;
+                  const newState = reduce(state, {
+                    name: ActionName.setUserData,
+                    payload: {
+                      uuid: udd.uuid,
+                      email: udd.email,
+                      registrationDate: udd.registrationDate,
+                      isEmailConfirmed: udd.isEmailConfirmed,
+                      //setting user data update time automaticaly
+                      userName: udd.userName,
+                      userTitle: udd.userTitle,
+                      userPicture: udd.userPicture,
+                      birthDate: udd.birthDate,
+                      userRights: udd.userRights,
+                      isProfilePublic: udd.isProfilePublic,
+                      isDataPublic: udd.isDataPublic,
+                      friendRequests: udd.friendRequests,
+                      friends: udd.friends,
+                      blockedUsers: udd.blockedUsers,
+                      sessions: udd.sessions,
+                      applang: state.settings.langCode !== udd.appLanguage ? udd.appLanguage : undefined //set app lang if different
+                  }
+                    
+                  });
+                  if (newState === null) {
+                    return Alert.alert(`Unknown error`, `Unable to reduce user data`);
+                  }
+                  setState(newState)
+                  navigateWithState({
+                    navigation,
+                    screen: SCREEN.settings,
+                    state: newState
+                  })
+                  break;
+                case 400: Alert.alert(`Unable to get user data 400`, `${userData.response.statusText}`); break;
+                case 401: Alert.alert(`Unable to get user data 401`, `${userData.response.statusText}`); break;
+                case 403: Alert.alert(`Unauthorized to get user data 403`, `${userData.response.statusText}`); break;
+                case 406: Alert.alert(`Unable to get user data. User not found 406`, `${userData.response.statusText}`); break;
+                case 500: Alert.alert(`Unable to get user data. Server error 500`, `${userData.response.statusText}`); break;
               }
-              
-            }else{
-              Alert.alert(`Unknown server error`,`Recieved status 200 with no data`);
+
+            } else {
+              Alert.alert(`Unknown server error`, `Recieved status 200 with no data`);
             }
-          break;
-          case 400: Alert.alert(`Bad request data 400`,`${result.response.statusText}`);break;
-          case 401: Alert.alert(`Unable to login 401`,`${result.response.statusText}`);break;
-          case 500: Alert.alert(`Server error 500`,`${result.response.statusText}`);break;
+            break;
+          case 400: Alert.alert(`Bad request data 400`, `${result.response.statusText}`); break;
+          case 401: Alert.alert(`Unable to login 401`, `${result.response.statusText}`); break;
+          case 500: Alert.alert(`Server error 500`, `${result.response.statusText}`); break;
         }
-      }catch(err){
+      } catch (err) {
         logger.error(`Cant login. Error: ${err}`);
         Alert.alert(`Unknown error with authorization!`, `${err}`);
         console.log(err)

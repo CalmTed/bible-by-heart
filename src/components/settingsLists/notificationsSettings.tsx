@@ -48,7 +48,8 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
       width: "100%",
-      height: "100%"
+      height: "100%",
+      paddingTop: 50,
     },
     miniModalContent: {
       height: 60,

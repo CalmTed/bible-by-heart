@@ -290,6 +290,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         />
         <LevelPicker
           t={t}
+          theme={theme}
           state={state}
           targetPassage={targetPassage}
           testLevel={activeTestObj.l}
@@ -300,6 +301,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l10 && (
           <L10
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -309,6 +311,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l11 && (
           <L11
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -318,6 +321,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l20 && (
           <L20
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -327,6 +331,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l21 && (
           <L21
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -336,6 +341,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l30 && (
           <L30
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -345,6 +351,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l40 && (
           <L40
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}
@@ -354,6 +361,7 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l50 && (
           <L50
             test={activeTestObj}
+            theme={theme}
             state={state}
             t={tempT}
             submitTest={handleTestSubmit}

@@ -9,55 +9,54 @@ import {
 } from "./constants";
 import { WORD } from "./l10n";
 
-export type AppStateModel = AppStateModel009;
+export type AppStateModel = AppStateModel010;
 
-export interface AppStateModel009 {
-  version: string;
-  apiVersion: string; //not implemented yet
-  lastChange: number;
-  lastBackup: number;
-  dateSyncTry: number; //not implemented yet
-  dateSyncSuccess: number; //not implemented yet
-  passages: PassageModel009[];
-  testsActive: TestModel009[];
-  testsHistory: TestModel009[];
+export interface AppStateModel010 {
+  version: string;//copy
+  apiVersion: string;//copy
+  lastChange: number;//copy
+  lastBackup: number;//copy
+  dateSyncTry: number;//default -1
+  dateSyncSuccess: number;//default -1
+  passages: PassageModel009[]//should refactor it
+  testsActive: TestModel009[]
+  testsHistory: TestModel009[]
   userData: {
-    // not implemented yet
-    userId: number | null;
-    //email
-    //reg date
-    //app lang
-    //email confirmed
-    // last sync in state root
-    // app lang in state.settings
+    uuid: string |  null;//set to null on logout
+    email: string | null;
+    registrationDate: number | null;
+    isEmailConfirmed: boolean | null;
+    lastUserDataSync: number | null;
     userName: string | null;
-    //user title
+    userTitle: string | null;
     userPicture: string | null;
     birthDate: number | null;
-    //user rights
-    //is profile public
-    //is data public
-    //friend requests
-    //friends
-    //blocked users
-    //sessions
-    loginType: null | "email" | "google" | "apple" | "facebook";//replace with array
-    updateMessages: updateMessageModel[]; //move to root
-    feedBackMessages: feedbackMessageModel[]; //move to root
-    authToken: string | null; //shoud be removed - saved in the expo-save-storage
-  };
+    userRights: "developer" | "admin" | "full" | "trial" | "free" | null; //default free //should rename to role
+    isProfilePublic: "private" | "reference_link_olny" | "public" | null;
+    isDataPublic: "private" | "public" | null; //(anonimized for stats)
+    friendRequests: string[]; //uuid's
+    friends: string[];
+    blockedUsers: string[];
+    sessions: string[];//readible form only for check other devices
+    loginTypes: {
+      email: boolean,
+      google: boolean
+    }
+  },
+  broadcastMessages: BroadcastMessageModel010[];//for important announcement
+  updateMessages: UpdateMessageModel010[];//for updates news and friends updates, like requests and confirmations
+  feedBackMessages: FeedbackMessageModel010[];
   filters: {
     tags: string[];
     selectedLevels: PASSAGELEVEL[];
     maxLevels: PASSAGELEVEL[];
     translations: number[];
-  };
+  }
   sort: SORTINGOPTION;
   statsDateRange: {
-    //negative number for relative value(from now), positive number for timestamp
     from: number;
     to: number;
-  };
+  }
   settings: {
     [SETTINGS.langCode]: LANGCODE;
     [SETTINGS.theme]: THEMETYPE;
@@ -84,24 +83,25 @@ export interface AppStateModel009 {
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
     [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
-  };
+  }
 }
+
 
 export type PassageModel = PassageModel009;
 
 export interface PassageModel009 {
   id: number;
-  ownerId: number | null; //userId
+  ownerId: number | null; //uuid
   address: AddressType;
   versesNumber: number;
   verseText: string;
-  verseTranslation: number | null; //item id from settings.translation
+  verseTranslation: number | null; //item id from settings.translation, null for "other"
   dateCreated: number;
   dateEdited: number;
   dateTested: number;
   selectedLevel: PASSAGELEVEL;
   maxLevel: PASSAGELEVEL; //set on the end of testing according to history of tests
-  upgradeDates: Record<PASSAGELEVEL, number>; //number of upgrade to derive relative score
+  upgradeDates: Record<PASSAGELEVEL, number>; //number of upgrades to derive relative score
   minIntervalDaysNum: number | null; //aka reminder number of days
   isNewLevelAwalible: boolean;
   tags: string[]; //archive and custom
@@ -230,7 +230,9 @@ export enum ActionName {
   setTranslationsList = "setTranslationsList",
   setRemindersList = "setRemindersList",
   setTrainModesList = "setTrainModesList",
-  importPassages = "importPassages"
+  importPassages = "importPassages",
+  setUserData = "setUserData",
+  resetUserData = "resetUserData"
 }
 export type ActionModel =
   | {
@@ -331,22 +333,53 @@ export type ActionModel =
       payload: TrainModeModel[];
     }
   | {
-      name: ActionName.importPassages;
-      payload: {
-        passages: PassageModel[];
-      };
+    name: ActionName.importPassages;
+    payload: {
+      passages: PassageModel[];
     };
-interface updateMessageModel {
+  } 
+  | {
+    name: ActionName.setUserData;
+    payload: {
+      uuid: string,
+      email: string,
+      registrationDate: number
+      isEmailConfirmed: boolean
+      //lastUserDataSync: number setts in reducer automaticaly
+      userName: string
+      userTitle: string
+      userPicture: string
+      birthDate: number
+      userRights: "developer" | "admin" | "full" | "trial" | "free"
+      isProfilePublic: "private" | "reference_link_olny" | "public" 
+      isDataPublic: "private" | "public" 
+      friendRequests: string[]
+      friends: string[]
+      blockedUsers: string[]
+      sessions: string[]
+      applang?: LANGCODE
+    };
+  } 
+  | {
+    name: ActionName.resetUserData
+  }
+interface UpdateMessageModel010 {
   id: number;
-  header: WORD;
-  text: WORD;
-  buttonHeader: WORD;
+  header: string;
+  text: string;
+  reactions: Reaction[];
   image: string; //small base64 file or external link
   link: string;
   isRead: boolean;
 }
 
-interface feedbackMessageModel {
+interface Reaction {
+  emoji: string;
+  giverUUID: number;
+  givingDate: number;
+}
+
+interface FeedbackMessageModel010 {
   id: number;
   creatorUserId: number;
   timeCreated: number;
@@ -357,7 +390,85 @@ interface feedbackMessageModel {
   attechmentType: "photo" | "video" | "file" | "other";
 }
 
+interface BroadcastMessageModel010 {
+  id: number;
+  header: WORD;//because it should be translated
+  text: WORD;
+  linkLabel?: WORD;
+  linkAddress?: string;
+}
+
 /* state archive */
+
+export interface AppStateModel009 {
+  version: string;
+  apiVersion: string; //not implemented yet
+  lastChange: number;
+  lastBackup: number;
+  dateSyncTry: number; //not implemented yet
+  dateSyncSuccess: number; //not implemented yet
+  passages: PassageModel009[];
+  testsActive: TestModel009[];
+  testsHistory: TestModel009[];
+  userData: {
+    userId: number | null;
+    userName: string | null;
+    //user title
+    userPicture: string | null;
+    birthDate: number | null;
+    //user rights
+    //is profile public
+    //is data public
+    //friend requests
+    //friends
+    //blocked users
+    //sessions
+    loginType: null | "email" | "google" | "apple" | "facebook";//replace with array
+    updateMessages: UpdateMessageModel010[]; //move to root
+    feedBackMessages: FeedbackMessageModel010[]; //move to root
+    authToken: string | null; //shoud be removed - saved in the expo-save-storage
+  };
+  filters: {
+    tags: string[];
+    selectedLevels: PASSAGELEVEL[];
+    maxLevels: PASSAGELEVEL[];
+    translations: number[];
+  };
+  sort: SORTINGOPTION;
+  statsDateRange: {
+    //negative number for relative value(from now), positive number for timestamp
+    from: number;
+    to: number;
+  };
+  settings: {
+    [SETTINGS.langCode]: LANGCODE;
+    [SETTINGS.theme]: THEMETYPE;
+    [SETTINGS.devModeEnabled]: boolean;
+    [SETTINGS.devModeActivationTime]: number | null;
+    [SETTINGS.chapterNumbering]: "eastern" | "vestern"; //not implemented yet
+    [SETTINGS.hapticsEnabled]: boolean;
+    [SETTINGS.soundsEnabled]: boolean; //not implemented yet
+    [SETTINGS.compressOldTestsData]: boolean; //not implemented yet
+    [SETTINGS.autoIncreaseLevel]: boolean;
+    [SETTINGS.leftSwipeTag]: string;
+
+    [SETTINGS.remindersEnabled]: boolean;
+    [SETTINGS.remindersSmartTime]: boolean;
+    [SETTINGS.remindersList]: ReminderModel[];
+
+    [SETTINGS.translations]: TranslationModel[];
+    [SETTINGS.homeScreenStatsType]:
+      | "auto"
+      | "dayStreak"
+      | "absoluteProgress"
+      | "monthProgress"; //not implemented yet
+    [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
+
+    [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
+    [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
+  };
+}
+
 
 export interface PassageModel008 {
   id: number;

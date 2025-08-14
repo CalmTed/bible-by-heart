@@ -5,7 +5,7 @@ import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { MiniModal } from "../miniModal";
 import { SettingsMenuItem } from "../setttingsMenuItem";
-import { DAY, VERSION } from "../../constants";
+import { DAY, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, VERSION } from "../../constants";
 import { createAppState } from "../../initials";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
@@ -192,7 +192,18 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           subtext={t("OpenExternalLink")}
           actionCallBack={() => {
             Linking.openURL(
-              "https://ted9.xyz/pp/bible-by-heart-privacy-policy.html"
+              PRIVACY_POLICY_LINK
+            );
+          }}
+        />
+        <SettingsMenuItem
+          theme={theme}
+          type="action"
+          header={t("settsTermsOfServiceHeader")}
+          subtext={t("OpenExternalLink")}
+          actionCallBack={() => {
+            Linking.openURL(
+              TERMS_OF_SERVICE_LINK
             );
           }}
         />

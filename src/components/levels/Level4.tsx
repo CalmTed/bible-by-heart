@@ -97,6 +97,7 @@ export const L40: FC<LevelComponentModel> = ({
   test,
   state,
   t,
+  theme,
   submitTest,
   dispatch
 }) => {
@@ -281,7 +282,6 @@ export const L40: FC<LevelComponentModel> = ({
 
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
-  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>

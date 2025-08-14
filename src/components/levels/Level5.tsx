@@ -82,6 +82,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L50: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -279,7 +280,6 @@ export const L50: FC<LevelComponentModel> = ({
 
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
-  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>

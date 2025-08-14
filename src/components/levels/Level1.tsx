@@ -9,7 +9,7 @@ import {
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
-import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
+import { getThemeFromScheme, ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import {
   MINIMUM_SENTENCE_LENGTH,
   SENTENCE_SEPARATOR,
@@ -18,6 +18,7 @@ import {
 
 export interface LevelComponentModel {
   test: TestModel;
+  theme: ThemeAndColorsModel;
   state: AppStateModel;
   t: (w: WORD) => string;
   submitTest: (data: { isRight: boolean; modifiedTest: TestModel }) => void;
@@ -67,6 +68,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L10: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest
 }) => {
@@ -109,7 +111,6 @@ export const L10: FC<LevelComponentModel> = ({
     }
   };
   const levelFinished = test.f;
-  const theme = getThemeFromScheme(state.settings.theme);
   const sentences = rightPassage.verseText
     .split(SENTENCE_SEPARATOR)
     .filter((s) => s.length);
@@ -189,6 +190,7 @@ export const L10: FC<LevelComponentModel> = ({
 export const L11: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest
 }) => {
@@ -236,7 +238,6 @@ export const L11: FC<LevelComponentModel> = ({
     return <View />;
   }
   const levelFinished = test.f;
-  const theme = getThemeFromScheme(state.settings.theme);
   return (
     <View style={{ ...levelComponentStyle.levelComponentView }}>
       <View style={{ ...levelComponentStyle.addressTextView }}>

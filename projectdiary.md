@@ -391,6 +391,7 @@ boilerplate:
     - finish login ang register screen
     - push to staging, test, to production
     - do other tasks - refactor
+        - show, explore logger messages
         - rewrite navigator
             - update design
             - deep linking
@@ -403,6 +404,7 @@ boilerplate:
         - broadcast messages
         - feedback/support messager
         - syncing data
+            - on the first sync add author to all passages
         - other activity and reciving tests
         - update notifications to be smarter
         - update addressPicker
@@ -423,7 +425,7 @@ boilerplate:
     - test all workflows
     - publish for ios?
 - later
-    - refactor: navigator, state change behaivour, update t(), apdate swipable and animations
+    - refactor: navigator, state change behaivour, update t(), update swipable and animations
     - update
         - address picker
         - recieving passage texts
@@ -436,4 +438,22 @@ boilerplate:
         - friends feature, feed, reactions
         - login with google or other 3rd party
         - groups and shared lists
-        - 
+2025-08-12
+- [x] updating state
+    - update state model
+    - update initials
+    - add state converter
+- [x] react to errors
+- [.] add setting user data in reducer
+2025-08-14
+- [x] finished geting and user data and setting it to state
+- [x] did refresh token featuyre - check every time we fetch with auth token
+- [x] did logout feature
+- next time:
+    - show user data: email, reg date, email confirmation, userName, userTitle, userRights, is profile public, is data public
+    - do not show bithdate and user picture options for now
+    - basic edit data: title, is data public, 
+    - request new confirmation email
+    - request password reset
+    - delete account 
+    - translate aletrs, buttons, and errors

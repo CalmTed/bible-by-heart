@@ -21,7 +21,7 @@ import {
   generateTests,
   getPassagesByTrainMode
 } from "./generateTests";
-import { createTest } from "../initials";
+import { createAppState, createTest } from "../initials";
 import { logger } from "./logger";
 import toastShow from "./toastShow";
 
@@ -511,8 +511,45 @@ export const reduce: (
         passages: [...state.passages, ...importedPassages]
       };
       break;
-    default:
-      logger.error(`unknown action name: ${action}`);
+    case ActionName.setUserData: 
+      if( !action.payload){
+        break;
+      }
+      changedState = {
+        ...state,
+        settings: {
+          ...state.settings,
+          langCode: action.payload.applang ? action.payload.applang : state.settings.langCode
+        },
+        userData: {
+          ...state.userData,
+          lastUserDataSync: new Date().getTime(),
+          uuid: action.payload.uuid,
+          email: action.payload.email,
+          registrationDate: action.payload.registrationDate,
+          isEmailConfirmed: action.payload.isEmailConfirmed,
+          userName: action.payload.userName,
+          userTitle: action.payload.userTitle,
+          userPicture: action.payload.userPicture,
+          birthDate: action.payload.birthDate,
+          userRights: action.payload.userRights,
+          isProfilePublic: action.payload.isProfilePublic,
+          isDataPublic: action.payload.isDataPublic,
+          friendRequests: action.payload.friendRequests,
+          friends: action.payload.friends,
+          blockedUsers: action.payload.blockedUsers,
+          sessions: action.payload.sessions
+        }
+      }
+      break;
+    case ActionName.resetUserData: 
+      changedState = {
+        ...state,
+        userData: createAppState().userData
+      }
+      break;
+     default:
+      logger.error(`unknown action name: ${(action as ActionModel).name}`);
   }
   if (changedState) {
     const timeOfChange = new Date().getTime();

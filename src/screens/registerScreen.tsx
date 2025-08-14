@@ -6,7 +6,7 @@ import { Header } from "..//components/Header";
 import { Button, IconButton } from "..//components/Button";
 import { navigateWithState } from "..//screeenManagement";
 import { IconName } from "..//components/Icon";
-import { API_LINK, SCREEN } from "..//constants";
+import { API_LINK, PRIVACY_POLICY_LINK, SCREEN, TERMS_OF_SERVICE_LINK } from "..//constants";
 import { Input } from "..//components/Input";
 import { Checkbox } from "..//components/Checkbox";
 import { fetchAPI } from "../services/fetch"
@@ -162,10 +162,10 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           </Text>
         )}
         <View style={registerStyle.legalLinkList}>
-          <TouchableOpacity onPress={() => handleOpenLink("https://biblebyheart.app/static/bible-by-heart-terms-of-service.html")}>
+          <TouchableOpacity onPress={() => handleOpenLink(TERMS_OF_SERVICE_LINK)}>
             <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalTermsOfService")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleOpenLink("https://biblebyheart.app/static/bible-by-heart-privacy-policy.html")}>
+          <TouchableOpacity onPress={() => handleOpenLink(PRIVACY_POLICY_LINK)}>
             <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalPrivacyPolicy")}</Text>
           </TouchableOpacity>
         </View>

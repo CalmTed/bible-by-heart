@@ -10,6 +10,7 @@ import {
   AppStateModel007,
   AppStateModel008,
   AppStateModel009,
+  AppStateModel010,
   PassageModel008,
   PassageModel009,
   TestModel006,
@@ -19,6 +20,54 @@ import {
 import { testLevelToPassageLevel } from "./levelsConvertion";
 
 type ConverterType = (stateFrom: any) => any;
+
+const to010: ConverterType = (stateFrom) => {
+  const from = stateFrom as AppStateModel009;
+  //remove auth token
+  const to = {
+      version: "0.1.0",
+      apiVersion: from.apiVersion,
+      lastChange: from.lastChange,
+      lastBackup: from.lastBackup,
+      dateSyncTry: -1,
+      dateSyncSuccess: -1,
+      passages: from.passages,
+      testsActive: [],
+      testsHistory: from.testsHistory,
+      userData: {
+        uuid: null,
+        email: null,
+        registrationDate: null,
+        isEmailConfirmed: null,
+        lastUserDataSync: -1,
+        userTitle: null,
+        userPicture: null,
+        birthDate: null,
+        userRights: null,
+        isProfilePublic: null,
+        isDataPublic: "private", 
+        friendRequests: [],
+        friends: [],
+        blockedUsers: [],
+        sessions: [],
+        loginTypes: {
+          email: false,
+          google: false
+        }
+      },
+      broadcastMessages: [],
+      updateMessages: [],
+      feedBackMessages: [],
+      filters: from.filters,
+      sort: from.sort,
+      statsDateRange: {
+        from: 0,
+        to: -1
+      },
+      settings: from.settings
+    } as AppStateModel010;
+    return to;
+}
 
 const to009: ConverterType = (stateFrom) => {
   const from = stateFrom as AppStateModel008;
@@ -279,6 +328,11 @@ export const versionsConvertionTable: {
     from: ["0.0.8"],
     to: "0.0.9",
     method: to009
+  },
+  {
+    from: ["0.0.9"],
+    to: "0.1.0",
+    method: to010
   }
 ];
 

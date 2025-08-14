@@ -222,6 +222,7 @@ export const ua: typeof en = {
   DefaultTrainModeName: "Звичайний режим",
   NewTrainModeName: "Новий режим",
   settsPrivacyPolicyHeader: "Політика конфіденційності",
+  settsTermsOfServiceHeader: "Умови викороистання",
   OpenExternalLink: "Зовнішнє посилання (англійською)",
   DaysLabelSingular: "день",
   DaysLabelTwoThreeFour: "дня",

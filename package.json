@@ -30,6 +30,7 @@
   },
   "expo.doctor.reactNativeDirectoryCheck.listUnknownPackages": false,
   "dependencies": {
+    "buffer": "^6.0.3",
     "d": "^1.0.2",
     "eas-cli": "16.13.0",
     "expo": "^53.0.12",
