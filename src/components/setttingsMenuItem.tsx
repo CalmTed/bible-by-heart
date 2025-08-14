@@ -43,6 +43,7 @@ type SettingsMenuItemModel =
       type: "textinput";
       value: string;
       onChange: (selectedValue: string) => void;
+      onEndEditing?: (selectedValue: string) => void;
       maxLength?: number;
       disabled?: boolean;
     }
@@ -195,6 +196,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
           <Input
             value={data.value}
             onChange={data.onChange}
+            onEndEditing={data.onEndEditing}
             placeholder={data.header}
             theme={data.theme}
             maxLength={data.maxLength}

@@ -5,7 +5,7 @@ import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { MiniModal } from "../miniModal";
 import { SettingsMenuItem } from "../setttingsMenuItem";
-import { DAY, PRIVACY_POLICY_LINK, TERMS_OF_SERVICE_LINK, VERSION } from "../../constants";
+import { ACCESS_TOKEN_NAME, DAY, PRIVACY_POLICY_LINK, REFRESH_TOKEN_NAME, SCREEN, TERMS_OF_SERVICE_LINK, VERSION } from "../../constants";
 import { createAppState } from "../../initials";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
@@ -17,11 +17,15 @@ import { convertState } from "../../utils/stateVersionConvert";
 import { dateToString } from "../../utils/formatDateTime";
 import { logger } from "../../utils/logger";
 import toastShow from "src/utils/toastShow";
+import { navigateWithState } from "src/screeenManagement";
+import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import * as SecureStore from "expo-secure-store";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
   state: AppStateModel;
   setState: React.Dispatch<React.SetStateAction<AppStateModel>>;
+  navigation: StackNavigationHelpers
   t: (w: WORD) => string;
 }
 
@@ -29,6 +33,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
   theme,
   state,
   t,
+  navigation,
   setState
 }) => {
   const [isDevPasswordModalOpen, setIsDevPasswordModalOpen] = useState(false);
@@ -337,6 +342,25 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         )}
         {state.settings.devModeEnabled && (
           <View>
+            <SettingsMenuItem
+              theme={theme}
+              type="action"
+              subtext=""
+              header={t("Reset local user data")}
+              actionCallBack={async () => {
+                const newState = reduce(state, {
+                  name: ActionName.resetUserData
+                })
+                if (newState === null) {
+                  return logger.error(`Unknown error: Unable to reset user data`);
+                }
+                setState(newState);
+                await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
+                await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
+              }}
+            >
+
+            </SettingsMenuItem>
             <SettingsMenuItem
               theme={theme}
               type="action"

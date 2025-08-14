@@ -341,22 +341,22 @@ export type ActionModel =
   | {
     name: ActionName.setUserData;
     payload: {
-      uuid: string,
-      email: string,
-      registrationDate: number
-      isEmailConfirmed: boolean
-      //lastUserDataSync: number setts in reducer automaticaly
-      userName: string
-      userTitle: string
-      userPicture: string
-      birthDate: number
-      userRights: "developer" | "admin" | "full" | "trial" | "free"
-      isProfilePublic: "private" | "reference_link_olny" | "public" 
-      isDataPublic: "private" | "public" 
-      friendRequests: string[]
-      friends: string[]
-      blockedUsers: string[]
-      sessions: string[]
+      uuid?: string,
+      email?: string,
+      registrationDate?: number
+      isEmailConfirmed?: boolean
+      lastUserDataSync?: number
+      userName?: string
+      userTitle?: string
+      userPicture?: string
+      birthDate?: number
+      userRights?: "developer" | "admin" | "full" | "trial" | "free"
+      isProfilePublic?: "private" | "reference_link_olny" | "public" 
+      isDataPublic?: "private" | "public" 
+      friendRequests?: string[]
+      friends?: string[]
+      blockedUsers?: string[]
+      sessions?: string[]
       applang?: LANGCODE
     };
   } 

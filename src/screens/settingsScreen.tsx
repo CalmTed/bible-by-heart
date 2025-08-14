@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { SCREEN, LANGCODE, THEMETYPE, ACCESS_TOKEN_NAME, API_LINK, REFRESH_TOKEN_NAME } from "../constants";
 import { ActionName, AppStateModel } from "../models";
@@ -17,10 +17,10 @@ import { AboutSettingsList } from "../components/settingsLists/aboutSettings";
 import { TestsSettingsList } from "../components/settingsLists/testsSettings";
 import { StatsSettingsList } from "../components/settingsLists/statsSettings";
 import { useApp } from "../utils/useApp";
-import { dateToString } from "src/utils/formatDateTime";
 import * as SecureStore from "expo-secure-store";
 import { fetchAPI } from "src/services/fetch";
 import { logger } from "src/utils/logger";
+import { UserSettingsList } from "src/components/settingsLists/userSettings";
 
 export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -39,7 +39,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       state,
       navigation
     });
-    // checkAPIVersion({localAPIVersion: v})
   };
 
 
@@ -77,66 +76,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     }
   }
 
-  const updateUserData = async () => {
-    const accessToken = SecureStore.getItem(ACCESS_TOKEN_NAME);
-    //fetch user data
-    const userData = await fetchAPI({
-      link: API_LINK.getUserData,
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      },
-      logoutMethods: {
-        state, setState, navigation, screen: SCREEN.settings
-      }
-    })
-    if (typeof userData === "undefined") {
-      Alert.alert(`Unknown error`, `Unable to get user data`);
-      return;
-    }
-    switch (userData.response.status) {
-      case 200:
-        const udd = userData.data as Record< keyof AppStateModel["userData"] | "appLanguage", any>;
-        const newState = reduce(state, {
-          name: ActionName.setUserData,
-          payload: {
-            uuid: udd.uuid,
-            email: udd.email,
-            registrationDate: udd.registrationDate,
-            isEmailConfirmed: udd.isEmailConfirmed,
-            //setting user data update time automaticaly
-            userName: udd.userName,
-            userTitle: udd.userTitle,
-            userPicture: udd.userPicture,
-            birthDate: udd.birthDate,
-            userRights: udd.userRights,
-            isProfilePublic: udd.isProfilePublic,
-            isDataPublic: udd.isDataPublic,
-            friendRequests: udd.friendRequests,
-            friends: udd.friends,
-            blockedUsers: udd.blockedUsers,
-            sessions: udd.sessions,
-            applang: state.settings.langCode !== udd.appLanguage ? udd.appLanguage : undefined //set app lang if different
-        }
-          
-        });
-        if (newState === null) {
-          return Alert.alert(`Unknown error`, `Unable to reduce user data`);
-        }
-        setState(newState)
-        navigateWithState({
-          navigation,
-          screen: SCREEN.settings,
-          state: newState
-        })
-        break;
-      case 400: Alert.alert(`Unable to get user data 400`, `${userData.response.statusText}`); break;
-      case 401: Alert.alert(`Unable to get user data 401`, `${userData.response.statusText}`); break;
-      case 403: Alert.alert(`Unauthorized to get user data 403`, `${userData.response.statusText}`); break;
-      case 406: Alert.alert(`Unable to get user data. User not found 406`, `${userData.response.statusText}`); break;
-      case 500: Alert.alert(`Unable to get user data. Server error 500`, `${userData.response.statusText}`); break;
-    }
-  }
+
 
   const haveToken = SecureStore.getItem(ACCESS_TOKEN_NAME) !== null;
   const isAutorized = haveToken && state.userData.uuid !== null;
@@ -183,15 +123,14 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
           }
           {isAutorized && 
           <View>
-            <Text style={theme.theme.headerText}>{state.userData.userName}</Text>
-            <Text style={theme.theme.text}>{state.userData.email}</Text>
-            <Text style={theme.theme.text}>With us from { dateToString(state.userData.registrationDate || 0)}</Text>
-            <Button
+            <Text style={theme.theme.headerText}>{state.userData.userTitle}</Text>
+            <Text style={theme.theme.text}>@{state.userData.userName}</Text>
+            {/* <Button
               theme={theme}
               onPress={() => updateUserData()}
               title={t("update")}
               type="transparent"
-            />
+            /> */}
             <Button
               theme={theme}
               onPress={() => handleLogoutPress()}
@@ -249,6 +188,15 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               );
             }}
           />
+          {isAutorized && 
+            <UserSettingsList
+              theme={theme}
+              state={state}
+              setState={setState}
+              t={t}
+              navigation={navigation}
+            />
+          }
           {/* LISTS */}
           <ListSettingsList
             theme={theme}
@@ -284,6 +232,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             state={state}
             setState={setState}
             t={t}
+            navigation={navigation}
           />
         </View>
       </ScrollView>

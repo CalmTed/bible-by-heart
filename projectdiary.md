@@ -449,11 +449,15 @@ boilerplate:
 - [x] finished geting and user data and setting it to state
 - [x] did refresh token featuyre - check every time we fetch with auth token
 - [x] did logout feature
-- next time:
-    - show user data: email, reg date, email confirmation, userName, userTitle, userRights, is profile public, is data public
-    - do not show bithdate and user picture options for now
-    - basic edit data: title, is data public, 
-    - request new confirmation email
-    - request password reset
-    - delete account 
+- [x] fixed color theme bug in tests and level picker there
+- [x] show user data: email, reg date, email confirmation, userName, userTitle, userRights, is profile public, is data public
+- [x] do not show bithdate and user picture options for now
+- [x] basic edit data: title, is data public, 
+- [x] request new confirmation email
+- [x] request password reset
+- [x] delete account 
+next time
     - translate aletrs, buttons, and errors
+- idea: add to each session: devise, system, last sync date
+- idea: add date of buyng premium, expiration date, total time as premium user
+- IDEA: API handle to check if userName is unique, same previus userNames with dates of change

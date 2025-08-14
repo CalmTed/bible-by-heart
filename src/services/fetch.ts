@@ -19,12 +19,12 @@ interface fetchResponseModel {
 export const fetchAPI: (a: {
   link: API_LINK;
   method: "POST" | "GET" | "DELETE";
-  logoutMethods: {
+  logoutMethods: { //mandatory, in case of invalid refresh token
     state: AppStateModel
     setState: React.Dispatch<React.SetStateAction<AppStateModel>>
     navigation: StackNavigationHelpers
     screen: SCREEN
-  } //mandatory, in case of invalid refresh token
+  } 
   headers?: Record<string, string>;
   body?: Record<string, any>; //without JSON.stringify()
 }) => Promise< fetchResponseModel | undefined> = async ({

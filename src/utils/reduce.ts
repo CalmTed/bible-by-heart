@@ -524,21 +524,21 @@ export const reduce: (
         userData: {
           ...state.userData,
           lastUserDataSync: new Date().getTime(),
-          uuid: action.payload.uuid,
-          email: action.payload.email,
-          registrationDate: action.payload.registrationDate,
-          isEmailConfirmed: action.payload.isEmailConfirmed,
-          userName: action.payload.userName,
-          userTitle: action.payload.userTitle,
-          userPicture: action.payload.userPicture,
-          birthDate: action.payload.birthDate,
-          userRights: action.payload.userRights,
-          isProfilePublic: action.payload.isProfilePublic,
-          isDataPublic: action.payload.isDataPublic,
-          friendRequests: action.payload.friendRequests,
-          friends: action.payload.friends,
-          blockedUsers: action.payload.blockedUsers,
-          sessions: action.payload.sessions
+          uuid: action.payload.uuid ? action.payload.uuid : state.userData.uuid,
+          email: action.payload.email ? action.payload.email : state.userData.email,
+          registrationDate: action.payload.registrationDate ? action.payload.registrationDate : state.userData.registrationDate,
+          isEmailConfirmed: action.payload.isEmailConfirmed ? action.payload.isEmailConfirmed : state.userData.isEmailConfirmed,
+          userName: action.payload.userName ? action.payload.userName : state.userData.userName,
+          userTitle: action.payload.userTitle ?  action.payload.userTitle :  state.userData.userTitle,
+          userPicture: action.payload.userPicture ? action.payload.userPicture : state.userData.userPicture,
+          birthDate: action.payload.birthDate ? action.payload.birthDate : state.userData.birthDate,
+          userRights: action.payload.userRights ? action.payload.userRights : state.userData.userRights,
+          isProfilePublic: action.payload.isProfilePublic ? action.payload.isProfilePublic : state.userData.isProfilePublic,
+          isDataPublic: action.payload.isDataPublic ? action.payload.isDataPublic : state.userData.isDataPublic,
+          friendRequests: action.payload.friendRequests ? action.payload.friendRequests : state.userData.friendRequests,
+          friends: action.payload.friends ? action.payload.friends : state.userData.friends,
+          blockedUsers: action.payload.blockedUsers ? action.payload.blockedUsers : state.userData.blockedUsers,
+          sessions: action.payload.sessions ? action.payload.sessions : state.userData.sessions
         }
       }
       break;
