@@ -159,6 +159,7 @@ export const en = {
   settsCleared: "Cleared!",
   settsDevMode: "Dev mode",
   settsResetLocalUserData: "Reset local user data",
+  settsResetLocalUserData: "Reset local user data",
   settsHaptics: "Haptics vibration",
   settsLeftSwipeTag: "Right swipe category",
   settsDevPasswordHeader: "Enter answer to number",
@@ -226,12 +227,14 @@ export const en = {
   settsUserHeader: "User settings",
   settsIConfirmDeletion: "I confirm deletion of account ",
   settsEmailConfirmLintSentTitle: "Link sent successfully",
-  settsEmailConfirmLintSentSubtext: "Open email you provided and follow the link we have provided",
+  settsEmailConfirmLintSentSubtext:
+    "Open email you provided and follow the link we have provided",
   settsEmailConfirmLintFailTitle: "Unable to send confirmation link",
   settsEmailConfirmLintFailSubtext: "You can try again in 5 minutes",
   settsAccountDeletionSuccess: "Account deleted successfuly",
   settsAccountDeletionFailTitle: "Unable to delete account",
-  settsAccountDeletionFailSubtext: "Please write us at biblebyheartapp@gmail.com we can do it manualy",
+  settsAccountDeletionFailSubtext:
+    "Please write us at biblebyheartapp@gmail.com we can do it manualy",
   settsUserEmail: "Email",
   settsUserEmailConfirmed: "Email is confirmed",
   settsUserEmailNOTConfirmed: "Email is NOT confirmed",
@@ -244,12 +247,16 @@ export const en = {
   settsUserProfilePublic: "Is profile public",
   settsUserDataPublic: "Is statistics data public",
   settsUserRequestEmailConfLinkHeadert: "Request email confirmation letter",
-  settsUserRequestEmailConfLinkSubtext: "You will have 24h to follow the link we will send you",
+  settsUserRequestEmailConfLinkSubtext:
+    "You will have 24h to follow the link we will send you",
   settsUserDeleteAccountHeader: "Delete account",
-  settsUserDeleteAccountSubtext: "It is ireversable action. All account data will be lost!",
+  settsUserDeleteAccountSubtext:
+    "It is ireversable action. All account data will be lost!",
   settsUserConfirmDeleteAccountHeader: "Confirm account deletion",
-  settsUserConfirmDeleteAccountDisclosureText: "Please be aware that it is not freezing of account, all data that stored by your email address will by irreversably lost",
-  settsUserConfirmDeleteAccountDisclosureSubtext: "To confirm account deletion please write the folowing text: ",
+  settsUserConfirmDeleteAccountDisclosureText:
+    "Please be aware that it is not freezing of account, all data that stored by your email address will by irreversably lost",
+  settsUserConfirmDeleteAccountDisclosureSubtext:
+    "To confirm account deletion please write the folowing text: ",
   settsUserConfirmDeleteAccountDisclosureInputPlaceholder: "Write here",
   profilePublicOptionPublic: "Public",
   profilePublicOptionReference: "By reference",
@@ -301,6 +308,7 @@ export const en = {
   legalCheckLabel: "I agree with privacy policy and terms of service",
   loginButton: "Login",
   logoutButton: "Logout",
+  logoutButton: "Logout",
   registerButton: "Register",
   passwordRulesLabel:
     "Password should have al least one uppercase letter, one lowercase letter, one digit, one symbol from list:[@.#$!%*?&] and length of 8-40 chars",
@@ -309,8 +317,8 @@ export const en = {
   openLegalPrivacyPolicy: "Privacy policy",
   openLegalTermsOfService: "Terms of service",
   provideUserNameLabel: "username",
-  
-  //network errors 
+
+  //network errors
   netRegSuccess: "Success!",
   netRegSuccessSubText: "Welcome! Now you can login",
   netUnknownError: "Unknown error",

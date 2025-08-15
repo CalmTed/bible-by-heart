@@ -12,17 +12,17 @@ import { WORD } from "./l10n";
 export type AppStateModel = AppStateModel010;
 
 export interface AppStateModel010 {
-  version: string;//copy
-  apiVersion: string;//copy
-  lastChange: number;//copy
-  lastBackup: number;//copy
-  dateSyncTry: number;//default -1
-  dateSyncSuccess: number;//default -1
-  passages: PassageModel009[]//should refactor it
-  testsActive: TestModel009[]
-  testsHistory: TestModel009[]
+  version: string; //copy
+  apiVersion: string; //copy
+  lastChange: number; //copy
+  lastBackup: number; //copy
+  dateSyncTry: number; //default -1
+  dateSyncSuccess: number; //default -1
+  passages: PassageModel009[]; //should refactor it
+  testsActive: TestModel009[];
+  testsHistory: TestModel009[];
   userData: {
-    uuid: string |  null;//set to null on logout
+    uuid: string | null; //set to null on logout
     email: string | null;
     registrationDate: number | null;
     isEmailConfirmed: boolean | null;
@@ -37,26 +37,26 @@ export interface AppStateModel010 {
     friendRequests: string[]; //uuid's
     friends: string[];
     blockedUsers: string[];
-    sessions: string[];//readible form only for check other devices
+    sessions: string[]; //readible form only for check other devices
     loginTypes: {
-      email: boolean,
-      google: boolean
-    }
-  },
-  broadcastMessages: BroadcastMessageModel010[];//for important announcement
-  updateMessages: UpdateMessageModel010[];//for updates news and friends updates, like requests and confirmations
+      email: boolean;
+      google: boolean;
+    };
+  };
+  broadcastMessages: BroadcastMessageModel010[]; //for important announcement
+  updateMessages: UpdateMessageModel010[]; //for updates news and friends updates, like requests and confirmations
   feedBackMessages: FeedbackMessageModel010[];
   filters: {
     tags: string[];
     selectedLevels: PASSAGELEVEL[];
     maxLevels: PASSAGELEVEL[];
     translations: number[];
-  }
+  };
   sort: SORTINGOPTION;
   statsDateRange: {
     from: number;
     to: number;
-  }
+  };
   settings: {
     [SETTINGS.langCode]: LANGCODE;
     [SETTINGS.theme]: THEMETYPE;
@@ -83,9 +83,8 @@ export interface AppStateModel010 {
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
     [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
-  }
+  };
 }
-
 
 export type PassageModel = PassageModel009;
 
@@ -333,36 +332,36 @@ export type ActionModel =
       payload: TrainModeModel[];
     }
   | {
-    name: ActionName.importPassages;
-    payload: {
-      passages: PassageModel[];
-    };
-  } 
+      name: ActionName.importPassages;
+      payload: {
+        passages: PassageModel[];
+      };
+    }
   | {
-    name: ActionName.setUserData;
-    payload: {
-      uuid?: string,
-      email?: string,
-      registrationDate?: number
-      isEmailConfirmed?: boolean
-      lastUserDataSync?: number
-      userName?: string
-      userTitle?: string
-      userPicture?: string
-      birthDate?: number
-      userRights?: "developer" | "admin" | "full" | "trial" | "free"
-      isProfilePublic?: "private" | "reference_link_olny" | "public" 
-      isDataPublic?: "private" | "public" 
-      friendRequests?: string[]
-      friends?: string[]
-      blockedUsers?: string[]
-      sessions?: string[]
-      applang?: LANGCODE
-    };
-  } 
+      name: ActionName.setUserData;
+      payload: {
+        uuid?: string;
+        email?: string;
+        registrationDate?: number;
+        isEmailConfirmed?: boolean;
+        lastUserDataSync?: number;
+        userName?: string;
+        userTitle?: string;
+        userPicture?: string;
+        birthDate?: number;
+        userRights?: "developer" | "admin" | "full" | "trial" | "free";
+        isProfilePublic?: "private" | "reference_link_olny" | "public";
+        isDataPublic?: "private" | "public";
+        friendRequests?: string[];
+        friends?: string[];
+        blockedUsers?: string[];
+        sessions?: string[];
+        applang?: LANGCODE;
+      };
+    }
   | {
-    name: ActionName.resetUserData
-  }
+      name: ActionName.resetUserData;
+    };
 interface UpdateMessageModel010 {
   id: number;
   header: string;
@@ -392,7 +391,7 @@ interface FeedbackMessageModel010 {
 
 interface BroadcastMessageModel010 {
   id: number;
-  header: WORD;//because it should be translated
+  header: WORD; //because it should be translated
   text: WORD;
   linkLabel?: WORD;
   linkAddress?: string;
@@ -423,7 +422,7 @@ export interface AppStateModel009 {
     //friends
     //blocked users
     //sessions
-    loginType: null | "email" | "google" | "apple" | "facebook";//replace with array
+    loginType: null | "email" | "google" | "apple" | "facebook"; //replace with array
     updateMessages: UpdateMessageModel010[]; //move to root
     feedBackMessages: FeedbackMessageModel010[]; //move to root
     authToken: string | null; //shoud be removed - saved in the expo-save-storage
@@ -468,7 +467,6 @@ export interface AppStateModel009 {
     [SETTINGS.activeTrainModeId]: number; //new in 0.0.8
   };
 }
-
 
 export interface PassageModel008 {
   id: number;

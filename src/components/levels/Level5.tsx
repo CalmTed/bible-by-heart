@@ -13,7 +13,6 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({

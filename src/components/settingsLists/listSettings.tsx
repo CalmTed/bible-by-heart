@@ -27,7 +27,7 @@ import {
 import { schedulePushNotification } from "../../utils/notifications";
 import { dateToString } from "../../utils/formatDateTime";
 import { logger } from "../../utils/logger";
-import toastShow from "src/utils/toastShow";
+import toastShow from "../../utils/toastShow";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -51,7 +51,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
     miniModal: {
       width: "100%",
       height: "100%",
-      paddingTop: 50,
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,
@@ -325,10 +325,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                           {}
                         );
                       } else {
-                        toastShow(
-                          t("ErrorTurnOnRemindersOnImport"),
-                          1000
-                        );
+                        toastShow(t("ErrorTurnOnRemindersOnImport"), 1000);
                       }
                     }
                     logger.write(`Passages imported`);

@@ -10,7 +10,7 @@ import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
 import { Button } from "./Button";
 import { getPerfectTestsNumber } from "../utils/getPerfectTests";
-import { getThemeFromScheme, ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface LevelPickerModel {

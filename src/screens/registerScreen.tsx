@@ -1,20 +1,34 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Linking
+} from "react-native";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "..//utils/useApp";
-import { Header } from "..//components/Header";
-import { Button, IconButton } from "..//components/Button";
-import { navigateWithState } from "..//screeenManagement";
-import { IconName } from "..//components/Icon";
-import { API_LINK, PRIVACY_POLICY_LINK, SCREEN, TERMS_OF_SERVICE_LINK } from "..//constants";
-import { Input } from "..//components/Input";
-import { Checkbox } from "..//components/Checkbox";
-import { fetchAPI } from "../services/fetch"
-import { logger } from "src/utils/logger";
+import { useApp } from "../utils/useApp";
+import { Header } from "../components/Header";
+import { Button, IconButton } from "../components/Button";
+import { navigateWithState } from "../screeenManagement";
+import { IconName } from "../components/Icon";
+import {
+  API_LINK,
+  PRIVACY_POLICY_LINK,
+  SCREEN,
+  TERMS_OF_SERVICE_LINK
+} from "../constants";
+import { Input } from "../components/Input";
+import { Checkbox } from "../components/Checkbox";
+import { fetchAPI } from "../services/fetch";
+import { logger } from "../utils/logger";
 
 export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme, setState } = useApp({ route, navigation });
+  const { state, t, theme, setState } = useApp({ route, navigation });
 
+  const [tempUserName, setTempUserName] = useState("test");
   const [tempUserName, setTempUserName] = useState("test");
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
   const [tempPassword, setTempPassword] = useState("passwordA@2");
@@ -22,52 +36,72 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [legalCheckBox, setLegalCheckBox] = useState(false);
 
   const handleOpenLink = async (url: string) => {
-    await Linking.openURL(url)
-  }
+    await Linking.openURL(url);
+  };
 
-  const handleRegisterSubmit = async (regPossible: boolean, email: string, password: string, userName: string) => {
-    if(regPossible){
-      try{
+  const handleRegisterSubmit = async (
+    regPossible: boolean,
+    email: string,
+    password: string,
+    userName: string
+  ) => {
+    if (regPossible) {
+      try {
         const result = await fetchAPI({
           link: API_LINK.createUser,
           method: "POST",
           headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+            Accept: "application/json",
+            "Content-Type": "application/json"
           },
           body: {
-              userName: userName,
-              password: password,
-              email: email,
-              appLanguage: state.settings.langCode
+            userName: userName,
+            password: password,
+            email: email,
+            appLanguage: state.settings.langCode
           },
           logoutMethods: {
-            state, setState, navigation, screen: SCREEN.register
+            state,
+            setState,
+            navigation,
+            screen: SCREEN.register
           }
-        })
-        if(typeof result === "undefined"){
+        });
+        if (typeof result === "undefined") {
           Alert.alert(t("netUnknownError"));
           return;
         }
-        switch(result.response.status){
-          case 200: 
-            Alert.alert(t("netRegSuccess"),t("netRegSuccessSubText"));
+        switch (result.response.status) {
+          case 200:
+            Alert.alert(t("netRegSuccess"), t("netRegSuccessSubText"));
             navigateWithState({
               navigation,
               screen: SCREEN.login,
               state
             });
-             break;
+            break;
           case 400:
-            Alert.alert(t("netBadRequestData400"),`${result.response.statusText}`);break;
+            Alert.alert(
+              t("netBadRequestData400"),
+              `${result.response.statusText}`
+            );
+            break;
           case 409:
-            Alert.alert(t("netUnableToCreateUser409"),`${result.response.statusText}`);break;
+            Alert.alert(
+              t("netUnableToCreateUser409"),
+              `${result.response.statusText}`
+            );
+            break;
           case 500:
-            Alert.alert(t("netServerError500"),`${result.response.statusText}`);break;
+            Alert.alert(
+              t("netServerError500"),
+              `${result.response.statusText}`
+            );
+            break;
         }
-      }catch(err){
+      } catch (err) {
         logger.error(`Cant register. Error: ${err}`);
-        console.log(err)
+        console.log(err);
       }
     }
   };
@@ -82,6 +116,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
     tempEmail
   );
+  const isUserNameValid = /^[A-Za-z]{1}[A-Za-z0-9]{2,}$/.test(tempUserName);
   const isUserNameValid = /^[A-Za-z]{1}[A-Za-z0-9]{2,}$/.test(tempUserName);
 
   //one lowercase
@@ -123,6 +158,15 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         ]}
       />
       <View style={{ ...theme.theme.view, ...registerStyle.inputView }}>
+        <Input
+          wrapperStyle={{ ...registerStyle.wrapperInput }}
+          value={tempUserName}
+          onChange={setTempUserName}
+          placeholder={t("provideUserNameLabel")}
+          theme={theme}
+          inputMode="text"
+          iconAfter={isUserNameValid ? IconName.greenCheck : IconName.redCross}
+        />
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
           value={tempUserName}
@@ -176,15 +220,30 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           </Text>
         )}
         <View style={registerStyle.legalLinkList}>
-          <TouchableOpacity onPress={() => handleOpenLink(TERMS_OF_SERVICE_LINK)}>
-            <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalTermsOfService")}</Text>
+          <TouchableOpacity
+            onPress={() => handleOpenLink(TERMS_OF_SERVICE_LINK)}
+          >
+            <Text
+              style={{
+                ...{ color: theme.colors.text },
+                ...registerStyle.legalLinkText
+              }}
+            >
+              {t("openLegalTermsOfService")}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleOpenLink(PRIVACY_POLICY_LINK)}>
-            <Text style={{...{color: theme.colors.text}, ...registerStyle.legalLinkText}}>{t("openLegalPrivacyPolicy")}</Text>
+            <Text
+              style={{
+                ...{ color: theme.colors.text },
+                ...registerStyle.legalLinkText
+              }}
+            >
+              {t("openLegalPrivacyPolicy")}
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={registerStyle.legalCheckWrapper}>
-          
           <TouchableOpacity
             onPress={() => {
               setLegalCheckBox(!legalCheckBox);
@@ -202,7 +261,14 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!regPossible}
-          onPress={() => handleRegisterSubmit(regPossible, tempEmail, tempPassword, tempUserName)}
+          onPress={() =>
+            handleRegisterSubmit(
+              regPossible,
+              tempEmail,
+              tempPassword,
+              tempUserName
+            )
+          }
         />
       </View>
       <Button
@@ -240,7 +306,7 @@ const registerStyle = StyleSheet.create({
   },
   legalLinkList: {
     flexDirection: "column",
-    gap: 10,
+    gap: 10
   },
   legalLinkText: {
     textDecorationLine: "underline"

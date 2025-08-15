@@ -6,7 +6,7 @@ exports[`testing header renders correctly 1`] = `
     {
       "alignItems": "center",
       "flexDirection": "row",
-      "height": 60,
+      "height": 80,
       "justifyContent": "flex-start",
       "width": "100%",
     }

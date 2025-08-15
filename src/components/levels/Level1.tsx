@@ -9,7 +9,7 @@ import {
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
-import { getThemeFromScheme, ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import {
   MINIMUM_SENTENCE_LENGTH,
   SENTENCE_SEPARATOR,

@@ -23,7 +23,7 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
         style={
           {
             "alignContent": "center",
-            "color": "#323933",
+            "color": "#ECECEC",
             "flexDirection": "row",
             "flexWrap": "wrap",
             "fontSize": 18,
@@ -64,8 +64,8 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
           <ViewManagerAdapter_ExpoLinearGradient
             colors={
               [
-                4291878352,
-                4291878352,
+                4281085996,
+                4281085996,
               ]
             }
             endPoint={
@@ -102,7 +102,7 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
                 {
                   "alignContent": "space-between",
                   "alignItems": "center",
-                  "backgroundColor": "#D0DDD0",
+                  "backgroundColor": "#2C302C",
                   "borderRadius": 21,
                   "flexDirection": "row",
                   "height": "100%",
@@ -115,16 +115,17 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
-                cursorColor="#7FDE34"
+                cursorColor="#1A9E37"
                 editable={true}
                 multiline={true}
                 onChangeText={[Function]}
+                onEndEditing={[Function]}
                 onSubmitEditing={[Function]}
                 placeholder="Write passage text"
-                placeholderTextColor="#898989"
+                placeholderTextColor="#A0A0A0"
                 style={
                   {
-                    "color": "#323933",
+                    "color": "#ECECEC",
                     "fontSize": 18,
                     "fontWeight": "500",
                     "minWidth": 100,
@@ -199,8 +200,8 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
           <ViewManagerAdapter_ExpoLinearGradient
             colors={
               [
-                4293385995,
-                4286570036,
+                4279934519,
+                4279928478,
               ]
             }
             endPoint={
@@ -255,7 +256,7 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
               <Text
                 style={
                   {
-                    "color": "#323933",
+                    "color": "#ECECEC",
                     "fontSize": 18,
                     "fontWeight": "500",
                     "paddingLeft": 10,

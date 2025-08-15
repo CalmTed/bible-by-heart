@@ -12,7 +12,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
   <RCTScrollView
     style={
       {
-        "backgroundColor": "#D0DDD0",
+        "backgroundColor": "#2C302C",
         "borderRadius": 10,
         "height": "auto",
         "margin": 10,
@@ -44,7 +44,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -63,7 +63,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -82,7 +82,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -101,7 +101,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -120,7 +120,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -139,7 +139,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -158,7 +158,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -177,7 +177,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -196,7 +196,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -215,7 +215,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -234,7 +234,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -253,7 +253,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -272,7 +272,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -291,7 +291,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -310,7 +310,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
           <Text
             style={
               {
-                "color": "#323933",
+                "color": "#ECECEC",
                 "fontSize": 18,
               }
             }
@@ -380,8 +380,8 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              4293385995,
-              4286570036,
+              4279934519,
+              4279928478,
             ]
           }
           endPoint={
@@ -423,7 +423,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
             style={
               {
                 "alignItems": "center",
-                "backgroundColor": "#D0DDD0",
+                "backgroundColor": "#2C302C",
                 "borderRadius": 21,
                 "flexDirection": "row",
                 "justifyContent": "center",
@@ -436,7 +436,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
             <Text
               style={
                 {
-                  "color": "#323933",
+                  "color": "#ECECEC",
                   "fontSize": 18,
                   "fontWeight": "500",
                   "paddingLeft": 10,
@@ -497,8 +497,8 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              4293385995,
-              4286570036,
+              4280756775,
+              4281085996,
             ]
           }
           endPoint={
@@ -553,7 +553,7 @@ exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
             <Text
               style={
                 {
-                  "color": "#323933",
+                  "color": "#A0A0A0",
                   "fontSize": 18,
                   "fontWeight": "500",
                   "paddingLeft": 10,

@@ -511,44 +511,74 @@ export const reduce: (
         passages: [...state.passages, ...importedPassages]
       };
       break;
-    case ActionName.setUserData: 
-      if( !action.payload){
+    case ActionName.setUserData:
+      if (!action.payload) {
         break;
       }
       changedState = {
         ...state,
         settings: {
           ...state.settings,
-          langCode: action.payload.applang ? action.payload.applang : state.settings.langCode
+          langCode: action.payload.applang
+            ? action.payload.applang
+            : state.settings.langCode
         },
         userData: {
           ...state.userData,
           lastUserDataSync: new Date().getTime(),
           uuid: action.payload.uuid ? action.payload.uuid : state.userData.uuid,
-          email: action.payload.email ? action.payload.email : state.userData.email,
-          registrationDate: action.payload.registrationDate ? action.payload.registrationDate : state.userData.registrationDate,
-          isEmailConfirmed: action.payload.isEmailConfirmed ? action.payload.isEmailConfirmed : state.userData.isEmailConfirmed,
-          userName: action.payload.userName ? action.payload.userName : state.userData.userName,
-          userTitle: action.payload.userTitle ?  action.payload.userTitle :  state.userData.userTitle,
-          userPicture: action.payload.userPicture ? action.payload.userPicture : state.userData.userPicture,
-          birthDate: action.payload.birthDate ? action.payload.birthDate : state.userData.birthDate,
-          userRights: action.payload.userRights ? action.payload.userRights : state.userData.userRights,
-          isProfilePublic: action.payload.isProfilePublic ? action.payload.isProfilePublic : state.userData.isProfilePublic,
-          isDataPublic: action.payload.isDataPublic ? action.payload.isDataPublic : state.userData.isDataPublic,
-          friendRequests: action.payload.friendRequests ? action.payload.friendRequests : state.userData.friendRequests,
-          friends: action.payload.friends ? action.payload.friends : state.userData.friends,
-          blockedUsers: action.payload.blockedUsers ? action.payload.blockedUsers : state.userData.blockedUsers,
-          sessions: action.payload.sessions ? action.payload.sessions : state.userData.sessions
+          email: action.payload.email
+            ? action.payload.email
+            : state.userData.email,
+          registrationDate: action.payload.registrationDate
+            ? action.payload.registrationDate
+            : state.userData.registrationDate,
+          isEmailConfirmed: action.payload.isEmailConfirmed
+            ? action.payload.isEmailConfirmed
+            : state.userData.isEmailConfirmed,
+          userName: action.payload.userName
+            ? action.payload.userName
+            : state.userData.userName,
+          userTitle: action.payload.userTitle
+            ? action.payload.userTitle
+            : state.userData.userTitle,
+          userPicture: action.payload.userPicture
+            ? action.payload.userPicture
+            : state.userData.userPicture,
+          birthDate: action.payload.birthDate
+            ? action.payload.birthDate
+            : state.userData.birthDate,
+          userRights: action.payload.userRights
+            ? action.payload.userRights
+            : state.userData.userRights,
+          isProfilePublic: action.payload.isProfilePublic
+            ? action.payload.isProfilePublic
+            : state.userData.isProfilePublic,
+          isDataPublic: action.payload.isDataPublic
+            ? action.payload.isDataPublic
+            : state.userData.isDataPublic,
+          friendRequests: action.payload.friendRequests
+            ? action.payload.friendRequests
+            : state.userData.friendRequests,
+          friends: action.payload.friends
+            ? action.payload.friends
+            : state.userData.friends,
+          blockedUsers: action.payload.blockedUsers
+            ? action.payload.blockedUsers
+            : state.userData.blockedUsers,
+          sessions: action.payload.sessions
+            ? action.payload.sessions
+            : state.userData.sessions
         }
-      }
+      };
       break;
-    case ActionName.resetUserData: 
+    case ActionName.resetUserData:
       changedState = {
         ...state,
         userData: createAppState().userData
-      }
+      };
       break;
-     default:
+    default:
       logger.error(`unknown action name: ${(action as ActionModel).name}`);
   }
   if (changedState) {

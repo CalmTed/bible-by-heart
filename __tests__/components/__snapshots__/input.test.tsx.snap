@@ -71,6 +71,7 @@ exports[`testing input renders correctly 1`] = `
           editable={true}
           multiline={false}
           onChangeText={[Function]}
+          onEndEditing={[Function]}
           onSubmitEditing={[Function]}
           placeholder=""
           placeholderTextColor="#A0A0A0"

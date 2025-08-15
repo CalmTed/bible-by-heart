@@ -1,7 +1,14 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
-import { SCREEN, LANGCODE, THEMETYPE, ACCESS_TOKEN_NAME, API_LINK, REFRESH_TOKEN_NAME } from "../constants";
-import { ActionName, AppStateModel } from "../models";
+import {
+  SCREEN,
+  LANGCODE,
+  THEMETYPE,
+  ACCESS_TOKEN_NAME,
+  API_LINK,
+  REFRESH_TOKEN_NAME
+} from "../constants";
+import { ActionName } from "../models";
 import { navigateWithState } from "../screeenManagement";
 import { createT } from "../l10n";
 import { Button, IconButton } from "../components/Button";
@@ -18,13 +25,13 @@ import { TestsSettingsList } from "../components/settingsLists/testsSettings";
 import { StatsSettingsList } from "../components/settingsLists/statsSettings";
 import { useApp } from "../utils/useApp";
 import * as SecureStore from "expo-secure-store";
-import { fetchAPI } from "src/services/fetch";
-import { logger } from "src/utils/logger";
-import { UserSettingsList } from "src/components/settingsLists/userSettings";
+import { fetchAPI } from "../services/fetch";
+import { logger } from "../utils/logger";
+import { UserSettingsList } from "../components/settingsLists/userSettings";
 
 export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
-  const [loadingState, setLoadingState] = useState(false)
+  const [loadingState, setLoadingState] = useState(false);
 
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
     const customT = createT(v);
@@ -42,7 +49,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     });
   };
 
-
   const handleLogoutPress = async () => {
     const accessToken = SecureStore.getItem(ACCESS_TOKEN_NAME);
     //fetch user data
@@ -53,9 +59,12 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         Authorization: `Bearer ${accessToken}`
       },
       logoutMethods: {
-        state, setState, navigation, screen: SCREEN.settings
+        state,
+        setState,
+        navigation,
+        screen: SCREEN.settings
       }
-    })
+    });
     if (typeof logingoutResult === "undefined") {
       Alert.alert(t("netUnknownError"), t("netUnableToLogOut"));
       return;
@@ -64,7 +73,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       case 200:
         const newState = reduce(state, {
           name: ActionName.resetUserData
-        })
+        });
         if (newState === null) {
           return logger.error(`Unknown error: Unable to reset user data`);
         }
@@ -72,36 +81,50 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
         setState(newState);
         break;
-      case 401: Alert.alert(t("netUnauthorized401"), `${logingoutResult.response.statusText}`); break;
-      case 500: Alert.alert(t("netServerError500"), `${logingoutResult.response.statusText}`); break;
+      case 401:
+        Alert.alert(
+          t("netUnauthorized401"),
+          `${logingoutResult.response.statusText}`
+        );
+        break;
+      case 500:
+        Alert.alert(
+          t("netServerError500"),
+          `${logingoutResult.response.statusText}`
+        );
+        break;
     }
-  }
+  };
 
   const syncLangChange = async (newLangCode: LANGCODE) => {
-    setLoadingState(true)
+    setLoadingState(true);
     const accessToken = SecureStore.getItem(ACCESS_TOKEN_NAME);
     await fetchAPI({
-          link: API_LINK.editUserData,
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: {
-            uuid: state.userData.uuid,
-            appLanguage: newLangCode
-          },
-          logoutMethods: {
-            state, setState, navigation, screen: SCREEN.settings
-          }
-        })
-    setLoadingState(false)
-  }
+      link: API_LINK.editUserData,
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: {
+        uuid: state.userData.uuid,
+        appLanguage: newLangCode
+      },
+      logoutMethods: {
+        state,
+        setState,
+        navigation,
+        screen: SCREEN.settings
+      }
+    });
+    setLoadingState(false);
+  };
 
   const haveToken = SecureStore.getItem(ACCESS_TOKEN_NAME) !== null;
   const isAutorized = haveToken && state.userData.uuid !== null;
-  const dataSynced = state.dateSyncSuccess !== -1 && state.dateSyncTry === state.dateSyncSuccess
+  const dataSynced =
+    state.dateSyncSuccess !== -1 && state.dateSyncTry === state.dateSyncSuccess;
 
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
@@ -124,42 +147,48 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             }
           />,
           <Text key="title" style={theme.theme.headerText}>
-            {t("settingsScreenTitle")}  {loadingState ? "⏳" : ""}
+            {t("settingsScreenTitle")} {loadingState ? "⏳" : ""}
           </Text>
         ]}
       />
       <ScrollView style={settingsStyle.scrollView}>
-        
         <View style={settingsStyle.topUserDataView}>
           <View style={{ ...settingsStyle.userImageView }}>
-            <Icon iconName={dataSynced ? IconName.cloudSuccess : IconName.cloudAttention} size={75} />
+            <Icon
+              iconName={
+                dataSynced ? IconName.cloudSuccess : IconName.cloudAttention
+              }
+              size={75}
+            />
           </View>
-          {!isAutorized && 
+          {!isAutorized && (
             <Button
               theme={theme}
               onPress={() => handleLoginPress()}
               title={t("loginButton")}
               type="transparent"
             />
-          }
-          {isAutorized && 
-          <View>
-            <Text style={theme.theme.headerText}>{state.userData.userTitle}</Text>
-            <Text style={theme.theme.text}>@{state.userData.userName}</Text>
-            {/* <Button
+          )}
+          {isAutorized && (
+            <View>
+              <Text style={theme.theme.headerText}>
+                {state.userData.userTitle}
+              </Text>
+              <Text style={theme.theme.text}>@{state.userData.userName}</Text>
+              {/* <Button
               theme={theme}
               onPress={() => updateUserData()}
               title={t("update")}
               type="transparent"
             /> */}
-            <Button
-              theme={theme}
-              onPress={() => handleLogoutPress()}
-              title={t("logoutButton")}
-              type="transparent"
-            />
-          </View>
-          }
+              <Button
+                theme={theme}
+                onPress={() => handleLogoutPress()}
+                title={t("logoutButton")}
+                type="transparent"
+              />
+            </View>
+          )}
         </View>
         <View style={settingsStyle.menuItemsListView}>
           {/* MAIN */}
@@ -185,7 +214,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     payload: value as LANGCODE
                   }) || st
               );
-              syncLangChange(value as LANGCODE)
+              syncLangChange(value as LANGCODE);
             }}
           />
           <SettingsMenuItem
@@ -210,7 +239,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               );
             }}
           />
-          {isAutorized && 
+          {isAutorized && (
             <UserSettingsList
               theme={theme}
               state={state}
@@ -218,7 +247,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               t={t}
               navigation={navigation}
             />
-          }
+          )}
           {/* LISTS */}
           <ListSettingsList
             theme={theme}

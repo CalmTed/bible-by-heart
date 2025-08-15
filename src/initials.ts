@@ -64,14 +64,14 @@ export const createAppState010: () => AppStateModel010 = () => {
       friendRequests: [], //uuid's
       friends: [],
       blockedUsers: [],
-      sessions: [],//readible form only for check other devices
+      sessions: [], //readible form only for check other devices
       loginTypes: {
         email: false,
         google: false
       }
     },
-    broadcastMessages: [],//for important announcement
-    updateMessages: [],//for updates news and friends updates, like requests and confirmations
+    broadcastMessages: [], //for important announcement
+    updateMessages: [], //for updates news and friends updates, like requests and confirmations
     feedBackMessages: [],
     filters: {
       tags: [ARCHIVED_NAME],
@@ -107,8 +107,7 @@ export const createAppState010: () => AppStateModel010 = () => {
       [SETTINGS.activeTrainModeId]: getDefaultTrainModes(langCode)[0].id
     }
   };
-}
-
+};
 
 export const createAppState009: () => AppStateModel009 = () => {
   const phoneLangCode = getLocales()[0].languageCode;

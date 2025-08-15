@@ -16,7 +16,7 @@ import React, {
   useColorScheme
 } from "react-native";
 import { logger } from "./src/utils/logger";
-import toastShow from "src/utils/toastShow";
+import toastShow from "./src/utils/toastShow";
 
 export default function App() {
   const [isReady, setReady] = useState(false);

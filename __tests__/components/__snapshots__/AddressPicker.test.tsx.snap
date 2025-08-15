@@ -12,8 +12,9 @@ exports[`testing address picker renders correctly 1`] = `
         "alignItems": "center",
         "backgroundColor": "#272A27",
         "flexDirection": "row",
-        "height": 60,
+        "height": 100,
         "justifyContent": "space-between",
+        "paddingTop": 50,
         "width": "100%",
       }
     }
@@ -248,8 +249,8 @@ exports[`testing address picker renders correctly 1`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              0,
-              0,
+              4280756775,
+              4281085996,
             ]
           }
           endPoint={

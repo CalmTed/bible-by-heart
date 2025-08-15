@@ -9,7 +9,7 @@ import {
   StyleProp,
   TextStyle,
   Animated,
-  Vibration,
+  Vibration
 } from "react-native";
 import {
   ARCHIVED_NAME,
@@ -38,12 +38,12 @@ import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
 import { timeToString } from "../utils/formatDateTime";
-import { getThemeFromScheme, ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
 import { getAddresOrder } from "../utils/addressOrder";
 import { logger } from "../utils/logger";
-import toastShow from "src/utils/toastShow";
+import toastShow from "../utils/toastShow";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });

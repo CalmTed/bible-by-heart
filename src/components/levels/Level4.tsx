@@ -7,7 +7,6 @@ import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
-import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import {
   ERRORS_TO_DOWNGRADE,
   FIRST_FEW_WORDS,

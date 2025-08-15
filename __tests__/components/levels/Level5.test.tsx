@@ -4,6 +4,7 @@ import { L50 } from "../../../src/components/levels/Level5";
 import { createT } from "../../../src/l10n";
 import { AppStateModel, PassageModel } from "../../../src/models";
 import { createAppState, createTest } from "../../../src/initials";
+import { getThemeFromScheme } from "../../../src/utils/getThemeFromScheme";
 
 describe("testing level 5 rendering", () => {
   it("Level 5 renders correctly", async () => {
@@ -45,10 +46,12 @@ describe("testing level 5 rendering", () => {
       ]
     } as AppStateModel;
     const test = createTest(123123, 212610751, PASSAGELEVEL.l5);
+      const theme = getThemeFromScheme(testState.settings.theme, "dark");
     const t = createT(LANGCODE.en);
     const level50Tree = render(
       <L50
         test={test}
+        theme={theme}
         state={testState}
         t={t}
         submitTest={() => {}}

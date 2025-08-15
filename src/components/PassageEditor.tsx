@@ -27,7 +27,7 @@ import {
 } from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
-import { ThemeAndColorsModel, getThemeFromScheme } from "../utils/getThemeFromScheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
@@ -37,7 +37,7 @@ import { getPassageStats } from "../utils/getStats";
 
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { logger } from "../utils/logger";
-import toastShow from "src/utils/toastShow";
+import toastShow from "../utils/toastShow";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -495,6 +495,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
               <LevelPicker
                 t={t}
+                theme={theme}
                 targetPassage={tempPassage}
                 handleChange={handleLevelChange}
                 handleOpen={handleLevelPickerOpen}

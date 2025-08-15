@@ -42,7 +42,7 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
     miniModal: {
       width: "100%",
       height: "100%",
-      paddingTop: 50,
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,

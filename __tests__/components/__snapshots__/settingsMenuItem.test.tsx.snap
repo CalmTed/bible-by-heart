@@ -1033,6 +1033,7 @@ exports[`testing settings menu item renders textInput correctly 1`] = `
               maxLength={20}
               multiline={false}
               onChangeText={[Function]}
+              onEndEditing={[Function]}
               onSubmitEditing={[Function]}
               placeholder="Назва режиму"
               placeholderTextColor="#A0A0A0"

@@ -6,7 +6,6 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getThemeFromScheme } from "../../utils/getThemeFromScheme";
 import {
   ERRORS_TO_DOWNGRADE,
   SENTENCE_SEPARATOR,

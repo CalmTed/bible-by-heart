@@ -21,9 +21,9 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
       <Text
         style={
           {
-            "backgroundColor": "#D0DDD0",
+            "backgroundColor": "#2C302C",
             "borderRadius": 10,
-            "color": "#323933",
+            "color": "#ECECEC",
             "fontSize": 18,
             "letterSpacing": 0.5,
             "marginHorizontal": 20,
@@ -94,8 +94,8 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              4293385995,
-              4286570036,
+              4279934519,
+              4279928478,
             ]
           }
           endPoint={
@@ -137,7 +137,7 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
             style={
               {
                 "alignItems": "center",
-                "backgroundColor": "#D0DDD0",
+                "backgroundColor": "#2C302C",
                 "borderRadius": 21,
                 "flexDirection": "row",
                 "justifyContent": "center",
@@ -150,7 +150,7 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
             <Text
               style={
                 {
-                  "color": "#323933",
+                  "color": "#ECECEC",
                   "fontSize": 18,
                   "fontWeight": "500",
                   "paddingLeft": 10,
@@ -211,8 +211,8 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              4291878352,
-              4291878352,
+              4280756775,
+              4281085996,
             ]
           }
           endPoint={
@@ -267,7 +267,7 @@ exports[`testing level 2 rendering Level 2 renders correctly 1`] = `
             <Text
               style={
                 {
-                  "color": "#323933",
+                  "color": "#A0A0A0",
                   "fontSize": 18,
                   "fontWeight": "500",
                   "paddingLeft": 10,
@@ -307,7 +307,7 @@ exports[`testing level 2 rendering Level 2 renders correctly 2`] = `
     <Text
       style={
         {
-          "color": "#323933",
+          "color": "#ECECEC",
           "fontSize": 22,
           "fontWeight": "500",
           "textAlign": "center",
@@ -355,8 +355,8 @@ exports[`testing level 2 rendering Level 2 renders correctly 2`] = `
         <ViewManagerAdapter_ExpoLinearGradient
           colors={
             [
-              4291878352,
-              4291878352,
+              4281085996,
+              4281085996,
             ]
           }
           endPoint={
@@ -391,7 +391,7 @@ exports[`testing level 2 rendering Level 2 renders correctly 2`] = `
               {
                 "alignContent": "space-between",
                 "alignItems": "center",
-                "backgroundColor": "#D0DDD0",
+                "backgroundColor": "#2C302C",
                 "borderRadius": 21,
                 "flexDirection": "row",
                 "justifyContent": "space-between",
@@ -403,16 +403,17 @@ exports[`testing level 2 rendering Level 2 renders correctly 2`] = `
             <TextInput
               autoCapitalize="none"
               autoCorrect={true}
-              cursorColor="#7FDE34"
+              cursorColor="#1A9E37"
               editable={true}
               multiline={false}
               onChangeText={[Function]}
+              onEndEditing={[Function]}
               onSubmitEditing={[Function]}
               placeholder="Start writing passage"
-              placeholderTextColor="#898989"
+              placeholderTextColor="#A0A0A0"
               style={
                 {
-                  "color": "#323933",
+                  "color": "#ECECEC",
                   "fontSize": 18,
                   "fontWeight": "500",
                   "minWidth": 100,

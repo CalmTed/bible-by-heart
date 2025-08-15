@@ -4,6 +4,7 @@ import { L10, L11 } from "../../../src/components/levels/Level1";
 import { createT } from "../../../src/l10n";
 import { AppStateModel, PassageModel } from "../../../src/models";
 import { createAppState, createTest } from "../../../src/initials";
+import { getThemeFromScheme } from "../../../src/utils/getThemeFromScheme";
 
 describe("testing level 1 rendering", () => {
   it("Level 1 renders correctly", async () => {
@@ -141,9 +142,11 @@ describe("testing level 1 rendering", () => {
       ]
     } as AppStateModel;
     const test = createTest(123123, 212610751, PASSAGELEVEL.l1);
+    const theme = getThemeFromScheme(testState.settings.theme, "dark");
     const t = createT(LANGCODE.en);
     const level10Tree = render(
       <L10
+        theme={theme}
         test={test}
         state={testState}
         t={t}
@@ -154,6 +157,7 @@ describe("testing level 1 rendering", () => {
     expect(level10Tree).toMatchSnapshot();
     const level11Tree = render(
       <L11
+        theme={theme}
         test={test}
         state={testState}
         t={t}

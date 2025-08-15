@@ -52,8 +52,14 @@ export const APIVERSION_LAST_CHECK = "apiVersionLastCheck";
 export const APIVERSION_MAX_TIME = MINUTE;
 export const APIVERSION_STATUS = "apiVersionStatus";
 
-export const PRIVACY_POLICY_LINK = "https://biblebyheart.app/static/bible-by-heart-privacy-policy.html";
-export const TERMS_OF_SERVICE_LINK = "https://biblebyheart.app/static/bible-by-heart-terms-of-service.html";
+export const APIVERSION_LAST_CHECK = "apiVersionLastCheck";
+export const APIVERSION_MAX_TIME = MINUTE;
+export const APIVERSION_STATUS = "apiVersionStatus";
+
+export const PRIVACY_POLICY_LINK =
+  "https://biblebyheart.app/static/bible-by-heart-privacy-policy.html";
+export const TERMS_OF_SERVICE_LINK =
+  "https://biblebyheart.app/static/bible-by-heart-terms-of-service.html";
 
 export enum SCREEN {
   home = "home",

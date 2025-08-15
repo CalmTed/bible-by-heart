@@ -6,13 +6,18 @@ import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { navigateWithState } from "../screeenManagement";
 import { IconName } from "../components/Icon";
-import { ACCESS_TOKEN_NAME, API_LINK, REFRESH_TOKEN_NAME, SCREEN } from "../constants";
+import {
+  ACCESS_TOKEN_NAME,
+  API_LINK,
+  REFRESH_TOKEN_NAME,
+  SCREEN
+} from "../constants";
 import { Input } from "../components/Input";
-import { logger } from "src/utils/logger";
-import { fetchAPI } from "src/services/fetch";
+import { logger } from "../utils/logger";
+import { fetchAPI } from "../services/fetch";
 import * as SecureStore from "expo-secure-store";
-import { ActionName, AppStateModel, AppStateModel010 } from "src/models";
-import { reduce } from "src/utils/reduce";
+import { ActionName, AppStateModel } from "../models";
+import { reduce } from "../utils/reduce";
 
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, setState, theme } = useApp({ route, navigation });
@@ -21,29 +26,36 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [tempPassword, setTempPassword] = useState("passwordA@2");
 
   //if session is already defined?
-  //- then login button will be blocked, 
+  //- then login button will be blocked,
   // but if you for some reason anready here, you can login again
 
-
-  const handleLoginSubmit = async (loginPossible: boolean, email: string, password: string) => {
+  const handleLoginSubmit = async (
+    loginPossible: boolean,
+    email: string,
+    password: string
+  ) => {
     if (loginPossible) {
       try {
         const result = await fetchAPI({
           link: API_LINK.login,
           method: "POST",
           headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+            Accept: "application/json",
+            "Content-Type": "application/json"
           },
           body: {
             email,
             password
           },
           logoutMethods: {
-            state, setState, navigation, screen: SCREEN.settings
+            state,
+            setState,
+            navigation,
+            screen: SCREEN.settings
           }
-        })
+        });
         if (typeof result === "undefined") {
+          Alert.alert(t("newUnknownErrorAuth"));
           Alert.alert(t("newUnknownErrorAuth"));
           return;
         }
@@ -61,16 +73,22 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   Authorization: `Bearer ${result.data.token}`
                 },
                 logoutMethods: {
-                  state, setState, navigation, screen: SCREEN.settings
+                  state,
+                  setState,
+                  navigation,
+                  screen: SCREEN.settings
                 }
-              })
+              });
               if (typeof userData === "undefined") {
-                Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"))
+                Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"));
                 return;
               }
               switch (userData.response.status) {
                 case 200:
-                  const udd = userData.data as Record< keyof AppStateModel["userData"] | "appLanguage", any>;
+                  const udd = userData.data as Record<
+                    keyof AppStateModel["userData"] | "appLanguage",
+                    any
+                  >;
                   const newState = reduce(state, {
                     name: ActionName.setUserData,
                     payload: {
@@ -90,39 +108,84 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                       friends: udd.friends,
                       blockedUsers: udd.blockedUsers,
                       sessions: udd.sessions,
-                      applang: state.settings.langCode !== udd.appLanguage ? udd.appLanguage : undefined //set app lang if different
-                  }
-                    
+                      applang:
+                        state.settings.langCode !== udd.appLanguage
+                          ? udd.appLanguage
+                          : undefined //set app lang if different
+                    }
                   });
                   if (newState === null) {
-                    return Alert.alert(t("netUnknownError"), t("netUnableToSaveUserData"));
+                    return Alert.alert(
+                      t("netUnknownError"),
+                      t("netUnableToSaveUserData")
+                    );
                   }
-                  setState(newState)
+                  setState(newState);
                   navigateWithState({
                     navigation,
                     screen: SCREEN.settings,
                     state: newState
-                  })
+                  });
                   break;
-                case 400: Alert.alert(t("netUnableToGetUserData") + t("netBadRequestData400"), `${userData.response.statusText}`); break;
-                case 401: Alert.alert(t("netUnableToGetUserData") + t("netUnauthorized401"), `${userData.response.statusText}`); break;
-                case 403: Alert.alert(t("netUnableToGetUserData") + t("netForbidden403"), `${userData.response.statusText}`); break;
-                case 406: Alert.alert(t("netUnableToGetUserData") + t("netUserNotFound406"), `${userData.response.statusText}`); break;
-                case 500: Alert.alert(t("netUnableToGetUserData") + t("netServerError500"), `${userData.response.statusText}`); break;
+                case 400:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netBadRequestData400"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 401:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netUnauthorized401"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 403:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netForbidden403"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 406:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netUserNotFound406"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 500:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netServerError500"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
               }
-
             } else {
+              Alert.alert(t("netUnknownError"), t("net200withNoData"));
               Alert.alert(t("netUnknownError"), t("net200withNoData"));
             }
             break;
-          case 400: Alert.alert(t("netBadRequestData400"), `${result.response.statusText}`); break;
-          case 401: Alert.alert(t("netUnauthorized401"), `${result.response.statusText}`); break;
-          case 500: Alert.alert(t("netServerError500"), `${result.response.statusText}`); break;
+          case 400:
+            Alert.alert(
+              t("netBadRequestData400"),
+              `${result.response.statusText}`
+            );
+            break;
+          case 401:
+            Alert.alert(
+              t("netUnauthorized401"),
+              `${result.response.statusText}`
+            );
+            break;
+          case 500:
+            Alert.alert(
+              t("netServerError500"),
+              `${result.response.statusText}`
+            );
+            break;
         }
       } catch (err) {
         logger.error(`Cant login. Error: ${err}`);
         Alert.alert(t("newUnknownErrorAuth"), `${err}`);
-        console.log(err)
+        console.log(err);
       }
     }
   };
@@ -207,7 +270,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!loginPossible}
-          onPress={() => handleLoginSubmit(loginPossible, tempEmail, tempPassword)}
+          onPress={() =>
+            handleLoginSubmit(loginPossible, tempEmail, tempPassword)
+          }
         />
       </View>
       <Button
