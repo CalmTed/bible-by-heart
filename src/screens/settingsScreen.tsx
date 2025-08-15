@@ -67,6 +67,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     });
     if (typeof logingoutResult === "undefined") {
       Alert.alert(t("netUnknownError"), t("netUnableToLogOut"));
+      Alert.alert(t("netUnknownError"), t("netUnableToLogOut"));
       return;
     }
     switch (logingoutResult.response.status) {

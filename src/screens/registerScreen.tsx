@@ -39,14 +39,9 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
     await Linking.openURL(url);
   };
 
-  const handleRegisterSubmit = async (
-    regPossible: boolean,
-    email: string,
-    password: string,
-    userName: string
-  ) => {
-    if (regPossible) {
-      try {
+  const handleRegisterSubmit = async (regPossible: boolean, email: string, password: string, userName: string) => {
+    if(regPossible){
+      try{
         const result = await fetchAPI({
           link: API_LINK.createUser,
           method: "POST",
@@ -55,25 +50,22 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             "Content-Type": "application/json"
           },
           body: {
-            userName: userName,
-            password: password,
-            email: email,
-            appLanguage: state.settings.langCode
+              userName: userName,
+              password: password,
+              email: email,
+              appLanguage: state.settings.langCode
           },
           logoutMethods: {
-            state,
-            setState,
-            navigation,
-            screen: SCREEN.register
+            state, setState, navigation, screen: SCREEN.register
           }
-        });
-        if (typeof result === "undefined") {
+        })
+        if(typeof result === "undefined"){
           Alert.alert(t("netUnknownError"));
           return;
         }
-        switch (result.response.status) {
-          case 200:
-            Alert.alert(t("netRegSuccess"), t("netRegSuccessSubText"));
+        switch(result.response.status){
+          case 200: 
+            Alert.alert(t("netRegSuccess"),t("netRegSuccessSubText"));
             navigateWithState({
               navigation,
               screen: SCREEN.login,
@@ -81,23 +73,11 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             });
             break;
           case 400:
-            Alert.alert(
-              t("netBadRequestData400"),
-              `${result.response.statusText}`
-            );
-            break;
+            Alert.alert(t("netBadRequestData400"),`${result.response.statusText}`);break;
           case 409:
-            Alert.alert(
-              t("netUnableToCreateUser409"),
-              `${result.response.statusText}`
-            );
-            break;
+            Alert.alert(t("netUnableToCreateUser409"),`${result.response.statusText}`);break;
           case 500:
-            Alert.alert(
-              t("netServerError500"),
-              `${result.response.statusText}`
-            );
-            break;
+            Alert.alert(t("netServerError500"),`${result.response.statusText}`);break;
         }
       } catch (err) {
         logger.error(`Cant register. Error: ${err}`);
@@ -261,14 +241,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!regPossible}
-          onPress={() =>
-            handleRegisterSubmit(
-              regPossible,
-              tempEmail,
-              tempPassword,
-              tempUserName
-            )
-          }
+          onPress={() => handleRegisterSubmit(regPossible, tempEmail, tempPassword, tempUserName)}
         />
       </View>
       <Button
