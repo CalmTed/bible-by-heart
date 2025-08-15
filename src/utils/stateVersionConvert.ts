@@ -10,6 +10,7 @@ import {
   AppStateModel007,
   AppStateModel008,
   AppStateModel009,
+  AppStateModel010,
   PassageModel008,
   PassageModel009,
   TestModel006,
@@ -19,6 +20,55 @@ import {
 import { testLevelToPassageLevel } from "./levelsConvertion";
 
 type ConverterType = (stateFrom: any) => any;
+
+const to010: ConverterType = (stateFrom) => {
+  const from = stateFrom as AppStateModel009;
+  //remove auth token
+  const to = {
+    version: "0.1.0",
+    apiVersion: from.apiVersion,
+    lastChange: from.lastChange,
+    lastBackup: from.lastBackup,
+    dateSyncTry: -1,
+    dateSyncSuccess: -1,
+    passages: from.passages,
+    testsActive: [],
+    testsHistory: from.testsHistory,
+    userData: {
+      uuid: null,
+      email: null,
+      registrationDate: null,
+      isEmailConfirmed: null,
+      lastUserDataSync: -1,
+      userName: null,
+      userTitle: null,
+      userPicture: null,
+      birthDate: null,
+      userRights: null,
+      isProfilePublic: null,
+      isDataPublic: "private",
+      friendRequests: [],
+      friends: [],
+      blockedUsers: [],
+      sessions: [],
+      loginTypes: {
+        email: false,
+        google: false
+      }
+    },
+    broadcastMessages: [],
+    updateMessages: [],
+    feedBackMessages: [],
+    filters: from.filters,
+    sort: from.sort,
+    statsDateRange: {
+      from: 0,
+      to: -1
+    },
+    settings: from.settings
+  } as AppStateModel010;
+  return to;
+};
 
 const to009: ConverterType = (stateFrom) => {
   const from = stateFrom as AppStateModel008;
@@ -133,7 +183,8 @@ const to009: ConverterType = (stateFrom) => {
       [SETTINGS.hapticsEnabled]: from.settings.hapticsEnabled,
       [SETTINGS.soundsEnabled]: from.settings.soundsEnabled, //not implemented yet
       [SETTINGS.compressOldTestsData]: true, //not implemented yet
-      [SETTINGS.autoIncreeseLevel]: from.settings.autoIncreeseLevel,
+      //@ts-ignore
+      [SETTINGS.autoIncreaseLevel]: from.settings.autoIncreaseLevel,
       [SETTINGS.leftSwipeTag]: from.settings.leftSwipeTag, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: from.settings.remindersEnabled,
@@ -212,7 +263,7 @@ const to007: ConverterType = (stateFrom) => {
       tests.dateFinished
   + added: settings object
       langCode, theme, devMode, remindersList, chapterNumbering,
-      remindersEnabled, remindersSmartTime, hapticsEnabled, soundsEnabled, compressOldTestsData, leftSwipeTag, autoIncreeseLevel, translations,
+      remindersEnabled, remindersSmartTime, hapticsEnabled, soundsEnabled, compressOldTestsData, leftSwipeTag, autoIncreaseLevel, translations,
     filters.translation
     tests.triesDuration
 
@@ -278,6 +329,11 @@ export const versionsConvertionTable: {
     from: ["0.0.8"],
     to: "0.0.9",
     method: to009
+  },
+  {
+    from: ["0.0.9"],
+    to: "0.1.0",
+    method: to010
   }
 ];
 

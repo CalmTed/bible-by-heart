@@ -1,0 +1,175 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing level 4 rendering Level 4 renders correctly 1`] = `
+<RCTScrollView
+  style={
+    {
+      "flex": 1,
+      "paddingHorizontal": 15,
+      "width": "100%",
+    }
+  }
+>
+  <View>
+    <View
+      style={
+        {
+          "alignContent": "flex-start",
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "alignContent": "center",
+            "color": "#ECECEC",
+            "flexDirection": "row",
+            "flexWrap": "wrap",
+            "fontSize": 18,
+            "fontWeight": "500",
+            "letterSpacing": 0.3,
+            "padding": 10,
+          }
+        }
+      >
+        Finish passage text
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "borderRadius": 10,
+          "height": "auto",
+          "marginBottom": 0,
+          "marginHorizontal": 10,
+          "maxHeight": 100,
+          "minHeight": 100,
+          "paddingHorizontal": 0,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flexDirection": "row",
+              "opacity": 1,
+            }
+          }
+        >
+          <ViewManagerAdapter_ExpoLinearGradient
+            colors={
+              [
+                4279934519,
+                4279928478,
+              ]
+            }
+            endPoint={
+              [
+                0,
+                1,
+              ]
+            }
+            locations={
+              [
+                0,
+                1,
+              ]
+            }
+            startPoint={
+              [
+                0,
+                0,
+              ]
+            }
+            style={
+              {
+                "alignContent": "flex-start",
+                "alignItems": "center",
+                "borderRadius": 22,
+                "display": "flex",
+                "height": "100%",
+                "justifyContent": "flex-start",
+                "padding": 2,
+                "width": "100%",
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignContent": "space-between",
+                  "alignItems": "center",
+                  "backgroundColor": "#2C302C",
+                  "borderRadius": 21,
+                  "flexDirection": "row",
+                  "height": "100%",
+                  "justifyContent": "space-between",
+                  "paddingRight": 15,
+                  "width": "100%",
+                }
+              }
+            >
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={true}
+                cursorColor="#1A9E37"
+                editable={true}
+                multiline={true}
+                numberOfLines={4}
+                onChangeText={[Function]}
+                onEndEditing={[Function]}
+                onSubmitEditing={[Function]}
+                placeholder="Write passage text"
+                placeholderTextColor="#A0A0A0"
+                style={
+                  {
+                    "color": "#ECECEC",
+                    "fontSize": 18,
+                    "fontWeight": "500",
+                    "minWidth": 100,
+                    "paddingHorizontal": 14,
+                    "paddingVertical": 7,
+                  }
+                }
+                value="Знаємо, що тим, які "
+              />
+            </View>
+          </ViewManagerAdapter_ExpoLinearGradient>
+        </View>
+      </View>
+    </View>
+    <RCTScrollView
+      style={
+        {
+          "flex": 1,
+          "width": "100%",
+        }
+      }
+    >
+      <View>
+        <View
+          style={
+            {
+              "flex": 1,
+              "flexDirection": "row",
+              "flexWrap": "wrap",
+              "gap": 10,
+              "paddingHorizontal": 20,
+              "paddingVertical": 10,
+              "width": "100%",
+            }
+          }
+        />
+      </View>
+    </RCTScrollView>
+  </View>
+</RCTScrollView>
+`;

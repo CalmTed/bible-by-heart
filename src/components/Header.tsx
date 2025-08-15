@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 
 interface HeaderModel {
@@ -36,7 +36,7 @@ export const Header: FC<HeaderModel> = ({
 
   const headerStyle = StyleSheet.create({
     view: {
-      height: 60,
+      height: 80,
       width: "100%",
       flexDirection: "row",
       justifyContent: alignChildren || "flex-end",

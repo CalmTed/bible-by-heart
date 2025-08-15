@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface ButtonModel {
@@ -37,16 +37,18 @@ export const Button: FC<ButtonModel> = ({
   if (!theme) {
     return <View></View>;
   }
-  const gradientColors =
-    type === "transparent"
+  const gradientColors = disabled
+    ? [theme.colors.bg, theme.colors.bgSecond]
+    : type === "transparent"
       ? ["transparent", "transparent"]
       : color === "gray"
         ? [theme.colors.bgSecond, theme.colors.bgSecond]
         : color === "green"
           ? [theme.colors.gradient1, theme.colors.gradient2]
           : [theme.colors.redGradient1, theme.colors.redGradient2];
-  const textColor =
-    type === "transparent"
+  const textColor = disabled
+    ? theme.colors.textSecond
+    : type === "transparent"
       ? color === "red"
         ? theme.colors.textDanger
         : color === "gray"

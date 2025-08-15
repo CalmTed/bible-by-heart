@@ -157,6 +157,7 @@ export const ua: typeof en = {
   settsChangeTheme: "Змінити кольорову тему",
   settsChangeLang: "Змінити мову",
   settsDevMode: "Режим розробника",
+  settsResetLocalUserData: "Обнулити локальні данні користувача",
   settsLeftSwipeTag: "Присвоєння категорії свайпом вправо",
   settsHaptics: "Вібрація",
   settsDevPasswordHeader: "Введи відповідь на число",
@@ -222,10 +223,54 @@ export const ua: typeof en = {
   DefaultTrainModeName: "Звичайний режим",
   NewTrainModeName: "Новий режим",
   settsPrivacyPolicyHeader: "Політика конфіденційності",
+  settsTermsOfServiceHeader: "Умови викороистання",
   OpenExternalLink: "Зовнішнє посилання (англійською)",
   DaysLabelSingular: "день",
   DaysLabelTwoThreeFour: "дня",
   DaysLabelMultiple: "днів",
+
+  //user settings
+  settsUserHeader: "Змінити дані користувача",
+  settsIConfirmDeletion: "Я підтверджую видалення аккаунту ",
+  settsEmailConfirmLintSentTitle: "Посилання відправлено",
+  settsEmailConfirmLintSentSubtext:
+    "Відкрий ел. лист який ми надіслали і перейди по посиланню",
+  settsEmailConfirmLintFailTitle: "Не вдалось відправити посилання",
+  settsEmailConfirmLintFailSubtext: "Можеш спробувати ще раз через 5 хвилин",
+  settsAccountDeletionSuccess: "Акаунт було видаленно",
+  settsAccountDeletionFailTitle: "Не вдалось видалити акаунт",
+  settsAccountDeletionFailSubtext:
+    "Будь ласка спробуйте пізніше чи напишіть нам на biblebyheartapp@gmail.com",
+  settsUserEmail: "Ел. пошта",
+  settsUserEmailConfirmed: "Ел. пошту підтверджено",
+  settsUserEmailNOTConfirmed: "Ел. пошту не підтвердженно",
+  settsUserRegDate: "Дата реєстрації",
+  settsUserLastSyncDate: "Остання синхронізація даних користувача",
+  settsUserGetRemoteUserDataHeader: "Синхронізувати дані користувача",
+  settsUserGetRemoteUserDataSubtext: "Заванжити дані з серверу",
+  settsUserUserName: "Імʼя користувача (унікальне)",
+  settsUserUserTitle: "Назва користувача",
+  settsUserProfilePublic: "Публічність акаунту",
+  settsUserDataPublic: "Публічність статистичних даних",
+  settsUserRequestEmailConfLinkHeadert:
+    "Відправити посилання для підтвердження пошти",
+  settsUserRequestEmailConfLinkSubtext:
+    "Ти матимеш 24 години аби перейти за посиланням у ел. листі",
+  settsUserDeleteAccountHeader: "Видалити аккаунт",
+  settsUserDeleteAccountSubtext:
+    "Це незворотня дія. Усі дані користувача буде втрачено",
+  settsUserConfirmDeleteAccountHeader: "Підтвердження видалення",
+  settsUserConfirmDeleteAccountDisclosureText:
+    "Будь ласкa, май на увазі, що це не заморозка аккаунту. Усі данні які привʼязані по цієї ел. пошти буде незворотньо втрачено",
+  settsUserConfirmDeleteAccountDisclosureSubtext:
+    "Для підтвердження видалення введи знизу такий текст: ",
+  settsUserConfirmDeleteAccountDisclosureInputPlaceholder: "Напиши тут",
+  profilePublicOptionPublic: "Публічний",
+  profilePublicOptionReference: "За посиланням",
+  profilePublicOptionPrivate: "Приватний",
+  dataPublicOptionPublic: "Публічні аноніміфіковані",
+  dataPublicOptionPrivate: "Приватні",
+
   statsTotalTimesTested: "Тестовано разів",
   statsTotalTimeSpent: "Всього часу витрачено",
   statsAverageDuration: "Середній час на тест",
@@ -271,10 +316,32 @@ export const ua: typeof en = {
   legalCheckLabel:
     "Я згоден із умовами використання застосунку і політикою безпеки",
   loginButton: "Увійти",
+  logoutButton: "Вийти",
   registerButton: "Реєстрація",
   passwordRulesLabel:
     "Пароль повинен містити як мінімум одну заглавну літеру, одну строчну літеру, одну ціфру, один символ зі списку:[@.#$!%*?&]. Довжина 8-40 літер",
   ComingSoon: "Скоро буде 😉",
+  //register
+  openLegalPrivacyPolicy: "Політика безпеки(eng)",
+  openLegalTermsOfService: "Умови використання(eng)",
+  provideUserNameLabel: "імʼя користувача",
+
+  //network errors
+  netRegSuccess: "Вітаємо!",
+  netRegSuccessSubText: "Ласкаво просимо! Тепер ти можеш увійти у свій аккаунт",
+  netUnknownError: "Хм... Невідома помилка",
+  newUnknownErrorAuth: "Невідома помилка з авторизацією",
+  netUnableToLogOut: "Невдалось вийти",
+  netUnableToGetUserData: "Невдалось отримати дані користувача",
+  netUnableToSaveUserData: "Невдалось зберегти дані користувача",
+  netUnableToCreateUser409: "Невдалось створити користувача 409",
+  net200withNoData: "Отримано статус 200 без данних",
+
+  netBadRequestData400: "Неправильний запит 400",
+  netUnauthorized401: "Помилка доступу 401",
+  netForbidden403: "Недостатньо прав 403",
+  netUserNotFound406: "Користувача не знайдено 406",
+  netServerError500: "Помилка серверу 500",
 
   dayMO: "Пн",
   dayTU: "Вт",

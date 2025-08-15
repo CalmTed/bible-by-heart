@@ -1,4 +1,4 @@
-import { AddressType } from "src/models";
+import { AddressType } from "../models";
 
 export const getAddressDifference: (
   a: AddressType,

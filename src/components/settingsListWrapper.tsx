@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { MiniModal } from "./miniModal";
 import { ReminderModel, TrainModeModel, TranslationModel } from "../models";
 import { IconButton } from "./Button";

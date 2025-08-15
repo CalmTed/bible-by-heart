@@ -1,22 +1,193 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "src/utils/useApp";
-import { Header } from "src/components/Header";
-import { Button, IconButton } from "src/components/Button";
-import { navigateWithState } from "src/screeenManagement";
-import { IconName } from "src/components/Icon";
-import { SCREEN } from "src/constants";
-import { Input } from "src/components/Input";
+import { useApp } from "../utils/useApp";
+import { Header } from "../components/Header";
+import { Button, IconButton } from "../components/Button";
+import { navigateWithState } from "../screeenManagement";
+import { IconName } from "../components/Icon";
+import {
+  ACCESS_TOKEN_NAME,
+  API_LINK,
+  REFRESH_TOKEN_NAME,
+  SCREEN
+} from "../constants";
+import { Input } from "../components/Input";
+import { logger } from "../utils/logger";
+import { fetchAPI } from "../services/fetch";
+import * as SecureStore from "expo-secure-store";
+import { ActionName, AppStateModel } from "../models";
+import { reduce } from "../utils/reduce";
 
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+  const { state, t, setState, theme } = useApp({ route, navigation });
 
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
-  const [tempPassword, setTempPassword] = useState("p@ssTest");
+  const [tempPassword, setTempPassword] = useState("passwordA@2");
 
-  const handleLoginSubmit = () => {
-    Alert.alert("Work in progress", "Soon, but not yet");
+  //if session is already defined?
+  //- then login button will be blocked,
+  // but if you for some reason anready here, you can login again
+
+  const handleLoginSubmit = async (
+    loginPossible: boolean,
+    email: string,
+    password: string
+  ) => {
+    if (loginPossible) {
+      try {
+        const result = await fetchAPI({
+          link: API_LINK.login,
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          },
+          body: {
+            email,
+            password
+          },
+          logoutMethods: {
+            state,
+            setState,
+            navigation,
+            screen: SCREEN.settings
+          }
+        });
+        if (typeof result === "undefined") {
+          Alert.alert(t("newUnknownErrorAuth"));
+          Alert.alert(t("newUnknownErrorAuth"));
+          return;
+        }
+        switch (result.response.status) {
+          case 200:
+            if (result?.data) {
+              //save auth keys
+              SecureStore.setItem(ACCESS_TOKEN_NAME, result.data.token);
+              SecureStore.setItem(REFRESH_TOKEN_NAME, result.data.refreshToken);
+              //fetch user data
+              const userData = await fetchAPI({
+                link: API_LINK.getUserData,
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${result.data.token}`
+                },
+                logoutMethods: {
+                  state,
+                  setState,
+                  navigation,
+                  screen: SCREEN.settings
+                }
+              });
+              if (typeof userData === "undefined") {
+                Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"));
+                return;
+              }
+              switch (userData.response.status) {
+                case 200:
+                  const udd = userData.data as Record<
+                    keyof AppStateModel["userData"] | "appLanguage",
+                    any
+                  >;
+                  const newState = reduce(state, {
+                    name: ActionName.setUserData,
+                    payload: {
+                      uuid: udd.uuid,
+                      email: udd.email,
+                      registrationDate: udd.registrationDate,
+                      isEmailConfirmed: udd.isEmailConfirmed,
+                      //setting user data update time automaticaly
+                      userName: udd.userName,
+                      userTitle: udd.userTitle,
+                      userPicture: udd.userPicture,
+                      birthDate: udd.birthDate,
+                      userRights: udd.userRights,
+                      isProfilePublic: udd.isProfilePublic,
+                      isDataPublic: udd.isDataPublic,
+                      friendRequests: udd.friendRequests,
+                      friends: udd.friends,
+                      blockedUsers: udd.blockedUsers,
+                      sessions: udd.sessions,
+                      applang:
+                        state.settings.langCode !== udd.appLanguage
+                          ? udd.appLanguage
+                          : undefined //set app lang if different
+                    }
+                  });
+                  if (newState === null) {
+                    return Alert.alert(
+                      t("netUnknownError"),
+                      t("netUnableToSaveUserData")
+                    );
+                  }
+                  setState(newState);
+                  navigateWithState({
+                    navigation,
+                    screen: SCREEN.settings,
+                    state: newState
+                  });
+                  break;
+                case 400:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netBadRequestData400"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 401:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netUnauthorized401"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 403:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netForbidden403"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 406:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netUserNotFound406"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+                case 500:
+                  Alert.alert(
+                    t("netUnableToGetUserData") + t("netServerError500"),
+                    `${userData.response.statusText}`
+                  );
+                  break;
+              }
+            } else {
+              Alert.alert(t("netUnknownError"), t("net200withNoData"));
+              Alert.alert(t("netUnknownError"), t("net200withNoData"));
+            }
+            break;
+          case 400:
+            Alert.alert(
+              t("netBadRequestData400"),
+              `${result.response.statusText}`
+            );
+            break;
+          case 401:
+            Alert.alert(
+              t("netUnauthorized401"),
+              `${result.response.statusText}`
+            );
+            break;
+          case 500:
+            Alert.alert(
+              t("netServerError500"),
+              `${result.response.statusText}`
+            );
+            break;
+        }
+      } catch (err) {
+        logger.error(`Cant login. Error: ${err}`);
+        Alert.alert(t("newUnknownErrorAuth"), `${err}`);
+        console.log(err);
+      }
+    }
   };
 
   const handleRegisterClick = () => {
@@ -99,7 +270,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!loginPossible}
-          onPress={handleLoginSubmit}
+          onPress={() =>
+            handleLoginSubmit(loginPossible, tempEmail, tempPassword)
+          }
         />
       </View>
       <Button

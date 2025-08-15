@@ -14,7 +14,7 @@ import {
   OptionModel,
   TrainModeModel
 } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { SettingsListWrapper } from "../settingsListWrapper";
 import { createTrainMode } from "../../initials";
@@ -41,7 +41,8 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
       width: "100%",
-      height: "100%"
+      height: "100%",
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,
@@ -100,17 +101,17 @@ export const TestsSettingsList: FC<TestsSettingsListModel> = ({
           theme={theme}
           header={t("settsAutoIncreseLevel")}
           subtext={t(
-            state.settings.autoIncreeseLevel ? "settsEnabled" : "settsDisabled"
+            state.settings.autoIncreaseLevel ? "settsEnabled" : "settsDisabled"
           )}
           type="checkbox"
-          checkBoxState={state.settings.autoIncreeseLevel}
+          checkBoxState={state.settings.autoIncreaseLevel}
           onClick={(value) => {
             setState(
               (st) =>
                 reduce(st, {
                   name: ActionName.setSettingsParam,
                   payload: {
-                    param: SETTINGS.autoIncreeseLevel,
+                    param: SETTINGS.autoIncreaseLevel,
                     value: value
                   }
                 }) || st

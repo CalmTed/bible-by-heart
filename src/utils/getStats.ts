@@ -13,6 +13,7 @@ export const getStroke = (testHistory: TestModel[]) => {
   const allDays = [...testHistory]
     .sort((a, b) => Math.max(...b.td.flat()) - Math.max(...a.td.flat()))
     .map((t) => {
+      //there should be at least two data points: finishinh tes and finishing session
       const d = new Date(t.td[t.td.length - 1][1] || 0);
       return `${addZero(d.getFullYear(), 4)}-${addZero(
         d.getMonth() + 1
@@ -150,7 +151,7 @@ interface PassageStatsModel {
     errorNumber: number;
   }[]; //TODO limit to top ~10
 }
-export const getPasageStats: (
+export const getPassageStats: (
   state: AppStateModel,
   passage: PassageModel
 ) => PassageStatsModel = (state, passage) => {
@@ -415,7 +416,7 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
       allDefinedWeeksDuration.length
     ),
     avgWeekDurationRelativePercent,
-    maxStroke: 0, //TODO
+    maxStroke: 0, //TODO implement it
     totalTimeSpentMS,
     totalTestsNumber,
     avgDurationMS,

@@ -10,7 +10,7 @@ import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
 import { Button } from "./Button";
 import { getPerfectTestsNumber } from "../utils/getPerfectTests";
-import { getTheme } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { DotIndicator } from "./DotIndicator";
 
 interface LevelPickerModel {
@@ -18,6 +18,7 @@ interface LevelPickerModel {
   handleChange: (level: PASSAGELEVEL, passageId: number) => void;
   handleOpen: (passageId: number) => void;
   t: (w: WORD) => string;
+  theme: ThemeAndColorsModel;
   state: AppStateModel;
   testLevel?: TESTLEVEL;
   handleRestart?: () => void;
@@ -26,6 +27,7 @@ interface LevelPickerModel {
 export const LevelPicker: FC<LevelPickerModel> = ({
   targetPassage,
   t,
+  theme,
   handleChange,
   handleOpen,
   state,
@@ -48,7 +50,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
     setLevelPickerShown(true);
     handleOpen(targetPassage.id);
   };
-  const theme = getTheme(state.settings.theme);
   const levelPickerStyles = StyleSheet.create({
     levelPickerView: {
       justifyContent: "flex-start"

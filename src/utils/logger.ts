@@ -1,5 +1,5 @@
-import { LOGGER_MAX_ARRAY_SIZE, STORAGE_LOGGER } from "src/constants";
-import storage from "src/storage";
+import { LOGGER_MAX_ARRAY_SIZE, STORAGE_LOGGER } from "../constants";
+import storage from "../storage";
 import addZero from "./addZero";
 
 const append = (string: string) => {

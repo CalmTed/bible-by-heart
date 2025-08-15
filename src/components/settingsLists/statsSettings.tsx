@@ -4,7 +4,7 @@ import { SettingsMenuItem } from "../setttingsMenuItem";
 import { SETTINGS, STATSMETRICS } from "../../constants";
 import { WORD } from "../../l10n";
 import { ActionName, AppStateModel } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { MiniModal } from "../miniModal";
 import { IconButton } from "../Button";
@@ -28,7 +28,8 @@ export const StatsSettingsList: FC<StatsSettingsListModel> = ({
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
       width: "100%",
-      height: "100%"
+      height: "100%",
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,

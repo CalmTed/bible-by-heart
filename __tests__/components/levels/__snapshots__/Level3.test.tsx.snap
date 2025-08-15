@@ -1,0 +1,573 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing level 3 rendering Level 3 renders correctly 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "width": "100%",
+    }
+  }
+>
+  <RCTScrollView
+    style={
+      {
+        "backgroundColor": "#2C302C",
+        "borderRadius": 10,
+        "height": "auto",
+        "margin": 10,
+        "maxHeight": "30%",
+        "paddingHorizontal": 10,
+      }
+    }
+  >
+    <View>
+      <View
+        style={
+          {
+            "alignContent": "center",
+            "flexDirection": "row",
+            "flexWrap": "wrap",
+            "letterSpacing": 0.3,
+            "padding": 10,
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            Знаємо,
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            що
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            тим,
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            які
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            люблять
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            Бога,
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            котрі
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            покликані
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            за
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            Його
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            постановою,
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            все
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            сприяє
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            до
+          </Text>
+        </View>
+        <View
+          style={
+            {
+              "padding": 2,
+              "paddingHorizontal": 2,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#ECECEC",
+                "fontSize": 18,
+              }
+            }
+          >
+            добра.
+          </Text>
+        </View>
+      </View>
+    </View>
+  </RCTScrollView>
+  <View
+    style={
+      {
+        "flex": 1,
+        "flexDirection": "row",
+        "flexWrap": "wrap",
+        "gap": 10,
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4279934519,
+              4279928478,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 20,
+              "elevation": 5,
+              "justifyContent": "center",
+              "padding": 2,
+              "shadowColor": "#000",
+              "shadowOffset": {
+                "height": 2,
+                "width": 0,
+              },
+              "shadowOpacity": 0.25,
+              "shadowRadius": 4,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "#2C302C",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "paddingLeft": 18,
+                "paddingRight": 28,
+                "paddingVertical": 14,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#ECECEC",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "paddingLeft": 10,
+                  "paddingRight": 5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Select address
+            </Text>
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "flexDirection": "row",
+        }
+      }
+    >
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": true,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onBlur={[Function]}
+        onClick={[Function]}
+        onFocus={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <ViewManagerAdapter_ExpoLinearGradient
+          colors={
+            [
+              4280756775,
+              4281085996,
+            ]
+          }
+          endPoint={
+            [
+              0,
+              1,
+            ]
+          }
+          locations={
+            [
+              0,
+              1,
+            ]
+          }
+          startPoint={
+            [
+              0,
+              0,
+            ]
+          }
+          style={
+            {
+              "alignItems": "center",
+              "borderRadius": 20,
+              "elevation": 5,
+              "justifyContent": "center",
+              "padding": 2,
+              "shadowColor": "#000",
+              "shadowOffset": {
+                "height": 2,
+                "width": 0,
+              },
+              "shadowOpacity": 0.25,
+              "shadowRadius": 4,
+            }
+          }
+        >
+          <View
+            style={
+              {
+                "alignItems": "center",
+                "backgroundColor": "transparent",
+                "borderRadius": 21,
+                "flexDirection": "row",
+                "justifyContent": "center",
+                "paddingLeft": 18,
+                "paddingRight": 28,
+                "paddingVertical": 14,
+              }
+            }
+          >
+            <Text
+              style={
+                {
+                  "color": "#A0A0A0",
+                  "fontSize": 18,
+                  "fontWeight": "500",
+                  "paddingLeft": 10,
+                  "paddingRight": 5,
+                  "textTransform": "uppercase",
+                }
+              }
+            >
+              Submit
+            </Text>
+          </View>
+        </ViewManagerAdapter_ExpoLinearGradient>
+      </View>
+    </View>
+  </View>
+</View>
+`;

@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { PassageModel } from "./models";
 
-export const VERSION = "0.0.9";
+export const VERSION = "0.1.0";
 
 export const alowedStateVersions = [
   "0.0.4",
@@ -9,13 +9,12 @@ export const alowedStateVersions = [
   "0.0.6",
   "0.0.7",
   "0.0.8",
+  "0.0.9",
   VERSION
 ]; //make translators for imported data
 
 export const API_VERSION = "0.0.1";
 //cant sync with oudated version
-//can convert one stare version to the new one
-//convert the state if version is outdated
 
 export enum LANGCODE {
   en = "en",
@@ -45,6 +44,18 @@ export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
 export const LOGGER_MAX_ARRAY_SIZE = 3000;
+
+export const ACCESS_TOKEN_NAME = "accessToken";
+export const REFRESH_TOKEN_NAME = "refreshToken";
+
+export const APIVERSION_LAST_CHECK = "apiVersionLastCheck";
+export const APIVERSION_MAX_TIME = MINUTE;
+export const APIVERSION_STATUS = "apiVersionStatus";
+
+export const PRIVACY_POLICY_LINK =
+  "https://biblebyheart.app/static/bible-by-heart-privacy-policy.html";
+export const TERMS_OF_SERVICE_LINK =
+  "https://biblebyheart.app/static/bible-by-heart-terms-of-service.html";
 
 export enum SCREEN {
   home = "home",
@@ -124,20 +135,6 @@ export const COLOR_LIGHT = {
   redGradient1: "#E77D7B",
   redGradient2: "#E49278"
 };
-
-export enum API_LINK {
-  apiVersion = "api/version",
-  icon = "static/logo.png",
-  createUser = "api/user/create",
-  login = "api/user/login",
-  refreshToken = "api/user/refreshToken",
-  logout = "api/user/logout",
-  getUserData = "api/user/get",
-  editUserData = "api/user/edit",
-  removeUser = "api/user/remove",
-  requestEmailComfirmation = "api/user/requestEmailConfirmation",
-  requestPasswordReset = "api/user/requestPaswordReset"
-}
 
 export const THEME_DARK = StyleSheet.create({
   screen: {
@@ -255,7 +252,8 @@ export enum SETTINGS {
   soundsEnabled = "soundsEnabled",
   compressOldTestsData = "compressOldTestsData",
   leftSwipeTag = "leftSwipeTag",
-  autoIncreeseLevel = "autoIncreeseLevel",
+  //TODO not sure wheather its implemented
+  autoIncreaseLevel = "autoIncreaseLevel",
 
   translations = "translations",
   homeScreenStatsType = "homeScreenStatsType",
@@ -273,3 +271,17 @@ export const PASSAGE_ROWS_TO_EXPORT = [
 ] as (keyof PassageModel)[];
 
 export const TRANSLATIONS_TO_FETCH = [1];
+
+export enum API_LINK {
+  apiVersion = "api/version",
+  icon = "static/logo.png",
+  createUser = "api/user/create",
+  login = "api/user/login",
+  refreshToken = "api/user/refreshToken",
+  logout = "api/user/logout",
+  getUserData = "api/user/get",
+  editUserData = "api/user/edit",
+  removeUser = "api/user/remove",
+  requestEmailComfirmation = "api/user/requestEmailConfirmation",
+  requestPasswordReset = "api/user/requestPaswordReset"
+}

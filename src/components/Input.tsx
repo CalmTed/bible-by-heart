@@ -2,11 +2,12 @@ import React, { FC } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 interface InputModel {
   onChange: (value: string) => void;
   onSubmit?: (value: string) => void;
+  onEndEditing?: (value: string) => void;
   placeholder: string;
   theme: ThemeAndColorsModel;
   value?: string;
@@ -102,6 +103,7 @@ export const Input: FC<InputModel> = ({
   wrapperStyle,
   style,
   onSubmit = () => {},
+  onEndEditing = () => {},
   onChange,
   disabled,
   type = "secondary",
@@ -212,6 +214,7 @@ export const Input: FC<InputModel> = ({
                 onChangeText={onChange}
                 placeholder={placeholder}
                 onSubmitEditing={(e) => onSubmit(e.nativeEvent.text || "")}
+                onEndEditing={(e) => onEndEditing(e.nativeEvent.text || "")}
                 editable={!disabled}
                 selectTextOnFocus={selectTextOnFocus}
                 placeholderTextColor={theme.colors.textSecond}

@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing icon renders correctly 1`] = `
+<RNSVGSvgView
+  align="xMidYMid"
+  bbHeight={18}
+  bbWidth={18}
+  fill="none"
+  focusable={false}
+  height={18}
+  meetOrSlice={0}
+  minX={0}
+  minY={0}
+  style={
+    [
+      {
+        "backgroundColor": "transparent",
+        "borderWidth": 0,
+      },
+      {
+        "flex": 0,
+        "height": 18,
+        "width": 18,
+      },
+    ]
+  }
+  vbHeight={18}
+  vbWidth={18}
+  width={18}
+  xml="<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 9H1M1 9L8.38462 1M1 9L8.38462 17" stroke="#ECECEC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <RNSVGGroup
+    fill={null}
+    propList={
+      [
+        "fill",
+      ]
+    }
+  >
+    <RNSVGPath
+      d="M17 9H1M1 9L8.38462 1M1 9L8.38462 17"
+      fill={
+        {
+          "payload": 4278190080,
+          "type": 0,
+        }
+      }
+      propList={
+        [
+          "stroke",
+          "strokeWidth",
+          "strokeLinecap",
+          "strokeLinejoin",
+        ]
+      }
+      stroke={
+        {
+          "payload": 4293717228,
+          "type": 0,
+        }
+      }
+      strokeLinecap={1}
+      strokeLinejoin={1}
+      strokeWidth={2}
+    />
+  </RNSVGGroup>
+</RNSVGSvgView>
+`;

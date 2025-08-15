@@ -9,8 +9,7 @@ import {
   StyleProp,
   TextStyle,
   Animated,
-  Vibration,
-  ToastAndroid
+  Vibration
 } from "react-native";
 import {
   ARCHIVED_NAME,
@@ -39,11 +38,12 @@ import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
 import { timeToString } from "../utils/formatDateTime";
-import { getTheme } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
-import { getAddresOrder } from "src/utils/addressOrder";
-import { logger } from "src/utils/logger";
+import { getAddresOrder } from "../utils/addressOrder";
+import { logger } from "../utils/logger";
+import toastShow from "../utils/toastShow";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -88,7 +88,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       setPEOpen(true);
     } else {
       logger.write("English verses number limit reached");
-      ToastAndroid.show(t("ErrorCantAddMoreEngVerses"), 10000);
+      toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
     }
   };
   const handlePESubmit = (passage: PassageModel) => {
@@ -327,6 +327,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               <ListItem
                 state={state}
                 key={passage.id}
+                theme={theme}
                 data={passage}
                 t={t}
                 onPress={() => handleListItemEdit(passage)}
@@ -568,6 +569,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           onConfirm={handlePESubmit}
           onRemove={handlePERemove}
           t={t}
+          theme={theme}
         />
       )}
     </View>
@@ -577,6 +579,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
 const ListItem: FC<{
   data: PassageModel;
   t: (w: WORD) => string;
+  theme: ThemeAndColorsModel;
   onPress: () => void;
   onToggleTag: () => void;
   onRemove: () => void;
@@ -586,6 +589,7 @@ const ListItem: FC<{
 }> = ({
   data,
   t,
+  theme,
   onPress,
   onToggleTag,
   onRemove,
@@ -594,7 +598,6 @@ const ListItem: FC<{
   onArchive
 }) => {
   const sort = state.sort;
-  const theme = getTheme(state.settings.theme);
   const leftSwipeTag = state.settings.leftSwipeTag;
   const additionalStyles = data.isCollapsed
     ? { overflow: "visible" }

@@ -14,9 +14,9 @@ import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
-import { ThemeAndColorsModel } from "../utils/getTheme";
-import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
-import { VIBRATION_PATTERNS } from "src/constants";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { getNumberOfVerses } from "../utils/getNumberOfVerses";
+import { VIBRATION_PATTERNS } from "../constants";
 
 interface AddressPickerModel {
   visible: boolean;
@@ -313,7 +313,8 @@ const ListButton: FC<{
 };
 const APstyle = StyleSheet.create({
   headerView: {
-    height: 60,
+    height: 100,
+    paddingTop: 50,
     alignContent: "center",
     width: "100%",
     flexDirection: "row",

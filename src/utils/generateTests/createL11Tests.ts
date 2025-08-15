@@ -1,10 +1,10 @@
-import { PassageModel, TestModel } from "src/models";
+import { PassageModel, TestModel } from "../../models";
 import { createL10Test, CreateTestMethodModel } from "./createL10Test";
 import { getPerfectTestsNumber } from "../getPerfectTests";
 import { getAddressDifference } from "../addressDifference";
 import { addressDistance } from "../addressDistance";
 import { randomListRange, randomRange } from "../randomizers";
-import { SENTENCE_SEPARATOR } from "src/constants";
+import { SENTENCE_SEPARATOR } from "../../constants";
 
 //select right qoute
 export const createL11Test: CreateTestMethodModel = ({

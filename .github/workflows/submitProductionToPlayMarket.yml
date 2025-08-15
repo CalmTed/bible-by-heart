@@ -1,15 +1,12 @@
-name: Test and Lint before pushing
+name: Submit production to Play Store
 
 on:
   push:
     branches:
-      - staging
       - production
   pull_request:
     branches:
-      - staging
       - production
-
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -21,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Cache node_modules
         uses: actions/cache@v3
@@ -42,3 +39,26 @@ jobs:
 
       - name: Run Jest tests
         run: yarn test --passWithNoTests
+  submit:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Call eas build
+        run: eas build --profile production --platform android --auto-submit-with-profile production

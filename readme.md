@@ -1,26 +1,22 @@
-Bible by heart
----
+## Bible by heart
 
 Another app for learning Bible passages but with some personalization
 
-Whats different from analogus apps:
----
+## Whats different from analogus apps:
 
-- stroke counter 
+- stroke counter
 - address learning tests for black box learning method
 - ukrainian interface language (add your if you want)
 - customizable Bible translation
 - offline-first and free (syncying options might be paid in future to support work)
 
-Whats the same:
----
+## Whats the same:
 
 - passages list(add, remove, edit)
-- reminders notification  
+- reminders notification
 - difficulty levels
 
-Roadmap
----
+## Roadmap
 
 - [x] asyncly get local storage
 - [x] navigation, state management
@@ -51,18 +47,18 @@ Roadmap
       - [x] select
       - [x] open modal
     - [x] settings modal
-      - [x] menu list 
+      - [x] menu list
       - [x] just text
       - [x] items list
   - [x] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x] about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
-  - [x] user settings:  - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
+  - [x] user settings: - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
   - [x] edit passage translation (custom with autocomplete from other passages data)
   - [x] filter by translation (if there are several different)
   - [x] adding passages from prepared list in the most popular translations(ESV,UBT)
     - [x] copyright page in settings
     - [x] limit length to 500 verses per passage
   - [x] delete tests history after deleting passage
-  - [x] update all passages with translation that was deleted to "other/null" 
+  - [x] update all passages with translation that was deleted to "other/null"
   - [x] add tag to filter on adding to passage, remove if it was last
   - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
 - [-] customizable daily reminder, more stats v0.0.8
@@ -70,7 +66,7 @@ Roadmap
   - [x] fix reminders permisions, fix back swipe state eracing, fix all tests enabled bug(fix check if all tests are finiched to finish session)
   - [x] fix level 4 wrong scroll wrapping, fix level 5 no scroll wrapping
   - [x] different train modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags: included/excluded)
-  - [x] state converter: 
+  - [x] state converter:
     - [x] change triesDuration from dateStarted and dateFinished
     - [x] remove all testData from history
     - [x] remove unfinished
@@ -98,56 +94,62 @@ Roadmap
 - [ ] register and login (confirm email or google/facebook login) v0.0.9
   - [x] all tests list, grouping by date and session
   - [x] passage statistics in passage editor
-     - [x] most common errors list with error numbers
-     - [x] total tries tested, total time spent
-     - [x] most often wrong addresses
+    - [x] most common errors list with error numbers
+    - [x] total tries tested, total time spent
+    - [x] most often wrong addresses
   - [ ] statistics:
     - [x] overal learned
-    - [x] global progress (learned passages score versesNumber*level)
+    - [x] global progress (learned passages score versesNumber\*level)
     - [x] relative progress (score relative to last month)
     - [ ] show different stats on home screen (LATER)
       - [ ] stroke first two weeks (LATER)
-      - [ ] general progress 2 weeks to 1 month  (LATER)
-      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...  (LATER)
+      - [ ] general progress 2 weeks to 1 month (LATER)
+      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned... (LATER)
     - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates) (LATER)
       - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday (LATER)
   - [ ] updateMessages list: show unread modal on startup or show all in settings
   - [ ] login form and action with API
   - [ ] feedback form for authorirized users or telegram bot
-  - [ ] change data safety settings and privacy policy
+  - [x] change data safety settings and privacy policy
 - [ ] sync + custom sync(without need for registration) v1.0.0
   - [ ] autosync & manualsync action
   - [ ] custom sync and documentation web page for it
   - [ ] about page and donate(premium) button
     - [ ] connect payment service
-  - [ ] screen readers labels 
+  - [ ] screen readers labels
 
 Other ideas:
+
 - accomplishments
 - friends feature / feed
 - groups functionality(group stats, group passages, group quests)
 - web app
- 
-Dev. rules
----
+
+## Dev. rules
+
 1. use setState(reduce()) for state manupulation don't use just useState()
 2. use navigateWithState for screen changing dont use just navigate EXEPT goback
 3. use createT(langCode) and t(word) for l10n dont use unlocalized text in UI
 
-Using
----
-*Installing requirements:*
+## Using
+
+_Installing requirements:_
+
 - (for Windows) expo tools and packages from package.json
 - (for Linux) it will install from package.json
 
-*Cloning:*
+_Cloning:_
+
 - run `git clone https://github.com/CalmTed/bible-by-heart.git`
 
-*Instaling:*
+_Instaling:_
+
 - run `yarn install`
 
-*Running:*
-- run `npm start` to start expo (a - run on android, r - reload...)
+_Running:_
 
-*Building:*
-- `eas build --platform android --profile [preview | production]` to build apk(preview) or aab(production) file (need exp/eas account)
+- run `yarn start` to start expo (a - run on android, r - reload...)
+
+_Building:_
+- One needs to be authorized in expo account to be able to buld with eas.
+- `yarn build-dev` or `yarn build-prod` to build the app. It automaticaly publishes to application shop for testers or main audience

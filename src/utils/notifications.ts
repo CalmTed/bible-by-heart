@@ -1,4 +1,4 @@
-import { Platform, ToastAndroid } from "react-native";
+import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { COLOR_DARK, DAY, HOUR, LANGCODE, MINUTE } from "../constants";
@@ -10,6 +10,7 @@ import {
 } from "expo-notifications";
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
+import toastShow from "./toastShow";
 
 //writes to console scheduling operations
 const notificationDebug = true;
@@ -120,6 +121,9 @@ export const getAutoTimeTrigger: (
 
 //usualy activated from reducer
 export const checkSchedule = async (state: AppStateModel) => {
+  if (!Device.isDevice) {
+    return false;
+  }
   //get all remiders
   const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
   if (notificationDebug) {
@@ -128,6 +132,9 @@ export const checkSchedule = async (state: AppStateModel) => {
   }
   //get reminders from state
   const allUserSetted = state.settings.remindersList;
+  if (typeof allScheduled === "undefined") {
+    return false;
+  }
   allScheduled.map(async (scheduled) => {
     //if removed, disabled, autotimed, or disabledAll
     const removeAll =
@@ -235,7 +242,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       const schedule: (
         randNum: number,
         item: ReminderModel
-      ) => Promise<void> = async () => {
+      ) => Promise<void> = async (randNum, item) => {
         await schedulePushNotification(
           t(`notificationTitle${randNum}` as WORD),
           t(`notificationBody${randNum}` as WORD),
@@ -282,6 +289,7 @@ export const checkSchedule = async (state: AppStateModel) => {
       }
     });
   }
+  return true;
 };
 
 export const registerForPushNotificationsAsync = async () => {
@@ -305,12 +313,12 @@ export const registerForPushNotificationsAsync = async () => {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
-      ToastAndroid.show("Failed to get token for notification!", 10000);
+      toastShow("Failed to get token for notification!", 10000);
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
-    ToastAndroid.show("Must use physical device for Push Notifications", 10000);
+    toastShow("Must use physical device for Push Notifications", 10000);
   }
 
   return token;

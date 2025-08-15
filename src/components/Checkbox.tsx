@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, View } from "react-native";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 interface SettingsMenuItemModel {
   isEnabled: boolean;

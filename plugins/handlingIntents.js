@@ -1,6 +1,5 @@
 const { withAndroidManifest } = require("@expo/config-plugins");
 
-
 //TODO do we need this file??
 function addAttributesToMainActivity(androidManifest) {
   const { manifest } = androidManifest;
@@ -39,8 +38,8 @@ function addAttributesToMainActivity(androidManifest) {
   action.$ = {
     ...action.$,
     ...{
-      "android:name": "com.CalmTed.bibleByHeart.PROCESS_TRANSACTION",
-    },
+      "android:name": "com.CalmTed.bibleByHeart.PROCESS_TRANSACTION"
+    }
   };
 
   const intent = { action: action };
@@ -55,4 +54,3 @@ module.exports = function withIntentActivity(config) {
     return config;
   });
 };
-

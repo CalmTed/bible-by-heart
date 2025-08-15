@@ -1,6 +1,8 @@
 import React, { FC } from "react";
+import * as TaskManager from "expo-task-manager";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+
 import { AppStateModel } from "./models";
 import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
 import { HomeScreen } from "./screens/homeScreen";
@@ -8,13 +10,13 @@ import { ListScreen } from "./screens/listScreen";
 import { TestsScreen } from "./screens/testsScreen";
 import { FinishScreen } from "./screens/finishScreen";
 import { SettingsScreen } from "./screens/settingsScreen";
-import * as TaskManager from "expo-task-manager";
-import { ToastAndroid } from "react-native";
 import { StatsScreen } from "./screens/statsScreen";
 import { CalendarScreen } from "./screens/calendarScreen";
-import { logger } from "./utils/logger";
 import { LoginScreen } from "./screens/loginScreen";
 import { RegisterScreen } from "./screens/registerScreen";
+
+import { logger } from "./utils/logger";
+import toastShow from "./utils/toastShow";
 
 const Stack = createStackNavigator();
 
@@ -30,7 +32,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
       logger.write(
         `Received a notification in the background! Data: ${data}; Error: ${error}; Execution info: ${executionInfo}`
       );
-      ToastAndroid.show(
+      toastShow(
         "Received a notification in the background!" + JSON.stringify(data),
         1000
       );
@@ -43,7 +45,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
         screenOptions={{
           headerShown: false,
           gestureEnabled: false,
-          presentation: "modal"
+          presentation: "card"
         }}
       >
         <Stack.Screen

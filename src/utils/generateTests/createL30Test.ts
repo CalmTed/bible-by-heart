@@ -2,7 +2,7 @@ import {
   MINIMUM_SENTENCE_LENGTH,
   PERFECT_TESTS_TO_PROCEED,
   SENTENCE_SEPARATOR
-} from "src/constants";
+} from "../../constants";
 import { getPerfectTestsNumber } from "../getPerfectTests";
 import { CreateTestMethodModel } from "./createL10Test";
 import { getWordsFromErrors } from "./getWordsFromErrors";

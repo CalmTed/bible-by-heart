@@ -1,4 +1,4 @@
-import { TestModel } from "src/models";
+import { TestModel } from "../../models";
 
 export interface ErrorGradedWord {
   index: number;

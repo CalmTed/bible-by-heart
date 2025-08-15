@@ -20,6 +20,7 @@ import {
   AppStateModel007,
   AppStateModel008,
   AppStateModel009,
+  AppStateModel010,
   PassageModel,
   PassageModel008,
   ReminderModel,
@@ -32,6 +33,80 @@ import { getNumberOfVerses } from "./utils/getNumberOfVerses";
 
 const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
+};
+
+export const createAppState010: () => AppStateModel010 = () => {
+  const phoneLangCode = getLocales()[0].languageCode;
+  const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
+  return {
+    version: VERSION,
+    apiVersion: API_VERSION,
+    lastChange: 0,
+    lastBackup: 0,
+    dateSyncTry: 0,
+    dateSyncSuccess: 0,
+    passages: [],
+    testsActive: [],
+    testsHistory: [],
+    userData: {
+      uuid: null,
+      email: null,
+      registrationDate: null,
+      isEmailConfirmed: null,
+      lastUserDataSync: -1,
+      userName: null,
+      userTitle: null,
+      userPicture: null,
+      birthDate: null,
+      userRights: null,
+      isProfilePublic: null,
+      isDataPublic: "private", //(anonimized for stats)
+      friendRequests: [], //uuid's
+      friends: [],
+      blockedUsers: [],
+      sessions: [], //readible form only for check other devices
+      loginTypes: {
+        email: false,
+        google: false
+      }
+    },
+    broadcastMessages: [], //for important announcement
+    updateMessages: [], //for updates news and friends updates, like requests and confirmations
+    feedBackMessages: [],
+    filters: {
+      tags: [ARCHIVED_NAME],
+      selectedLevels: [],
+      maxLevels: [],
+      translations: []
+    },
+    sort: SORTINGOPTION.address,
+    statsDateRange: {
+      from: 0,
+      to: -1
+    },
+    settings: {
+      [SETTINGS.langCode]: langCode,
+      [SETTINGS.theme]: THEMETYPE.auto,
+      [SETTINGS.devModeEnabled]: false,
+      [SETTINGS.devModeActivationTime]: null,
+      [SETTINGS.chapterNumbering]: "vestern",
+      [SETTINGS.hapticsEnabled]: true,
+      [SETTINGS.soundsEnabled]: true,
+      [SETTINGS.compressOldTestsData]: true,
+      [SETTINGS.autoIncreaseLevel]: false,
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+
+      [SETTINGS.remindersEnabled]: true,
+      [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
+      [SETTINGS.remindersList]: [],
+
+      [SETTINGS.translations]: getDefaultTranslations(langCode), //dont need id for now, just user provided name
+      [SETTINGS.homeScreenStatsType]: "auto", //dont need id for now, just user provided name
+      [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS.verses,
+      [SETTINGS.trainModesList]: getDefaultTrainModes(langCode),
+      [SETTINGS.activeTrainModeId]: getDefaultTrainModes(langCode)[0].id
+    }
+  };
 };
 
 export const createAppState009: () => AppStateModel009 = () => {
@@ -79,7 +154,7 @@ export const createAppState009: () => AppStateModel009 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
-      [SETTINGS.autoIncreeseLevel]: false,
+      [SETTINGS.autoIncreaseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
       [SETTINGS.remindersEnabled]: true,
@@ -97,7 +172,7 @@ export const createAppState009: () => AppStateModel009 = () => {
 
 export const createAppState: () => AppStateModel = () => {
   try {
-    return createAppState009();
+    return createAppState010();
   } catch (err) {
     throw new Error(`Error: ${err}`);
   }
@@ -329,6 +404,7 @@ export const createAppState008: () => AppStateModel008 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
+      //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 
@@ -373,6 +449,7 @@ export const createAppState007: () => AppStateModel007 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
+      //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
 

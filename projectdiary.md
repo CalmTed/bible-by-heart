@@ -232,6 +232,7 @@ boilerplate:
 - checked l30 creation 
 - skipped 3rd level inconvenience - will reacreate the whole test error design later
 - major refactoring potential plan (after next publishing)
+    - put all of components in the index file to simplify imports
     - change strange state change or unchange
         - change localstorage right on click
         - propose undo if needed
@@ -320,3 +321,152 @@ boilerplate:
 - fixed a bug for dear user-friends
 2025-06-26 
 - added lint with pretier and testing workflow
+2025-06-28
+- finaly make github action work!
+    - version code must be an integer not too big
+    - first submition must be manual(interactive)
+    - must have the same package name
+    - etc. 12 attempts in total
+2025-07-05
+- finished API CI/CD
+- plan for bbh app
+    - add tests for critical parts
+    - recreate navigator
+    - refactor all components - add animation
+    - implement login
+2025-07-11
+- stuck in indecisiveness of where to start
+- main features we need to test
+    - creatinmg new state
+    - creating new passage
+    - generating tests
+    - submiting tests
+    - getting stats
+- plan 
+    - app rendering(render main menu, go to another screen)
+    - initial state
+    - reducer
+        - in future do all the methods
+        - for now only crucial and buggy(downgraading passage)
+    - fetch (ESV, API)
+    - common components
+        - button
+        - input
+        - address picker
+        - checkbox
+        - header
+        - icon
+        - mini modal
+        - select
+        - settings menu item
+2025-07-17
+- finished reducer tests, coverage at 16%
+- did some more utils - 26%
+- struggling with testing components
+2025-07-18
+- I doint need 100% coverage just not, just need to set up snapshots working for
+    - button
+    - input
+    - header
+    - minimodal
+    - checkbox
+2025-07-22
+- finaly understood the problem with testing components - LLM recomended "react-test-render", but it is deprecated. Switched to "@testing-library/react-native"
+- did button
+- tomorrow snapshot testing
+    - [x] input
+    - [x] icon
+    - [x] header
+    - [x] select
+    - [x] checkbox
+    - [x] mini modal
+    - [x] address picker
+    - [x] settings menu item 6/6
+    - [x] all the levels 5/5
+- then finally will switch to finishing login feature!
+2025-07-23
+- test for settingsMenuItem doents sees valid coverage for some reason... renders allright though
+- did tests as planned, 35.6%
+- whats next
+    - [x] finish login ang register screen
+    - push to staging, test, to production
+    - do other tasks - refactor
+        - show, explore logger messages
+        - rewrite navigator
+            - update design
+            - deep linking
+        - abstraction for objects? (how to unite reducer with OOP?)
+        - put all components in one index file
+        - state change unintuitive behaivour (change on click)
+        - update t()
+        - update swipable?
+    - updates
+        - broadcast messages
+        - feedback/support messager
+        - syncing data
+            - on the first sync add author to all passages
+        - other activity and reciving tests
+        - update notifications to be smarter
+        - update addressPicker
+2025-07-28
+- now working on mac, need to build for iOS
+    - [x] abstraction for android toast
+    - [x] notification - good for now - need to redesign later
+    - [x] fix navigator(animation and top space)
+    - [x] fix address selector
+- fixed a bug with dinamic theme change and PE theme
+- completer registration workflow and started working on login
+- next time
+    - [x] update state for 0.1.0: add user data, prapare for syncing workflow
+    - [x] react to errors while getting user data
+    - [x] add token refresh feature
+    - [x] add logout, edit account, delete accont features
+    - push to staging
+    - test all workflows
+    - publish for ios?
+- later
+    - refactor: navigator, state change behaivour, update t(), update swipable and animations
+    - update
+        - address picker
+        - recieving passage texts
+        - broadcast messages
+        - feedback messager + admin UI
+        - syncing data
+        - update notification
+        - example passages lists
+        - payment update
+        - friends feature, feed, reactions
+        - login with google or other 3rd party
+        - groups and shared lists
+2025-08-12
+- [x] updating state
+    - update state model
+    - update initials
+    - add state converter
+- [x] react to errors
+- [x] add setting user data in reducer
+2025-08-14
+- [x] finished geting and user data and setting it to state
+- [x] did refresh token featuyre - check every time we fetch with auth token
+- [x] did logout feature
+- [x] fixed color theme bug in tests and level picker there
+- [x] show user data: email, reg date, email confirmation, userName, userTitle, userRights, is profile public, is data public
+- [x] do not show bithdate and user picture options for now
+- [x] basic edit data: title, is data public, 
+- [x] request new confirmation email
+- [x] request password reset
+- [x] delete account 
+- next time
+    - [x] translate aletrs, buttons, and errors
+- idea: add to each session: device, system, last sync date
+- idea: add date of buyng premium, expiration date, total time as premium user
+- IDEA: API handle to check if userName is unique, same previus userNames with dates of change
+2025-08-15
+- [x] setting user name on registration
+- [x] translate strings
+- [x] fix deletion modal styles
+- [x] fix disabled button text color
+- [x] change remote lang on lang code change
+- [x] APIversion verification
+- [x] remove console logs
+- [x] translate all network errors in Alerts

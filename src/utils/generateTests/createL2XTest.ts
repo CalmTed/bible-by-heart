@@ -1,6 +1,6 @@
 import { CreateTestMethodModel } from "./createL10Test";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR } from "src/constants";
+import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR } from "../../constants";
 import { randomRange } from "../randomizers";
 
 export const createL20Test: CreateTestMethodModel = ({

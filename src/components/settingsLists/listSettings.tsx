@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, ToastAndroid } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
 import { Select } from "../Select";
@@ -14,7 +14,7 @@ import {
   OptionModel,
   TranslationModel
 } from "../../models";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { MiniModal } from "../miniModal";
 import { IconName } from "../Icon";
@@ -26,7 +26,8 @@ import {
 } from "../../utils/handlePassageExport";
 import { schedulePushNotification } from "../../utils/notifications";
 import { dateToString } from "../../utils/formatDateTime";
-import { logger } from "src/utils/logger";
+import { logger } from "../../utils/logger";
+import toastShow from "../../utils/toastShow";
 
 interface ListSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -49,7 +50,8 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
       width: "100%",
-      height: "100%"
+      height: "100%",
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,
@@ -271,7 +273,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           actionCallBack={() => {
             const content = passagesToLSV(state); //line separated values
             if (!content) {
-              ToastAndroid.show(t("ErrorWhileEncoding"), 1000);
+              toastShow(t("ErrorWhileEncoding"), 1000);
               return;
             }
             const fileName = `BibleByHeartPassages_${dateToString(new Date().getTime())}.txt`;
@@ -279,12 +281,12 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
               .then((r) => {
                 if (r) {
                   logger.write(`Passages exported`);
-                  ToastAndroid.show(t("settsExported"), 1000);
+                  toastShow(t("settsExported"), 1000);
                 }
               })
               .catch((err) => {
                 logger.error(`Error while writing file. Error: ${err}`);
-                ToastAndroid.show(t("ErrorWhileWritingFile"), 1000);
+                toastShow(t("ErrorWhileWritingFile"), 1000);
               });
           }}
         />
@@ -297,19 +299,19 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             readFile(["text/plain"])
               .then((r) => {
                 if (!r) {
-                  ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+                  toastShow(t("ErrorWhileReadingFile"), 1000);
                   return;
                 }
                 switch (r.mimeType) {
                   case "text/plain":
                     const decodedData = LSVToArray(r.content);
                     if (!decodedData) {
-                      ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                      toastShow(t("ErrorWhileDecoding"), 1000);
                       break;
                     }
                     const convertedData = arrayToPassages(decodedData, state);
                     if (!convertedData) {
-                      ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                      toastShow(t("ErrorWhileDecoding"), 1000);
                       break;
                     }
                     const { passages, invalidIndexes, conflictedIndexes } =
@@ -323,14 +325,11 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                           {}
                         );
                       } else {
-                        ToastAndroid.show(
-                          t("ErrorTurnOnRemindersOnImport"),
-                          1000
-                        );
+                        toastShow(t("ErrorTurnOnRemindersOnImport"), 1000);
                       }
                     }
                     logger.write(`Passages imported`);
-                    ToastAndroid.show(
+                    toastShow(
                       `${t("settsImportedVerses")}: ${passages.length}`,
                       1000
                     );
@@ -345,12 +344,12 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                     );
                     break;
                   default:
-                    ToastAndroid.show(t("ErrorWhileDecoding"), 1000);
+                    toastShow(t("ErrorWhileDecoding"), 1000);
                 }
               })
               .catch((err) => {
                 logger.error(`Error while reading file. Error: ${err}`);
-                ToastAndroid.show(t("ErrorWhileReadingFile"), 1000);
+                toastShow(t("ErrorWhileReadingFile"), 1000);
               });
           }}
         />
