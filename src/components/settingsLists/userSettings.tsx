@@ -456,8 +456,6 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             theme={theme}
             header={t("settsUserDeleteAccountHeader")}
             subtext={t("settsUserDeleteAccountSubtext")}
-            header={t("settsUserDeleteAccountHeader")}
-            subtext={t("settsUserDeleteAccountSubtext")}
             actionCallBack={() => setDeletionConfirmationModalShown(true)}
           />
         </ScrollView>

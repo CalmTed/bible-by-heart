@@ -158,7 +158,6 @@ export const ua: typeof en = {
   settsChangeLang: "Змінити мову",
   settsDevMode: "Режим розробника",
   settsResetLocalUserData: "Обнулити локальні данні користувача",
-  settsResetLocalUserData: "Обнулити локальні данні користувача",
   settsLeftSwipeTag: "Присвоєння категорії свайпом вправо",
   settsHaptics: "Вібрація",
   settsDevPasswordHeader: "Введи відповідь на число",
@@ -317,7 +316,6 @@ export const ua: typeof en = {
   legalCheckLabel:
     "Я згоден із умовами використання застосунку і політикою безпеки",
   loginButton: "Увійти",
-  logoutButton: "Вийти",
   logoutButton: "Вийти",
   registerButton: "Реєстрація",
   passwordRulesLabel:

@@ -1,6 +1,5 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
