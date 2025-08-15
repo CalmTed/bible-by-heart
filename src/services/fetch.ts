@@ -1,5 +1,5 @@
 import Constants from "expo-constants";
-import { ACCESS_TOKEN_NAME, API_LINK, REFRESH_TOKEN_NAME, SCREEN } from "../constants";
+import { ACCESS_TOKEN_NAME, API_LINK, API_VERSION, APIVERSION_LAST_CHECK, APIVERSION_MAX_TIME, APIVERSION_STATUS, REFRESH_TOKEN_NAME, SCREEN, VERSION } from "../constants";
 import { logger } from "../utils/logger";
 import { ActionName, AppStateModel } from "src/models";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
@@ -7,6 +7,8 @@ import { reduce } from "src/utils/reduce";
 import { navigateWithState } from "src/screeenManagement";
 import * as SecureStore from "expo-secure-store";
 import { Buffer } from "buffer"
+import storage from "src/storage";
+import { Alert } from "react-native";
 
 const HOST = Constants.expoConfig?.extra?.HOST || "";
 if(HOST === ""){
@@ -91,6 +93,52 @@ export const fetchAPI: (a: {
           //loging out
           initiateLogout(logoutMethods.state, logoutMethods.setState, logoutMethods.navigation, logoutMethods.screen)
         }
+      }
+    }
+    
+    //api version check
+    //get time of last check
+    //if checked longer than a minute ago - check again
+    //if status(new or old) is false - abort the fetch and show the message
+    
+    const apiVersionLastCheck = await storage
+      .load({
+        key: APIVERSION_LAST_CHECK,
+      })
+      .catch((e) => {
+        logger.error(`Error on geting data in fetch e:${e}`);
+      });
+    if(new Date().getTime() > apiVersionLastCheck + APIVERSION_MAX_TIME * 1000 ){
+      const apiVersionResponce = await fetch(HOST + API_LINK.apiVersion, {
+        method: "GET",
+      }) as any | undefined;
+      const versionData = await apiVersionResponce.json();
+      if(typeof versionData?.version !== "undefined"){
+        await storage.save({
+          key: APIVERSION_LAST_CHECK,
+          data: new Date().getTime()
+        })
+        const isVersionValid = versionData.version === API_VERSION;
+        await storage.save({
+          key: APIVERSION_STATUS,
+          data: isVersionValid
+        })
+        if(isVersionValid === false){
+          Alert.alert("Версія застосунку застаріла, будь ласка, онови", "API version in incompatible with the app. Please update the app")
+          return;///ABORTING THE FETCH
+        }
+      } 
+    }else{//checked ricently
+      const apiVersionStatus = await storage
+      .load({
+        key: APIVERSION_STATUS,
+      })
+      .catch((e) => {
+        logger.error(`Error on geting data in fetch e:${e}`);
+      });
+      if(apiVersionStatus === false){
+        Alert.alert("Версія застосунку застаріла, будь ласка, онови", "API version in incompatible with the app. Please update the app")
+        return;/////ABORTING THE FETCH
       }
     }
     const response = await fetch(HOST + link, {

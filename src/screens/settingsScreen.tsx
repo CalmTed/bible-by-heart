@@ -24,6 +24,7 @@ import { UserSettingsList } from "src/components/settingsLists/userSettings";
 
 export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
+  const [loadingState, setLoadingState] = useState(false)
 
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
     const customT = createT(v);
@@ -56,7 +57,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
       }
     })
     if (typeof logingoutResult === "undefined") {
-      Alert.alert(`Unknown error`, `Unable to log out`);
+      Alert.alert(t("netUnknownError"), t("netUnableToLogOut"));
       return;
     }
     switch (logingoutResult.response.status) {
@@ -71,12 +72,32 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
         setState(newState);
         break;
-      case 401: Alert.alert(`Unable to log out`, `${logingoutResult.response.statusText}`); break;
-      case 500: Alert.alert(`Unable to log out. Server error 500`, `${logingoutResult.response.statusText}`); break;
+      case 401: Alert.alert(t("netUnauthorized401"), `${logingoutResult.response.statusText}`); break;
+      case 500: Alert.alert(t("netServerError500"), `${logingoutResult.response.statusText}`); break;
     }
   }
 
-
+  const syncLangChange = async (newLangCode: LANGCODE) => {
+    setLoadingState(true)
+    const accessToken = SecureStore.getItem(ACCESS_TOKEN_NAME);
+    await fetchAPI({
+          link: API_LINK.editUserData,
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: {
+            uuid: state.userData.uuid,
+            appLanguage: newLangCode
+          },
+          logoutMethods: {
+            state, setState, navigation, screen: SCREEN.settings
+          }
+        })
+    setLoadingState(false)
+  }
 
   const haveToken = SecureStore.getItem(ACCESS_TOKEN_NAME) !== null;
   const isAutorized = haveToken && state.userData.uuid !== null;
@@ -103,7 +124,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             }
           />,
           <Text key="title" style={theme.theme.headerText}>
-            {t("settingsScreenTitle")}
+            {t("settingsScreenTitle")}  {loadingState ? "⏳" : ""}
           </Text>
         ]}
       />
@@ -134,7 +155,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             <Button
               theme={theme}
               onPress={() => handleLogoutPress()}
-              title={t("logout")}
+              title={t("logoutButton")}
               type="transparent"
             />
           </View>
@@ -164,6 +185,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     payload: value as LANGCODE
                   }) || st
               );
+              syncLangChange(value as LANGCODE)
             }}
           />
           <SettingsMenuItem

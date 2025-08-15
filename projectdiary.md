@@ -388,7 +388,7 @@ boilerplate:
 - test for settingsMenuItem doents sees valid coverage for some reason... renders allright though
 - did tests as planned, 35.6%
 - whats next
-    - finish login ang register screen
+    - [x] finish login ang register screen
     - push to staging, test, to production
     - do other tasks - refactor
         - show, explore logger messages
@@ -417,10 +417,10 @@ boilerplate:
 - fixed a bug with dinamic theme change and PE theme
 - completer registration workflow and started working on login
 - next time
-    - update state for 0.1.0: add user data, prapare for syncing workflow
-    - react to errors while getting user data
-    - add token refresh feature
-    - add logout, etit account, delete accont features
+    - [x] update state for 0.1.0: add user data, prapare for syncing workflow
+    - [x] react to errors while getting user data
+    - [x] add token refresh feature
+    - [x] add logout, edit account, delete accont features
     - push to staging
     - test all workflows
     - publish for ios?
@@ -444,7 +444,7 @@ boilerplate:
     - update initials
     - add state converter
 - [x] react to errors
-- [.] add setting user data in reducer
+- [x] add setting user data in reducer
 2025-08-14
 - [x] finished geting and user data and setting it to state
 - [x] did refresh token featuyre - check every time we fetch with auth token
@@ -456,8 +456,17 @@ boilerplate:
 - [x] request new confirmation email
 - [x] request password reset
 - [x] delete account 
-next time
-    - translate aletrs, buttons, and errors
-- idea: add to each session: devise, system, last sync date
+- next time
+    - [x] translate aletrs, buttons, and errors
+- idea: add to each session: device, system, last sync date
 - idea: add date of buyng premium, expiration date, total time as premium user
 - IDEA: API handle to check if userName is unique, same previus userNames with dates of change
+2025-08-15
+- [x] setting user name on registration
+- [x] translate strings
+- [x] fix deletion modal styles
+- [x] fix disabled button text color
+- [x] change remote lang on lang code change
+- [x] APIversion verification
+- [x] remove console logs
+- [x] translate all network errors in Alerts

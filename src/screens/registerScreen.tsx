@@ -13,8 +13,9 @@ import { fetchAPI } from "../services/fetch"
 import { logger } from "src/utils/logger";
 
 export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+  const { state, t, theme, setState } = useApp({ route, navigation });
 
+  const [tempUserName, setTempUserName] = useState("test");
   const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
   const [tempPassword, setTempPassword] = useState("passwordA@2");
   const [tempPasswordRepeat, setTempPasswordRepeat] = useState("passwordA@2");
@@ -24,7 +25,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
     await Linking.openURL(url)
   }
 
-  const handleRegisterSubmit = async (regPossible: boolean, email: string, password: string) => {
+  const handleRegisterSubmit = async (regPossible: boolean, email: string, password: string, userName: string) => {
     if(regPossible){
       try{
         const result = await fetchAPI({
@@ -35,19 +36,22 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             'Content-Type': 'application/json'
           },
           body: {
-              userName: email.split("@")[0],
+              userName: userName,
               password: password,
               email: email,
               appLanguage: state.settings.langCode
+          },
+          logoutMethods: {
+            state, setState, navigation, screen: SCREEN.register
           }
         })
         if(typeof result === "undefined"){
-          Alert.alert(`Unknown error with registration!`);
+          Alert.alert(t("netUnknownError"));
           return;
         }
         switch(result.response.status){
           case 200: 
-            Alert.alert(`Success!`,`Welcome! Now you can login`);
+            Alert.alert(t("netRegSuccess"),t("netRegSuccessSubText"));
             navigateWithState({
               navigation,
               screen: SCREEN.login,
@@ -55,11 +59,11 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             });
              break;
           case 400:
-            Alert.alert(`Bad request data 400`,`${result.response.statusText}`);break;
+            Alert.alert(t("netBadRequestData400"),`${result.response.statusText}`);break;
           case 409:
-            Alert.alert(`Unable to create user 409`,`${result.response.statusText}`);break;
+            Alert.alert(t("netUnableToCreateUser409"),`${result.response.statusText}`);break;
           case 500:
-            Alert.alert(`Server error 500`,`${result.response.statusText}`);break;
+            Alert.alert(t("netServerError500"),`${result.response.statusText}`);break;
         }
       }catch(err){
         logger.error(`Cant register. Error: ${err}`);
@@ -78,6 +82,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
     tempEmail
   );
+  const isUserNameValid = /^[A-Za-z]{1}[A-Za-z0-9]{2,}$/.test(tempUserName);
 
   //one lowercase
   //one uppercase
@@ -118,6 +123,15 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         ]}
       />
       <View style={{ ...theme.theme.view, ...registerStyle.inputView }}>
+        <Input
+          wrapperStyle={{ ...registerStyle.wrapperInput }}
+          value={tempUserName}
+          onChange={setTempUserName}
+          placeholder={t("provideUserNameLabel")}
+          theme={theme}
+          inputMode="text"
+          iconAfter={isUserNameValid ? IconName.greenCheck : IconName.redCross}
+        />
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
           value={tempEmail}
@@ -188,7 +202,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           type="main"
           color="green"
           disabled={!regPossible}
-          onPress={() => handleRegisterSubmit(regPossible, tempEmail, tempPassword)}
+          onPress={() => handleRegisterSubmit(regPossible, tempEmail, tempPassword, tempUserName)}
         />
       </View>
       <Button

@@ -44,7 +44,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           }
         })
         if (typeof result === "undefined") {
-          Alert.alert(`Unknown error with authorization!`);
+          Alert.alert(t("newUnknownErrorAuth"));
           return;
         }
         switch (result.response.status) {
@@ -65,7 +65,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 }
               })
               if (typeof userData === "undefined") {
-                Alert.alert(`Unknown error`, `Unable to get user data`);
+                Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"))
                 return;
               }
               switch (userData.response.status) {
@@ -95,7 +95,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     
                   });
                   if (newState === null) {
-                    return Alert.alert(`Unknown error`, `Unable to reduce user data`);
+                    return Alert.alert(t("netUnknownError"), t("netUnableToSaveUserData"));
                   }
                   setState(newState)
                   navigateWithState({
@@ -104,24 +104,24 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     state: newState
                   })
                   break;
-                case 400: Alert.alert(`Unable to get user data 400`, `${userData.response.statusText}`); break;
-                case 401: Alert.alert(`Unable to get user data 401`, `${userData.response.statusText}`); break;
-                case 403: Alert.alert(`Unauthorized to get user data 403`, `${userData.response.statusText}`); break;
-                case 406: Alert.alert(`Unable to get user data. User not found 406`, `${userData.response.statusText}`); break;
-                case 500: Alert.alert(`Unable to get user data. Server error 500`, `${userData.response.statusText}`); break;
+                case 400: Alert.alert(t("netUnableToGetUserData") + t("netBadRequestData400"), `${userData.response.statusText}`); break;
+                case 401: Alert.alert(t("netUnableToGetUserData") + t("netUnauthorized401"), `${userData.response.statusText}`); break;
+                case 403: Alert.alert(t("netUnableToGetUserData") + t("netForbidden403"), `${userData.response.statusText}`); break;
+                case 406: Alert.alert(t("netUnableToGetUserData") + t("netUserNotFound406"), `${userData.response.statusText}`); break;
+                case 500: Alert.alert(t("netUnableToGetUserData") + t("netServerError500"), `${userData.response.statusText}`); break;
               }
 
             } else {
-              Alert.alert(`Unknown server error`, `Recieved status 200 with no data`);
+              Alert.alert(t("netUnknownError"), t("net200withNoData"));
             }
             break;
-          case 400: Alert.alert(`Bad request data 400`, `${result.response.statusText}`); break;
-          case 401: Alert.alert(`Unable to login 401`, `${result.response.statusText}`); break;
-          case 500: Alert.alert(`Server error 500`, `${result.response.statusText}`); break;
+          case 400: Alert.alert(t("netBadRequestData400"), `${result.response.statusText}`); break;
+          case 401: Alert.alert(t("netUnauthorized401"), `${result.response.statusText}`); break;
+          case 500: Alert.alert(t("netServerError500"), `${result.response.statusText}`); break;
         }
       } catch (err) {
         logger.error(`Cant login. Error: ${err}`);
-        Alert.alert(`Unknown error with authorization!`, `${err}`);
+        Alert.alert(t("newUnknownErrorAuth"), `${err}`);
         console.log(err)
       }
     }

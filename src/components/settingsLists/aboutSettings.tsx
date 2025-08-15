@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
@@ -43,7 +43,9 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
 
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
-      width: "100%"
+      width: "100%",
+      height: "100%",
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,
@@ -137,11 +139,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           />
           <Text style={theme.theme.headerText}>{t("settsAboutHeader")}</Text>
         </View>
-        {/* <SettingsMenuItem
-          theme={theme}
-          header={t("settsLabelAbout")}
-          type="label"
-        /> */}
+        <ScrollView>
         <SettingsMenuItem
           theme={theme}
           type="action"
@@ -346,7 +344,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               theme={theme}
               type="action"
               subtext=""
-              header={t("Reset local user data")}
+              header={t("settsResetLocalUserData")}
               actionCallBack={async () => {
                 const newState = reduce(state, {
                   name: ActionName.resetUserData
@@ -450,6 +448,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         <Button type="outline" color="gray" title={t("settingsImport")} onPress={() => handleImportData(importedText)} disabled={!importedText.length} />
         <Input style={settingsStyle.textarea} value={importedText} multiline numberOfLines={1} onChange={(newVal) => setImportedText(newVal)} onSubmit={(newVal) => handleImportData(newVal)} placeholder="" />
       </View> */}
+      </ScrollView>
       </MiniModal>
     </View>
   );

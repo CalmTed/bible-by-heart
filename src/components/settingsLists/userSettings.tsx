@@ -37,7 +37,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
   const [isUserSettsdModalShown, setIsUserSettsModalShown] = useState(false);
   const [isDeletionConfirmationModalShown, setDeletionConfirmationModalShown] = useState(false);
   const [deletionConfirmationTextValue, setDeletionConfirmationTextValue] = useState("");
-  const deletionText = t("I confirm deletion of account ")+ `${state.userData.userName}`;
+  const deletionText = t("settsIConfirmDeletion")+ `${state.userData.userName}`;
   const [loadingState, setLoadingState] = useState(false)
 
   const settingsGroupStyle = StyleSheet.create({
@@ -56,14 +56,14 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
   });
 
   const isProfilePublicOptions = [
-    {value: "public", label: "profilePublicOptionPublic"},
-    {value: "reference_link_olny", label: "profilePublicOptionReference"},
-    {value: "private", label: "profilePublicOptionPrivate"},
+    {value: "public", label: t("profilePublicOptionPublic")},
+    {value: "reference_link_olny", label: t("profilePublicOptionReference")},
+    {value: "private", label: t("profilePublicOptionPrivate")},
     ]
   const isProfilePublicOptnionsSelected = isProfilePublicOptions.map(a => a.value).indexOf(state.userData.isProfilePublic || "private");
   const isDataPublicOptions = [
-    {value: "public", label: "dataPublicOptionPublic"},
-    {value: "private", label: "dataPublicOptionPrivate"},
+    {value: "public", label: t("dataPublicOptionPublic")},
+    {value: "private", label: t("dataPublicOptionPrivate")},
     ]
   const isDataPublicOptnionsSelected = isDataPublicOptions.map(a => a.value).indexOf(state.userData.isDataPublic || "private");
 
@@ -98,7 +98,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
         }
       })
       if (typeof userData === "undefined") {
-        Alert.alert(`Unknown error`, `Unable to get user data`);
+        Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"));
         return;
       }
       switch (userData.response.status) {
@@ -128,7 +128,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             
           });
           if (newState === null) {
-            return Alert.alert(`Unknown error`, `Unable to reduce user data`);
+            return Alert.alert(t("netUnknownError"), t("netUnableToSaveUserData"));
           }
           setState(newState)
           navigateWithState({
@@ -137,17 +137,16 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             state: newState
           })
           break;
-        case 400: Alert.alert(`Unable to get user data 400`, `${userData.response.statusText}`); break;
-        case 401: Alert.alert(`Unable to get user data 401`, `${userData.response.statusText}`); break;
-        case 403: Alert.alert(`Unauthorized to get user data 403`, `${userData.response.statusText}`); break;
-        case 406: Alert.alert(`Unable to get user data. User not found 406`, `${userData.response.statusText}`); break;
-        case 500: Alert.alert(`Unable to get user data. Server error 500`, `${userData.response.statusText}`); break;
+        case 400: Alert.alert(t("netBadRequestData400"), `${userData.response.statusText}`); break;
+        case 401: Alert.alert(t("netUnauthorized401"), `${userData.response.statusText}`); break;
+        case 403: Alert.alert(t("netForbidden403"), `${userData.response.statusText}`); break;
+        case 406: Alert.alert(t("netUserNotFound406"), `${userData.response.statusText}`); break;
+        case 500: Alert.alert(t("netServerError500"), `${userData.response.statusText}`); break;
       }
       setLoadingState(false)
     }
 
   const syncUserData = async () => {//each blur we sync user data
-    // console.log("syncing")
     setLoadingState(true)
     const accessToken = SecureStore.getItem(ACCESS_TOKEN_NAME);
     const updateUserDataResult = await fetchAPI({
@@ -170,6 +169,8 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           logoutMethods: {
             state, setState, navigation, screen: SCREEN.settings
           }
+        }).finally(() => {
+          setLoadingState(false)
         })
     setLoadingState(false)
   }
@@ -217,13 +218,12 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             state, setState, navigation, screen: SCREEN.settings
           }
         })
-    console.log(requestEmailConfirmationResult?.response)
     if(requestEmailConfirmationResult?.response?.status === 200){
       
-      Alert.alert(t("Link sent successfuly"), t("Open email you provided and follow the link we have provided"))
+      Alert.alert(t("settsEmailConfirmLintSentTitle"), t("settsEmailConfirmLintSentSubtext"))
 
     }else{
-      Alert.alert(t("Unable to send confirmation link"), t("You can try again in 5 minutes"))
+      Alert.alert(t("settsEmailConfirmLintFailTitle"), t("settsEmailConfirmLintFailSubtext"))
     }
     
     setLoadingState(false)
@@ -252,7 +252,6 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             state, setState, navigation, screen: SCREEN.settings
           }
         })
-    console.log(requestEmailConfirmationResult?.response)
     if(requestEmailConfirmationResult?.response?.status === 200){
       const newState = reduce(state, {
         name: ActionName.resetUserData
@@ -268,9 +267,9 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
         screen: SCREEN.settings,
         state: newState
       })
-      Alert.alert(t("Account deleted successfuly"))
+      Alert.alert(t("settsAccountDeletionSuccess"))
     }else{
-      Alert.alert(t("Unable to delete account"), t("Please write us at biblebyheartapp@gmail.com we can do it manualy"))
+      Alert.alert(t("settsAccountDeletionFailTitle"), t("settsAccountDeletionFailSubtext"))
     }
     setDeletionConfirmationModalShown(false)
   }
@@ -297,36 +296,48 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             icon={IconName.back}
             onPress={() => setIsUserSettsModalShown(false)}
           />
-          <Text style={theme.theme.headerText}>{t("settsUserHeader")} {loadingState ? "⏳" : ""}</Text>
+          <Text style={theme.theme.headerText}>{t("settsUserHeader")}{loadingState ? " ⏳" : " "}</Text>
         </View>
         <ScrollView>
           <SettingsMenuItem
               type="label"
               theme={theme}
-              header={`${t("Email")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}
+              header={`${t("settsUserEmail")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}
           />
           <SettingsMenuItem
               type="label"
               theme={theme}
-              header={t(`Email is${state.userData.isEmailConfirmed ?  "" : " NOT"} confirmed`)} 
+              header={t(`${state.userData.isEmailConfirmed ?  "settsUserEmailConfirmed" : "settsUserEmailNOTConfirmed"}`)} 
           />
-          <SettingsMenuItem
-              type="label"
-              theme={theme}
-              header={`${t("Registration date")}: ${dateToString(state.userData.registrationDate || 0)}`}
-          />
-          <SettingsMenuItem
-              type="label"
-              theme={theme}
-              header={`${t("User data last sync date")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
-          />
-          <SettingsMenuItem
+          {!state.userData.isEmailConfirmed &&
+            <SettingsMenuItem
             type="action"
             theme={theme}
-            header={t("Get remote user data")}
-            subtext={t("Get data from the server")}
-            actionCallBack={() => updateUserData()}
-        />
+            header={t("settsUserRequestEmailConfLinkHeadert")}
+            subtext={t("settsUserRequestEmailConfLinkSubtext")}
+            actionCallBack={() => handleRequestEmailConfirmation()}
+        />}
+          <SettingsMenuItem
+              type="label"
+              theme={theme}
+              header={`${t("settsUserRegDate")}: ${dateToString(state.userData.registrationDate || 0)}`}
+          />
+          {state.settings.devModeEnabled && 
+            <SettingsMenuItem
+                type="label"
+                theme={theme}
+                header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
+            />
+          }
+          {state.settings.devModeEnabled && 
+            <SettingsMenuItem
+              type="action"
+              theme={theme}
+              header={t("settsUserGetRemoteUserDataHeader")}
+              subtext={t("settsUserGetRemoteUserDataSubtext")}
+              actionCallBack={() => updateUserData()}
+            />
+          }
           {/* <SettingsMenuItem
               type="label"
               theme={theme}
@@ -335,7 +346,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           <SettingsMenuItem
               type="textinput"
               theme={theme}
-              header={t(`User name (unique)`)}
+              header={t("settsUserUserName")}
               //TODO limit charachters
               value={state.userData.userName || ""}
               onChange={() => {}}
@@ -344,7 +355,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           <SettingsMenuItem
               type="textinput"
               theme={theme}
-              header={t(`User title`)}
+              header={t("settsUserUserTitle")}
               value={state.userData.userTitle || ""}
               onChange={(newValue) => handleUserTitleChange(newValue)}
               onEndEditing={() => syncUserData()}
@@ -352,7 +363,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           <SettingsMenuItem
               type="select"
               theme={theme}
-              header={t("Is profive public")}
+              header={t("settsUserProfilePublic")}
               subtext={isProfilePublicOptions[isProfilePublicOptnionsSelected].label}
               // options={["private","reference_link_olny","public"]}
               selectedIndex={isProfilePublicOptnionsSelected}
@@ -362,25 +373,18 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           <SettingsMenuItem
               type="select"
               theme={theme}
-              header={t("Is statistics data public")}
+              header={t("settsUserDataPublic")}
               subtext={isDataPublicOptions[isDataPublicOptnionsSelected].label}
               selectedIndex={isDataPublicOptnionsSelected}
               options={isDataPublicOptions}
               onSelect={(selectedValue) => handleIsDataPublicChange(selectedValue as AppStateModel["userData"]["isDataPublic"])}
           />
-          {!state.userData.isEmailConfirmed &&
-            <SettingsMenuItem
-            type="action"
-            theme={theme}
-            header={t("Request email confirmation letter")}
-            subtext={t("You will have 24h to follow the link we will send you")}
-            actionCallBack={() => handleRequestEmailConfirmation()}
-        />}
+          
           <SettingsMenuItem
             type="action"
             theme={theme}
-            header={t("Delete account")}
-            subtext={t("It is ireversable action. All account data will be lost!")}
+            header={t("settsUserDeleteAccountHeader")}
+            subtext={t("settsUserDeleteAccountSubtext")}
             actionCallBack={() => setDeletionConfirmationModalShown(true)}
         />
 
@@ -397,13 +401,13 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             icon={IconName.back}
             onPress={() => handleClosingDeletionConfirmationModal()}
           />
-          <Text style={theme.theme.headerText}>{t("confirm account deletion")} {loadingState ? "⏳" : ""}</Text>
+          <Text style={theme.theme.headerText}>{t("settsUserConfirmDeleteAccountHeader")} {loadingState ? "⏳" : ""}</Text>
         </View>
-        <View>
-          <Text>{t("Please be aware that it is not freezing of account, all data that stored by your email address will by irreversably lost")}</Text>
-          <Text>{t("To confirm account deletion please write the folowing text: ")}{deletionText}</Text>
-          <Input theme={theme} type="main" value={deletionConfirmationTextValue} onChange={setDeletionConfirmationTextValue} placeholder={""}/>
-          <Button theme={theme} color="red" type={deletionConfirmationTextValue === deletionText ? "main" : "outline"} onPress={handleAccountDeletion} disabled={deletionConfirmationTextValue != deletionText} title={t("Delete account")}/>
+        <View style={{...theme.theme.view, gap: 12}}>
+          <Text style={{...theme.theme.text, fontSize: 16}}>{t("settsUserConfirmDeleteAccountDisclosureText")}</Text>
+          <Text style={{...theme.theme.text, fontSize: 16}}>{t("settsUserConfirmDeleteAccountDisclosureSubtext")}{deletionText}</Text>
+          <Input theme={theme} type="main" value={deletionConfirmationTextValue} onChange={setDeletionConfirmationTextValue} placeholder={t("settsUserConfirmDeleteAccountDisclosureInputPlaceholder")}/>
+          <Button theme={theme} color="red" type={deletionConfirmationTextValue === deletionText ? "main" : "outline"} onPress={handleAccountDeletion} disabled={deletionConfirmationTextValue != deletionText} title={t("settsUserDeleteAccountHeader")}/>
         </View>
         </MiniModal>
       </MiniModal>

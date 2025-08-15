@@ -15,8 +15,6 @@ export const alowedStateVersions = [
 
 export const API_VERSION = "0.0.1";
 //cant sync with oudated version
-//can convert one stare version to the new one
-//convert the state if version is outdated
 
 export enum LANGCODE {
   en = "en",
@@ -49,6 +47,10 @@ export const LOGGER_MAX_ARRAY_SIZE = 3000;
 
 export const ACCESS_TOKEN_NAME = "accessToken";
 export const REFRESH_TOKEN_NAME = "refreshToken";
+
+export const APIVERSION_LAST_CHECK = "apiVersionLastCheck";
+export const APIVERSION_MAX_TIME = MINUTE;
+export const APIVERSION_STATUS = "apiVersionStatus";
 
 export const PRIVACY_POLICY_LINK = "https://biblebyheart.app/static/bible-by-heart-privacy-policy.html";
 export const TERMS_OF_SERVICE_LINK = "https://biblebyheart.app/static/bible-by-heart-terms-of-service.html";

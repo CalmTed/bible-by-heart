@@ -134,7 +134,7 @@ export const reduce: (
         // ) {
         //   return state;
         // }
-        // console.log(JSON.stringify(newTags), JSON.stringify(state.filters.tags))
+        // (JSON.stringify(newTags), JSON.stringify(state.filters.tags))
         changedState = {
           ...state,
           passages: changedPassages

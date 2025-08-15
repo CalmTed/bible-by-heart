@@ -38,7 +38,9 @@ export const Button: FC<ButtonModel> = ({
     return <View></View>;
   }
   const gradientColors =
-    type === "transparent"
+    disabled
+    ? [theme.colors.bg, theme.colors.bgSecond]
+    : type === "transparent"
       ? ["transparent", "transparent"]
       : color === "gray"
         ? [theme.colors.bgSecond, theme.colors.bgSecond]
@@ -46,7 +48,9 @@ export const Button: FC<ButtonModel> = ({
           ? [theme.colors.gradient1, theme.colors.gradient2]
           : [theme.colors.redGradient1, theme.colors.redGradient2];
   const textColor =
-    type === "transparent"
+    disabled 
+    ? theme.colors.textSecond 
+    : type === "transparent"
       ? color === "red"
         ? theme.colors.textDanger
         : color === "gray"
