@@ -221,6 +221,11 @@ export const en = {
   DaysLabelSingular: "day",
   DaysLabelTwoThreeFour: "days",
   DaysLabelMultiple: "days",
+  settsShowLogHeader: "Show log",
+  settsShowLogSubtext: "History of actnios and errors",
+  settsExportLog: "Export log",
+  settsClearLog: "Clear log",
+  settsLogExported: "Log exported",
 
   //user settings
   settsUserHeader: "User settings",

@@ -21,7 +21,7 @@ import { Alert } from "react-native";
 
 const HOST = Constants.expoConfig?.extra?.HOST || "";
 if (HOST === "") {
-  console.error("unable to get HOST name");
+  logger.error("Unable to get HOST name");
 }
 interface fetchResponseModel {
   response: Record<string, any>;
@@ -67,6 +67,7 @@ export const fetchAPI: (a: {
         screen: screen,
         state: newState
       });
+      logger.write(`Logging out b.c. of invalid token`);
     };
     //if headers have auth value, then check if token valid
     //if not, than refresh
@@ -125,7 +126,6 @@ export const fetchAPI: (a: {
               );
             }
           } else {
-            console.error(response);
             logger.error(
               `Not OK responce for link:${link} status: ${response.status} statusTest: ${response.statusText}`
             );
@@ -217,7 +217,6 @@ export const fetchAPI: (a: {
         };
       }
     } else {
-      console.error(response);
       logger.error(
         `Not OK responce for link:${link} status: ${response.status} statusTest: ${response.statusText}`
       );

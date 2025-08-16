@@ -6,6 +6,7 @@ const append = (string: string) => {
   try {
     const d = new Date();
     const timeString = `${d.getFullYear()}-${addZero(d.getMonth() + 1)}-${addZero(d.getDate())} ${addZero(d.getHours())}:${addZero(d.getMinutes())}:${addZero(d.getSeconds())}`;
+
     storage
       .load({
         key: `${STORAGE_LOGGER}`
@@ -19,6 +20,15 @@ const append = (string: string) => {
           key: STORAGE_LOGGER,
           data: [...limitedData, `${timeString} ${string}`]
         });
+      })
+      .catch((err) => {
+        console.error("Unable to wrile to log", err);
+        if (err.toString().includes("NotFoundError")) {
+          storage.save({
+            key: STORAGE_LOGGER,
+            data: [`${timeString} ${string}`]
+          });
+        }
       });
   } catch (err) {
     console.error("Unable to wrile to log", err);
@@ -39,8 +49,13 @@ const handleReadAll = async () => {
   return data;
 };
 
+const handleClearAll = async () => {
+  await storage.save({ key: `${STORAGE_LOGGER}`, data: [] });
+};
+
 export const logger = {
   write: handleWrite,
   error: handleError,
-  readAll: handleReadAll
+  readAll: handleReadAll,
+  clearAll: handleClearAll
 };

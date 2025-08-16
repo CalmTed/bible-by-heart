@@ -32,7 +32,7 @@ export default function App() {
   useEffect(() => {
     Linking.addEventListener("url", (link) => {
       if (state.settings.devModeEnabled) {
-        logger.write(`[DEV] Recieved data: ${link}`);
+        logger.write(`[DEV] Recieved data: ${JSON.stringify(link)}`);
         toastShow("Recieved data:" + link, 1000);
       }
     });

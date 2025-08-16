@@ -1,6 +1,6 @@
 {
   "name": "bible-by-heart",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "scripts": {
     "dev": "NODE_ENV=local expo start",
     "android": "expo run:android",

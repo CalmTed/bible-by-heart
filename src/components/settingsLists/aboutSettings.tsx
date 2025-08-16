@@ -1,5 +1,5 @@
-import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { FC, useEffect, useState } from "react";
+import { View, Text, StyleSheet, ScrollView, TextInput } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
@@ -22,10 +22,10 @@ import { IconName } from "../Icon";
 import { readFile, writeFile } from "../../utils/fileManager";
 import { convertState } from "../../utils/stateVersionConvert";
 import { dateToString } from "../../utils/formatDateTime";
-import { logger } from "../../utils/logger";
 import toastShow from "../../utils/toastShow";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 import * as SecureStore from "expo-secure-store";
+import { logger } from "../../utils/logger";
 
 interface AboutSettingsListModel {
   theme: ThemeAndColorsModel;
@@ -45,6 +45,25 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
   const [isAboutModalShown, setIsAboutModalShown] = useState(false);
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
   const [isLegalModalShown, setIsLegalModalShown] = useState(false);
+  const [logModalOpen, setLogModalOpen] = useState(false);
+  const [loggerText, setLoggerText] = useState("");
+
+  useEffect(() => {
+    if (state.settings.devModeEnabled) {
+      logger
+        .readAll()
+        .then((loggerText) => {
+          if (loggerText) {
+            setLoggerText(
+              `Length: ${loggerText.length}\n ${loggerText.join("\n")}`
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("Unable to load logs", err);
+        });
+    }
+  }, [state.settings.devModeEnabled, loggerText, setLoggerText, logModalOpen]);
 
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
@@ -95,6 +114,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
 
   const handleCheckDevPassword = (value: string) => {
     if (value === devModeAnswer.toString()) {
+      logger.error(`Entered right dev mode password`);
       setState(
         (st) =>
           reduce(st, {
@@ -119,6 +139,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
       ).toString() +
       t("hrs")
     : "";
+
   return (
     <View>
       <SettingsMenuItem
@@ -281,39 +302,75 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
             </View>
           )}
 
-          {/* {state.settings.devMode && (
-          <View>
-            <SettingsMenuItem
-              theme={theme}
-              header={t("settsShowStateHeader")}
-              subtext={t("settsShowStateSubtext")}
-              type="action"
-              actionCallBack={() => {
-                setIsStateViewerModalOpen(true);
-              }}
-            />
-            <MiniModal
-              theme={theme}
-              shown={isStateViewerModalOpen}
-              handleClose={() => setIsStateViewerModalOpen(false)}
-              style={settingsGroupStyle.devModeAppStateTextMiniModal}
-            >
-              <ScrollView
-                style={settingsGroupStyle.devModeAppStateTextScrollView}
+          {state.settings.devModeEnabled && (
+            <View>
+              <SettingsMenuItem
+                theme={theme}
+                header={t("settsShowLogHeader")}
+                subtext={t("settsShowLogSubtext")}
+                type="action"
+                actionCallBack={() => {
+                  setLogModalOpen(true);
+                }}
+              />
+              <MiniModal
+                theme={theme}
+                shown={logModalOpen}
+                handleClose={() => setLogModalOpen(false)}
+                style={{
+                  ...settingsGroupStyle.devModeAppStateTextMiniModal,
+                  height: "100%",
+                  paddingTop: 50
+                }}
               >
-                <TextInput
-                  style={{
-                    ...theme.theme.text,
-                    ...settingsGroupStyle.devModeAppStateTextarea
-                  }}
-                  multiline={true}
+                <ScrollView
+                  style={settingsGroupStyle.devModeAppStateTextScrollView}
                 >
-                  {JSON.stringify(state, null, "_ ")}
-                </TextInput>
-              </ScrollView>
-            </MiniModal>
-          </View>
-        )} */}
+                  <Button
+                    icon={IconName.back}
+                    iconAlign="left"
+                    title={t("Cancel")}
+                    onPress={() => setLogModalOpen(false)}
+                    theme={theme}
+                  />
+                  <Button
+                    title={t("settsExportLog")}
+                    onPress={() => {
+                      const content = JSON.stringify(logger, null, " ");
+                      const fileName = `BBH_Log_${VERSION}_${dateToString(new Date().getTime())}.json`;
+                      writeFile(fileName, content, "application/json")
+                        .then((r) => {
+                          if (r) {
+                            logger.write(`Log exported`);
+                            toastShow(t("settsLogExported"), 1000);
+                          }
+                        })
+                        .catch((err) => {
+                          logger.error(
+                            `Error while exporting state. Error: ${err}`
+                          );
+                          toastShow(t("ErrorWhileWritingFile"), 1000);
+                        });
+                    }}
+                    theme={theme}
+                  />
+                  {/* <Button color="red" title={t("ClearLog")} onPress={() => {
+                  logger.clearAll()
+                  setLoggerText("")
+                }} theme={theme}/> */}
+                  <TextInput
+                    style={{
+                      ...theme.theme.text,
+                      ...settingsGroupStyle.devModeAppStateTextarea
+                    }}
+                    multiline={true}
+                  >
+                    {loggerText}
+                  </TextInput>
+                </ScrollView>
+              </MiniModal>
+            </View>
+          )}
           {state.settings.devModeEnabled && (
             <View>
               <SettingsMenuItem
@@ -343,25 +400,6 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           )}
           {state.settings.devModeEnabled && (
             <View>
-              <SettingsMenuItem
-                theme={theme}
-                type="action"
-                subtext=""
-                header={t("settsResetLocalUserData")}
-                actionCallBack={async () => {
-                  const newState = reduce(state, {
-                    name: ActionName.resetUserData
-                  });
-                  if (newState === null) {
-                    return logger.error(
-                      `Unknown error: Unable to reset user data`
-                    );
-                  }
-                  setState(newState);
-                  await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
-                  await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
-                }}
-              ></SettingsMenuItem>
               <SettingsMenuItem
                 theme={theme}
                 type="action"
@@ -415,6 +453,27 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                     });
                 }}
               />
+              <SettingsMenuItem
+                theme={theme}
+                type="action"
+                subtext=""
+                header={t("settsResetLocalUserData")}
+                actionCallBack={async () => {
+                  const newState = reduce(state, {
+                    name: ActionName.resetUserData
+                  });
+                  if (newState === null) {
+                    return logger.error(
+                      `Unknown error: Unable to reset user data`
+                    );
+                  }
+
+                  logger.write("[DEV] cleared local user data");
+                  setState(newState);
+                  await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
+                  await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
+                }}
+              ></SettingsMenuItem>
             </View>
           )}
           {state.settings.devModeEnabled && (
@@ -428,6 +487,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   setState((prv) => {
                     return { ...prv, passages: [], testsHistory: [] };
                   });
+                  logger.write("[DEV] cleared passages");
                   toastShow(t("settsCleared"), 1000);
                 }}
               />
@@ -440,6 +500,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   setState(() => {
                     return createAppState();
                   });
+                  logger.write("[DEV] cleared state");
                   toastShow(t("settsCleared"), 1000);
                 }}
               />

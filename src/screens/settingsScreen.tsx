@@ -72,6 +72,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
     }
     switch (logingoutResult.response.status) {
       case 200:
+        logger.write(`Logged out manualy from ${state.userData.userName}`);
         const newState = reduce(state, {
           name: ActionName.resetUserData
         });

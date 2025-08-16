@@ -22,8 +22,8 @@ import { reduce } from "../utils/reduce";
 export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, setState, theme } = useApp({ route, navigation });
 
-  const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
-  const [tempPassword, setTempPassword] = useState("passwordA@2");
+  const [tempEmail, setTempEmail] = useState("");
+  const [tempPassword, setTempPassword] = useState("");
 
   //if session is already defined?
   //- then login button will be blocked,
@@ -55,7 +55,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           }
         });
         if (typeof result === "undefined") {
-          Alert.alert(t("newUnknownErrorAuth"));
+          logger.error("Cant login. No result...");
           Alert.alert(t("newUnknownErrorAuth"));
           return;
         }
@@ -120,6 +120,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                       t("netUnableToSaveUserData")
                     );
                   }
+                  logger.write(`Authinicated as ${userData?.data?.userName}`);
                   setState(newState);
                   navigateWithState({
                     navigation,
@@ -159,7 +160,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   break;
               }
             } else {
-              Alert.alert(t("netUnknownError"), t("net200withNoData"));
+              logger.error(
+                `Cant login. Error unknown ${JSON.stringify(result)}`
+              );
               Alert.alert(t("netUnknownError"), t("net200withNoData"));
             }
             break;
@@ -185,7 +188,6 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
       } catch (err) {
         logger.error(`Cant login. Error: ${err}`);
         Alert.alert(t("newUnknownErrorAuth"), `${err}`);
-        console.log(err);
       }
     }
   };
@@ -206,7 +208,10 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   //one digt
   //one spectial char
   //length 8-50
-  const isPasswordValid = /^[A-Za-z\d@.#$!%*?&]{8,40}$/.test(tempPassword);
+  const isPasswordValid =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,40}$/.test(
+      tempPassword
+    );
   const loginPossible = isEmailValid && isPasswordValid;
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>

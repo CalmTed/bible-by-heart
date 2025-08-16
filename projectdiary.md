@@ -470,3 +470,6 @@ boilerplate:
 - [x] APIversion verification
 - [x] remove console logs
 - [x] translate all network errors in Alerts
+2025-08-16
+- fixed minor bugs
+- added loggger viewer to debug login on staging

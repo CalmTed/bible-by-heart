@@ -23,14 +23,15 @@ import { Input } from "../components/Input";
 import { Checkbox } from "../components/Checkbox";
 import { fetchAPI } from "../services/fetch";
 import { logger } from "../utils/logger";
+import Constants from "expo-constants";
 
 export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, t, theme, setState } = useApp({ route, navigation });
 
-  const [tempUserName, setTempUserName] = useState("test");
-  const [tempEmail, setTempEmail] = useState("test@biblebyheart.app");
-  const [tempPassword, setTempPassword] = useState("passwordA@2");
-  const [tempPasswordRepeat, setTempPasswordRepeat] = useState("passwordA@2");
+  const [tempUserName, setTempUserName] = useState("");
+  const [tempEmail, setTempEmail] = useState("");
+  const [tempPassword, setTempPassword] = useState("");
+  const [tempPasswordRepeat, setTempPasswordRepeat] = useState("");
   const [legalCheckBox, setLegalCheckBox] = useState(false);
 
   const handleOpenLink = async (url: string) => {
@@ -72,6 +73,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         switch (result.response.status) {
           case 200:
             Alert.alert(t("netRegSuccess"), t("netRegSuccessSubText"));
+            logger.write(`Registered as ${userName}`);
             navigateWithState({
               navigation,
               screen: SCREEN.login,
@@ -99,7 +101,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         }
       } catch (err) {
         logger.error(`Cant register. Error: ${err}`);
-        console.log(err);
       }
     }
   };
@@ -155,15 +156,12 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         ]}
       />
       <View style={{ ...theme.theme.view, ...registerStyle.inputView }}>
-        <Input
-          wrapperStyle={{ ...registerStyle.wrapperInput }}
-          value={tempUserName}
-          onChange={setTempUserName}
-          placeholder={t("provideUserNameLabel")}
-          theme={theme}
-          inputMode="text"
-          iconAfter={isUserNameValid ? IconName.greenCheck : IconName.redCross}
-        />
+        {state.settings.devModeEnabled && (
+          <Text style={theme.theme.text}>
+            {Constants.expoConfig?.extra?.HOST || ""}
+            {API_LINK.createUser}
+          </Text>
+        )}
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
           value={tempUserName}

@@ -43,7 +43,7 @@ export const MINUTE = 60;
 export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
-export const LOGGER_MAX_ARRAY_SIZE = 3000;
+export const LOGGER_MAX_ARRAY_SIZE = 2000;
 
 export const ACCESS_TOKEN_NAME = "accessToken";
 export const REFRESH_TOKEN_NAME = "refreshToken";

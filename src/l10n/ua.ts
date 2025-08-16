@@ -223,14 +223,19 @@ export const ua: typeof en = {
   DefaultTrainModeName: "Звичайний режим",
   NewTrainModeName: "Новий режим",
   settsPrivacyPolicyHeader: "Політика конфіденційності",
-  settsTermsOfServiceHeader: "Умови викороистання",
+  settsTermsOfServiceHeader: "Умови використання",
   OpenExternalLink: "Зовнішнє посилання (англійською)",
   DaysLabelSingular: "день",
   DaysLabelTwoThreeFour: "дня",
   DaysLabelMultiple: "днів",
+  settsShowLogHeader: "Показати лог",
+  settsShowLogSubtext: "Список подій і помилок",
+  settsExportLog: "Експортувати",
+  settsClearLog: "Зтерти",
+  settsLogExported: "Лог експортовано",
 
   //user settings
-  settsUserHeader: "Змінити дані користувача",
+  settsUserHeader: "Дані користувача",
   settsIConfirmDeletion: "Я підтверджую видалення аккаунту ",
   settsEmailConfirmLintSentTitle: "Посилання відправлено",
   settsEmailConfirmLintSentSubtext:
