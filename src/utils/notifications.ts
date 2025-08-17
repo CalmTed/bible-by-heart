@@ -11,6 +11,7 @@ import {
 import { WORD, createT } from "../l10n";
 import { randomRange } from "./randomizers";
 import toastShow from "./toastShow";
+import { logger } from "./logger";
 
 //writes to console scheduling operations
 const notificationDebug = true;
@@ -313,11 +314,13 @@ export const registerForPushNotificationsAsync = async () => {
       finalStatus = status;
     }
     if (finalStatus !== "granted") {
+      logger.error("Failed to get token for notification");
       toastShow("Failed to get token for notification!", 10000);
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync()).data;
   } else {
+    // logger.error("Must use physical device for Push Notifications");
     toastShow("Must use physical device for Push Notifications", 10000);
   }
 

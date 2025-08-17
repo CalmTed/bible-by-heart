@@ -579,7 +579,7 @@ export const reduce: (
       };
       break;
     default:
-      logger.error(`unknown action name: ${(action as ActionModel).name}`);
+      logger.error(`Unknown action name Action: ${JSON.stringify(action)}`);
   }
   if (changedState) {
     const timeOfChange = new Date().getTime();

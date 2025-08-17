@@ -67,6 +67,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           }
         });
         if (typeof result === "undefined") {
+          logger.write(`Registration error. Resieved undefined result`);
           Alert.alert(t("netUnknownError"));
           return;
         }
@@ -81,18 +82,27 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             });
             break;
           case 400:
+            logger.write(
+              `Registration Bad request data 400 ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netBadRequestData400"),
               `${result.response.statusText}`
             );
             break;
           case 409:
+            logger.write(
+              `Registration User conflict 409 ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netUnableToCreateUser409"),
               `${result.response.statusText}`
             );
             break;
           case 500:
+            logger.write(
+              `Registration Server error 500 ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netServerError500"),
               `${result.response.statusText}`

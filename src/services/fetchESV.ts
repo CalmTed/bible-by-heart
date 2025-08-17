@@ -57,7 +57,9 @@ export const fetchESV: (address: AddressType) => Promise<string> = async (
         .replace(/“|”|„|‟/g, '"');
     })
     .catch((error) => {
-      logger.error(`Unable to get passage text: ${error}`);
+      logger.error(
+        `Unable to get passage text for: ${addressString} Error: ${error}`
+      );
       throw new Error("Unable to get passage text" + error);
     });
 };

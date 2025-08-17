@@ -88,8 +88,8 @@ export default function App() {
         }
       })
       .catch((e) => {
-        toastShow("creating new state", 10000);
-        console.warn(e);
+        logger.write("Creating new state b.c. there were none")
+        // toastShow("Creating new state", 10000);
         storage
           .save({
             key: `${STORAGE_NAME}`,

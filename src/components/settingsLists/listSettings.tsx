@@ -273,6 +273,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
           actionCallBack={() => {
             const content = passagesToLSV(state); //line separated values
             if (!content) {
+              logger.error(`Error while encoding passages`);
               toastShow(t("ErrorWhileEncoding"), 1000);
               return;
             }
@@ -299,6 +300,7 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
             readFile(["text/plain"])
               .then((r) => {
                 if (!r) {
+                  logger.error(`Error while reading passages file`);
                   toastShow(t("ErrorWhileReadingFile"), 1000);
                   return;
                 }
@@ -306,11 +308,13 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                   case "text/plain":
                     const decodedData = LSVToArray(r.content);
                     if (!decodedData) {
+                      logger.error(`Error while decoding passages`);
                       toastShow(t("ErrorWhileDecoding"), 1000);
                       break;
                     }
                     const convertedData = arrayToPassages(decodedData, state);
                     if (!convertedData) {
+                      logger.error(`Error while converting decoded passages`);
                       toastShow(t("ErrorWhileDecoding"), 1000);
                       break;
                     }
@@ -325,6 +329,9 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                           {}
                         );
                       } else {
+                        logger.error(
+                          `Error while schedoling notification on import`
+                        );
                         toastShow(t("ErrorTurnOnRemindersOnImport"), 1000);
                       }
                     }
@@ -344,6 +351,9 @@ export const ListSettingsList: FC<ListSettingsListModel> = ({
                     );
                     break;
                   default:
+                    logger.error(
+                      `Error while decoding file. Unknown type: ${r.mimeType}`
+                    );
                     toastShow(t("ErrorWhileDecoding"), 1000);
                 }
               })

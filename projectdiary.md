@@ -473,3 +473,5 @@ boilerplate:
 2025-08-16
 - fixed minor bugs
 - added loggger viewer to debug login on staging
+2025-08-17
+- finished adding logger to auth screens activity

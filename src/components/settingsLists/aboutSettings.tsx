@@ -55,7 +55,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         .then((loggerText) => {
           if (loggerText) {
             setLoggerText(
-              `Length: ${loggerText.length}\n ${loggerText.join("\n")}`
+              `Length: ${loggerText.length}\n ${loggerText.slice().reverse().join("\n")}`
             );
           }
         })
@@ -294,6 +294,9 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 inputMode="numeric"
                 theme={theme}
                 onSubmit={(text) => {
+                  logger.write(
+                    `Requested dev key for number: ${text} is ${encodeDevKey(parseInt(text, 10))}`
+                  );
                   toastShow(`${encodeDevKey(parseInt(text, 10))}`, 1000);
                 }}
                 placeholder="1234"
@@ -363,6 +366,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                       ...theme.theme.text,
                       ...settingsGroupStyle.devModeAppStateTextarea
                     }}
+                    editable={false}
                     multiline={true}
                   >
                     {loggerText}
@@ -409,7 +413,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                   readFile(["application/json"])
                     .then((r) => {
                       if (!r) {
-                        logger.write(`State imported`);
+                        logger.error(`Cant read file`);
                         toastShow(t("ErrorWhileReadingFile"), 1000);
                         return;
                       }
@@ -420,10 +424,14 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                               r.content.replace(/_ /g, " ")
                             ) as AppStateModel) || undefined;
                           if (!decodedData) {
+                            logger.error(
+                              `Unable to decode imported state file`
+                            );
                             toastShow(t("ErrorWhileDecoding"), 1000);
                             break;
                           }
                           if (!decodedData?.version) {
+                            logger.error(`Impored state version in undefined`);
                             toastShow("Wrong version", 1000);
                             break;
                           }
@@ -432,12 +440,16 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                               ? decodedData
                               : convertState(decodedData);
                           if (!validData) {
+                            logger.error(
+                              `Cant convert from version: ${decodedData?.version} to version: ${VERSION}`
+                            );
                             toastShow(
                               `Unable to convert to current version ${decodedData.version}>${VERSION}`,
                               1000
                             );
                             break;
                           }
+                          logger.write(`State imported`);
                           toastShow(`${t("settsImported")}`, 1000);
                           setState(() => validData);
                           break;

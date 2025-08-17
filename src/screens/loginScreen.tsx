@@ -80,6 +80,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 }
               });
               if (typeof userData === "undefined") {
+                logger.error("Login : Resieved undefined result");
                 Alert.alert(t("netUnknownError"), t("netUnableToGetUserData"));
                 return;
               }
@@ -115,6 +116,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     }
                   });
                   if (newState === null) {
+                    logger.error(
+                      `Login : Unable to update user data. User data: ${JSON.stringify(udd)}`
+                    );
                     return Alert.alert(
                       t("netUnknownError"),
                       t("netUnableToSaveUserData")
@@ -129,30 +133,45 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   });
                   break;
                 case 400:
+                  logger.error(
+                    `Login geting data: Error 400: ${JSON.stringify(userData.response)}`
+                  );
                   Alert.alert(
                     t("netUnableToGetUserData") + t("netBadRequestData400"),
                     `${userData.response.statusText}`
                   );
                   break;
                 case 401:
+                  logger.error(
+                    `Login geting data: Error 401: ${JSON.stringify(userData.response)}`
+                  );
                   Alert.alert(
                     t("netUnableToGetUserData") + t("netUnauthorized401"),
                     `${userData.response.statusText}`
                   );
                   break;
                 case 403:
+                  logger.error(
+                    `Login geting data: Error 403: ${JSON.stringify(userData.response)}`
+                  );
                   Alert.alert(
                     t("netUnableToGetUserData") + t("netForbidden403"),
                     `${userData.response.statusText}`
                   );
                   break;
                 case 406:
+                  logger.error(
+                    `Login geting data: Error 406: ${JSON.stringify(userData.response)}`
+                  );
                   Alert.alert(
                     t("netUnableToGetUserData") + t("netUserNotFound406"),
                     `${userData.response.statusText}`
                   );
                   break;
                 case 500:
+                  logger.error(
+                    `Login : Error 500: ${JSON.stringify(userData.response)}`
+                  );
                   Alert.alert(
                     t("netUnableToGetUserData") + t("netServerError500"),
                     `${userData.response.statusText}`
@@ -167,18 +186,27 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
             }
             break;
           case 400:
+            logger.error(
+              `Login: Error 400: ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netBadRequestData400"),
               `${result.response.statusText}`
             );
             break;
           case 401:
+            logger.error(
+              `Login: Error 401: ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netUnauthorized401"),
               `${result.response.statusText}`
             );
             break;
           case 500:
+            logger.error(
+              `Login: Error 500: ${JSON.stringify(result.response)}`
+            );
             Alert.alert(
               t("netServerError500"),
               `${result.response.statusText}`

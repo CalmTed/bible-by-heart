@@ -124,6 +124,7 @@ export const fetchAPI: (a: {
                 REFRESH_TOKEN_NAME,
                 newTokenData.refreshToken
               );
+              logger.write("Token refreshed");
             }
           } else {
             logger.error(
@@ -153,7 +154,7 @@ export const fetchAPI: (a: {
         key: APIVERSION_LAST_CHECK
       })
       .catch((e) => {
-        logger.error(`Error on geting data in fetch e:${e}`);
+        logger.error(`Error on geting last version check data in fetch e:${e}`);
       });
     if (
       new Date().getTime() >
@@ -174,6 +175,9 @@ export const fetchAPI: (a: {
           data: isVersionValid
         });
         if (isVersionValid === false) {
+          logger.error(
+            `Trying to fetch data with an outdated app: app expects APIVersion: ${API_VERSION}, current APIVersion: ${versionData.version}`
+          );
           Alert.alert(
             "Версія застосунку застаріла, будь ласка, онови",
             "API version in incompatible with the app. Please update the app"
@@ -188,9 +192,12 @@ export const fetchAPI: (a: {
           key: APIVERSION_STATUS
         })
         .catch((e) => {
-          logger.error(`Error on geting data in fetch e:${e}`);
+          logger.error(
+            `Error on geting api versio check status local data in fetch e:${e}`
+          );
         });
       if (apiVersionStatus === false) {
+        logger.error(`Trying to fetch data with an outdated app again...`);
         Alert.alert(
           "Версія застосунку застаріла, будь ласка, онови",
           "API version in incompatible with the app. Please update the app"
@@ -211,14 +218,24 @@ export const fetchAPI: (a: {
           data
         };
       } catch (err) {
+        logger.error(
+          `Unable to parce OK responce data. Responce: ${response}, Error: ${err}`
+        );
         return {
           response,
           error: err
         };
       }
     } else {
+      const bodyWithoutPassword =
+        typeof body?.password !== "undefined"
+          ? { ...body, password: "***", email: "***" }
+          : body;
+      const headersWithoutSecrets = headers?.Authorization?.includes("Bearer")
+        ? { ...headers, Authorization: "Bearer ***" }
+        : headers;
       logger.error(
-        `Not OK responce for link:${link} status: ${response.status} statusTest: ${response.statusText}`
+        `Not OK responce for link:${link} method: ${method} headers: ${JSON.stringify(headersWithoutSecrets)} body: ${JSON.stringify(bodyWithoutPassword)} status: ${response.status} statusTest: ${response.statusText}, JSON: ${JSON.stringify(response)}`
       );
       return { response };
     }
