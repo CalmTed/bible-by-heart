@@ -1,3 +1,4 @@
+import "dotenv/config"
 const versionCode = parseInt(
   new Date().toISOString().slice(2, 14).replace(/[-T:]/g, ""),
   10
@@ -11,7 +12,7 @@ export default {
         ? "Bible by heart"
         : `BBH dev ${versionCode}`,
     slug: "bible-by-heart",
-    version: "0.0.9",
+    version: "0.1.0",
     orientation: "portrait",
     icon:
       process.env.APP_ENV === "production"
@@ -68,7 +69,8 @@ export default {
         projectId: "c76e832f-dde7-42aa-b303-7c97507b9ac9"
       },
       ESVTOKEN: process.env.ESVTOKEN,
-      HOST: process.env.HOST
+      HOST: process.env.HOST,
+      APP_ENV: process.env.APP_ENV
     },
     plugins: [
       [

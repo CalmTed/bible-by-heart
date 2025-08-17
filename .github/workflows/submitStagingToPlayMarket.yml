@@ -58,4 +58,7 @@ jobs:
         run: yarn install
 
       - name: Call eas build
-        run: eas build --profile staging --platform android --auto-submit-with-profile staging
+        run: |
+          export HOST=${{ secrets.HOST }}
+          export ESVTOKEN=${{ secrets.ESVTOKEN }}
+          eas build --profile staging --platform android --auto-submit-with-profile staging

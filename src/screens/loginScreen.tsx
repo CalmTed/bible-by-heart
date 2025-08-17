@@ -237,7 +237,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   //one spectial char
   //length 8-50
   const isPasswordValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,40}$/.test(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@'.,:;~#$!%*?\-+\{\}\[\]\\\/<>&])[A-Za-z\d@'.,:;~#$!%*?\-+\{\}\[\]\\\/<>&]{8,40}$/.test(
       tempPassword
     );
   const loginPossible = isEmailValid && isPasswordValid;
