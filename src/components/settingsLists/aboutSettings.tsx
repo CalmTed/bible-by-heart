@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 import { Button, IconButton } from "../Button";
 import { Input } from "../Input";
@@ -46,7 +46,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
   const [isLegalModalShown, setIsLegalModalShown] = useState(false);
   const [logModalOpen, setLogModalOpen] = useState(false);
-  const [loggerText, setLoggerText] = useState("");
+  const [loggerText, setLoggerText] = useState([] as string[]);
 
   useEffect(() => {
     if (state.settings.devModeEnabled) {
@@ -54,9 +54,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
         .readAll()
         .then((loggerText) => {
           if (loggerText) {
-            setLoggerText(
-              `Length: ${loggerText.length}\n ${loggerText.slice().reverse().join("\n")}`
-            );
+            setLoggerText(loggerText.slice().reverse());
           }
         })
         .catch((err) => {
@@ -322,12 +320,16 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                 handleClose={() => setLogModalOpen(false)}
                 style={{
                   ...settingsGroupStyle.devModeAppStateTextMiniModal,
-                  height: "100%",
+                  flexGrow: 1,
                   paddingTop: 50
                 }}
               >
                 <ScrollView
-                  style={settingsGroupStyle.devModeAppStateTextScrollView}
+                  style={{
+                    ...settingsGroupStyle.devModeAppStateTextScrollView,
+                    marginLeft: 20,
+                    flex: 1
+                  }}
                 >
                   <Button
                     icon={IconName.back}
@@ -357,20 +359,60 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                     }}
                     theme={theme}
                   />
-                  {/* <Button color="red" title={t("ClearLog")} onPress={() => {
-                  logger.clearAll()
-                  setLoggerText("")
-                }} theme={theme}/> */}
-                  <TextInput
+                  <Button
+                    color="red"
+                    title={t("settsClearLog")}
+                    onPress={() => {
+                      logger.clearAll();
+                      setLoggerText([]);
+                    }}
+                    theme={theme}
+                  />
+                  <Text
+                    style={{ ...theme.theme.text }}
+                  >{`Length: ${loggerText.length}`}</Text>
+                  <View style={{ gap: 10 }}>
+                    {loggerText.map((string, i) => {
+                      return (
+                        <View
+                          style={{
+                            ...theme.theme.rowView,
+                            ...theme.theme.fullWidth
+                          }}
+                          key={`${string.substring(0, 10)}${i}`}
+                        >
+                          <Text
+                            style={{
+                              ...theme.theme.text,
+                              color: string.includes("[ERROR]")
+                                ? theme.colors.textDanger
+                                : theme.colors.text
+                            }}
+                          >
+                            {string.substring(0, 20)}
+                          </Text>
+                          <Text
+                            style={{
+                              ...theme.theme.text,
+                              color: string.includes("[ERROR]")
+                                ? theme.colors.textDanger
+                                : theme.colors.text
+                            }}
+                          >
+                            {string.substring(20)}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                  {/* <Text
                     style={{
                       ...theme.theme.text,
                       ...settingsGroupStyle.devModeAppStateTextarea
                     }}
-                    editable={false}
-                    multiline={true}
                   >
                     {loggerText}
-                  </TextInput>
+                  </Text> */}
                 </ScrollView>
               </MiniModal>
             </View>

@@ -125,6 +125,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
 
   const haveToken = SecureStore.getItem(ACCESS_TOKEN_NAME) !== null;
   const isAutorized = haveToken && state.userData.uuid !== null;
+  console.log(state.dateSyncSuccess, state.dateSyncTry);
   const dataSynced =
     state.dateSyncSuccess !== -1 && state.dateSyncTry === state.dateSyncSuccess;
 
@@ -241,15 +242,15 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               );
             }}
           />
-          {isAutorized && (
-            <UserSettingsList
-              theme={theme}
-              state={state}
-              setState={setState}
-              t={t}
-              navigation={navigation}
-            />
-          )}
+          {/* {isAutorized && ( */}
+          <UserSettingsList
+            theme={theme}
+            state={state}
+            setState={setState}
+            t={t}
+            navigation={navigation}
+          />
+          {/* )} */}
           {/* LISTS */}
           <ListSettingsList
             theme={theme}

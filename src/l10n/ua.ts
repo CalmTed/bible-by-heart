@@ -231,7 +231,7 @@ export const ua: typeof en = {
   settsShowLogHeader: "Показати лог",
   settsShowLogSubtext: "Список подій і помилок",
   settsExportLog: "Експортувати",
-  settsClearLog: "Зтерти",
+  settsClearLog: "Стерти",
   settsLogExported: "Лог експортовано",
 
   //user settings

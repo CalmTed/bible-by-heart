@@ -22,6 +22,10 @@ import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib
 import { navigateWithState } from "../../screeenManagement";
 import { ScrollView } from "react-native-gesture-handler";
 import { logger } from "../../utils/logger";
+
+import Constants from "expo-constants";
+const HOST = Constants.expoConfig?.extra?.HOST || "";
+
 interface UserSettingsListModel {
   theme: ThemeAndColorsModel;
   state: AppStateModel;
@@ -397,6 +401,27 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
               header={t("settsUserGetRemoteUserDataHeader")}
               subtext={t("settsUserGetRemoteUserDataSubtext")}
               actionCallBack={() => updateUserData()}
+            />
+          )}
+          {state.settings.devModeEnabled && (
+            <SettingsMenuItem
+              type="action"
+              theme={theme}
+              header={"Fetch API version"}
+              subtext={""}
+              actionCallBack={() => {
+                console.log("fetching?");
+                fetch(HOST + API_LINK.apiVersion, {
+                  method: "GET"
+                })
+                  .then(async (apiVersionResponce) => {
+                    console.log(HOST);
+
+                    const versionData = await apiVersionResponce.json();
+                    Alert.alert("versionData", versionData);
+                  })
+                  .catch((err) => Alert.alert(err));
+              }}
             />
           )}
           {/* <SettingsMenuItem

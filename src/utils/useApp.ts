@@ -87,10 +87,11 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
           //weekday, time, success
           //on scheduling we do the same but with fail status
           logger.write(
-            `Notification responce received. ${responce.notification.request.content}`
+            `Notification responce received. ${JSON.stringify(responce.notification.request.content)}`
           );
           //reschedule reminders
           checkSchedule(state);
+          //TODO go to daily ractice screen
         });
 
       // Notifications.registerTaskAsync(backgroundNotificationName);

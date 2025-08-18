@@ -69,8 +69,7 @@ export default {
         projectId: "c76e832f-dde7-42aa-b303-7c97507b9ac9"
       },
       ESVTOKEN: process.env.ESVTOKEN,
-      HOST: process.env.HOST,
-      APP_ENV: process.env.APP_ENV
+      HOST: process.env.HOST
     },
     plugins: [
       [

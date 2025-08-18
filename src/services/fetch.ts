@@ -154,11 +154,11 @@ export const fetchAPI: (a: {
         key: APIVERSION_LAST_CHECK
       })
       .catch((e) => {
-        logger.error(`Error on geting last version check data in fetch e:${e}`);
+        logger.error(`Error on geting last version check data in fetch`);
       });
     if (
-      new Date().getTime() >
-      apiVersionLastCheck + APIVERSION_MAX_TIME * 1000
+      new Date().getTime() > apiVersionLastCheck + APIVERSION_MAX_TIME * 1000 ||
+      typeof apiVersionLastCheck === "undefined"
     ) {
       const apiVersionResponce = (await fetch(HOST + API_LINK.apiVersion, {
         method: "GET"
@@ -184,6 +184,8 @@ export const fetchAPI: (a: {
           );
           return; ///ABORTING THE FETCH
         }
+      } else {
+        logger.error(`Error on geting last version check data in fetch`);
       }
     } else {
       //checked ricently
@@ -193,7 +195,7 @@ export const fetchAPI: (a: {
         })
         .catch((e) => {
           logger.error(
-            `Error on geting api versio check status local data in fetch e:${e}`
+            `Error on geting api version check status local data in fetch`
           );
         });
       if (apiVersionStatus === false) {
@@ -219,7 +221,7 @@ export const fetchAPI: (a: {
         };
       } catch (err) {
         logger.error(
-          `Unable to parce OK responce data. Responce: ${response}, Error: ${err}`
+          `Unable to parce OK responce data. Responce: ${JSON.stringify(response)}, Error: ${err}`
         );
         return {
           response,
