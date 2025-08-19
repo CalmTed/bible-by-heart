@@ -5,9 +5,8 @@ import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
-import { getTheme } from "../../utils/getTheme";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
-import { getAddressDifference } from "src/utils/addressDifference";
+import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -65,6 +64,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L30: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -194,7 +194,6 @@ export const L30: FC<LevelComponentModel> = ({
   const unselectedWords = missingWords.filter(
     (mwi) => !selectedWords.includes(mwi)
   );
-  const theme = getTheme(state.settings.theme);
 
   if (!targetPassage || !missingWords) {
     submitTest({ isRight: true, modifiedTest: test });

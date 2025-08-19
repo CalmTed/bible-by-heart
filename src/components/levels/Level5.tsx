@@ -13,8 +13,7 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getTheme } from "../../utils/getTheme";
-import { getAddressDifference } from "src/utils/addressDifference";
+import { getAddressDifference } from "../../utils/addressDifference";
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -82,6 +81,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L50: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -279,7 +279,6 @@ export const L50: FC<LevelComponentModel> = ({
 
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
-  const theme = getTheme(state.settings.theme);
   return (
     <ScrollView style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>
@@ -384,7 +383,7 @@ export const L50: FC<LevelComponentModel> = ({
           />
         )}
         {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-          new Date().getTime() - test.td[0][0] > 1000 * 60 * 10) && (
+          new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 10) && (
           <Button
             theme={theme}
             type="secondary"

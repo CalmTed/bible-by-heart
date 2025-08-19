@@ -1,6 +1,6 @@
-const { defineConfig } = require('eslint/config');
+const { defineConfig } = require("eslint/config");
 const expoConfig = require("eslint-config-expo/flat");
-const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
+const eslintPluginPrettierRecommended = require("eslint-plugin-prettier/recommended");
 
 module.exports = defineConfig([
   expoConfig,
@@ -9,7 +9,9 @@ module.exports = defineConfig([
     ignores: ["dist/*"],
     rules: {
       "react-hooks/exhaustive-deps": "off",
-      "react-hooks/rules-of-hooks": "off"
+      "react-hooks/rules-of-hooks": "off",
+      "linebreak-style": "off",
+      "prettier/prettier": ["error", { endOfLine: "auto" }]
     }
-  },
+  }
 ]);

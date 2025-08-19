@@ -15,7 +15,7 @@ import {
   ReminderModel
 } from "../../models";
 import addZero from "../../utils/addZero";
-import { ThemeAndColorsModel } from "../../utils/getTheme";
+import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
 import { reduce } from "../../utils/reduce";
 import { secondsToString } from "../../utils/secondsToString";
 import {
@@ -48,7 +48,8 @@ export const NotificationsSettingsList: FC<NotificationsSettingsListModel> = ({
   const settingsGroupStyle = StyleSheet.create({
     miniModal: {
       width: "100%",
-      height: "100%"
+      height: "100%",
+      paddingTop: 50
     },
     miniModalContent: {
       height: 60,

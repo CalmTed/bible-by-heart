@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AppStateModel } from "../models";
-import { ThemeAndColorsModel, getTheme } from "./getTheme";
+import { ThemeAndColorsModel, getThemeFromScheme } from "./getThemeFromScheme";
 import { WORD, createT } from "../l10n";
 import {
   DAY,
@@ -16,9 +16,10 @@ import {
   registerForPushNotificationsAsync
 } from "../utils/notifications";
 import { navigateWithState } from "../screeenManagement";
-import { ToastAndroid } from "react-native";
+import { useColorScheme } from "react-native";
 import { logger } from "./logger";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import toastShow from "./toastShow";
 
 type UseAppModel = (arg: {
   route: any;
@@ -49,7 +50,7 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
       })
       .catch((e) => {
         logger.error(`Error on geting data in useApp e:${e}`);
-        ToastAndroid.show(e, 10000);
+        toastShow(e, 10000);
       });
 
     //cheking for corruption bafore backup
@@ -86,10 +87,29 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
           //weekday, time, success
           //on scheduling we do the same but with fail status
           logger.write(
-            `Notification responce received. ${responce.notification.request.content}`
+            `Notification responce received. ${JSON.stringify(responce.notification.request.content)}`
           );
+          if (
+            typeof responce.notification.request.content?.data?.[
+              "androind.intent.extra.TEXT"
+            ] !== "undefined"
+          ) {
+            const passageText =
+              responce.notification.request.content?.data?.[
+                "android.intent.extra.TEXT"
+              ] || "";
+            navigateWithState({
+              navigation,
+              screen: SCREEN.listPassage,
+              state,
+              extraData: {
+                passageText
+              }
+            });
+          }
           //reschedule reminders
           checkSchedule(state);
+          //TODO go to daily ractice screen
         });
 
       // Notifications.registerTaskAsync(backgroundNotificationName);
@@ -105,9 +125,9 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
     }
     return () => {
       if (state.passages.length > 0 && state.settings.remindersEnabled) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        // Notifications.removeNotificationSubscription(
+        //   notificationListener.current
+        // );
         // Notifications.removeNotificationSubscription(responseListener.current);
         // Notifications.unregisterTaskAsync(backgroundNotificationName);
       }
@@ -134,8 +154,8 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
     },
     [state, stateString] //need latest state so it would be updated on navigating
   );
-
-  const theme = getTheme(state.settings.theme);
+  const colorScheme = useColorScheme();
+  const theme = getThemeFromScheme(state.settings.theme, colorScheme);
   const t = createT(state?.settings?.langCode || LANGCODE.en);
 
   return {

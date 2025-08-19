@@ -1,4 +1,4 @@
-import { AddressType } from "src/models";
+import { AddressType } from "../models";
 
 export const addressDistance: (
   address1: AddressType,

@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  ToastAndroid,
   View
 } from "react-native";
 import {
@@ -28,16 +27,17 @@ import {
 } from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
-import { ThemeAndColorsModel, getTheme } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./miniModal";
 import { Input } from "./Input";
-import { getPasageStats } from "../utils/getStats";
+import { getPassageStats } from "../utils/getStats";
 
-import { getNumberOfVerses } from "src/utils/getNumberOfVerses";
-import { logger } from "src/utils/logger";
+import { getNumberOfVerses } from "../utils/getNumberOfVerses";
+import { logger } from "../utils/logger";
+import toastShow from "../utils/toastShow";
 
 interface PassageEditorModel {
   visible: boolean;
@@ -45,11 +45,13 @@ interface PassageEditorModel {
   onConfirm: (passage: PassageModel) => void;
   onRemove: (arg: number) => void;
   t: (w: WORD) => string;
+  theme: ThemeAndColorsModel;
   state: AppStateModel;
 }
 
 export const PassageEditor: FC<PassageEditorModel> = ({
   visible,
+  theme,
   passage,
   onConfirm,
   onRemove,
@@ -90,7 +92,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           logger.error(
             `Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`
           );
-          ToastAndroid.show(e, 10000);
+          toastShow(e, 10000);
         })
         .finally(() => {
           setFetchingInProgress(false);
@@ -223,11 +225,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       };
     });
   };
-  const theme = getTheme(state.settings.theme);
+  // const theme = getThemeFromScheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
     headerView: {
-      height: 60,
+      height: 100,
+      paddingTop: 50,
       alignContent: "center",
       width: "100%",
       flexDirection: "row",
@@ -375,7 +378,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     }
   };
 
-  const passageStats = getPasageStats(state, passage);
+  const passageStats = getPassageStats(state, passage);
   return (
     <Modal visible={visible}>
       <View style={{ ...theme.theme.view, ...PEstyle.headerView }}>
@@ -492,6 +495,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
               <LevelPicker
                 t={t}
+                theme={theme}
                 targetPassage={tempPassage}
                 handleChange={handleLevelChange}
                 handleOpen={handleLevelPickerOpen}

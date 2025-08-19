@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
-import { ThemeAndColorsModel } from "src/utils/getTheme";
+import { Modal, StyleSheet, View } from "react-native";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
 interface MiniModalModel {
   shown: boolean;
@@ -49,15 +49,11 @@ export const MiniModal: FC<MiniModalModel> = ({
       transparent={true}
       visible={shown}
       onRequestClose={handleClose}
+      onDismiss={handleClose}
     >
-      <Pressable
-        style={styles.centeredView}
-        onPress={() => {
-          /* haven't make closing handler b.c. any modal press triggers it */
-        }}
-      >
+      <View style={styles.centeredView}>
         <View style={{ ...styles.modalView, ...customStyles }}>{children}</View>
-      </Pressable>
+      </View>
     </Modal>
   );
 };

@@ -1,0 +1,277 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
+<RCTScrollView
+  style={
+    {
+      "flex": 1,
+      "width": "100%",
+    }
+  }
+>
+  <View>
+    <View
+      style={
+        {
+          "alignContent": "flex-start",
+          "justifyContent": "center",
+          "marginVertical": 10,
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "alignContent": "center",
+            "color": "#ECECEC",
+            "flexDirection": "row",
+            "flexWrap": "wrap",
+            "fontSize": 18,
+            "fontWeight": "500",
+            "letterSpacing": 0.3,
+            "padding": 10,
+            "textAlign": "center",
+          }
+        }
+      >
+        Finish passage without any autocomplete
+      </Text>
+    </View>
+    <View
+      style={
+        {
+          "maxHeight": 200,
+          "minHeight": 50,
+          "padding": 10,
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "flexDirection": "row",
+              "opacity": 1,
+            }
+          }
+        >
+          <ViewManagerAdapter_ExpoLinearGradient
+            colors={
+              [
+                4281085996,
+                4281085996,
+              ]
+            }
+            endPoint={
+              [
+                0,
+                1,
+              ]
+            }
+            locations={
+              [
+                0,
+                1,
+              ]
+            }
+            startPoint={
+              [
+                0,
+                0,
+              ]
+            }
+            style={
+              {
+                "alignItems": "center",
+                "borderRadius": 22,
+                "height": "100%",
+                "justifyContent": "center",
+                "padding": 2,
+                "width": "100%",
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignContent": "space-between",
+                  "alignItems": "center",
+                  "backgroundColor": "#2C302C",
+                  "borderRadius": 21,
+                  "flexDirection": "row",
+                  "height": "100%",
+                  "justifyContent": "space-between",
+                  "paddingRight": 15,
+                  "width": "100%",
+                }
+              }
+            >
+              <TextInput
+                autoCapitalize="none"
+                autoCorrect={false}
+                cursorColor="#1A9E37"
+                editable={true}
+                multiline={true}
+                onChangeText={[Function]}
+                onEndEditing={[Function]}
+                onSubmitEditing={[Function]}
+                placeholder="Write passage text"
+                placeholderTextColor="#A0A0A0"
+                style={
+                  {
+                    "color": "#ECECEC",
+                    "fontSize": 18,
+                    "fontWeight": "500",
+                    "minWidth": 100,
+                    "paddingHorizontal": 14,
+                    "paddingVertical": 7,
+                  }
+                }
+                value="Знаємо, що тим, які "
+              />
+            </View>
+          </ViewManagerAdapter_ExpoLinearGradient>
+        </View>
+      </View>
+    </View>
+    <View
+      style={
+        {
+          "alignItems": "flex-start",
+          "flex": 1,
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "gap": 10,
+          "paddingHorizontal": 20,
+          "paddingVertical": 10,
+          "width": "100%",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": false,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onFocus={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "flexDirection": "row",
+            }
+          }
+        >
+          <ViewManagerAdapter_ExpoLinearGradient
+            colors={
+              [
+                4279934519,
+                4279928478,
+              ]
+            }
+            endPoint={
+              [
+                0,
+                1,
+              ]
+            }
+            locations={
+              [
+                0,
+                1,
+              ]
+            }
+            startPoint={
+              [
+                0,
+                0,
+              ]
+            }
+            style={
+              {
+                "alignItems": "center",
+                "borderRadius": 20,
+                "elevation": 5,
+                "justifyContent": "center",
+                "padding": 2,
+                "shadowColor": "#000",
+                "shadowOffset": {
+                  "height": 2,
+                  "width": 0,
+                },
+                "shadowOpacity": 0.25,
+                "shadowRadius": 4,
+              }
+            }
+          >
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "transparent",
+                  "borderRadius": 21,
+                  "flexDirection": "row",
+                  "justifyContent": "center",
+                  "paddingLeft": 18,
+                  "paddingRight": 28,
+                  "paddingVertical": 14,
+                }
+              }
+            >
+              <Text
+                style={
+                  {
+                    "color": "#ECECEC",
+                    "fontSize": 18,
+                    "fontWeight": "500",
+                    "paddingLeft": 10,
+                    "paddingRight": 5,
+                    "textTransform": "uppercase",
+                  }
+                }
+              >
+                Check text (5/5)
+              </Text>
+            </View>
+          </ViewManagerAdapter_ExpoLinearGradient>
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;

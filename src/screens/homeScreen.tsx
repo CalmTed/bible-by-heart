@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Linking } from "react-native";
 import { SCREEN, THEMETYPE } from "../constants";
 import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
@@ -15,6 +15,7 @@ import { getPassagesByTrainMode } from "../utils/generateTests";
 import { reduce } from "../utils/reduce";
 import { MangerSVG } from "../svg/manger";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import { logger } from "../utils/logger";
 
 export interface ScreenModel {
   route: any;
@@ -31,50 +32,56 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     (m) => m.enabled
   );
 
-  // Linking.getInitialURL().then((url) => {
-  //   if (url) {
-  //     ToastAndroid.show("Recieved text or link", 10000);
-  //     setInitialURL(url);
-  //   }else{
-  //     state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
-  //   }
-  // }).catch(err => {
-  //   ToastAndroid.show("An error occurred on home screen no getting initial url", 10000);
-  // });
+  Linking.getInitialURL()
+    .then((url) => {
+      if (url) {
+        // toastShow(`Recieved text or link, ${url}`, 10000);
+        logger.write(`Recieved text or link, ${JSON.stringify(url)}`);
+      } else {
+        if (state.settings.devModeEnabled) {
+          logger.write(`Recieved NO text or link url:${JSON.stringify(url)}`);
+        }
+      }
+    })
+    .catch((err) => {
+      logger.error("An error occurred on home screen no getting initial url");
+    });
   // const [data, setData] = React.useState<ExpoIntentReceiver.IntentInfo[]>([]);
   // const refIntent = React.useRef(ExpoIntentReceiver.getInitialIntent());
 
   // if(!initialIntent && refIntent.current){
   //   setInitialIntent(refIntent.current);
-  //   ToastAndroid.show(`Recieved intent ${JSON.stringify(refIntent.current[0])}`, 10000);
+  //   toastShow(`Recieved intent ${JSON.stringify(refIntent.current[0])}`, 10000);
   // }
   // if(!refIntent.current){
-  //   state.settings.devMode ? ToastAndroid.show("No initial link", 10000) : null;
+  //   state.settings.devMode ? toastShow("No initial link", 10000) : null;
   // }
   // const subscription = ExpoIntentReceiver.addChangeListener(({ data }) => {
   //   setData((currentData) => [...currentData, ...data])
   // })
   // return () => subscription.remove();
   // ReceiveSharingIntent.getReceivedFiles((data:any)=> {
-  //   ToastAndroid.show(`Received intent data ${data.length}`, 1000)
+  //   toastShow(`Received intent data ${data.length}`, 1000)
   //   initialIntent(data)
   // },
   // (err:any)=>{
-  //   ToastAndroid.show(`Error while receiveing intents ${err}`, 1000)
+  //   toastShow(`Error while receiveing intents ${err}`, 1000)
   // });
 
-  //   React.useEffect(() => {
-  //     try{
-  //     DeviceEventEmitter.addListener("result", message => {
-  //       state.settings.devMode ? ToastAndroid.show( message,1000) : null
-  //       setInitialIntent(message)
-  //     })
+  // React.useEffect(() => {
+  //   try {
+  //     DeviceEventEmitter.addListener("result", (message) => {
+  //       state.settings.devModeEnabled ? toastShow(message, 1000) : null;
+  //       logger.write(`Recieved event message: ${message}`);
+  //     });
   //     return () => {
-  //       DeviceEventEmitter.removeAllListeners()
-  //     }
-  //   }catch(e){
-  //     state.settings.devMode ? ToastAndroid.show(`Error while calling module`, 1000) : null
-  //     return () => {}
+  //       DeviceEventEmitter.removeAllListeners();
+  //     };
+  //   } catch (e) {
+  //     logger.error(
+  //       `Recieved intentError while calling module DeviceEventEmitter`
+  //     );
+  //     return () => {};
   //   }
   // }, []);
   const LogoBlock = () => (
@@ -86,6 +93,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
         <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
       )}
       <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
+        {/* Bible by heart */}
         {t("appName")}
       </Text>
       <Text

@@ -1,5 +1,5 @@
-import { bibleReference } from "src/bibleReference";
-import { AddressType } from "src/models";
+import { bibleReference } from "../bibleReference";
+import { AddressType } from "../models";
 import { logger } from "./logger";
 
 export const getNumberOfVerses: (adress: AddressType) => number = (address) => {

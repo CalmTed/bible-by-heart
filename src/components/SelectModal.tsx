@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { MiniModal } from "./miniModal";
 import { OptionModel } from "../models";
 import { StyleSheet, Text, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { Button } from "./Button";
 
 interface SelectModel {

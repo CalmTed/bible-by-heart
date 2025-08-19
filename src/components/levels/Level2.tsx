@@ -6,7 +6,6 @@ import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getTheme } from "../../utils/getTheme";
 import {
   ERRORS_TO_DOWNGRADE,
   SENTENCE_SEPARATOR,
@@ -60,6 +59,7 @@ const levelComponentStyle = StyleSheet.create({
 export const L20: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -130,7 +130,6 @@ export const L20: FC<LevelComponentModel> = ({
     return <View />;
   }
   const levelFinished = test.f;
-  const theme = getTheme(state.settings.theme);
   const sentences = targetPassage.verseText
     .split(SENTENCE_SEPARATOR)
     .filter((s) => s.length);
@@ -233,6 +232,7 @@ export const L20: FC<LevelComponentModel> = ({
 export const L21: FC<LevelComponentModel> = ({
   test,
   state,
+  theme,
   t,
   submitTest,
   dispatch
@@ -309,7 +309,6 @@ export const L21: FC<LevelComponentModel> = ({
     return <View />;
   }
   const levelFinished = test.f;
-  const theme = getTheme(state.settings.theme);
   return (
     <View style={levelComponentStyle.levelComponentView}>
       <View style={levelComponentStyle.addressTextView}>

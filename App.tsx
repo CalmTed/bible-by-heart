@@ -1,5 +1,5 @@
 import { VERSION, STORAGE_BACKUP_NAME, STORAGE_NAME } from "./src/constants";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { act, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { AppStateModel } from "./src/models";
 import { Navigator } from "./src/navigator";
 import { createAppState } from "./src/initials";
@@ -7,7 +7,6 @@ import storage from "./src/storage";
 import { convertState } from "./src/utils/stateVersionConvert";
 import React, {
   Button,
-  ToastAndroid,
   ScrollView,
   View,
   Text,
@@ -17,7 +16,7 @@ import React, {
   useColorScheme
 } from "react-native";
 import { logger } from "./src/utils/logger";
-
+import toastShow from "./src/utils/toastShow";
 
 export default function App() {
   const [isReady, setReady] = useState(false);
@@ -32,15 +31,15 @@ export default function App() {
 
   useEffect(() => {
     Linking.addEventListener("url", (link) => {
-      if(state.settings.devModeEnabled){
-        logger.write(`[DEV] Recieved data: ${link}`)
-        ToastAndroid.show("Recieved data:" + link, 1000)
+      if (state.settings.devModeEnabled) {
+        logger.write(`[DEV] Recieved data: ${JSON.stringify(link)}`);
+        toastShow("Recieved data:" + link, 1000);
       }
-    })
+    });
     return () => {
-      Linking.removeAllListeners("url")
-    }
-  })
+      Linking.removeAllListeners("url");
+    };
+  });
   const loadState = () => {
     storage
       .load({
@@ -63,7 +62,7 @@ export default function App() {
             .then(() => {
               const convertedState = convertState(dataObj);
               if (convertedState) {
-                ToastAndroid.show(
+                toastShow(
                   `State converted from ${dataObj.version} to ${VERSION}`,
                   10000
                 );
@@ -78,7 +77,7 @@ export default function App() {
                   });
               } else {
                 //if it is not possible to convert create new one with backup
-                ToastAndroid.show(
+                toastShow(
                   "Error with convering app state. Backup saved.",
                   10000
                 );
@@ -89,15 +88,16 @@ export default function App() {
         }
       })
       .catch((e) => {
-        ToastAndroid.show("creating new state", 10000);
-        console.warn(e);
+        logger.write("Creating new state b.c. there were none")
+        // toastShow("Creating new state", 10000);
         storage
           .save({
             key: `${STORAGE_NAME}`,
             data: state
-          }).then(() => {
-            setReady(true);
           })
+          .then(() => {
+              setReady(true);
+          });
       });
   };
 
@@ -109,7 +109,7 @@ export default function App() {
   try {
     return <>{isReady && <Navigator state={state} />}</>;
   } catch (err) {
-    logger.error(`Error with rendering state on app start`)
+    logger.error(`Error with rendering state on app start`);
     return (
       <ScrollView>
         <View
@@ -149,18 +149,18 @@ export default function App() {
                         .then(() => {
                           setState(dataObj);
                           setReady(true);
-                          ToastAndroid.show("Loaded from backup", 10000);
+                          toastShow("Loaded from backup", 10000);
                         });
                     } else {
-                      ToastAndroid.show(
+                      toastShow(
                         "Backup version does not match :(",
                         10000
                       );
                     }
                   });
               } catch (err) {
-                logger.error(`Error on bloading backup`)
-                ToastAndroid.show("😟 Nope. Error here too...", 10000);
+                logger.error(`Error on bloading backup`);
+                toastShow("😟 Nope. Error here too...", 10000);
               }
             }}
           />
@@ -179,15 +179,15 @@ export default function App() {
                     })
                     .then((data) => {
                       setTextInputValue(JSON.stringify(data.passages, null, 4));
-                      ToastAndroid.show("Showing passages", 10000);
+                      toastShow("Showing passages", 10000);
                     })
                     .catch((err) => {
-                      logger.error(`Error on encoding while exporting`)
-                      ToastAndroid.show("😟 Nope. " + err, 10000);
+                      logger.error(`Error on encoding while exporting`);
+                      toastShow("😟 Nope. " + err, 10000);
                     });
-                  } catch (err) {
-                  logger.error(`Error while exporting`)
-                  ToastAndroid.show("😟 Nope. " + err, 10000);
+                } catch (err) {
+                  logger.error(`Error while exporting`);
+                  toastShow("😟 Nope. " + err, 10000);
                 }
               } else {
                 try {
@@ -197,15 +197,15 @@ export default function App() {
                     })
                     .then((data) => {
                       setTextInputValue(JSON.stringify(data, null, 4));
-                      ToastAndroid.show("Showing state", 10000);
+                      toastShow("Showing state", 10000);
                     })
                     .catch((err) => {
-                      logger.error(`Error while getting data from storage`)
-                      ToastAndroid.show("😟 Nope. " + err, 10000);
+                      logger.error(`Error while getting data from storage`);
+                      toastShow("😟 Nope. " + err, 10000);
                     });
                 } catch (err) {
-                  logger.error(`Error while getting data from storage 2`)
-                  ToastAndroid.show("😟 Nope. " + err, 10000);
+                  logger.error(`Error while getting data from storage 2`);
+                  toastShow("😟 Nope. " + err, 10000);
                 }
               }
               if (clickCounter >= counterMax * 2) {
@@ -223,8 +223,8 @@ export default function App() {
                 setAskedForHelp(true);
                 Linking.openURL("https://t.me/BibleByHeartApp");
               } catch (err) {
-                logger.error(`Unable to open telegram link`)
-                ToastAndroid.show("😟 Nope. " + err, 10000);
+                logger.error(`Unable to open telegram link`);
+                toastShow("😟 Nope. " + err, 10000);
               }
             }}
           />
@@ -243,11 +243,11 @@ export default function App() {
                   .then(() => {
                     setState(newState);
                     setReady(true);
-                    ToastAndroid.show("Brand new data for you", 10000);
+                    toastShow("Brand new data for you", 10000);
                   });
               } catch (err) {
-                logger.error(`Unable to create new state`)
-                ToastAndroid.show("😟 Nope. " + err, 10000);
+                logger.error(`Unable to create new state`);
+                toastShow("😟 Nope. " + err, 10000);
               }
             }}
           />
@@ -265,6 +265,5 @@ export default function App() {
     );
   }
 }
-
 
 AppRegistry.registerComponent("Bible by heart", () => App);

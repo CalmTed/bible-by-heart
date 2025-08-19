@@ -9,8 +9,7 @@ import {
   StyleProp,
   TextStyle,
   Animated,
-  Vibration,
-  ToastAndroid
+  Vibration
 } from "react-native";
 import {
   ARCHIVED_NAME,
@@ -39,11 +38,13 @@ import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
 import { timeToString } from "../utils/formatDateTime";
-import { getTheme } from "../utils/getTheme";
+import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useApp } from "../utils/useApp";
-import { getAddresOrder } from "src/utils/addressOrder";
-import { logger } from "src/utils/logger";
+import { getAddresOrder } from "../utils/addressOrder";
+import { logger } from "../utils/logger";
+import toastShow from "../utils/toastShow";
+import addressFromString from "../utils/addressFromString";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useApp({ route, navigation });
@@ -57,13 +58,16 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     createPassage(
       createAddress(),
       "",
-      state.settings.translations.find((tr) => tr.isDefault)?.id
+      state.settings.translations.find((tr) => tr.isDefault)?.id,
+      state.userData?.uuid !== null ? state.userData.uuid : undefined
     )
   );
 
   const [searchText, setSearch] = useState("");
   const [isFiltersOpen, setOpenFilters] = useState(false);
   const [isSortingOpen, setOpenSorting] = useState(false);
+
+  const { passageText } = route.params;
 
   const handleAPOpen = () => {
     setAPOpen(true);
@@ -77,7 +81,8 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     const newPassage = createPassage(
       address,
       "",
-      state.settings.translations.find((tr) => tr.isDefault)?.id
+      state.settings.translations.find((tr) => tr.isDefault)?.id,
+      state.userData.uuid !== null ? state.userData.uuid : undefined
     );
     const versesInEnglish = getNumberOfVersesInEnglish(
       state.settings.translations,
@@ -88,7 +93,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       setPEOpen(true);
     } else {
       logger.write("English verses number limit reached");
-      ToastAndroid.show(t("ErrorCantAddMoreEngVerses"), 10000);
+      toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
     }
   };
   const handlePESubmit = (passage: PassageModel) => {
@@ -159,6 +164,38 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       return newState ? newState : prv;
     });
   };
+  const handleTextFromIntent: (text: string) => void = (text) => {
+    const parsedAddressResult = addressFromString(text);
+    const passageAddress =
+      parsedAddressResult !== false
+        ? parsedAddressResult.address
+        : createAddress();
+    const passageTranslation =
+      parsedAddressResult !== false
+        ? parsedAddressResult.language !== null
+          ? typeof state.settings.translations.find(
+              (tr) => tr.addressLanguage === parsedAddressResult.language
+            ) !== "undefined"
+            ? state.settings.translations.find(
+                (tr) => tr.addressLanguage === parsedAddressResult.language
+              )?.id
+            : undefined
+          : undefined
+        : undefined;
+    const passageText =
+      parsedAddressResult !== false
+        ? text.replace(parsedAddressResult.addressString, "").trim()
+        : text.trim();
+    const ownerId =
+      state.userData.uuid !== null ? state.userData.uuid : undefined;
+    setSelectedPassage({
+      ...createPassage(passageAddress, passageText, passageTranslation, ownerId)
+    });
+    setAPOpen(true);
+  };
+  if (typeof passageText !== "undefined") {
+    handleTextFromIntent(passageText);
+  }
   const allTags = state.passages
     .map((p) => p.tags)
     .flat()
@@ -327,6 +364,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               <ListItem
                 state={state}
                 key={passage.id}
+                theme={theme}
                 data={passage}
                 t={t}
                 onPress={() => handleListItemEdit(passage)}
@@ -568,6 +606,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           onConfirm={handlePESubmit}
           onRemove={handlePERemove}
           t={t}
+          theme={theme}
         />
       )}
     </View>
@@ -577,6 +616,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
 const ListItem: FC<{
   data: PassageModel;
   t: (w: WORD) => string;
+  theme: ThemeAndColorsModel;
   onPress: () => void;
   onToggleTag: () => void;
   onRemove: () => void;
@@ -586,6 +626,7 @@ const ListItem: FC<{
 }> = ({
   data,
   t,
+  theme,
   onPress,
   onToggleTag,
   onRemove,
@@ -594,7 +635,6 @@ const ListItem: FC<{
   onArchive
 }) => {
   const sort = state.sort;
-  const theme = getTheme(state.settings.theme);
   const leftSwipeTag = state.settings.leftSwipeTag;
   const additionalStyles = data.isCollapsed
     ? { overflow: "visible" }

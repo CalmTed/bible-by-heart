@@ -1,24 +1,36 @@
 {
   "name": "bible-by-heart",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "scripts": {
-    "start": "expo start",
+    "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "tsc --noEmit && eslint --ext .ts,.tsx ./src/",
     "lint-fix": "tsc --noEmit && eslint --ext .ts,.tsx ./src/ --fix",
-    "test": "jest",
-    "build-dev": "eas build --platform android --profile development",
-    "build": "eas build --platform android --profile production",
+    "test": "jest --coverage",
     "doctor": "npx @react-native-community/cli doctor",
-    "expo-doctor": "npx expo-doctor"
+    "expo-doctor": "npx expo-doctor",
+    "build-dev": "eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive",
+    "build-prod": "eas build --platform android --profile production"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!(jest-)?react-native|@react-native|@react-navigation|expo(nent)?|expo-modules-core|expo-dev-menu|@expo|react-native-reanimated|react-native-gesture-handler)"
+    ]
   },
   "expo.doctor.reactNativeDirectoryCheck.listUnknownPackages": false,
   "dependencies": {
+    "buffer": "^6.0.3",
     "d": "^1.0.2",
     "eas-cli": "16.13.0",
     "expo": "^53.0.12",
@@ -32,6 +44,7 @@
     "expo-notifications": "~0.31.3",
     "expo-random": "^14.0.1",
     "expo-router": "^5.1.0",
+    "expo-secure-store": "^14.2.3",
     "expo-splash-screen": "~0.30.3",
     "expo-status-bar": "~2.2.3",
     "expo-task-manager": "^13.1.5",
@@ -74,7 +87,7 @@
     "eslint-plugin-react-native": "^5.0.0",
     "jest": "~29.7.0",
     "jest-expo": "~53.0.7",
-    "prettier": "^3.6.1",
+    "prettier": "^3.6.2",
     "typescript": "^5.8.2"
   },
   "private": true
