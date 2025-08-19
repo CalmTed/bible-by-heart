@@ -109,6 +109,7 @@ const to009: ConverterType = (stateFrom) => {
     return fromPassages.map((fromP) => {
       let updatedPassage: PassageModel009 = {
         ...fromP,
+        ownerId: fromP.ownerId === null ? null : fromP.ownerId.toString(),
         upgradeDates: {
           ...createPassage009(fromP.address).upgradeDates,
           [PASSAGELEVEL.l1]: fromP.dateCreated

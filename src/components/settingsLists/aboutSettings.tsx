@@ -326,9 +326,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
               >
                 <ScrollView
                   style={{
-                    ...settingsGroupStyle.devModeAppStateTextScrollView,
-                    marginLeft: 20,
-                    flex: 1
+                    width: "100%"
                   }}
                 >
                   <Button

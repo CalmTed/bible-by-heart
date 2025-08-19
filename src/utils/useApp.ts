@@ -89,6 +89,24 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
           logger.write(
             `Notification responce received. ${JSON.stringify(responce.notification.request.content)}`
           );
+          if (
+            typeof responce.notification.request.content?.data?.[
+              "androind.intent.extra.TEXT"
+            ] !== "undefined"
+          ) {
+            const passageText =
+              responce.notification.request.content?.data?.[
+                "android.intent.extra.TEXT"
+              ] || "";
+            navigateWithState({
+              navigation,
+              screen: SCREEN.listPassage,
+              state,
+              extraData: {
+                passageText
+              }
+            });
+          }
           //reschedule reminders
           checkSchedule(state);
           //TODO go to daily ractice screen

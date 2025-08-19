@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Linking
+  Linking,
+  ScrollView
 } from "react-native";
 import { ScreenModel } from "./homeScreen";
 import { useApp } from "../utils/useApp";
@@ -141,7 +142,9 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const regPossible =
     isEmailValid && isPasswordValid && isRepeatPasswordValid && legalCheckBox;
   return (
-    <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
+    <ScrollView
+      contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
+    >
       <Header
         theme={theme}
         navigation={navigation}
@@ -180,6 +183,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           theme={theme}
           inputMode="text"
           iconAfter={isUserNameValid ? IconName.greenCheck : IconName.redCross}
+          autoComplete="username-new"
         />
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
@@ -191,15 +195,18 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           keyboardType="email-address"
           textContentType="emailAddress"
           iconAfter={isEmailValid ? IconName.greenCheck : IconName.redCross}
+          autoComplete="email"
         />
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
           value={tempPassword}
           onChange={setTempPassword}
           placeholder={t("providePasswsordLabel")}
+          inputMode="text"
           secureTextEntry
           theme={theme}
           iconAfter={isPasswordValid ? IconName.greenCheck : IconName.redCross}
+          autoComplete="password-new"
         />
         <Input
           wrapperStyle={{ ...registerStyle.wrapperInput }}
@@ -208,6 +215,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           placeholder={t("providePasswsordAgainLabel")}
           secureTextEntry
           theme={theme}
+          autoComplete="password-new"
           iconAfter={
             isRepeatPasswordValid || false
               ? IconName.greenCheck
@@ -282,7 +290,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
         type="transparent"
         onPress={handleLoginClick}
       />
-    </View>
+    </ScrollView>
   );
 };
 

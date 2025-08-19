@@ -90,7 +90,7 @@ export type PassageModel = PassageModel009;
 
 export interface PassageModel009 {
   id: number;
-  ownerId: number | null; //uuid
+  ownerId: string | null; //uuid
   address: AddressType;
   versesNumber: number;
   verseText: string;

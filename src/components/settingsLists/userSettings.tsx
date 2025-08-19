@@ -23,9 +23,6 @@ import { navigateWithState } from "../../screeenManagement";
 import { ScrollView } from "react-native-gesture-handler";
 import { logger } from "../../utils/logger";
 
-import Constants from "expo-constants";
-const HOST = Constants.expoConfig?.extra?.HOST || "";
-
 interface UserSettingsListModel {
   theme: ThemeAndColorsModel;
   state: AppStateModel;
@@ -387,48 +384,13 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             theme={theme}
             header={`${t("settsUserRegDate")}: ${dateToString(state.userData.registrationDate || 0)}`}
           />
-          {state.settings.devModeEnabled && (
+          {state.userData.userRights !== "free" && (
             <SettingsMenuItem
               type="label"
               theme={theme}
-              header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
+              header={`User type: ${state.userData.userRights}`}
             />
           )}
-          {state.settings.devModeEnabled && (
-            <SettingsMenuItem
-              type="action"
-              theme={theme}
-              header={t("settsUserGetRemoteUserDataHeader")}
-              subtext={t("settsUserGetRemoteUserDataSubtext")}
-              actionCallBack={() => updateUserData()}
-            />
-          )}
-          {state.settings.devModeEnabled && (
-            <SettingsMenuItem
-              type="action"
-              theme={theme}
-              header={"Fetch API version"}
-              subtext={""}
-              actionCallBack={() => {
-                console.log("fetching?");
-                fetch(HOST + API_LINK.apiVersion, {
-                  method: "GET"
-                })
-                  .then(async (apiVersionResponce) => {
-                    console.log(HOST);
-
-                    const versionData = await apiVersionResponce.json();
-                    Alert.alert("versionData", versionData);
-                  })
-                  .catch((err) => Alert.alert(err));
-              }}
-            />
-          )}
-          {/* <SettingsMenuItem
-              type="label"
-              theme={theme}
-              header={t("User type") + ": " + t(`userType${state.userData.userRights}`)}
-          /> */}
           <SettingsMenuItem
             type="textinput"
             theme={theme}
@@ -445,7 +407,24 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
             value={state.userData.userTitle || ""}
             onChange={(newValue) => handleUserTitleChange(newValue)}
             onEndEditing={() => syncUserData()}
+            autoCorrect={false}
           />
+          {state.settings.devModeEnabled && (
+            <SettingsMenuItem
+              type="label"
+              theme={theme}
+              header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
+            />
+          )}
+          {state.settings.devModeEnabled && (
+            <SettingsMenuItem
+              type="action"
+              theme={theme}
+              header={t("settsUserGetRemoteUserDataHeader")}
+              subtext={t("settsUserGetRemoteUserDataSubtext")}
+              actionCallBack={() => updateUserData()}
+            />
+          )}
           <SettingsMenuItem
             type="select"
             theme={theme}
@@ -475,7 +454,6 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
               )
             }
           />
-
           <SettingsMenuItem
             type="action"
             theme={theme}

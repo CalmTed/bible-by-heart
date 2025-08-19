@@ -46,6 +46,45 @@ type SettingsMenuItemModel =
       onEndEditing?: (selectedValue: string) => void;
       maxLength?: number;
       disabled?: boolean;
+      autoComplete?:
+        | "birthdate-day"
+        | "birthdate-full"
+        | "birthdate-month"
+        | "birthdate-year"
+        | "cc-csc"
+        | "cc-exp"
+        | "cc-exp-day"
+        | "cc-exp-month"
+        | "cc-exp-year"
+        | "cc-number"
+        | "email"
+        | "gender"
+        | "name"
+        | "name-family"
+        | "name-given"
+        | "name-middle"
+        | "name-middle-initial"
+        | "name-prefix"
+        | "name-suffix"
+        | "password"
+        | "password-new"
+        | "postal-address"
+        | "postal-address-country"
+        | "postal-address-extended"
+        | "postal-address-extended-postal-code"
+        | "postal-address-locality"
+        | "postal-address-region"
+        | "postal-code"
+        | "street-address"
+        | "sms-otp"
+        | "tel"
+        | "tel-country-code"
+        | "tel-national"
+        | "tel-device"
+        | "username"
+        | "username-new"
+        | "off";
+      autoCorrect?: boolean;
     }
   | {
       theme: ThemeAndColorsModel;
@@ -201,6 +240,8 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             theme={data.theme}
             maxLength={data.maxLength}
             disabled={data.disabled}
+            autoComplete={data.autoComplete}
+            autoCorrect={data.autoCorrect}
           />
         </View>
       )}

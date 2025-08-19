@@ -8,11 +8,12 @@ export const navigateWithState: (arg: {
   screen: SCREEN;
   state: AppStateModel;
   action?: ActionModel;
-}) => void = ({ navigation, screen, state, action }) => {
+  extraData?: Record<string, any>;
+}) => void = ({ navigation, screen, state, action, extraData }) => {
   if (action) {
     const newState = reduce(state, action);
     navigation.navigate(screen, { ...newState });
   } else {
-    navigation.navigate(screen, { ...state });
+    navigation.navigate(screen, { ...state, ...extraData });
   }
 };

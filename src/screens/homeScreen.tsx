@@ -36,10 +36,10 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
     .then((url) => {
       if (url) {
         // toastShow(`Recieved text or link, ${url}`, 10000);
-        logger.write(`Recieved text or link, ${url}`);
+        logger.write(`Recieved text or link, ${JSON.stringify(url)}`);
       } else {
         if (state.settings.devModeEnabled) {
-          logger.write(`Recieved NO text or link url:${typeof url}`);
+          logger.write(`Recieved NO text or link url:${JSON.stringify(url)}`);
         }
       }
     })

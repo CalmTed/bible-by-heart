@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
 import { ScreenModel } from "./homeScreen";
 import { useApp } from "../utils/useApp";
 import { Header } from "../components/Header";
@@ -242,7 +242,9 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
     );
   const loginPossible = isEmailValid && isPasswordValid;
   return (
-    <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
+    <ScrollView
+      contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
+    >
       <Header
         theme={theme}
         navigation={navigation}
@@ -277,6 +279,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           keyboardType="email-address"
           textContentType="emailAddress"
           iconAfter={isEmailValid ? IconName.greenCheck : IconName.redCross}
+          autoComplete="email"
         />
         <Input
           wrapperStyle={{ ...loginStyle.wrapperInput }}
@@ -286,6 +289,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           secureTextEntry
           theme={theme}
           iconAfter={isPasswordValid ? IconName.greenCheck : IconName.redCross}
+          autoComplete="password"
         />
         {tempPassword.length > 0 && !isPasswordValid && (
           <Text
@@ -314,7 +318,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
         type="transparent"
         onPress={handleRegisterClick}
       />
-    </View>
+    </ScrollView>
   );
 };
 

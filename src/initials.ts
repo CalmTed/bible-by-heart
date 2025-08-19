@@ -220,7 +220,7 @@ export const createPassage009: (
   address: AddressType,
   text?: string,
   translation?: number,
-  ownnerId?: number
+  ownnerId?: string
 ) => PassageModel = (address, text, translation, ownerId) => {
   const birthTime = new Date().getTime();
   return {

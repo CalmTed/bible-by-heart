@@ -2,7 +2,7 @@
   "name": "bible-by-heart",
   "version": "0.1.0",
   "scripts": {
-    "dev": "NODE_ENV=local expo start",
+    "dev": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
