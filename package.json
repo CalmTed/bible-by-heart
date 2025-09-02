@@ -34,6 +34,7 @@
     "d": "^1.0.2",
     "eas-cli": "16.13.0",
     "expo": "^53.0.12",
+    "expo-build-properties": "^0.14.8",
     "expo-constants": "^17.0.7",
     "expo-dev-client": "^5.0.12",
     "expo-device": "^7.0.2",

@@ -305,8 +305,8 @@ boilerplate:
                 - remove user
                 - request another email
                 - request password reset
--added basic fetch which somehow broke useColorScheme()
--also coulds build with eas b.c. of some autolinking problem...
+- added basic fetch which somehow broke useColorScheme()
+- also coulds build with eas b.c. of some autolinking problem...
 2025-03-27
 - fixed little bug in reducer - critical error while changing language 
 - need to build prod version for play market before deadline of account inactivity
@@ -389,7 +389,7 @@ boilerplate:
 - did tests as planned, 35.6%
 - whats next
     - [x] finish login ang register screen
-    - push to staging, test, to production
+    - [x] push to staging, test, to production
     - do other tasks - refactor
         - show, explore logger messages
         - rewrite navigator
@@ -475,3 +475,8 @@ boilerplate:
 - added loggger viewer to debug login on staging
 2025-08-17
 - finished adding logger to auth screens activity
+2025-08-19
+- merged with production
+- wrote current plan to readme
+2025-09-02
+- apdated app config b.c. of google config min android config policy

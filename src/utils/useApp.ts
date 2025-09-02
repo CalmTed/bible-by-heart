@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AppStateModel } from "../models";
+import { ActionName, AppStateModel } from "../models";
 import { ThemeAndColorsModel, getThemeFromScheme } from "./getThemeFromScheme";
 import { WORD, createT } from "../l10n";
 import {
@@ -20,6 +20,7 @@ import { useColorScheme } from "react-native";
 import { logger } from "./logger";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 import toastShow from "./toastShow";
+import { reduce } from "./reduce";
 
 type UseAppModel = (arg: {
   route: any;
@@ -89,13 +90,17 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
           logger.write(
             `Notification responce received. ${JSON.stringify(responce.notification.request.content)}`
           );
+          logger.write(
+            `Possible intent text ${responce.notification.request.content.data?.["android.intent.extra.TEXT"]}`
+          );
+          //handling intents
           if (
-            typeof responce.notification.request.content?.data?.[
+            typeof responce.notification.request.content.data?.[
               "androind.intent.extra.TEXT"
             ] !== "undefined"
           ) {
             const passageText =
-              responce.notification.request.content?.data?.[
+              responce.notification.request.content.data?.[
                 "android.intent.extra.TEXT"
               ] || "";
             navigateWithState({
@@ -105,6 +110,27 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
               extraData: {
                 passageText
               }
+            });
+          }
+          if (
+            typeof responce.notification.request.content.data?.id !==
+            "undefined"
+          ) {
+            logger.write(
+              `Recieved responce from reminder with id ${responce.notification.request.content.data?.id}`
+            );
+            //if there are train mode select first one
+
+            const newState =
+              reduce(state, {
+                name: ActionName.generateTests,
+                trainModeId: state.settings.trainModesList?.[0]?.id
+              }) || state;
+
+            navigateWithState({
+              navigation,
+              screen: SCREEN.test,
+              state: newState
             });
           }
           //reschedule reminders

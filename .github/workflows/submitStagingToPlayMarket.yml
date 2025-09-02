@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Jest tests
         run: yarn test --passWithNoTests
-  submit:
+  submitAndroid:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
@@ -59,3 +59,26 @@ jobs:
 
       - name: Call eas build
         run: eas build --profile staging --platform android --auto-submit-with-profile staging
+  submitApple:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Call eas build
+        run: eas build --profile production --platform ios --auto-submit-with-profile staging
