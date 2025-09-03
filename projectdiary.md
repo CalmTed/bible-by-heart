@@ -480,3 +480,5 @@ boilerplate:
 - wrote current plan to readme
 2025-09-02
 - apdated app config b.c. of google config min android config policy
+2025-09-03
+- trying to fix graddle build
