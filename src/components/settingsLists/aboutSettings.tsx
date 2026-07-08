@@ -403,14 +403,13 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                       );
                     })}
                   </View>
-                  {/* <Text
+                  <Text
                     style={{
-                      ...theme.theme.text,
-                      ...settingsGroupStyle.devModeAppStateTextarea
+                      ...theme.theme.text
                     }}
                   >
-                    {loggerText}
-                  </Text> */}
+                    New beginning
+                  </Text>
                 </ScrollView>
               </MiniModal>
             </View>

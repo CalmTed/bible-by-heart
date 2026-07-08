@@ -482,3 +482,7 @@ boilerplate:
 - apdated app config b.c. of google config min android config policy
 2025-09-03
 - trying to fix graddle build
+2026-07-07
+- came back with new smart friend and new hope for sistematic finishing up and update
+- installed bbh-api to new vps
+- made a LLM docs to sistematicaly manage process
