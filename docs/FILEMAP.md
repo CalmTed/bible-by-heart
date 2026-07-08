@@ -21,6 +21,9 @@
 | `eslint.config.js` / `tsconfig.json` | lint + TS config |
 | `jest.setup.js` | jest mocks/setup (preset jest-expo, config in package.json) |
 | `package.json` | scripts: dev, lint, test, build-dev/-prod (EAS) |
+| `package-lock.json` | committed npm lockfile — CI runs `npm ci` against it |
+| `.npmrc` | `legacy-peer-deps=true` — required to install (peer-dep conflicts: react-test-renderer, airbnb-typescript vs tseslint v8) |
+| `.github/workflows/submitStagingToPlayMarket.yml` / `submitProductionToPlayMarket.yml` | CI: on push to staging/production, run `npm ci` + lint + test, then EAS build/submit |
 | `projectdiary.md` | **Fedir's personal diary — never edit** |
 | `readme.md` | public description + (stale) roadmap |
 | `plugins/handlingIntents.js` | Expo config plugin patching Android manifest for share-intent receiving; known-broken area (P0) |

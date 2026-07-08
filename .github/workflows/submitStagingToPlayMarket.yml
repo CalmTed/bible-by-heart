@@ -10,43 +10,34 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
-
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+          cache: "npm"
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
-      - name: Lint code with ESLint
-        run: yarn lint
-
-      - name: TypeScript check
-        run: yarn tsc --noEmit
+      - name: Lint code (tsc + ESLint)
+        run: npm run lint
 
       - name: Run Jest tests
-        run: yarn test --passWithNoTests
+        run: npm test
   submitAndroid:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -55,21 +46,22 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Call eas build
-        run: eas build --profile staging --platform android --auto-submit-with-profile staging
+        run: eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive
   submitApple:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "npm"
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -78,7 +70,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Call eas build
-        run: eas build --profile production --platform ios --auto-submit-with-profile staging
+        run: eas build --profile production --platform ios --auto-submit-with-profile staging --non-interactive
