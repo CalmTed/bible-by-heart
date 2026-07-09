@@ -50,3 +50,38 @@
   it fails to compile, the real fix is an Expo SDK upgrade.
 - Android: no equivalent forced image bump. The analogous recurring Google Play rule
   is target API level, which SDK 53 already satisfies (targets API 35 / Android 15).
+
+## 2026-07-09
+
+- Android Gradle build failed: `:app:checkReleaseAarMetadata` — `core-splashscreen`
+  1.2.0-alpha02 requires `compileSdk >= 35`, but `expo-build-properties` in
+  `app.config.js` pinned `compileSdkVersion: 34`. Bumped it to 35.
+- Also found `minSdkVersion: 35` in the same block — almost certainly a typo (would
+  restrict installs to Android 15+, ~all devices excluded). Corrected to 24 (Expo SDK
+  53 default). Confirmed with Fedir that Google Play only mandates `targetSdkVersion`
+  (35, kept); it places no floor on `minSdkVersion`, and lower = wider reach.
+  Final Android SDK config: compileSdk 35 / targetSdk 35 / minSdk 24 / buildTools 35.0.0.
+- Needs manual verification: next EAS Android build should get past the AAR-metadata
+  check.
+- iOS submit failed in CI (build OK, submit step): `ascAppId` missing from the submit
+  profile. Added `cli.appVersionSource: "remote"` to `eas.json` (EAS now manages iOS
+  buildNumber / Android versionCode — supersedes the local yymmddhh `versionCode` in
+  app.config.js). Still blocked on the App Store Connect App ID from Fedir to add the
+  `submit.*.ios` block.
+- Expo SDK upgrade — Fedir chose the incremental path; did **53 → 54** this session
+  (RN 0.79→0.81, React 19.0→19.1). Steps: `expo install expo@^54 --fix`; removed
+  vestigial `expo-router` (never imported — app entry is `index.js`→`App.tsx` via
+  react-navigation, no `app/` dir; its SDK-54 config plugin would have hijacked the
+  entry point); registered `expo-localization` + `expo-secure-store` plugins in
+  app.config.js; migrated `src/utils/fileManager.ts` imports to `expo-file-system/legacy`
+  (SDK 54 swapped the default FS API); bumped dev tooling (`jest-expo` 54, `@types/react`
+  19.1, `eslint-config-expo` 10, `react-test-renderer` 19.1, `@types/jest` 29.5,
+  `async-storage` 2.2). Regenerated 2 component snapshots (RN 0.81 dropped an internal
+  `hardwareAccelerated` Modal prop — benign).
+- Verified: `npm run lint` ✓, `npm test` ✓ (21 suites / 35 tests), `expo-doctor` 16/18
+  (the 2 remaining fails are pre-existing tech debt, not from this upgrade: `eas-cli`
+  in deps, and `react-native-fs` unmaintained/untested-on-New-Arch + deprecated
+  `expo-random`).
+- Needs manual verification: EAS build on SDK 54 (native side can't be checked locally).
+  Follow-ups for later sessions: continue 54→55→56→57; drop `eas-cli` from deps; replace
+  `react-native-fs` (New Arch) and `expo-random` (→ expo-crypto).

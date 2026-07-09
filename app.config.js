@@ -24,6 +24,8 @@ export default {
     developmentClient: process.env.APP_ENV !== "production",
     scheme: ["bible-by-heart", "bbh"],
     plugins: [
+      "expo-localization",
+      "expo-secure-store",
       [
         "expo-notifications",
         {
@@ -36,10 +38,10 @@ export default {
         'expo-build-properties',
         {
           android: {
-            compileSdkVersion: 34,
+            compileSdkVersion: 35,
             targetSdkVersion: 35,
             buildToolsVersion: '35.0.0',
-            minSdkVersion: 35
+            minSdkVersion: 24
           }
         },
       ],

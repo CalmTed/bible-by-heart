@@ -3,7 +3,6 @@
 exports[`testing mini modal renders correctly 1`] = `
 <Modal
   animationType="slide"
-  hardwareAccelerated={false}
   onDismiss={[Function]}
   onRequestClose={[Function]}
   transparent={true}
