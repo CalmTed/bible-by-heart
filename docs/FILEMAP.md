@@ -13,7 +13,7 @@
 
 | File | Description |
 |---|---|
-| `App.tsx` | App entry: loads state, wires navigator, splash, error boundary |
+| `App.tsx` | App entry: loads state, wires navigator, splash, error boundary; reads Android share-intent text (`useShareIntent`) and routes it into the add-passage flow |
 | `index.js` | RN registry entry point |
 | `app.config.js` | Expo config (name, icons, plugins, env-driven variants) |
 | `eas.json` | EAS build profiles (staging, production) |
@@ -26,7 +26,8 @@
 | `.github/workflows/submitStagingToPlayMarket.yml` / `submitProductionToPlayMarket.yml` | CI: on push to staging/production, run `npm ci` + lint + test, then EAS build/submit |
 | `projectdiary.md` | **Fedir's personal diary — never edit** |
 | `readme.md` | public description + (stale) roadmap |
-| `plugins/handlingIntents.js` | Expo config plugin patching Android manifest for share-intent receiving; known-broken area (P0) |
+| `plugins/handlingIntents.js` | Expo config plugin adding a (bogus) custom intent action; now dead — share-intent receiving is handled by `expo-share-intent`. Slated for removal |
+| `app.config.js` plugins | includes `expo-share-intent` (Android only, `disableIOS`, `androidIntentFilters: ["text/*"]`): native reader for SEND/text shares + sets MainActivity `launchMode=singleTask` |
 | `assets/` | icons, splash, notification images (prod + dev variants) |
 
 ### `docs/` — AI working docs
@@ -47,7 +48,7 @@
 | `initials.ts` | initial/default values for every state version |
 | `constants.ts` | app-wide constants (levels, limits, API version, colors?) |
 | `bibleReference.ts` | Bible structure data: books, chapter/verse counts |
-| `navigator.tsx` | custom screen navigator (to be replaced by react-navigation) |
+| `navigator.tsx` | react-navigation stack setup; exports `navigationRef` for imperative navigation from outside the tree (e.g. share-intent handling in `App.tsx`) |
 | `screeenManagement.ts` | screen enum/stack helpers for the custom navigator |
 | `storage.ts` | AsyncStorage read/write of AppState |
 
@@ -160,15 +161,15 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 
 | File | Description |
 |---|---|
-| `app.ts` | Express bootstrap: middleware, routes, static, listen |
+| `app.ts` | Express bootstrap: middleware, routes, static, listen; on startup calls `ensureTestUser` to provision the store-review demo account |
 | `routes.ts` | all route definitions → controllers |
-| `constants.ts` | API constants (version, limits) (?) |
+| `constants.ts` | API constants (login limits, token times) + `TEST_USER_*` demo-account credentials (env-overridable) |
 | `models.ts` | server-side types |
-| `controller/user.controller.ts` | auth/user handlers: register, login, refresh, edit, delete, email confirm/reset |
+| `controller/user.controller.ts` | auth/user handlers: register, login, refresh, edit, delete, email confirm/reset; demo account (`TEST_USER_UUID`) is blocked from edit/delete + exempt from login lockout |
 | `middleware/requireUser.ts` | JWT auth guard |
 | `middleware/validateResource.ts` | zod request validation |
 | `schema/user.schema.ts` | zod schemas for user endpoints |
-| `services/base.servise.ts` | generic sqlite CRUD service (storage-agnostic layer) |
+| `services/base.servise.ts` | generic sqlite CRUD service (storage-agnostic layer); `createUsersTable`, `dropDB`, and `ensureTestUser` (idempotent demo-account seed) |
 | `services/user.service.ts` | user-specific db logic |
 | `utils/jwt.ts` | sign/verify access + refresh tokens |
 | `utils/email.ts` | nodemailer confirmation/reset emails |

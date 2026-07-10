@@ -231,16 +231,12 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
     tempEmail
   );
 
-  //one lowercase
-  //one uppercase
-  //one digt
-  //one spectial char
-  //length 8-50
-  const isPasswordValid =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@'.,:;~#$!%*?\-+\{\}\[\]\\\/<>&])[A-Za-z\d@'.,:;~#$!%*?\-+\{\}\[\]\\\/<>&]{8,40}$/.test(
-      tempPassword
-    );
-  const loginPossible = isEmailValid && isPasswordValid;
+  // Login must NOT enforce password-format rules (those belong on the register
+  // screen and are enforced server-side). Requiring only a non-empty password lets
+  // existing accounts — e.g. the store-review demo account — sign in regardless of
+  // how their password is shaped.
+  const isPasswordEntered = tempPassword.length > 0;
+  const loginPossible = isEmailValid && isPasswordEntered;
   return (
     <ScrollView
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
@@ -288,19 +284,11 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           placeholder={t("providePasswsordLabel")}
           secureTextEntry
           theme={theme}
-          iconAfter={isPasswordValid ? IconName.greenCheck : IconName.redCross}
+          iconAfter={
+            isPasswordEntered ? IconName.greenCheck : IconName.redCross
+          }
           autoComplete="password"
         />
-        {tempPassword.length > 0 && !isPasswordValid && (
-          <Text
-            style={{
-              ...loginStyle.passwordRulesLabel,
-              color: theme.colors.redGradient2
-            }}
-          >
-            {t("passwordRulesLabel")}
-          </Text>
-        )}
         <Button
           title={t("loginButton")}
           theme={theme}

@@ -104,6 +104,9 @@ export const en = {
   notificationBody12: "Your effort will pay off—keep going! 🚀",
   notificationBody13: "A little focus now, lasting wisdom forever! 💡",
 
+  //android notification channel (user-visible in system settings)
+  notificationChannelName: "Reminders",
+
   //subtexts
   DateCreated: "Date created",
   DateEdited: "Date edited",

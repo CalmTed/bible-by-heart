@@ -164,3 +164,194 @@ Two §2 P1 items in one session (Fedir asked to batch them).
 - Could NOT do: the live on-device round-trip against the VPS (HOST is an EAS build
   secret; no public domain). That stays Fedir's milestone pass — marked `[~]` in §2.
 - Verified: `npm run lint` ✓, `npm test` ✓ (24 suites / 45 tests).
+
+## 2026-07-10 (3) — P2: list virtualization + notification channel l10n
+
+Fedir asked to "do P2 tasks". §2 P2 has three items; I did the two that are
+tractable and verifiable off-device, and deferred the third (intent receiver) with
+a documented rationale rather than mark it done blind.
+
+### Notification channel name localized (§2 P2)
+- `notifications.ts:301` had `name: "Reminders" //TODO translate`. The first arg to
+  `setNotificationChannelAsync("Reminders", …)` is the channelId (referenced by
+  triggers via `channelId: "Reminders"`) — that must NOT change. Only the user-visible
+  `name` is localized.
+- Added l10n key `notificationChannelName` (en: "Reminders", ua: "Нагадування").
+- `registerForPushNotificationsAsync(langCode = LANGCODE.en)` now builds the name via
+  `createT(langCode)`; caller in `useApp.ts` passes `state.settings.langCode`.
+
+### Passage list virtualization + rendering (§2 P2, projectdiary "optimize list")
+- `listScreen.tsx` rendered the whole passage list as `ScrollView` + `sortedPassages.map()`
+  → every passage mounted regardless of visibility. Converted to `FlatList`
+  (`initialNumToRender=10`, `windowSize=11`, `removeClippedSubviews`) so only visible
+  rows mount — the actual "more optimized way to render passages list" from the diary.
+- Moved the search row OUT of the scroll area (it's now a sticky sibling above the list).
+  Deliberate: putting the `TextInput` in `ListHeaderComponent` would refocus/lose the
+  keyboard on every keystroke (classic FlatList gotcha). Sticky search is also better UX.
+- Hidden-passages count → `ListFooterComponent`. Memoized `allTags` (`useMemo`).
+- Did NOT: memoize the filter/sort (search dep recomputes on each keystroke anyway;
+  wrapping it forced eslint-indent churn for marginal gain) or `React.memo` the rows
+  (`t`/`theme` from `useApp` are recreated each render, so memo wouldn't fire until the
+  theme/l10n context refactor §4.3 makes them stable — noted there).
+- No `listScreen` snapshot exists, so nothing to regenerate; behavior change is
+  structural (virtualization) — SAY: needs Fedir's on-device scroll/keyboard check at
+  the next milestone (list scroll, search focus retention, swipe actions still work).
+
+### Intent receiver — DEFERRED (§2 P2 → milestone 0.4.0)
+- It's a native task: `plugins/handlingIntents.js` currently pushes a bogus custom
+  action (`…PROCESS_TRANSACTION`) instead of `android.intent.action.SEND` + `text/plain`,
+  and there's no cold-start reader for the shared text. Verifying any of this needs an
+  EAS device build, which can't happen in-session. The JS side already exists
+  (`handleTextFromIntent` + `navigateWithState({…, passageText})`), so when it's picked
+  up it's mostly native-plugin + a share-intent module. Left `[ ]` in STRATEGY §2 P2.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (24 suites / 45 tests / 22 snapshots).
+
+## 2026-07-10 (4) — share-intent receiver: found why text never arrived
+
+Fedir asked me to make a best-effort fix so a device build can test whether shared
+text actually reaches the app (it opened from the share sheet but had "no text to
+manage"), then write him a test checklist.
+
+### Root cause
+The Android `SEND`/`text/plain` intent filter was already correct (in
+`app.config.js` `android.intentFilters`) — that's why the app showed in the share
+sheet and launched. But **nothing ever read `Intent.EXTRA_TEXT`**. `App.tsx` only
+listened to `Linking` `"url"` events, and `Linking` only surfaces `VIEW`/URL (deep
+link) intents — a `SEND` action carries its payload in `EXTRA_TEXT`, which never
+comes through `Linking`. There is no built-in Expo JS API to read it; it needs a
+native module.
+
+### Fix
+- Added `expo-share-intent@^5.1.1` (v5 targets Expo SDK 54; peers `expo-linking`/
+  `expo-constants` already satisfied). It ships a native module that reads the SEND
+  intent + a config plugin.
+- `app.config.js`: added the plugin `["expo-share-intent", { disableIOS: true,
+  androidIntentFilters: ["text/*"] }]`. Android-only (build-dev is Android; iOS share
+  extension needs an app-group id + Xcode target — out of scope). Verified via
+  `npx expo config --type introspect`: iOS disabled, `text/*` SEND filter added,
+  MainActivity `launchMode=singleTask`.
+- `App.tsx`: `useShareIntent({ debug, resetOnBackground })`; on `hasShareIntent` it
+  `logger.write`s + `toastShow`s the text (test instrumentation — the proof Fedir
+  needs) and routes it into the existing add-passage flow via `navigationRef.navigate`.
+- `navigator.tsx`: exported `navigationRef` (`createNavigationContainerRef`) so App can
+  navigate imperatively; the cold-start case retries until the container is ready.
+- Reused existing plumbing: `listScreen` already reads `route.params.passageText` →
+  `handleTextFromIntent` (parse address + prefill PassageEditor).
+
+### Deliberately kept (not cleaned up yet — do it AFTER the build confirms arrival)
+- The manual SEND filter in `app.config.js` is now redundant (plugin adds an
+  equivalent). Kept it so the app is GUARANTEED to stay in the share sheet on a build
+  I can't verify; cost is a possible duplicate share-sheet entry (cosmetic).
+- `plugins/handlingIntents.js` (bogus `PROCESS_TRANSACTION` action) is dead but left
+  untouched to minimize moving parts on this build.
+- The `Shared text: …` toast is hardcoded debug output (like the existing devMode
+  `Linking` toast), NOT l10n'd — it's temporary. Replace with the proper confirm-modal
+  ("minimal scope" spec) once arrival is confirmed.
+
+### Latent bug fixed along the way
+`listScreen` called `handleTextFromIntent(passageText)` **during render** (not in an
+effect). It calls `setSelectedPassage` with a fresh object each time → an infinite
+render loop the moment `passageText` is ever defined. It never fired before because no
+intent text ever reached the screen; my routing would have triggered it. Moved it into
+`useEffect(..., [passageText])` so it runs once when the shared text arrives.
+
+### Cannot verify in-session
+Native behavior needs an EAS build on a real device. `useShareIntent` won't work in
+the OLD dev client / Expo Go — Fedir must rebuild (`npm run build-dev`) first. If the
+build errors on `expo-share-intent`, the fallback is to remove the plugin + revert
+App/navigator (all changes are additive).
+
+Verified here: `npm run lint` ✓ · `npm test` ✓ (24 suites / 45 tests / 22 snapshots) ·
+`npx expo config --type introspect` shows the expected manifest mods.
+
+## 2026-07-10 (5) — store-review demo account + login can't accept its password
+
+Fedir submitted `test@bbh.com` / `3m39v023m` to Google Play as reviewer credentials,
+but (a) the account didn't exist, and (b) the login screen wouldn't even let him
+submit that password. Two-repo fix.
+
+### Why login blocked the password (client)
+`loginScreen.tsx` gated the button on `isPasswordValid` — a regex requiring lower+upper
++digit+special, 8–40. `3m39v023m` has no uppercase/special → button permanently
+disabled. Those are REGISTER rules; login should accept whatever the account's password
+is (server verifies it, and old accounts may predate any rule). Replaced with
+`isPasswordEntered = tempPassword.length > 0`; `loginPossible = isEmailValid &&
+isPasswordEntered`. Removed the password-rules hint + red/green validity icon logic on
+login. No l10n change (kept the now-register-only `passwordRulesLabel` key).
+
+### Auto-provision the demo account (bbh-api)
+Accounts are only ever created by `POST /api/user/create` — there was no seed, so the
+account genuinely didn't exist on the VPS. Added:
+- `constants.ts`: `TEST_USER_UUID/EMAIL/NAME/PASSWORD` (env-overridable; defaults are the
+  published review creds — deliberately public, documented as such).
+- `base.servise.ts` `ensureTestUser(db)`: idempotent, create-if-missing (ensures the
+  users table first so a fresh server self-heals). `isEmailConfirmed=1` so no inbox
+  needed. Fixed uuid so the guards below can identify it cheaply.
+- `app.ts`: calls `ensureTestUser(db)` in the `listen` callback (runs on every deploy,
+  skipped under supertest since it's inside `require.main === module`).
+
+### Protect it (Fedir asked to "think on blocking deletion etc.")
+In `user.controller.ts`:
+- `removeUserHandler`: 403 if target is `TEST_USER_UUID` — a reviewer can't delete it.
+- `editUserHandler`: 403 if target is `TEST_USER_UUID` — can't change its password/profile
+  (which would break the published creds).
+- `authorizeUserHandler`: the demo email is exempt from the 5-attempts/hour lockout, so a
+  fumbling reviewer can't lock themselves out (its password is public anyway, so
+  rate-limiting it buys nothing).
+
+### Tests
+Added 3 cases to `__tests__/controller/user.controller.test.ts`: provision via
+`ensureTestUser` + login with the known creds → 200; edit demo → 403; delete demo → 403.
+(Had to `npm install` bbh-api deps first — node_modules was empty; used `--no-package-lock`
+since the repo tracks `yarn.lock`, so nothing new was committed to lock state.)
+
+### Env / deploy notes for Fedir
+- The demo user is seeded into whatever DB the running server points at, so it appears on
+  BOTH staging and production after their next deploy. The account must exist on the same
+  env as the build under Play review (prod build → `biblebyheart.app`).
+- To rotate the creds without a code change, set `TEST_USER_PASSWORD` (etc.) in that
+  server's `.env` — but note the edit-guard means you can't change the password via the
+  API/app; change it via env + redeploy (delete the row first, since seed is
+  create-if-missing) or temporarily lift the guard.
+
+Verified — client: `npm run lint` ✓ · `npm test` ✓ (24/45/22). bbh-api: `tsc --noEmit` ✓
+· `eslint` ✓ · `npm test` ✓ (5 suites / 32 tests, incl. the 3 new demo-account cases).
+
+## 2026-07-10 (6) — demo account was deployed but failing: live DB schema drift
+
+Checked whether the (5) changes were live on the real VPS (via `bbh-api/.agent` SSH
+access). They WERE deployed — `origin/production` had the merged PR, both Docker
+containers were fresh, and startup logs showed `ensureTestUser` running — but it errored
+on BOTH staging and production:
+`SQLITE_ERROR: table users has no column named isEmailConfirmed`.
+
+### Root cause: column-name drift
+The live `users` table column is **`emailConfirmed`**; all current code (createUsersTable,
+createUserHandler, confirmEmailHandler, my ensureTestUser) expects **`isEmailConfirmed`**.
+Every other column matched — just this one. The code renamed it at some point but the live
+DB (created once via `POST /api/createDB`, `CREATE TABLE IF NOT EXISTS` never migrates) kept
+the old name. **This also silently broke user registration on live** (createUser inserts
+isEmailConfirmed → 500), not just the demo seed. Production had 1 real user
+(fedir.moroz.dev@gmail.com), staging 0.
+
+### Fix applied (with Fedir's approval, prod DB mutation)
+On the VPS as root, in /usr/src/bbh-api:
+1. Manual backup first (`/usr/local/bin/bbh-db-backup.sh` → `staging_..._201452.db` +
+   `production_..._201452.db` in /usr/src/bbh-backups; daily 03:00 backup is a second net).
+2. `ALTER TABLE users RENAME COLUMN emailConfirmed TO isEmailConfirmed;` on both DBs
+   (guarded: only if old col present + new absent). Data-preserving; fedir's row kept.
+3. `docker compose restart production staging` → seed re-ran cleanly:
+   "Demo test user provisioned (test@bbh.com)" on both.
+Verified: DB rows present (`test@bbh.com | testbbh | confirmed=1 | free`); login 200 on
+localhost:2410/2411 AND on public https://biblebyheart.app + https://staging.biblebyheart.app.
+
+### Follow-ups / watch
+- No code change was needed (code is correct on `isEmailConfirmed`; the DB was the outlier).
+- **Systemic risk**: bbh-api has NO DB migration mechanism. `createUsersTable` is
+  `IF NOT EXISTS`, so any future column rename/add in code will again silently diverge from
+  the live schema and break inserts. Added to STRATEGY §3 watchlist. A real migration step
+  (or an idempotent "ensure columns" on boot) is worth doing before more schema changes.
+- Minor: staging/production container logs show a stray `npm error ... nodemon` line from an
+  earlier start; containers are Up and serving 200, but the prod entrypoint running under
+  `nodemon` is worth revisiting (should be plain `node dist/app.js` in prod).

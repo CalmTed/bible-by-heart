@@ -1,6 +1,9 @@
 import React, { FC } from "react";
 import * as TaskManager from "expo-task-manager";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  createNavigationContainerRef
+} from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import { AppStateModel } from "./models";
@@ -19,6 +22,14 @@ import { logger } from "./utils/logger";
 import toastShow from "./utils/toastShow";
 
 const Stack = createStackNavigator();
+
+// Screens are all reached via `navigation.navigate(screen, { ...state, ...extra })`,
+// so every route param is just an object (the AppState plus optional extras).
+export type RootStackParamList = Record<string, object | undefined>;
+
+// Ref so code outside the navigator tree (e.g. share-intent handling in App.tsx)
+// can drive navigation once the container is mounted.
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 interface NavigatorModel {
   state: AppStateModel;
@@ -40,7 +51,7 @@ export const Navigator: FC<NavigatorModel> = ({ state }) => {
   );
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,

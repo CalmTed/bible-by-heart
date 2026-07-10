@@ -80,7 +80,9 @@ export const useApp: UseAppModel = ({ route, navigation }) => {
 
   useEffect(() => {
     if (state.passages.length > 0 && state.settings.remindersEnabled) {
-      registerForPushNotificationsAsync(); //.then(token => setExpoPushToken(token));
+      registerForPushNotificationsAsync(
+        state.settings?.langCode || LANGCODE.en
+      ); //.then(token => setExpoPushToken(token));
 
       notificationListener.current =
         Notifications.addNotificationResponseReceivedListener((responce) => {

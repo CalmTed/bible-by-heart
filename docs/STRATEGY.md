@@ -89,11 +89,30 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 
 ### P2
 
-- [ ] Share/intent receiver — **minimal** scope `[F]`: receive shared text → parse
-  address/text (`addressFromString` — fix its bugs first) → confirm modal → add
-  passage. No language detection magic. Native side: `plugins/handlingIntents.js`.
-- [ ] Passage list rendering bug + performance `[D]` (`projectdiary.md:113,158`).
-- [ ] Notification channel name "Reminders" not localized (`notifications.ts:301`) `[C]`.
+- [~] Share/intent receiver — **minimal** scope `[F]`: receive shared text → parse
+  address/text (`addressFromString`) → confirm modal → add passage. No language
+  detection magic.
+  *(2026-07-10: ROOT CAUSE found — the share intent filter was fine (app opened from
+  the share sheet) but nothing read `Intent.EXTRA_TEXT`; `Linking` only surfaces
+  VIEW/URL intents, never SEND. Added `expo-share-intent@^5.1.1` (native reader for
+  SEND/text) + its config plugin (Android only, `disableIOS`). `App.tsx` now reads the
+  shared text via `useShareIntent`, toasts+logs it (test instrumentation), and routes
+  it into the existing add-passage flow (`navigationRef.navigate(listPassage,
+  {passageText})` → `listScreen.handleTextFromIntent`). **Needs Fedir's device build to
+  confirm text actually arrives** — can't be verified in-session. Once confirmed:
+  replace the debug toast with the proper confirm-modal, and clean up the now-redundant
+  manual SEND filter in `app.config.js` + the dead `plugins/handlingIntents.js`.)*
+- [x] Passage list rendering bug + performance `[D]` (`projectdiary.md:113,158`).
+  *(2026-07-10: virtualized the passage list — `ScrollView`+`.map()` (mounted every
+  passage) → `FlatList`; search bar moved out of the scroll area (now sticky, which
+  also dodges the header-refocus bug of putting a `TextInput` in `ListHeaderComponent`);
+  memoized `allTags`. Hidden-count moved to `ListFooterComponent`. Deeper row
+  memoization awaits the theme/l10n context refactor (§4.3) which makes `t`/`theme`
+  stable.)*
+- [x] Notification channel name "Reminders" not localized (`notifications.ts:301`) `[C]`.
+  *(2026-07-10: added `notificationChannelName` l10n key (en/ua); channel `name` now
+  localized via `createT(langCode)`; channelId stays "Reminders". Caller in `useApp.ts`
+  passes `state.settings.langCode`.)*
 
 ## 3. Risks & potential problems (watchlist)
 
@@ -101,6 +120,13 @@ Not scheduled work — check the relevant item whenever touching its area.
 
 - **State converter chain is high-blast-radius** — every model bump needs a converter;
   a wrong converter destroys years of user stats. Mitigation is §5 backup-prompt task.
+- **bbh-api has NO DB migration mechanism** — `createUsersTable` is `CREATE TABLE IF NOT
+  EXISTS`, so it never alters an existing live table. Any column rename/add in code
+  silently diverges from the deployed sqlite schema and breaks INSERTs (this already
+  bit us 2026-07-10: live `emailConfirmed` vs code `isEmailConfirmed` broke registration
+  + the review-account seed; fixed with a manual `ALTER TABLE RENAME COLUMN` on the VPS).
+  Add a real migration step (or an idempotent "ensure columns exist" on boot) before any
+  further schema change.
 - `settings.leftSwipeTag` dangling after tag removal — TODOs in 4 places
   (`initials.ts:97,158,409,454`, `models.ts:596`).
 - `addressFromString` multiple-match ambiguity (`:58`) — matters more once intent/import works.

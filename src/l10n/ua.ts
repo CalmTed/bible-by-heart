@@ -110,6 +110,9 @@ export const ua: typeof en = {
   notificationBody12: "Твої зусилля окупляться—продовжуй! 🚀",
   notificationBody13: "Трохи уваги зараз — вічна мудрість у майбутньому! 💡",
 
+  //android notification channel (user-visible in system settings)
+  notificationChannelName: "Нагадування",
+
   //subtexts
   DateCreated: "Додано",
   DateEdited: "Остання зміна",

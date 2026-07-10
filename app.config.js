@@ -35,6 +35,15 @@ export default {
       ],
       ["./plugins/handlingIntents"],
       [
+        "expo-share-intent",
+        {
+          // Android only for now (build-dev targets Android); skip the iOS share
+          // extension which needs an app-group identifier + extra Xcode target.
+          disableIOS: true,
+          androidIntentFilters: ["text/*"]
+        }
+      ],
+      [
         'expo-build-properties',
         {
           android: {

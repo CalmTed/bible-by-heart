@@ -45,6 +45,7 @@
     "expo-notifications": "~0.32.17",
     "expo-random": "^14.0.1",
     "expo-secure-store": "~15.0.8",
+    "expo-share-intent": "^5.1.1",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-task-manager": "~14.0.9",
