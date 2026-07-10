@@ -293,12 +293,17 @@ export const checkSchedule = async (state: AppStateModel) => {
   return true;
 };
 
-export const registerForPushNotificationsAsync = async () => {
+export const registerForPushNotificationsAsync = async (
+  langCode: LANGCODE = LANGCODE.en
+) => {
   let token;
 
   if (Platform.OS === "android") {
+    const t = createT(langCode);
+    // "Reminders" stays as the channelId (referenced by triggers); only the
+    // user-visible `name` is localized.
     await Notifications.setNotificationChannelAsync("Reminders", {
-      name: "Reminders", //TODO translate if needed
+      name: t("notificationChannelName"),
       importance: Notifications.AndroidImportance.DEFAULT,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: COLOR_DARK.mainColor

@@ -1,7 +1,20 @@
-import { VERSION, STORAGE_BACKUP_NAME, STORAGE_NAME } from "./src/constants";
-import { act, Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  VERSION,
+  STORAGE_BACKUP_NAME,
+  STORAGE_NAME,
+  SCREEN
+} from "./src/constants";
+import {
+  act,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { AppStateModel } from "./src/models";
-import { Navigator } from "./src/navigator";
+import { Navigator, navigationRef } from "./src/navigator";
+import { useShareIntent } from "expo-share-intent";
 import { createAppState } from "./src/initials";
 import storage from "./src/storage";
 import { convertState } from "./src/utils/stateVersionConvert";
@@ -28,6 +41,47 @@ export default function App() {
   const counterMax = 5;
   const [textInputValue, setTextInputValue] = useState("");
   const [askedForHelp, setAskedForHelp] = useState(false);
+
+  // keep latest state for the share-intent effect (which is keyed on the intent,
+  // not on state, so its closure would otherwise capture a stale state)
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  // Reads text shared into the app via the Android share sheet (SEND / text/plain).
+  // This is the piece that was missing: the intent filter opened the app, but
+  // nothing read Intent.EXTRA_TEXT (Linking only surfaces VIEW/URL intents).
+  const { hasShareIntent, shareIntent, resetShareIntent, error } =
+    useShareIntent({ debug: true, resetOnBackground: true });
+
+  useEffect(() => {
+    if (error) {
+      logger.write(`[SHARE INTENT] error: ${error}`);
+    }
+    if (!hasShareIntent) {
+      return;
+    }
+    const sharedText = shareIntent.text ?? shareIntent.webUrl ?? "";
+    // proof it arrived — visible toast + persisted log (viewable in the log viewer)
+    logger.write(`[SHARE INTENT] received: ${JSON.stringify(shareIntent)}`);
+    toastShow(`Shared text: ${sharedText}`, 10000);
+    // route into the passage-add flow: listScreen reads route.params.passageText
+    // and runs handleTextFromIntent. On a cold start the nav container may not be
+    // mounted yet, so retry briefly until it is ready.
+    let tries = 0;
+    const routeToList = () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate(SCREEN.listPassage, {
+          ...stateRef.current,
+          passageText: sharedText
+        });
+        resetShareIntent();
+      } else if (tries < 50) {
+        tries += 1;
+        setTimeout(routeToList, 100);
+      }
+    };
+    routeToList();
+  }, [hasShareIntent, error]);
 
   useEffect(() => {
     Linking.addEventListener("url", (link) => {

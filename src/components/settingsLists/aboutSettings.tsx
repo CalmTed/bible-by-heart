@@ -58,7 +58,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           }
         })
         .catch((err) => {
-          console.error("Unable to load logs", err);
+          logger.error(`Unable to load logs: ${err}`);
         });
     }
   }, [state.settings.devModeEnabled, loggerText, setLoggerText, logModalOpen]);
@@ -403,14 +403,13 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
                       );
                     })}
                   </View>
-                  {/* <Text
+                  <Text
                     style={{
-                      ...theme.theme.text,
-                      ...settingsGroupStyle.devModeAppStateTextarea
+                      ...theme.theme.text
                     }}
                   >
-                    {loggerText}
-                  </Text> */}
+                    New beginning
+                  </Text>
                 </ScrollView>
               </MiniModal>
             </View>

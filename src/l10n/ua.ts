@@ -110,6 +110,9 @@ export const ua: typeof en = {
   notificationBody12: "Твої зусилля окупляться—продовжуй! 🚀",
   notificationBody13: "Трохи уваги зараз — вічна мудрість у майбутньому! 💡",
 
+  //android notification channel (user-visible in system settings)
+  notificationChannelName: "Нагадування",
+
   //subtexts
   DateCreated: "Додано",
   DateEdited: "Остання зміна",
@@ -149,6 +152,8 @@ export const ua: typeof en = {
   NotAFetchableTranslation: "Введи текст вірша тут",
   NoDataForThisDay: "Для цього дня немає даних",
   TestExitConfirmationText: "Пройдені завдання не будуть збережені",
+  PassageDeleteConfirmationText:
+    "Видалити цей уривок назавжди? Цю дію не можна скасувати.",
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testing mini modal renders correctly 1`] = `
+exports[`testing confirm modal renders correctly 1`] = `
 <Modal
   animationType="slide"
   onDismiss={[Function]}
@@ -44,13 +44,11 @@ exports[`testing mini modal renders correctly 1`] = `
         style={
           {
             "color": "#ECECEC",
-            "fontSize": 21,
-            "fontWeight": "700",
-            "textTransform": "uppercase",
+            "fontSize": 18,
           }
         }
       >
-        Підтягнути текст автоматично?
+        Delete this passage permanently? This cannot be undone.
       </Text>
       <View
         style={
@@ -173,7 +171,7 @@ exports[`testing mini modal renders correctly 1`] = `
                     }
                   }
                 >
-                  Назад
+                  Cancel
                 </Text>
               </View>
             </ViewManagerAdapter_ExpoLinearGradient>
@@ -225,8 +223,8 @@ exports[`testing mini modal renders correctly 1`] = `
             <ViewManagerAdapter_ExpoLinearGradient
               colors={
                 [
-                  4279934519,
-                  4279928478,
+                  4293212987,
+                  4293223227,
                 ]
               }
               endPoint={
@@ -290,7 +288,7 @@ exports[`testing mini modal renders correctly 1`] = `
                     }
                   }
                 >
-                  Підтягнути
+                  Remove
                 </Text>
               </View>
             </ViewManagerAdapter_ExpoLinearGradient>

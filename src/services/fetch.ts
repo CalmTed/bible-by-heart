@@ -15,7 +15,7 @@ import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib
 import { reduce } from "../utils/reduce";
 import { navigateWithState } from "../screeenManagement";
 import * as SecureStore from "expo-secure-store";
-import { Buffer } from "buffer";
+import { isTokenExpired } from "../utils/isTokenExpired";
 import storage from "../storage";
 import { Alert } from "react-native";
 
@@ -69,35 +69,17 @@ export const fetchAPI: (a: {
       });
       logger.write(`Logging out b.c. of invalid token`);
     };
-    //if headers have auth value, then check if token valid
-    //if not, than refresh
-    //if refresh token is invalid too, then initiate logout - how do we do it from here?
-    //and only then send original request
-    if (headers?.Authorization?.includes("Bearer")) {
-      const token = headers.Authorization.replace("Bearer ", "");
-      const tokenPayload = JSON.parse(
-        token
-          .split(".")
-          .map((part) =>
-            Buffer.from(
-              part.replace(/-/g, "+").replace(/_/g, "/"),
-              "base64"
-            ).toString()
-          )[1]
-      );
-      if (tokenPayload.exp * 1000 < new Date().getTime()) {
+    //if headers have an auth value, check whether the access token is still valid
+    //if it expired: refresh it using the refresh token (while that is still valid)
+    //if the refresh token expired too: initiate logout
+    //then send the original request with the (possibly refreshed) token
+    let currentHeaders = headers;
+    if (currentHeaders?.Authorization?.includes("Bearer")) {
+      const token = currentHeaders.Authorization.replace("Bearer ", "");
+      if (isTokenExpired(token)) {
         const refreshToken = SecureStore.getItem(REFRESH_TOKEN_NAME) as string;
-        const refreshTokenPayload = JSON.parse(
-          refreshToken
-            .split(".")
-            .map((part) =>
-              Buffer.from(
-                part.replace(/-/g, "+").replace(/_/g, "/"),
-                "base64"
-              ).toString()
-            )[1]
-        );
-        if (refreshTokenPayload.exp * 1000 < new Date().getTime()) {
+        if (!isTokenExpired(refreshToken)) {
+          //refresh token still valid → exchange it for a fresh access token
           const response = await fetch(HOST + API_LINK.refreshToken, {
             method: "POST",
             headers: {
@@ -124,6 +106,11 @@ export const fetchAPI: (a: {
                 REFRESH_TOKEN_NAME,
                 newTokenData.refreshToken
               );
+              //apply the fresh access token to the outgoing request
+              currentHeaders = {
+                ...currentHeaders,
+                Authorization: `Bearer ${newTokenData.newAccessToken}`
+              };
               logger.write("Token refreshed");
             }
           } else {
@@ -133,7 +120,7 @@ export const fetchAPI: (a: {
             return { response };
           }
         } else {
-          //loging out
+          //refresh token expired too → logging out
           initiateLogout(
             logoutMethods.state,
             logoutMethods.setState,
@@ -209,7 +196,7 @@ export const fetchAPI: (a: {
     }
     const response = await fetch(HOST + link, {
       method: method,
-      headers: headers,
+      headers: currentHeaders,
       body: JSON.stringify(body)
     });
     if (response.ok) {
@@ -233,9 +220,11 @@ export const fetchAPI: (a: {
         typeof body?.password !== "undefined"
           ? { ...body, password: "***", email: "***" }
           : body;
-      const headersWithoutSecrets = headers?.Authorization?.includes("Bearer")
-        ? { ...headers, Authorization: "Bearer ***" }
-        : headers;
+      const headersWithoutSecrets = currentHeaders?.Authorization?.includes(
+        "Bearer"
+      )
+        ? { ...currentHeaders, Authorization: "Bearer ***" }
+        : currentHeaders;
       logger.error(
         `Not OK responce for link:${link} method: ${method} headers: ${JSON.stringify(headersWithoutSecrets)} body: ${JSON.stringify(bodyWithoutPassword)} status: ${response.status} statusTest: ${response.statusText}, JSON: ${JSON.stringify(response)}`
       );

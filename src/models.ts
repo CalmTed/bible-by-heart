@@ -75,10 +75,7 @@ export interface AppStateModel010 {
 
     [SETTINGS.translations]: TranslationModel[];
     [SETTINGS.homeScreenStatsType]:
-      | "auto"
-      | "dayStreak"
-      | "absoluteProgress"
-      | "monthProgress"; //not implemented yet
+      "auto" | "dayStreak" | "absoluteProgress" | "monthProgress"; //not implemented yet
     [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
@@ -457,10 +454,7 @@ export interface AppStateModel009 {
 
     [SETTINGS.translations]: TranslationModel[];
     [SETTINGS.homeScreenStatsType]:
-      | "auto"
-      | "dayStreak"
-      | "absoluteProgress"
-      | "monthProgress"; //not implemented yet
+      "auto" | "dayStreak" | "absoluteProgress" | "monthProgress"; //not implemented yet
     [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
@@ -523,10 +517,7 @@ export interface AppStateModel008 {
 
     [SETTINGS.translations]: TranslationModel[];
     [SETTINGS.homeScreenStatsType]:
-      | "auto"
-      | "dayStreak"
-      | "absoluteProgress"
-      | "monthProgress"; //not implemented yet
+      "auto" | "dayStreak" | "absoluteProgress" | "monthProgress"; //not implemented yet
     [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8
@@ -601,10 +592,7 @@ export interface AppStateModel007 {
 
     [SETTINGS.translations]: TranslationModel[]; //dont need id for now, just user provided name
     [SETTINGS.homeScreenStatsType]:
-      | "auto"
-      | "dayStreak"
-      | "absoluteProgress"
-      | "monthProgress";
+      "auto" | "dayStreak" | "absoluteProgress" | "monthProgress";
     [SETTINGS.homeScreenWeeklyMetric]: STATSMETRICS;
 
     [SETTINGS.trainModesList]: TrainModeModel[]; //new in 0.0.8

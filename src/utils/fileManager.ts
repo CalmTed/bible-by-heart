@@ -1,7 +1,7 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as DocumentPicker from "expo-document-picker";
 
-import { StorageAccessFramework } from "expo-file-system";
+import { StorageAccessFramework } from "expo-file-system/legacy";
 import { logger } from "./logger";
 
 export const writeFile: (

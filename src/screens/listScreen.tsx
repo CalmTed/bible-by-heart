@@ -1,9 +1,10 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  FlatList,
   Pressable,
   TextInput,
   StyleProp,
@@ -37,6 +38,7 @@ import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
@@ -66,6 +68,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [searchText, setSearch] = useState("");
   const [isFiltersOpen, setOpenFilters] = useState(false);
   const [isSortingOpen, setOpenSorting] = useState(false);
+  const [passageIdToRemove, setPassageIdToRemove] = useState<number | null>(
+    null
+  );
 
   const { passageText } = route.params;
 
@@ -193,13 +198,22 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     });
     setAPOpen(true);
   };
-  if (typeof passageText !== "undefined") {
-    handleTextFromIntent(passageText);
-  }
-  const allTags = state.passages
-    .map((p) => p.tags)
-    .flat()
-    .filter((v, i, arr) => !arr.slice(0, i).includes(v));
+  // Run once when shared/intent text arrives (route param), NOT on every render —
+  // handleTextFromIntent calls setSelectedPassage with a fresh object, so calling it
+  // during render would re-trigger renders endlessly.
+  useEffect(() => {
+    if (typeof passageText !== "undefined") {
+      handleTextFromIntent(passageText);
+    }
+  }, [passageText]);
+  const allTags = useMemo(
+    () =>
+      state.passages
+        .map((p) => p.tags)
+        .flat()
+        .filter((v, i, arr) => !arr.slice(0, i).includes(v)),
+    [state.passages]
+  );
   const filteredPassages = state.passages.filter((p) => {
     //strat 1: JSON.stringify(invertedTags) === JSON.stringify(p.tags)
     //strat 2: p.tags.includes(at least one of invertedTags[]) exept Archived
@@ -273,7 +287,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       fontSize: 16
     },
     listView: {
-      width: "100%"
+      width: "100%",
+      flex: 1
+    },
+    passagesList: {
+      flex: 1
     },
     hiddenLabel: {
       ...theme.theme.subText,
@@ -326,7 +344,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           />
         ]}
       />
-      <ScrollView style={listStyle.listView}>
+      <View style={listStyle.listView}>
         <View style={listStyle.searchView}>
           <Icon color={theme.colors.textSecond} iconName={IconName.search} />
           <TextInput
@@ -358,33 +376,36 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             }
           />
         </View>
-        <View>
-          {sortedPassages.map((passage) => {
-            return (
-              <ListItem
-                state={state}
-                key={passage.id}
-                theme={theme}
-                data={passage}
-                t={t}
-                onPress={() => handleListItemEdit(passage)}
-                onRemove={() => handlePERemove(passage.id)}
-                onToggleTag={() =>
-                  handleListItemToggleTag(passage, state.settings.leftSwipeTag)
-                }
-                onLongPress={() => handleListItemLongPress(passage)}
-                onArchive={() =>
-                  handleListItemToggleTag(passage, ARCHIVED_NAME)
-                }
-              />
-            );
-          })}
-        </View>
-        {state.passages.length > sortedPassages.length && (
-          <Text style={listStyle.hiddenLabel}>{`${t("PassagesHidden")} ${
-            state.passages.length - sortedPassages.length
-          }`}</Text>
-        )}
+        <FlatList
+          style={listStyle.passagesList}
+          data={sortedPassages}
+          keyExtractor={(passage) => passage.id.toString()}
+          renderItem={({ item: passage }) => (
+            <ListItem
+              state={state}
+              theme={theme}
+              data={passage}
+              t={t}
+              onPress={() => handleListItemEdit(passage)}
+              onRemove={() => setPassageIdToRemove(passage.id)}
+              onToggleTag={() =>
+                handleListItemToggleTag(passage, state.settings.leftSwipeTag)
+              }
+              onLongPress={() => handleListItemLongPress(passage)}
+              onArchive={() => handleListItemToggleTag(passage, ARCHIVED_NAME)}
+            />
+          )}
+          ListFooterComponent={
+            state.passages.length > sortedPassages.length ? (
+              <Text style={listStyle.hiddenLabel}>{`${t("PassagesHidden")} ${
+                state.passages.length - sortedPassages.length
+              }`}</Text>
+            ) : null
+          }
+          initialNumToRender={10}
+          windowSize={11}
+          removeClippedSubviews
+        />
         {/* {state.settings.devModeEnabled && (
           <View style={listStyle.devStatsView}>
             <Text style={theme.theme.text}>
@@ -459,7 +480,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             </Text>
           </View>
         )} */}
-      </ScrollView>
+      </View>
       <MiniModal
         theme={theme}
         shown={isSortingOpen}
@@ -609,6 +630,20 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           theme={theme}
         />
       )}
+      <ConfirmModal
+        theme={theme}
+        shown={passageIdToRemove !== null}
+        text={t("PassageDeleteConfirmationText")}
+        confirmTitle={t("Remove")}
+        cancelTitle={t("Cancel")}
+        onCancel={() => setPassageIdToRemove(null)}
+        onConfirm={() => {
+          if (passageIdToRemove !== null) {
+            handlePERemove(passageIdToRemove);
+          }
+          setPassageIdToRemove(null);
+        }}
+      />
     </View>
   );
 };

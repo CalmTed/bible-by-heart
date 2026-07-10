@@ -16,120 +16,132 @@ Another app for learning Bible passages but with some personalization
 - reminders notification
 - difficulty levels
 
-## Roadmap
-
-- [x] asyncly get local storage
-- [x] navigation, state management
-- [x] interface l10n support
-- [x] list manipulation (add, remove, edit, archive, search, filter)
-  - [x] address selector
-  - [x] add, remove
-  - [x] edit text, set tag(archive)
-  - [x] search (text, address, tag)
-  - [x] filter any parameter array (address, catagory, selectedLevel)
-  - [x] sorting
-  - [x] edit address
-- [x] address testing view (generate tests, get answers, float wrong answers to the end, result screen) v0.0.4
-- [x] more levels, open level by learning, level select v0.0.5
-  - [x] l1, l2, progressing, level switcher
-  - [x] l3, l4, l5
-- [x] save stats (tests result, stroke, weekly progress) v0.0.6
-  - [x] stroke counter
-  - [x] weekly progress
-- [x] settings v0.0.7
-  - [x] level 3 fix(sort,skip button, save right words)
-  - [x] show wrong answer (l1, l2, l4, l5)
-  - [x] state converter from v0.0.6 to v0.0.7
-  - [x] settings layout (app/user settings)
-    - [x] components: top user data
-    - [x] settings menu item
-      - [x] checkbox
-      - [x] select
-      - [x] open modal
-    - [x] settings modal
-      - [x] menu list
-      - [x] just text
-      - [x] items list
-  - [x] app settings: - [x] language, (later)reminders(enabled, auto, same time, list), - [x] theme, - [x] haptic, - [x] about, - [x] legal, (later)feedback, - [x] devmode, (later) train modes, (later) compress old stats(>3month), - [x] leftSwipeTag
-  - [x] user settings: - [x] translations array(and default one), (!change with API not localy: name, email), (!we have phone local)timezone, (! stored on server sessions), (later) request data removal, (later) remove local data
-  - [x] edit passage translation (custom with autocomplete from other passages data)
-  - [x] filter by translation (if there are several different)
-  - [x] adding passages from prepared list in the most popular translations(ESV,UBT)
-    - [x] copyright page in settings
-    - [x] limit length to 500 verses per passage
-  - [x] delete tests history after deleting passage
-  - [x] update all passages with translation that was deleted to "other/null"
-  - [x] add tag to filter on adding to passage, remove if it was last
-  - [x] change dateStarted/finished to array, update converter accordinly, set weekly graph to show time spent
-- [-] customizable daily reminder, more stats v0.0.8
-  - [x] reminders list: time, days
-  - [x] fix reminders permisions, fix back swipe state eracing, fix all tests enabled bug(fix check if all tests are finiched to finish session)
-  - [x] fix level 4 wrong scroll wrapping, fix level 5 no scroll wrapping
-  - [x] different train modes (fast, infinite/timed, all due to, hardest/most errored) & modes customazation(name, sort, tags: included/excluded)
-  - [x] state converter:
-    - [x] change triesDuration from dateStarted and dateFinished
-    - [x] remove all testData from history
-    - [x] remove unfinished
-    - [x] remove it before finishing session
-  - [x] publish as it is for now b.c. we dont really care about state model now, other parts will be just rendered
-  - [x] futureprofing
-    - [x] update dependencies
-    - [x] protect all critical funcions with try catch
-      - [x] storing
-      - [x] redusing
-      - [x] app rendering
-      - [x] initials
-      - [x] generate tests
-    - [x] everyday save backup
-    - [x] on crash propose to open backup and contact developer
-  - [x] "reimagine" level picker(disable level picker in fixed level tests & remove angle arrow)
-  - [x] ask to fetch translation if textfiled is not empty
-  - [x] after 2 errors propose to downgrade level and restart only one task
-  - [x] export to csv and import (export state in json for developing)
-  - [-] activity to receive intents(sharing data) from other apps: get just address(define language) or get text with address(define lanuage too)
-    - [-] parse text from most popular apps
-    - [-] open modal to ask, show parsing result (add as is, edit address, edit text, select another translation(add if nedded))
-    - [-] add to passages and open list
-  - [x] edit passage due to, sort main train mode by it
-- [ ] register and login (confirm email or google/facebook login) v0.0.9
-  - [x] all tests list, grouping by date and session
-  - [x] passage statistics in passage editor
-    - [x] most common errors list with error numbers
-    - [x] total tries tested, total time spent
-    - [x] most often wrong addresses
-  - [ ] statistics:
-    - [x] overal learned
-    - [x] global progress (learned passages score versesNumber\*level)
-    - [x] relative progress (score relative to last month)
-    - [ ] show different stats on home screen (LATER)
-      - [ ] stroke first two weeks (LATER)
-      - [ ] general progress 2 weeks to 1 month (LATER)
-      - [ ] relative progress when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned... (LATER)
-    - [ ] different finish screen label: presistent learner, perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates) (LATER)
-      - [ ] propose to add new passages if all of them are 5 level, or to stop adding them if too much errors everyday (LATER)
-  - [ ] updateMessages list: show unread modal on startup or show all in settings
-  - [ ] login form and action with API
-  - [ ] feedback form for authorirized users or telegram bot
-  - [x] change data safety settings and privacy policy
-- [ ] sync + custom sync(without need for registration) v1.0.0
-  - [ ] autosync & manualsync action
-  - [ ] custom sync and documentation web page for it
-  - [ ] about page and donate(premium) button
-    - [ ] connect payment service
-  - [ ] screen readers labels
-
-Other ideas:
-
-- accomplishments
-- friends feature / feed
-- groups functionality(group stats, group passages, group quests)
-- web app
-
-## Dev. rules
-
-1. use setState(reduce()) for state manupulation don't use just useState()
-2. use navigateWithState for screen changing dont use just navigate EXEPT goback
-3. use createT(langCode) and t(word) for l10n dont use unlocalized text in UI
+## Current plan
+1. Add basic history sync - 
+  - API add basic api documentation
+  - API add username check
+  - API add session as readible string
+  - add loading indicator for reg and login
+  - add reset password screen(link from login after wrong password atempt)
+  - publish on AppStore
+  - admin page (web?)
+    - user list and stats
+    - edit user data
+    - navigate user passages and history data
+    - show uneditable api log (log admin activity and major user activity)
+    - db migration helper (backup helper)
+    - whole data viewer
+  - you are offline indicator
+  - history sync
+    - sync history
+      - when: after test finish, on app open, after 3 hours after previus, manualy
+      - how: compare, last change and checksum, only after that try to sync
+      - if conflict: ask for overwriting or trying to merge if there are conflicts (add tests from both)
+      - indicate % of syncing if there are lots of data
+    - sync also: passages, train modes, translations, settings parameters
+2. Refactoring
+  - theme from useContext
+  - deep links and more screens
+  - animation for navigation, testing settings, auth screens(bottom menu, swipes etc.)
+  - layered l10n module
+  - refactor testing screens
+    - animaton
+    - error feedback (4, 5 level)
+    - more handy downgrade and change level buttons
+    - show different stats on home screen
+      - stroke: first two weeks
+      - general progress: 2 weeks to 1 month
+      - relative progress: when stroke is more then 1 month, exept round numbers of other stats:1 year stroke or 100 verses learned...
+    - different finish screen label: presistent learner(lots of time), perfect tester(no errors), error buster(a lot of errors), grower(some maxLavel updates)
+      - propose to add new passages if all of them are 4/5 level, or to stop adding them if too much errors everyday
+    - abstration like Passage.methons() and Address.methods() or getSomthing(object)
+      - while state object as abstracted Object with methods
+    - calculate probable time of learning
+    - menu for testing options(level picker, downgrade...) somewhere on the testing screen
+  - components index file
+  - screen readers labels
+  - state change with redo button (passage editor)
+  - update address picker 
+    - label what to choose (aka. select book)
+    - change perticular address part
+    - long press to select whole chapter
+  - smart notifications and saving feedback(when user clicked)
+    - cancel for today if already learned
+    - "oh what is  that?IS it yuor personal reminder to test" 
+    - cuctom nutification text, train mode (PREMIUM)
+    - propose to train favorite passage (get fav passage from stats)
+    - want about losing streak ("are you sure you can hanle losing streak?")
+    - custom sound (hinmn melody or sword drawing)
+    - logic
+      - take: time of learning, weekday(is weekend), give: time for today
+      - add to matrix(ML) onlt recent test history
+3. Add new features
+  - add passages from lists
+  - fetch ukrainian translations (indicate for wihch it is possible)
+  - add passages from intents
+  - add friends searching, requesting. confirming, blocking(dont show in search, cant request) 
+    - "2 friends in common" 
+    - "have 3 passages in common"
+    - add with referal link for free premium for 30 days for both
+    - one more month if new friend have tasted 15 days out of 30.
+  - broadcast messages with alert for unread and history for all
+    - update admin panel for that
+  - feedback messenger with alert and push notificatios and history
+    - update admin panel for that
+  - add premium features
+    - limitations for free users
+    - badge
+    - group administring
+    - setting personal goals (for persistence)
+    - connetct to paynment systems for both apple and google
+    - unique badge foe the first 100 people
+    - free year for free premium
+    - trial month for everybody
+  - login with google or apple Oauth
+  - badges and accomplishments
+  - add feed with: 
+    - daily stats("tested X passages today"), 
+    - "knows total of 20 passages with level 4", 
+    - reached 100 days streak, 
+    - added new passage from Rom 8:28 "add to your list", 
+    - ability to like/react eachother posts
+    - share: 
+      - finish screens
+      - propose to learn perticular passage
+    - "3 of your friends already tested today"
+  - groups
+    - group stats
+    - shareded lists
+    - group goals and quests
+4. Other upgrade ideas
+  - add custom sounds
+  - list updates
+    - miltiple actions in list
+    - hightlint search text 
+    - sort oposite of selected
+    - autocompletion for tags (add from list)
+    - button "show hidden verses" or "remove filters" down bellow
+  - testing updates
+    - few tests for one lon passage
+    - add test with camera
+    - test with voice
+    - l31 - only punctuation
+    - l4 - hard, with no autocomplete but with validation
+    - l51 - only partial
+    - l5 - show definitive typos "not to but too"...
+    - l5 - change capitalization
+    - train only one passage several times ("train just this verse")
+    - sort by number of errors
+    - show right answer even after test in finished
+    - show whole text after finishing(Nick)
+    - mark for perfect knowlage for finishing 5 level several times
+    - gradual level downgrading if not testing (not just last time but regilarity)
+    - on minor error (ask "are you sure?") or tell ("almost, next time do this right")
+    - appoximate difficulty calculation for default train mode (3 of level 3 != 3 of level 1)
+      - derive by eather error rate or just average time for each
+    - gradual incrtease of diificulty for long pasages in level 3 (first 5 verses with no error, then second with reminding of the first sometimes, only then third part)
+  - stats
+    - add graphs
 
 ## Using
 
@@ -148,8 +160,9 @@ _Instaling:_
 
 _Running:_
 
-- run `yarn start` to start expo (a - run on android, r - reload...)
+- run `yarn run dev` to start expo (a - run on android, r - reload...)
 
 _Building:_
 - One needs to be authorized in expo account to be able to buld with eas.
-- `yarn build-dev` or `yarn build-prod` to build the app. It automaticaly publishes to application shop for testers or main audience
+- Github action will build and submit staging and production branches automaticaly on push
+- For manual build and publication `yarn build-dev` or `yarn build-prod`.

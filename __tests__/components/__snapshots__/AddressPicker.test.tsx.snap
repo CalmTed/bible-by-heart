@@ -2,7 +2,6 @@
 
 exports[`testing address picker renders correctly 1`] = `
 <Modal
-  hardwareAccelerated={false}
   visible={true}
 >
   <View

@@ -104,6 +104,9 @@ export const en = {
   notificationBody12: "Your effort will pay off—keep going! 🚀",
   notificationBody13: "A little focus now, lasting wisdom forever! 💡",
 
+  //android notification channel (user-visible in system settings)
+  notificationChannelName: "Reminders",
+
   //subtexts
   DateCreated: "Date created",
   DateEdited: "Date edited",
@@ -142,6 +145,8 @@ export const en = {
   NotAFetchableTranslation: "Enter passage text here",
   NoDataForThisDay: "No data for this day",
   TestExitConfirmationText: "Are you sure? Passed tests will not be saved",
+  PassageDeleteConfirmationText:
+    "Delete this passage permanently? This cannot be undone.",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",
