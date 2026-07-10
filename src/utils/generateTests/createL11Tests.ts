@@ -45,19 +45,26 @@ export const createL11Test: CreateTestMethodModel = ({
     )
   ]
     .sort((a, b) => {
-      let bias = 0;
-      bias +=
-        b.address.bookIndex !== targetPassage.address.bookIndex ? -1000000 : 0;
-      bias +=
-        b.address.startChapterNum !== targetPassage.address.startChapterNum
-          ? -100000
-          : 0;
-      bias +=
-        b.address.startVerseNum !== targetPassage.address.startVerseNum
-          ? -100000
-          : 0;
-      bias += b.versesNumber !== targetPassage.versesNumber ? -100000 : 0;
-      return bias;
+      // Higher (closer to 0) proximity = more similar to the target passage.
+      // Compare the two candidates so the closest ones sort first.
+      const proximity = (p: PassageModel) => {
+        let bias = 0;
+        bias +=
+          p.address.bookIndex !== targetPassage.address.bookIndex
+            ? -1000000
+            : 0;
+        bias +=
+          p.address.startChapterNum !== targetPassage.address.startChapterNum
+            ? -100000
+            : 0;
+        bias +=
+          p.address.startVerseNum !== targetPassage.address.startVerseNum
+            ? -100000
+            : 0;
+        bias += p.versesNumber !== targetPassage.versesNumber ? -100000 : 0;
+        return bias;
+      };
+      return proximity(b) - proximity(a);
     })
     .slice(0, optionsLength * 4);
   const wrongOptions = randomListRange(

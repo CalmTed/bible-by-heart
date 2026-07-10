@@ -149,6 +149,8 @@ export const ua: typeof en = {
   NotAFetchableTranslation: "Введи текст вірша тут",
   NoDataForThisDay: "Для цього дня немає даних",
   TestExitConfirmationText: "Пройдені завдання не будуть збережені",
+  PassageDeleteConfirmationText:
+    "Видалити цей уривок назавжди? Цю дію не можна скасувати.",
   //settings lables, headers and subtexts
   settsLabelMain: "Головне",
   settsLabelList: "Список",

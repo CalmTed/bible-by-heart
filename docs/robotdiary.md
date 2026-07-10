@@ -85,3 +85,82 @@
 - Needs manual verification: EAS build on SDK 54 (native side can't be checked locally).
   Follow-ups for later sessions: continue 54→55→56→57; drop `eas-cli` from deps; replace
   `react-native-fs` (New Arch) and `expo-random` (→ expo-crypto).
+
+## 2026-07-10
+
+- Batch of STRATEGY §2 code bugs (P0 + the concrete P1 list). All pure logic fixes
+  with tests; no UI strings, so no l10n change.
+- **P1 error counter** (`reduce.ts:340`): `test.en || 0 + 1` parsed as `test.en || 1`
+  (JS precedence: `+` binds before `||`). Now `(test.en || 0) + 1`. This is the
+  downgrade branch's error tally — the data the whole philosophy depends on.
+- **P1 endVerseNum** (`addressFromString.ts:107`): fallback assigned `chapterEnd` to
+  the verse field. Reachable value was always `null` today, but the intent was wrong;
+  set both end fields to explicit `null`. Added a single-verse regression test.
+- **P1 case-mismatch book detection** (`addressFromString.ts:34-42`): the "which
+  title matched" check compared a lower-cased string against an original-case title
+  (`.includes(t(book.longTitle))`), and `string.indexOf(justBook)` re-ran an
+  original-case search — so `GENESIS 1:1` mis-sliced. Rewrote to compare lower-cased
+  on both sides and slice by `matchedTitle.length` (the book is guaranteed at index 0
+  by the outer `startsWith`). Keeps original-case slice for the returned string.
+  Added an upper-case parse test.
+- **P0 L11 translation + P1 comparator** (`createL11Tests.ts`): the translation
+  filter (`languageFilteredPassages` by `verseTranslation`) was already present and
+  correct — the remaining half was the "closest passages" sort, whose comparator read
+  only `b` and returned a value independent of `a` (not a valid comparator, so no real
+  ordering). Extracted a `proximity(p)` scorer and compared `proximity(b) - proximity(a)`.
+  Added `createL11Tests.test.ts` locking the P0 invariant: every option shares the
+  target's translation. Marked P0 done.
+- **P1 console.error purge**: `addZero.ts` and `aboutSettings.tsx:61` → `logger`.
+  Gotcha: `logger` imports `addZero`, so naively logging from `addZero`'s catch risks
+  recursion. It's safe here because `logger` only calls `addZero` on ≤2-digit date
+  parts (year is not wrapped). Separately, `addZero` *threw* on any 3-digit input
+  (`addZero(176)` → `Array(-1)`), silently leaning on the catch; added `Math.max(0, …)`
+  so it never throws (outputs unchanged), making the catch genuinely exceptional
+  before routing it to the logger. Left `logger.ts`'s own `console.error` (it can't
+  log itself). The circular import is call-time only (both bindings used inside
+  functions, never at module top level) — safe under Metro/Babel.
+- Verified: `npm run lint` ✓, `npm test` ✓ (22 suites / 38 tests, +1 suite +3 tests).
+- Still open in §2: P1 login e2e vs the VPS (needs the running API + a device — not
+  doable locally); P1 behavior/safety (destructive-action confirms, archive-gated
+  delete). Left for their own sessions.
+
+## 2026-07-10 (2) — destructive-action confirms + login flow
+
+Two §2 P1 items in one session (Fedir asked to batch them).
+
+### Destructive-action confirmations + archive-gated delete
+- Audited every destructive surface. Already covered: account deletion (type-to-confirm
+  modal in `userSettings`), end-session (exit-confirm modal + `beforeRemove` guard in
+  `testsScreen`). Archive-gated delete was ALSO already enforced — both the editor
+  Remove button and the list swipe-delete only appear when the passage has the ARCHIVED
+  tag. So the only real gap was **no confirmation before deleting a passage**.
+- The MiniModal + Cancel/confirm pattern was duplicated 3×, so added a reusable
+  `ConfirmModal` component (`confirmColor` defaults red) to the library and used it for
+  passage deletion in both entry points: PassageEditor renders its own (so the confirm
+  sits above the editor Modal), ListScreen holds a `passageIdToRemove` for swipe-delete.
+  Left the existing exit/fetch modals alone (refactoring them is the §4.6 unify task,
+  not opportunistic work). New l10n key `PassageDeleteConfirmationText` (en+ua).
+- Tests: `ConfirmModal.test.tsx` (snapshot + fires onConfirm/onCancel on the right button).
+
+### Login end-to-end (§2 P1)
+- Fresh login itself was fine (login POST has no auth header; getUserData uses the
+  just-issued token) — the bugs were in the token-refresh path in `fetch.ts`:
+  1. **Inverted logic**: on an expired access token it called the refresh endpoint only
+     when the refresh token was ALSO expired (server 403s that), and logged the user out
+     when the refresh token was still valid. Swapped to: refresh while the refresh token
+     is valid, logout when it isn't.
+  2. **Refreshed token dropped**: after a successful refresh it updated SecureStore but
+     not `headers.Authorization`, so the retried request still carried the old expired
+     token. Now applies the new token to the outgoing request (via a mutable
+     `currentHeaders`).
+- Extracted the duplicated inline JWT decode into `src/utils/isTokenExpired.ts`
+  (`decodeJwtPayload` + `isTokenExpired`, malformed/missing → treated as expired) and
+  covered it with tests. Removed the now-unused `buffer` import from `fetch.ts`.
+- **Verified the contract against bbh-api source** (the part doable without a device):
+  login → `{ token, refreshToken }`, refresh → `{ newAccessToken, refreshToken }`,
+  getUserData shapes, and status codes (refresh 403s expired refresh-token / 406s a
+  still-valid access token) — all match the client, and my fix aligns with those guards.
+  `api/version` returns the server package version `0.0.1` == client `API_VERSION`.
+- Could NOT do: the live on-device round-trip against the VPS (HOST is an EAS build
+  secret; no public domain). That stays Fedir's milestone pass — marked `[~]` in §2.
+- Verified: `npm run lint` ✓, `npm test` ✓ (24 suites / 45 tests).

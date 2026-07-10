@@ -31,14 +31,18 @@ const addressFromString: (
             .toLocaleLowerCase()
             .startsWith(t(book.titleShort).toLocaleLowerCase())
         ) {
-          const justBook = string
+          // Which title did the string start with? Compare lower-cased on both
+          // sides so mixed-case input ("GENESIS 1:1") still matches, then keep
+          // the original-case slice for the returned address string.
+          const matchedTitle = string
             .toLocaleLowerCase()
-            .includes(t(book.longTitle))
+            .startsWith(t(book.longTitle).toLocaleLowerCase())
             ? t(book.longTitle)
             : t(book.titleShort);
+          const justBook = string.substring(0, matchedTitle.length);
           const afterBookText = string.substring(
-            string.indexOf(justBook) + justBook.length,
-            string.indexOf(justBook) + justBook.length + 15
+            matchedTitle.length,
+            matchedTitle.length + 15
           );
           justNumbers =
             afterBookText.match(
@@ -103,8 +107,8 @@ const addressFromString: (
     bookIndex,
     startChapterNum: parseInt(chapterStart) - 1,
     startVerseNum: parseInt(verseStart) - 1,
-    endChapterNum: chapterEnd ? parseInt(chapterEnd) - 1 : chapterEnd,
-    endVerseNum: verseEnd ? parseInt(verseEnd) - 1 : chapterEnd
+    endChapterNum: chapterEnd ? parseInt(chapterEnd) - 1 : null,
+    endVerseNum: verseEnd ? parseInt(verseEnd) - 1 : null
   } as AddressType;
   return {
     address: filledAddress,

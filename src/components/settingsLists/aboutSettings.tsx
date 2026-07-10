@@ -58,7 +58,7 @@ export const AboutSettingsList: FC<AboutSettingsListModel> = ({
           }
         })
         .catch((err) => {
-          console.error("Unable to load logs", err);
+          logger.error(`Unable to load logs: ${err}`);
         });
     }
   }, [state.settings.devModeEnabled, loggerText, setLoggerText, logModalOpen]);

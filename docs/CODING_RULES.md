@@ -90,7 +90,8 @@ Reuse these. Extend, don't duplicate.
 | Checkbox | `src/components/Checkbox.tsx` | themed checkbox row |
 | Select | `src/components/Select.tsx` | dropdown-style selector |
 | SelectModal | `src/components/SelectModal.tsx` | modal list picker |
-| MiniModal | `src/components/miniModal.tsx` | small confirm/content modal (use for confirmations) |
+| MiniModal | `src/components/miniModal.tsx` | small confirm/content modal (base for confirmations) |
+| ConfirmModal | `src/components/ConfirmModal.tsx` | reusable destructive-action confirmation (text + cancel/confirm; `confirmColor` defaults red) — use before any delete/irreversible action |
 | Header | `src/components/Header.tsx` | screen header with back/actions |
 | AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |

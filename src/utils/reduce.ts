@@ -337,7 +337,7 @@ export const reduce: (
           f: true,
           td: [[action.payload.test.td[0][0], new Date().getTime()]],
           d: {},
-          en: action.payload.test.en || 0 + 1,
+          en: (action.payload.test.en || 0) + 1,
           et: [...action.payload.test.et, "downgrading"]
         }
       ];

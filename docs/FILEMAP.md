@@ -68,9 +68,10 @@
 ### `src/components/`
 
 See the component library table in `CODING_RULES.md` §7 for descriptions:
-`AddressPicker` `Button` `Checkbox` `DotIndicator` `Header` `Icon`+`icondata.ts`
-`Input` `LevelPicker` `PassageEditor` `Select` `SelectModal` `miniModal`
-`settingsListWrapper` `setttingsMenuItem` `testNevDott` `weekActivityComponent`
+`AddressPicker` `Button` `Checkbox` `ConfirmModal` `DotIndicator` `Header`
+`Icon`+`icondata.ts` `Input` `LevelPicker` `PassageEditor` `Select` `SelectModal`
+`miniModal` `settingsListWrapper` `setttingsMenuItem` `testNevDott`
+`weekActivityComponent`
 
 | Subdir | Description |
 |---|---|
@@ -86,7 +87,7 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 
 | File | Description |
 |---|---|
-| `fetch.ts` | API client: auth endpoints, token refresh, APIversion check, error handling |
+| `fetch.ts` | API client: auth endpoints, token refresh (expired-access→refresh via `isTokenExpired`), APIversion check, error handling |
 | `fetchESV.ts` | fetch passage text from ESV API |
 
 ### `src/l10n/`
@@ -118,6 +119,7 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 | `getThemeFromScheme.ts` | dark/light theme object |
 | `toastShow.ts` | toast notifications |
 | `logger.ts` | app logger (+ log viewer storage for debugging) |
+| `isTokenExpired.ts` | JWT payload decode + expiry check (used by `services/fetch.ts` auth/refresh) |
 | `generateTests/index.ts` | orchestrates per-passage test generation by level |
 | `generateTests/createL10Test.ts` … `createL50Test.ts` | one generator per level (10,11,2X,30,40,50) |
 | `generateTests/getErrorGradedSentences.ts` | pick hardest sentences from error history |
@@ -132,9 +134,9 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 | Area | Files |
 |---|---|
 | smoke | `app.test.tsx` |
-| components | AddressPicker, button, checkbox, header, icon, input, miniModal, select, settingsMenuItem (+snapshots) |
+| components | AddressPicker, button, checkbox, ConfirmModal, header, icon, input, miniModal, select, settingsMenuItem (+snapshots) |
 | levels | Level1–5 (+snapshots) |
-| utils | addressFromString, getNumberOfVerses, getStats, handlePassageExport, notifications, reduce |
+| utils | addressFromString, createL11Tests, getNumberOfVerses, getStats, handlePassageExport, isTokenExpired, notifications, reduce |
 
 ---
 

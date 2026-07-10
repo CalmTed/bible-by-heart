@@ -142,6 +142,8 @@ export const en = {
   NotAFetchableTranslation: "Enter passage text here",
   NoDataForThisDay: "No data for this day",
   TestExitConfirmationText: "Are you sure? Passed tests will not be saved",
+  PassageDeleteConfirmationText:
+    "Delete this passage permanently? This cannot be undone.",
   //settings lables, headers and subtexts
   settsLabelMain: "Main",
   settsLabelList: "List",

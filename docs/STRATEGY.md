@@ -43,38 +43,49 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 
 ### P0
 
-- [ ] **Level 11 wrong translation** `[D]` — level 11 test shows answer options in a
+- [x] **Level 11 wrong translation** `[D]` — level 11 test shows answer options in a
   different translation/language than the passage. Open since 2023-11-25.
   Code: `src/utils/generateTests/createL11Tests.ts`. Filter option-source passages
-  by the target passage's translation.
-- [ ] **Collect and triage real-user crash reports** `[F]` — important: users hit
-  crashes that never reached the diary. Tasks: (a) pull crash reports/ANRs from
-  Google Play Console, (b) ask the ~5 users directly, (c) file each as a bug here.
-  *(Blocked on Fedir for Play Console access / user contact.)*
+  by the target passage's translation. *(2026-07-10: filter was already present;
+  confirmed + regression test added `createL11Tests.test.ts`; comparator fixed too.)*
 
 ### P1 — concrete code bugs (from 2026-07-07 source scan, verified by reading)
 
-- [ ] **Error counter never increments** `[C]` — `src/utils/reduce.ts:340`:
+- [x] **Error counter never increments** `[C]` — `src/utils/reduce.ts:340`:
   `test.en || 0 + 1` parses as `test.en || 1`; must be `(test.en || 0) + 1`.
   Silently corrupts error stats — the very data the philosophy depends on.
-- [ ] **`endVerseNum` gets a chapter number** `[C]` — `src/utils/addressFromString.ts:107`:
+  *(2026-07-10 fixed.)*
+- [x] **`endVerseNum` gets a chapter number** `[C]` — `src/utils/addressFromString.ts:107`:
   when no end verse, `chapterEnd` is assigned to the verse field. Corrupts parsed
-  addresses (matters for import + intent).
-- [ ] **L11 wrong-answer sort comparator broken** `[C]` —
+  addresses (matters for import + intent). *(2026-07-10 fixed → explicit null + test.)*
+- [x] **L11 wrong-answer sort comparator broken** `[C]` —
   `createL11Tests.ts:47-61`: comparator computes bias from `b` only → not a valid
   sort; "closest passages" aren't actually closest. Fix together with the P0 above.
-- [ ] **Case-mismatch in book detection** `[C]` — `addressFromString.ts:36-39`:
+  *(2026-07-10 fixed → extracted `proximity(p)` scorer.)*
+- [x] **Case-mismatch in book detection** `[C]` — `addressFromString.ts:36-39`:
   mixed lower/original-case matching mis-slices input like `GENESIS 1:1`.
-- [ ] **Finish + verify login end-to-end** `[D]` — register done; login started
+  *(2026-07-10 fixed + upper-case test.)*
+- [~] **Finish + verify login end-to-end** `[D]` — register done; login started
   Jul/Aug 2025, never verified against the (new) VPS API. `loginScreen.tsx`,
   `services/fetch.ts`. Verify against the freshly installed VPS.
+  *(2026-07-10: fixed two token-refresh bugs in `fetch.ts` — inverted refresh/logout
+  branches, and the refreshed access token never being applied to the outgoing
+  request. Extracted `isTokenExpired` util (+tests). Verified the login/refresh/version
+  client↔server contract by reading bbh-api source: fields + status codes all match,
+  API_VERSION 0.0.1 == server package version. **Still open: Fedir's on-device
+  round-trip against the live VPS** — can't be done off-device.)*
 
 ### P1 — behavior bugs / unfinished safety
 
-- [ ] Confirmation dialogs before all destructive actions (delete passage, delete
+- [x] Confirmation dialogs before all destructive actions (delete passage, delete
   account/data, end session) — partially done, finish the rest `[D]`.
-- [ ] Only allow deleting a passage when archived; hide delete otherwise `[D]`.
-- [ ] Two legacy `console.error` → logger (`addZero.ts:10`, `aboutSettings.tsx:61`) `[C]`.
+  *(2026-07-10: account-delete + end-session already confirmed; added a reusable
+  `ConfirmModal` and gated passage deletion (editor button + list swipe) behind it.)*
+- [x] Only allow deleting a passage when archived; hide delete otherwise `[D]`.
+  *(2026-07-10: verified already enforced — editor Remove button and swipe-delete both
+  only appear when the passage carries the ARCHIVED tag.)*
+- [x] Two legacy `console.error` → logger (`addZero.ts:10`, `aboutSettings.tsx:61`) `[C]`.
+  *(2026-07-10 fixed; also hardened `addZero` to not throw on 3-digit input.)*
 
 ### P2
 

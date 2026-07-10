@@ -32,6 +32,7 @@ import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./miniModal";
+import { ConfirmModal } from "./ConfirmModal";
 import { Input } from "./Input";
 import { getPassageStats } from "../utils/getStats";
 
@@ -64,6 +65,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const [newTagTempValue, setTempTagText] = useState("");
   const [fetchingInProgress, setFetchingInProgress] = useState(false);
   const [reminderModalShown, setReminderModalShown] = useState(false);
+  const [isRemoveConfirmShown, setRemoveConfirmShown] = useState(false);
 
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
@@ -517,7 +519,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               <Button
                 theme={theme}
                 title={t("Remove")}
-                onPress={() => handleRemove(tempPassage.id)}
+                onPress={() => setRemoveConfirmShown(true)}
                 color="red"
               />
             )}
@@ -656,6 +658,18 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddresChange}
         t={tempT}
+      />
+      <ConfirmModal
+        theme={theme}
+        shown={isRemoveConfirmShown}
+        text={t("PassageDeleteConfirmationText")}
+        confirmTitle={t("Remove")}
+        cancelTitle={t("Cancel")}
+        onCancel={() => setRemoveConfirmShown(false)}
+        onConfirm={() => {
+          setRemoveConfirmShown(false);
+          handleRemove(tempPassage.id);
+        }}
       />
       <MiniModal
         theme={theme}

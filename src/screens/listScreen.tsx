@@ -37,6 +37,7 @@ import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
@@ -66,6 +67,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const [searchText, setSearch] = useState("");
   const [isFiltersOpen, setOpenFilters] = useState(false);
   const [isSortingOpen, setOpenSorting] = useState(false);
+  const [passageIdToRemove, setPassageIdToRemove] = useState<number | null>(
+    null
+  );
 
   const { passageText } = route.params;
 
@@ -368,7 +372,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
                 data={passage}
                 t={t}
                 onPress={() => handleListItemEdit(passage)}
-                onRemove={() => handlePERemove(passage.id)}
+                onRemove={() => setPassageIdToRemove(passage.id)}
                 onToggleTag={() =>
                   handleListItemToggleTag(passage, state.settings.leftSwipeTag)
                 }
@@ -609,6 +613,20 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           theme={theme}
         />
       )}
+      <ConfirmModal
+        theme={theme}
+        shown={passageIdToRemove !== null}
+        text={t("PassageDeleteConfirmationText")}
+        confirmTitle={t("Remove")}
+        cancelTitle={t("Cancel")}
+        onCancel={() => setPassageIdToRemove(null)}
+        onConfirm={() => {
+          if (passageIdToRemove !== null) {
+            handlePERemove(passageIdToRemove);
+          }
+          setPassageIdToRemove(null);
+        }}
+      />
     </View>
   );
 };
