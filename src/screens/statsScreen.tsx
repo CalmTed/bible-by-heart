@@ -1,18 +1,17 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
-import { navigateWithState } from "../screeenManagement";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { getAppStats } from "../utils/getStats";
 import { MiniModal } from "../components/miniModal";
 import { timeStringFromMS } from "../utils/formatDateTime";
 
-export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, t, theme } = useAppContext();
   const [hintModalOpen, openHintModal] = useState(false);
 
   const statsStyle = StyleSheet.create({
@@ -133,13 +132,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="back"
             theme={theme}
             icon={IconName.back}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.home,
-                state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.home)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("statsScreenTitle")}
@@ -148,13 +141,7 @@ export const StatsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="calendar"
             theme={theme}
             icon={IconName.clock}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.calendar,
-                state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.calendar)}
           />
         ]}
       />

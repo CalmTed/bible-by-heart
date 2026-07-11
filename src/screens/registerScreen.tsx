@@ -9,10 +9,9 @@ import {
   ScrollView
 } from "react-native";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
-import { navigateWithState } from "../screeenManagement";
 import { IconName } from "../components/Icon";
 import {
   API_LINK,
@@ -26,8 +25,8 @@ import { fetchAPI } from "../services/fetch";
 import { logger } from "../utils/logger";
 import Constants from "expo-constants";
 
-export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme, setState } = useApp({ route, navigation });
+export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, t, theme, setState } = useAppContext();
 
   const [tempUserName, setTempUserName] = useState("");
   const [tempEmail, setTempEmail] = useState("");
@@ -76,11 +75,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
           case 200:
             Alert.alert(t("netRegSuccess"), t("netRegSuccessSubText"));
             logger.write(`Registered as ${userName}`);
-            navigateWithState({
-              navigation,
-              screen: SCREEN.login,
-              state
-            });
+            navigation.navigate(SCREEN.login);
             break;
           case 400:
             logger.write(
@@ -117,11 +112,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
   };
 
   const handleLoginClick = () => {
-    navigateWithState({
-      navigation,
-      screen: SCREEN.login,
-      state
-    });
+    navigation.navigate(SCREEN.login);
   };
   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
     tempEmail
@@ -155,13 +146,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="back"
             theme={theme}
             icon={IconName.back}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.settings,
-                state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.settings)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("registerScreenTitle")}

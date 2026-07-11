@@ -13,7 +13,6 @@ import { logger } from "../utils/logger";
 import { ActionName, AppStateModel } from "../models";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 import { reduce } from "../utils/reduce";
-import { navigateWithState } from "../screeenManagement";
 import * as SecureStore from "expo-secure-store";
 import { isTokenExpired } from "../utils/isTokenExpired";
 import storage from "../storage";
@@ -62,11 +61,9 @@ export const fetchAPI: (a: {
       setState(newState);
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
-      navigateWithState({
-        navigation,
-        screen: screen,
-        state: newState
-      });
+      // State lives in AppContext now (setState above already reset it); just
+      // navigate — no state travels through route params.
+      navigation.navigate(screen);
       logger.write(`Logging out b.c. of invalid token`);
     };
     //if headers have an auth value, check whether the access token is still valid

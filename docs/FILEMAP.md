@@ -62,7 +62,17 @@
 | `finishScreen.tsx` | session results screen (feature: show dynamic session data) |
 | `statsScreen.tsx` | global + per-passage statistics |
 | `calendarScreen.tsx` | month/day activity calendar view |
-| `settingsScreen.tsx` | settings hub (app + user sections) |
+| `settingsScreen.tsx` | settings hub: language/theme selects + rows that navigate to the sub-menu screens below (was: rendered each sub-list inline as a MiniModal). User row gated behind `isAutorized` |
+| `PassageScreen.tsx` | add/edit a passage (former listScreen editor modal; reads AppContext, draft committed on save) |
+| `ListSettingsScreen.tsx` | List settings sub-menu (left-swipe tag, translations link, passage import/export). Was `settingsLists/listSettings` MiniModal |
+| `TranslationsSettingsScreen.tsx` | Translations editable list (nested under List settings). Was a modal-in-modal via `SettingsListWrapper` |
+| `TestsSettingsScreen.tsx` | Tests settings sub-menu (haptics, auto-increase level, train-modes link). Was `settingsLists/testsSettings` MiniModal |
+| `TrainModesSettingsScreen.tsx` | Train-modes editable list (nested under Tests settings). Was a modal-in-modal via `SettingsListWrapper` |
+| `NotificationsSettingsScreen.tsx` | Reminders settings sub-menu (enable, smart time, reminders link, dev test). Was `settingsLists/notificationsSettings` MiniModal |
+| `RemindersSettingsScreen.tsx` | Reminders editable list (nested under Reminders settings). Was a modal-in-modal via `SettingsListWrapper` |
+| `StatsSettingsScreen.tsx` | Stats settings sub-menu (weekly metric). Was `settingsLists/statsSettings` MiniModal |
+| `AboutSettingsScreen.tsx` | About + legal + dev-mode sub-menu. Was `settingsLists/aboutSettings` MiniModal; inner info/password/log dialogs stay MiniModals |
+| `UserSettingsScreen.tsx` | Account settings (email/profile/data visibility, delete account). Was `settingsLists/userSettings` MiniModal; delete-confirm stays a MiniModal |
 | `loginScreen.tsx` | email/password login vs API (P1: finish & verify e2e) |
 | `registerScreen.tsx` | account registration vs API |
 
@@ -71,18 +81,19 @@
 See the component library table in `CODING_RULES.md` §7 for descriptions:
 `AddressPicker` `Button` `Checkbox` `ConfirmModal` `DotIndicator` `Header`
 `Icon`+`icondata.ts` `Input` `LevelPicker` `PassageEditor` `Select` `SelectModal`
-`miniModal` `settingsListWrapper` `setttingsMenuItem` `testNevDott`
-`weekActivityComponent`
+`miniModal` `SettingsSubScreen` `settingsListWrapper` `setttingsMenuItem`
+`testNevDott` `weekActivityComponent`
+
+`SettingsSubScreen.tsx` — shared shell (View + Header with back + StatusBar) for
+every settings sub-menu screen. `settingsListWrapper.tsx` — reusable editable-list
+body (translations/reminders/train-modes), now non-modal: list and per-item editor
+are two views toggled by local state (was a MiniModal-in-MiniModal). The old
+`settingsLists/` sub-list components were converted into the settings sub-screens
+in `src/screens/` and removed.
 
 | Subdir | Description |
 |---|---|
 | `levels/Level1..5.tsx` | render one test type each (options / address / word blocks / typing…) |
-| `settingsLists/aboutSettings.tsx` | about + version + copyright pages |
-| `settingsLists/listSettings.tsx` | list behavior settings (left-swipe tag etc.) |
-| `settingsLists/notificationsSettings.tsx` | reminders list (time, days) |
-| `settingsLists/statsSettings.tsx` | stats-related settings (?) |
-| `settingsLists/testsSettings.tsx` | train modes customization |
-| `settingsLists/userSettings.tsx` | account: user data, translations, sessions, delete account |
 
 ### `src/services/`
 

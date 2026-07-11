@@ -1,44 +1,33 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import { Button, IconButton } from "../Button";
-import { Input } from "../Input";
-import { MiniModal } from "../miniModal";
-import { SettingsMenuItem } from "../setttingsMenuItem";
+import { ScrollView } from "react-native-gesture-handler";
+import * as SecureStore from "expo-secure-store";
+import { ScreenModel } from "./homeScreen";
+import { useAppContext } from "../context/AppContext";
+import { SettingsSubScreen } from "../components/SettingsSubScreen";
+import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { Button, IconButton } from "../components/Button";
+import { Input } from "../components/Input";
+import { MiniModal } from "../components/miniModal";
+import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
   API_LINK,
   REFRESH_TOKEN_NAME,
   SCREEN
-} from "../../constants";
-import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
-import { ActionName, AppStateModel } from "../../models";
-import { WORD } from "../../l10n";
-import { IconName } from "../Icon";
-import { dateToString, timeToString } from "../../utils/formatDateTime";
-import { reduce } from "../../utils/reduce";
-import { fetchAPI } from "../../services/fetch";
-import * as SecureStore from "expo-secure-store";
-import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
-import { navigateWithState } from "../../screeenManagement";
-import { ScrollView } from "react-native-gesture-handler";
-import { logger } from "../../utils/logger";
+} from "../constants";
+import { ActionName, AppStateModel } from "../models";
+import { dateToString, timeToString } from "../utils/formatDateTime";
+import { reduce } from "../utils/reduce";
+import { fetchAPI } from "../services/fetch";
+import { logger } from "../utils/logger";
 
-interface UserSettingsListModel {
-  theme: ThemeAndColorsModel;
-  state: AppStateModel;
-  setState: React.Dispatch<React.SetStateAction<AppStateModel>>;
-  t: (w: WORD) => string;
-  navigation: StackNavigationHelpers;
-}
+// User / account settings — was a MiniModal rendered inline in the settings list.
+// Now a stack screen reached from settingsScreen (only when authorized). The
+// delete-account confirmation stays a MiniModal (it is a dialog, not a sub-menu).
+export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, setState, t, theme } = useAppContext();
 
-export const UserSettingsList: FC<UserSettingsListModel> = ({
-  theme,
-  state,
-  t,
-  setState,
-  navigation
-}) => {
-  const [isUserSettsdModalShown, setIsUserSettsModalShown] = useState(false);
   const [isDeletionConfirmationModalShown, setDeletionConfirmationModalShown] =
     useState(false);
   const [deletionConfirmationTextValue, setDeletionConfirmationTextValue] =
@@ -46,21 +35,6 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
   const deletionText =
     t("settsIConfirmDeletion") + `${state.userData.userName}`;
   const [loadingState, setLoadingState] = useState(false);
-
-  const settingsGroupStyle = StyleSheet.create({
-    miniModal: {
-      width: "100%",
-      height: "100%",
-      paddingTop: 50
-    },
-    miniModalContent: {
-      height: 60,
-      flexWrap: "nowrap",
-      flexDirection: "row",
-      width: "100%",
-      alignItems: "center"
-    }
-  });
 
   const isProfilePublicOptions = [
     { value: "public", label: t("profilePublicOptionPublic") },
@@ -153,11 +127,6 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
           );
         }
         setState(newState);
-        navigateWithState({
-          navigation,
-          screen: SCREEN.settings,
-          state: newState
-        });
         break;
       case 400:
         Alert.alert(
@@ -245,6 +214,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
     setState(newState);
     syncUserData();
   };
+
   const handleRequestEmailConfirmation = async () => {
     if (state.userData.isEmailConfirmed) {
       return;
@@ -315,11 +285,7 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
       setState(newState);
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
-      navigateWithState({
-        navigation,
-        screen: SCREEN.settings,
-        state: newState
-      });
+      navigation.navigate(SCREEN.settings);
       Alert.alert(t("settsAccountDeletionSuccess"));
     } else {
       Alert.alert(
@@ -329,188 +295,185 @@ export const UserSettingsList: FC<UserSettingsListModel> = ({
     }
     setDeletionConfirmationModalShown(false);
   };
+
   return (
-    <View>
-      <SettingsMenuItem
-        theme={theme}
-        type="action"
-        header={t("settsUserHeader")}
-        subtext=""
-        actionCallBack={() => {
-          setIsUserSettsModalShown(true);
-        }}
-      />
-      <MiniModal
-        theme={theme}
-        shown={isUserSettsdModalShown}
-        handleClose={() => setIsUserSettsModalShown(false)}
-        style={settingsGroupStyle.miniModal}
-      >
-        <View style={settingsGroupStyle.miniModalContent}>
-          <IconButton
-            theme={theme}
-            icon={IconName.back}
-            onPress={() => setIsUserSettsModalShown(false)}
-          />
-          <Text style={theme.theme.headerText}>
-            {t("settsUserHeader")}
-            {loadingState ? " ⏳" : " "}
-          </Text>
-        </View>
-        <ScrollView>
-          <SettingsMenuItem
-            type="label"
-            theme={theme}
-            header={`${t("settsUserEmail")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}
-          />
-          <SettingsMenuItem
-            type="label"
-            theme={theme}
-            header={t(
-              `${state.userData.isEmailConfirmed ? "settsUserEmailConfirmed" : "settsUserEmailNOTConfirmed"}`
-            )}
-          />
-          {!state.userData.isEmailConfirmed && (
-            <SettingsMenuItem
-              type="action"
-              theme={theme}
-              header={t("settsUserRequestEmailConfLinkHeadert")}
-              subtext={t("settsUserRequestEmailConfLinkSubtext")}
-              actionCallBack={() => handleRequestEmailConfirmation()}
-            />
+    <SettingsSubScreen
+      theme={theme}
+      themeType={state.settings.theme}
+      title={`${t("settsUserHeader")}${loadingState ? " ⏳" : ""}`}
+      onBack={() => navigation.goBack()}
+    >
+      <ScrollView style={userSettingsStyle.scrollView}>
+        <SettingsMenuItem
+          type="label"
+          theme={theme}
+          header={`${t("settsUserEmail")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}
+        />
+        <SettingsMenuItem
+          type="label"
+          theme={theme}
+          header={t(
+            `${state.userData.isEmailConfirmed ? "settsUserEmailConfirmed" : "settsUserEmailNOTConfirmed"}`
           )}
-          <SettingsMenuItem
-            type="label"
-            theme={theme}
-            header={`${t("settsUserRegDate")}: ${dateToString(state.userData.registrationDate || 0)}`}
-          />
-          {state.userData.userRights !== "free" && (
-            <SettingsMenuItem
-              type="label"
-              theme={theme}
-              header={`User type: ${state.userData.userRights}`}
-            />
-          )}
-          <SettingsMenuItem
-            type="textinput"
-            theme={theme}
-            header={t("settsUserUserName")}
-            //TODO limit charachters
-            value={state.userData.userName || ""}
-            onChange={() => {}}
-            disabled={true}
-          />
-          <SettingsMenuItem
-            type="textinput"
-            theme={theme}
-            header={t("settsUserUserTitle")}
-            value={state.userData.userTitle || ""}
-            onChange={(newValue) => handleUserTitleChange(newValue)}
-            onEndEditing={() => syncUserData()}
-            autoCorrect={false}
-          />
-          {state.settings.devModeEnabled && (
-            <SettingsMenuItem
-              type="label"
-              theme={theme}
-              header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
-            />
-          )}
-          {state.settings.devModeEnabled && (
-            <SettingsMenuItem
-              type="action"
-              theme={theme}
-              header={t("settsUserGetRemoteUserDataHeader")}
-              subtext={t("settsUserGetRemoteUserDataSubtext")}
-              actionCallBack={() => updateUserData()}
-            />
-          )}
-          <SettingsMenuItem
-            type="select"
-            theme={theme}
-            header={t("settsUserProfilePublic")}
-            subtext={
-              isProfilePublicOptions[isProfilePublicOptnionsSelected].label
-            }
-            // options={["private","reference_link_olny","public"]}
-            selectedIndex={isProfilePublicOptnionsSelected}
-            options={isProfilePublicOptions}
-            onSelect={(selectedValue) =>
-              handleIsProfilePublicChange(
-                selectedValue as AppStateModel["userData"]["isProfilePublic"]
-              )
-            }
-          />
-          <SettingsMenuItem
-            type="select"
-            theme={theme}
-            header={t("settsUserDataPublic")}
-            subtext={isDataPublicOptions[isDataPublicOptnionsSelected].label}
-            selectedIndex={isDataPublicOptnionsSelected}
-            options={isDataPublicOptions}
-            onSelect={(selectedValue) =>
-              handleIsDataPublicChange(
-                selectedValue as AppStateModel["userData"]["isDataPublic"]
-              )
-            }
-          />
+        />
+        {!state.userData.isEmailConfirmed && (
           <SettingsMenuItem
             type="action"
             theme={theme}
-            header={t("settsUserDeleteAccountHeader")}
-            subtext={t("settsUserDeleteAccountSubtext")}
-            actionCallBack={() => setDeletionConfirmationModalShown(true)}
+            header={t("settsUserRequestEmailConfLinkHeadert")}
+            subtext={t("settsUserRequestEmailConfLinkSubtext")}
+            actionCallBack={() => handleRequestEmailConfirmation()}
           />
-        </ScrollView>
-        <MiniModal
+        )}
+        <SettingsMenuItem
+          type="label"
           theme={theme}
-          shown={isDeletionConfirmationModalShown}
-          handleClose={() => handleClosingDeletionConfirmationModal()}
-          style={settingsGroupStyle.miniModal}
-        >
-          <View style={settingsGroupStyle.miniModalContent}>
-            <IconButton
-              theme={theme}
-              icon={IconName.back}
-              onPress={() => handleClosingDeletionConfirmationModal()}
-            />
-            <Text style={theme.theme.headerText}>
-              {t("settsUserConfirmDeleteAccountHeader")}{" "}
-              {loadingState ? "⏳" : ""}
-            </Text>
-          </View>
-          <View style={{ ...theme.theme.view, gap: 12 }}>
-            <Text style={{ ...theme.theme.text, fontSize: 16 }}>
-              {t("settsUserConfirmDeleteAccountDisclosureText")}
-            </Text>
-            <Text style={{ ...theme.theme.text, fontSize: 16 }}>
-              {t("settsUserConfirmDeleteAccountDisclosureSubtext")}
-              {deletionText}
-            </Text>
-            <Input
-              theme={theme}
-              type="main"
-              value={deletionConfirmationTextValue}
-              onChange={setDeletionConfirmationTextValue}
-              placeholder={t(
-                "settsUserConfirmDeleteAccountDisclosureInputPlaceholder"
-              )}
-            />
-            <Button
-              theme={theme}
-              color="red"
-              type={
-                deletionConfirmationTextValue === deletionText
-                  ? "main"
-                  : "outline"
-              }
-              onPress={handleAccountDeletion}
-              disabled={deletionConfirmationTextValue !== deletionText}
-              title={t("settsUserDeleteAccountHeader")}
-            />
-          </View>
-        </MiniModal>
+          header={`${t("settsUserRegDate")}: ${dateToString(state.userData.registrationDate || 0)}`}
+        />
+        {state.userData.userRights !== "free" && (
+          <SettingsMenuItem
+            type="label"
+            theme={theme}
+            header={`User type: ${state.userData.userRights}`}
+          />
+        )}
+        <SettingsMenuItem
+          type="textinput"
+          theme={theme}
+          header={t("settsUserUserName")}
+          //TODO limit charachters
+          value={state.userData.userName || ""}
+          onChange={() => {}}
+          disabled={true}
+        />
+        <SettingsMenuItem
+          type="textinput"
+          theme={theme}
+          header={t("settsUserUserTitle")}
+          value={state.userData.userTitle || ""}
+          onChange={(newValue) => handleUserTitleChange(newValue)}
+          onEndEditing={() => syncUserData()}
+          autoCorrect={false}
+        />
+        {state.settings.devModeEnabled && (
+          <SettingsMenuItem
+            type="label"
+            theme={theme}
+            header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
+          />
+        )}
+        {state.settings.devModeEnabled && (
+          <SettingsMenuItem
+            type="action"
+            theme={theme}
+            header={t("settsUserGetRemoteUserDataHeader")}
+            subtext={t("settsUserGetRemoteUserDataSubtext")}
+            actionCallBack={() => updateUserData()}
+          />
+        )}
+        <SettingsMenuItem
+          type="select"
+          theme={theme}
+          header={t("settsUserProfilePublic")}
+          subtext={
+            isProfilePublicOptions[isProfilePublicOptnionsSelected].label
+          }
+          selectedIndex={isProfilePublicOptnionsSelected}
+          options={isProfilePublicOptions}
+          onSelect={(selectedValue) =>
+            handleIsProfilePublicChange(
+              selectedValue as AppStateModel["userData"]["isProfilePublic"]
+            )
+          }
+        />
+        <SettingsMenuItem
+          type="select"
+          theme={theme}
+          header={t("settsUserDataPublic")}
+          subtext={isDataPublicOptions[isDataPublicOptnionsSelected].label}
+          selectedIndex={isDataPublicOptnionsSelected}
+          options={isDataPublicOptions}
+          onSelect={(selectedValue) =>
+            handleIsDataPublicChange(
+              selectedValue as AppStateModel["userData"]["isDataPublic"]
+            )
+          }
+        />
+        <SettingsMenuItem
+          type="action"
+          theme={theme}
+          header={t("settsUserDeleteAccountHeader")}
+          subtext={t("settsUserDeleteAccountSubtext")}
+          actionCallBack={() => setDeletionConfirmationModalShown(true)}
+        />
+      </ScrollView>
+      <MiniModal
+        theme={theme}
+        shown={isDeletionConfirmationModalShown}
+        handleClose={() => handleClosingDeletionConfirmationModal()}
+        style={userSettingsStyle.deletionMiniModal}
+      >
+        <View style={userSettingsStyle.deletionModalHeader}>
+          <IconButton
+            theme={theme}
+            icon={IconName.back}
+            onPress={() => handleClosingDeletionConfirmationModal()}
+          />
+          <Text style={theme.theme.headerText}>
+            {t("settsUserConfirmDeleteAccountHeader")}{" "}
+            {loadingState ? "⏳" : ""}
+          </Text>
+        </View>
+        <View style={{ ...theme.theme.view, gap: 12 }}>
+          <Text style={{ ...theme.theme.text, fontSize: 16 }}>
+            {t("settsUserConfirmDeleteAccountDisclosureText")}
+          </Text>
+          <Text style={{ ...theme.theme.text, fontSize: 16 }}>
+            {t("settsUserConfirmDeleteAccountDisclosureSubtext")}
+            {deletionText}
+          </Text>
+          <Input
+            theme={theme}
+            type="main"
+            value={deletionConfirmationTextValue}
+            onChange={setDeletionConfirmationTextValue}
+            placeholder={t(
+              "settsUserConfirmDeleteAccountDisclosureInputPlaceholder"
+            )}
+          />
+          <Button
+            theme={theme}
+            color="red"
+            type={
+              deletionConfirmationTextValue === deletionText
+                ? "main"
+                : "outline"
+            }
+            onPress={handleAccountDeletion}
+            disabled={deletionConfirmationTextValue !== deletionText}
+            title={t("settsUserDeleteAccountHeader")}
+          />
+        </View>
       </MiniModal>
-    </View>
+    </SettingsSubScreen>
   );
 };
+
+const userSettingsStyle = StyleSheet.create({
+  scrollView: {
+    width: "100%",
+    paddingHorizontal: 20
+  },
+  deletionMiniModal: {
+    width: "100%",
+    height: "100%",
+    paddingTop: 50
+  },
+  deletionModalHeader: {
+    height: 60,
+    flexWrap: "nowrap",
+    flexDirection: "row",
+    width: "100%",
+    alignItems: "center"
+  }
+});

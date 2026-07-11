@@ -9,7 +9,6 @@ import {
   REFRESH_TOKEN_NAME
 } from "../constants";
 import { ActionName } from "../models";
-import { navigateWithState } from "../screeenManagement";
 import { createT } from "../l10n";
 import { Button, IconButton } from "../components/Button";
 import { reduce } from "../utils/reduce";
@@ -18,19 +17,13 @@ import { Icon, IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
 import { SettingsMenuItem } from "../components/setttingsMenuItem";
 import { StatusBar } from "expo-status-bar";
-import { ListSettingsList } from "../components/settingsLists/listSettings";
-import { NotificationsSettingsList } from "../components/settingsLists/notificationsSettings";
-import { AboutSettingsList } from "../components/settingsLists/aboutSettings";
-import { TestsSettingsList } from "../components/settingsLists/testsSettings";
-import { StatsSettingsList } from "../components/settingsLists/statsSettings";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import * as SecureStore from "expo-secure-store";
 import { fetchAPI } from "../services/fetch";
 import { logger } from "../utils/logger";
-import { UserSettingsList } from "../components/settingsLists/userSettings";
 
-export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, setState, t, theme } = useApp({ route, navigation });
+export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, setState, t, theme } = useAppContext();
   const [loadingState, setLoadingState] = useState(false);
 
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
@@ -42,11 +35,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   });
 
   const handleLoginPress = () => {
-    navigateWithState({
-      screen: SCREEN.login,
-      state,
-      navigation
-    });
+    navigation.navigate(SCREEN.login);
   };
 
   const handleLogoutPress = async () => {
@@ -139,13 +128,7 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="back"
             theme={theme}
             icon={IconName.back}
-            onPress={() =>
-              navigateWithState({
-                screen: SCREEN.home,
-                state,
-                navigation
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.home)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("settingsScreenTitle")} {loadingState ? "⏳" : ""}
@@ -240,51 +223,57 @@ export const SettingsScreen: FC<ScreenModel> = ({ route, navigation }) => {
               );
             }}
           />
-          {/* {isAutorized && ( */}
-          <UserSettingsList
-            theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
-            navigation={navigation}
-          />
-          {/* )} */}
+          {/* USER (account) — only when signed in */}
+          {isAutorized && (
+            <SettingsMenuItem
+              theme={theme}
+              type="action"
+              header={t("settsUserHeader")}
+              subtext=""
+              actionCallBack={() => navigation.navigate(SCREEN.settingsUser)}
+            />
+          )}
           {/* LISTS */}
-          <ListSettingsList
+          <SettingsMenuItem
             theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
-            languageOptions={languageOptions}
+            type="action"
+            header={t("settsLabelList")}
+            subtext=""
+            actionCallBack={() => navigation.navigate(SCREEN.settingsList)}
           />
           {/* TESTS */}
-          <TestsSettingsList
+          <SettingsMenuItem
             theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
+            type="action"
+            header={t("settsLabelTests")}
+            subtext=""
+            actionCallBack={() => navigation.navigate(SCREEN.settingsTests)}
           />
           {/* NOTIFICATIONS */}
-          <NotificationsSettingsList
+          <SettingsMenuItem
             theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
+            type="action"
+            header={t("settsLabelReminders")}
+            subtext=""
+            actionCallBack={() =>
+              navigation.navigate(SCREEN.settingsNotifications)
+            }
           />
           {/* STATS */}
-          <StatsSettingsList
+          <SettingsMenuItem
             theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
+            type="action"
+            header={t("settsLabelStats")}
+            subtext=""
+            actionCallBack={() => navigation.navigate(SCREEN.settingsStats)}
           />
           {/* ABOUT */}
-          <AboutSettingsList
+          <SettingsMenuItem
             theme={theme}
-            state={state}
-            setState={setState}
-            t={t}
-            navigation={navigation}
+            type="action"
+            header={t("settsAboutHeader")}
+            subtext=""
+            actionCallBack={() => navigation.navigate(SCREEN.settingsAbout)}
           />
         </View>
       </ScrollView>

@@ -570,3 +570,107 @@ rather than diverging; worth a dedicated timezone regression pass (§5) later.
 Verified — `npm run lint` ✓ · `npm test` ✓ (25 suites / 54 tests, +4). l10n: 5 keys × en+ua ✓.
 Runtime behaviour changes (swipe-tag heal, stats numbers, auth Alerts) are logic/tests-provable;
 the auth Alert copy is worth an eyeball on-device at the next milestone but needs no code verify.
+
+---
+
+## 2026-07-11 (navigator refactor — STRATEGY §4.2/§4.3, WIP)
+
+Big navigator + state-management refactor (Fedir: full context migration, phases 1+2
+in one sitting). **Broken-in-between is expected here** — shipped as work-in-progress.
+
+- **Root problem removed:** the entire `AppState` was threaded through react-navigation
+  route params (each screen kept its own `useState(route.params)` copy via `useApp`,
+  persisted it, and forwarded it with `navigateWithState`; `useApp` also hijacked the
+  back gesture to re-navigate home carrying state). That single pattern caused every
+  reported pain point (modals/gestures losing edits, no clean save, deep-link/notif-tap
+  stubs, header offset).
+- **New:** `src/context/AppContext.tsx` — one global `AppProvider` owning state +
+  `dispatch` (wraps `reduce`) + persistence + daily backup + notification-response
+  handling + theme + `t`. `useAppContext()` replaces `useApp` everywhere.
+- **Deleted** `src/screeenManagement.ts` (`navigateWithState`) and `src/utils/useApp.ts`.
+  All 9 screens + `settingsLists/userSettings` + `services/fetch.ts` migrated to
+  `dispatch(action)` + `navigation.navigate(SCREEN.x, smallParams?)`. Removed all
+  `initialParams={{...state}}`; enabled `gestureEnabled`.
+- **Deep links wired:** `linking` config on `NavigationContainer`
+  (`bbh://`, `bible-by-heart://`, `https://biblebyheart.app` → screens). Notification-tap
+  now routes through `navigationRef` instead of the old stub. *(Fedir confirmed on a build:
+  intent receiver + deep linking WORK.)* Verified https App Links still need
+  `/.well-known/assetlinks.json` served by the API before https opens the app.
+- **Editor is now a screen:** `src/screens/PassageScreen.tsx` + reshaped `PassageEditor`
+  (Modal → full-screen View). Explicit **Save** button, **dirty-check** discard-confirm on
+  back, `isNew` title. Add-from-address path: listScreen navigates
+  `SCREEN.passage {address}` / `{passageId}` / `{address,passageText,translationId}` (intent).
+  New l10n (en+ua): `Save`, `Discard`, `AddPassageTitle`, `PassageDiscardConfirmText`.
+- **Safe-area headers:** `Header.tsx` + `PassageEditor` header use `useSafeAreaInsets()`
+  (`paddingTop: insets.top`) so the header clears notches / Dynamic Island. Left the global
+  `theme.screen.paddingTop:30` alone to avoid regressing the header-less home/finish screens
+  (small extra gap on header screens; can tune later).
+- **State-mutation bug fix (Fedir: "adding passage / any state manipulation breaks"):**
+  root cause was `App.tsx`'s `useEffect(() => loadState())` with **no dependency array** —
+  it re-read storage and re-seeded every render, an infinite async reload loop that pegged
+  the JS thread once one shared provider owned state. Now loads exactly once (`didLoad` ref);
+  AppProvider is the sole storage writer thereafter. Also froze `PassageScreen`'s source
+  passage in a `useState` initializer so it can't mint a new random id per render.
+
+Reanimated NOT installed this session (only gesture-handler, already a dep). Before §4.8
+add `react-native-reanimated` + its babel plugin.
+
+Deprioritised by Fedir (noted, not done): settings sub-menus are still modals with a
+"strange animation" — convert each to a screen + drop the animation; `UserSettingsList`
+renders even when logged out (its `isAutorized` gate is commented out in `settingsScreen`,
+pre-existing). Also pending: `npm test` (screen tests need an AppProvider wrapper now),
+FILEMAP + STRATEGY checkbox updates.
+
+Verified — `npm run lint` (tsc + eslint) ✓. `npm test` NOT run (screen tests will need a
+provider wrapper — follow-up). Needs Fedir's next device build to confirm add-passage +
+state mutations now stick.
+
+## 2026-07-11 (navigator refactor cont. — settings modals → screens)
+
+Follow-up to the navigator refactor. Fedir's two flagged bugs + two constants TODOs.
+
+### Settings sub-menus: MiniModal → real stack screens (drop the "strange animation")
+Every settings sub-menu used to be a `MiniModal` rendered inline in `settingsScreen`
+(and 3 of them nested a *second* modal via `SettingsListWrapper` — a modal-in-modal).
+Converted all of them to stack screens so drilling in is a normal push, not a modal slide.
+- New shared shell `src/components/SettingsSubScreen.tsx` (View + `Header` w/ back +
+  `StatusBar`, optional `headerRight` for an add button) — reused by all 9 screens.
+- `settingsListWrapper.tsx` refactored from MiniModal-in-MiniModal to a **non-modal**
+  body: list view and per-item editor are two views toggled by local state. Owning
+  screen passes data handlers + `handleClose` (= `navigation.goBack`). Added `themeType`
+  prop for the StatusBar.
+- 9 new screens in `src/screens/` (PascalCase, per CODING_RULES §2 + PassageScreen
+  precedent): `ListSettingsScreen`, `TranslationsSettingsScreen`, `TestsSettingsScreen`,
+  `TrainModesSettingsScreen`, `NotificationsSettingsScreen`, `RemindersSettingsScreen`,
+  `StatsSettingsScreen`, `AboutSettingsScreen`, `UserSettingsScreen`. Each reads
+  `useAppContext()` (no state through route params).
+- Registered all 9 in `navigator.tsx`; added 9 `SCREEN.settings*` enum members
+  (constants.ts). `settingsScreen` now renders simple `action` rows that
+  `navigation.navigate(...)` into each sub-screen.
+- Removed the 6 old `src/components/settingsLists/*.tsx` (dir now empty). Logic moved
+  verbatim into the screens (import/export, dev tools, account delete, etc.).
+- **Kept as MiniModals** (they are dialogs, not sub-menus): About's info/legal/
+  dev-password/log popups, and the delete-account confirmation in User settings.
+- No new l10n — pure structural refactor, all `t()` keys already existed.
+- Gotcha: `SettingsListWrapper` already wraps `renderEditItem` in a ScrollView, so the
+  train-modes editor now returns a plain `View` (was its own ScrollView → would nest).
+- `checkSchedule` reminders effect moved into `RemindersSettingsScreen` (the reducer
+  already reconciles the OS schedule on every mutation via `reduce.ts:495`, so this is
+  just the "reconcile while viewing reminders" belt-and-suspenders the old modal had).
+
+### Bug: UserSettings shown when logged out (pre-existing, not from the refactor)
+The `isAutorized` gate around the user sub-list was commented out in `settingsScreen`.
+Re-enabled: the User/account row now only renders when `isAutorized`
+(`haveToken && userData.uuid !== null`). Account settings are unreachable logged out.
+
+### constants.ts TODO cleanup (Fedir: "ask if needed" — verified, both stale)
+- `autoIncreaseLevel` "not sure whether implemented" — it IS: `reduce.ts:400` bumps the
+  level, `TestsSettingsScreen` exposes the checkbox, wired through models/initials/
+  converter. Removed the stale comment.
+- Commented-out `colors = Platform.select({...})` Material-You block — dead, referenced
+  nowhere. Deleted.
+
+Verified — `npm run lint` (tsc + eslint) ✓ · `npm test` 54 passed / 22 snapshots ✓ (no
+settings tests existed to update; only `settingsScreen` imported the removed files).
+Needs Fedir's next device build to confirm the sub-menus feel right (push/pop instead of
+slide-up) and that back navigation lands correctly from the nested list editors.

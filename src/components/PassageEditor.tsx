@@ -1,12 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   PASSAGELEVEL,
   ARCHIVED_NAME,
@@ -41,24 +35,29 @@ import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 
 interface PassageEditorModel {
-  visible: boolean;
   passage: PassageModel;
+  isNew?: boolean;
+  // Save persists the draft; onBack leaves without saving (called after the
+  // dirty-check confirm resolves).
   onConfirm: (passage: PassageModel) => void;
   onRemove: (arg: number) => void;
+  onBack: () => void;
   t: (w: WORD) => string;
   theme: ThemeAndColorsModel;
   state: AppStateModel;
 }
 
 export const PassageEditor: FC<PassageEditorModel> = ({
-  visible,
   theme,
   passage,
+  isNew,
   onConfirm,
   onRemove,
+  onBack,
   t,
   state
 }) => {
+  const insets = useSafeAreaInsets();
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
@@ -66,6 +65,22 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const [fetchingInProgress, setFetchingInProgress] = useState(false);
   const [reminderModalShown, setReminderModalShown] = useState(false);
   const [isRemoveConfirmShown, setRemoveConfirmShown] = useState(false);
+  const [isDiscardConfirmShown, setDiscardConfirmShown] = useState(false);
+
+  // Momentary/draft editing: the draft (tempPassage) is only committed to the
+  // global state when the user taps Save. Comparing against the original tells
+  // us whether to warn before leaving.
+  const isDirty = JSON.stringify(tempPassage) !== JSON.stringify(passage);
+  const handleSave = () => {
+    onConfirm(tempPassage);
+  };
+  const handleBackPress = () => {
+    if (isDirty) {
+      setDiscardConfirmShown(true);
+    } else {
+      onBack();
+    }
+  };
 
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
@@ -103,17 +118,17 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   };
 
   useEffect(() => {
-    setPassage(passage);
-    // const passageExists = state.passages.map(p => p.id).includes(tempPassage.id);
+    // On mount: if we already have a valid address but no text yet (e.g. adding
+    // from a picked address / shared intent), fetch the verse text.
     const addressExists =
       tempPassage.address.bookIndex !== null &&
       tempPassage.address.startChapterNum !== null &&
       tempPassage.address.startVerseNum !== null;
     const textIsEmpty = !tempPassage.verseText.length;
-    if (visible && addressExists && textIsEmpty) {
+    if (addressExists && textIsEmpty) {
       handleTextFetch();
     }
-  }, [visible]);
+  }, []);
 
   useEffect(() => {
     //checknig if data changed after first PE rendering
@@ -134,9 +149,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     }
   }, [JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
 
-  const handleConfirm = () => {
-    onConfirm(tempPassage);
-  };
   const handleTextChange = (newVal: string) => {
     setPassage((prv) => {
       return { ...prv, verseText: newVal.replace(/ {2}/g, " ").trim() };
@@ -230,10 +242,14 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   // const theme = getThemeFromScheme(state.settings.theme);
   const PEstyle = StyleSheet.create({
     //top
+    screen: {
+      flex: 1,
+      backgroundColor: theme.colors.bg
+    },
     headerView: {
-      height: 100,
-      paddingTop: 50,
-      alignContent: "center",
+      paddingTop: insets.top,
+      height: 60 + insets.top,
+      alignItems: "center",
       width: "100%",
       flexDirection: "row",
       justifyContent: "space-between"
@@ -382,15 +398,24 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 
   const passageStats = getPassageStats(state, passage);
   return (
-    <Modal visible={visible}>
-      <View style={{ ...theme.theme.view, ...PEstyle.headerView }}>
+    <View style={PEstyle.screen}>
+      <View style={PEstyle.headerView}>
         <IconButton
           theme={theme}
           style={PEstyle.headerBotton}
           icon={IconName.back}
-          onPress={handleConfirm}
+          onPress={handleBackPress}
         />
-        <Text style={PEstyle.headerTitle}>{t("EditPassageTitle")}</Text>
+        <Text style={PEstyle.headerTitle}>
+          {isNew ? t("AddPassageTitle") : t("EditPassageTitle")}
+        </Text>
+        <Button
+          theme={theme}
+          title={t("Save")}
+          type="transparent"
+          color="green"
+          onPress={handleSave}
+        />
       </View>
 
       <View style={PEstyle.listView}>
@@ -671,6 +696,18 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           handleRemove(tempPassage.id);
         }}
       />
+      <ConfirmModal
+        theme={theme}
+        shown={isDiscardConfirmShown}
+        text={t("PassageDiscardConfirmText")}
+        confirmTitle={t("Discard")}
+        cancelTitle={t("Cancel")}
+        onCancel={() => setDiscardConfirmShown(false)}
+        onConfirm={() => {
+          setDiscardConfirmShown(false);
+          onBack();
+        }}
+      />
       <MiniModal
         theme={theme}
         shown={isFetchPropositionOpen}
@@ -752,7 +789,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           title={t("Close")}
         ></Button>
       </MiniModal>
-    </Modal>
+    </View>
   );
 };
 

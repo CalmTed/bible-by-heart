@@ -1,18 +1,16 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Linking } from "react-native";
 import { SCREEN, THEMETYPE } from "../constants";
-import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
 import { DaggerLogoSVG } from "../svg/daggetLogo";
 import { getStroke } from "../utils/getStats";
 import { WeekActivityComponent } from "../components/weekActivityComponent";
 import { StatusBar } from "expo-status-bar";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { IconName } from "../components/Icon";
 import { SelectModal } from "../components/SelectModal";
 import { ActionName } from "../models";
 import { getPassagesByTrainMode } from "../utils/generateTests";
-import { reduce } from "../utils/reduce";
 import { MangerSVG } from "../svg/manger";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 import { logger } from "../utils/logger";
@@ -22,8 +20,8 @@ export interface ScreenModel {
   navigation: StackNavigationHelpers;
 }
 
-export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, dispatch, t, theme } = useAppContext();
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
 
@@ -117,13 +115,7 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
               type="main"
               color="green"
               title={t("AddPassages")}
-              onPress={() =>
-                navigateWithState({
-                  navigation,
-                  screen: SCREEN.listPassage,
-                  state: state
-                })
-              }
+              onPress={() => navigation.navigate(SCREEN.listPassage)}
             />
           )}
           {state.passages.length > 0 && [
@@ -133,17 +125,14 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
               type="main"
               color="green"
               title={t("homePractice")}
-              onPress={() =>
-                activeTrainModes.length > 1
-                  ? setShowTrainModesList(true)
-                  : navigateWithState({
-                      navigation,
-                      screen: SCREEN.test,
-                      state:
-                        reduce(state, { name: ActionName.generateTests }) ||
-                        state
-                    })
-              }
+              onPress={() => {
+                if (activeTrainModes.length > 1) {
+                  setShowTrainModesList(true);
+                } else {
+                  dispatch({ name: ActionName.generateTests });
+                  navigation.navigate(SCREEN.test);
+                }
+              }}
               icon={
                 activeTrainModes.length > 1 ? IconName.selectArrow : undefined
               }
@@ -154,37 +143,19 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
               key={"listButton"}
               theme={theme}
               title={t("homeList")}
-              onPress={() =>
-                navigateWithState({
-                  navigation,
-                  screen: SCREEN.listPassage,
-                  state: state
-                })
-              }
+              onPress={() => navigation.navigate(SCREEN.listPassage)}
             />,
             <Button
               key={"statsButton"}
               theme={theme}
               title={t("homeStats")}
-              onPress={() =>
-                navigateWithState({
-                  navigation,
-                  screen: SCREEN.stats,
-                  state: state
-                })
-              }
+              onPress={() => navigation.navigate(SCREEN.stats)}
             />
           ]}
           <Button
             theme={theme}
             title={t("homeSettings")}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.settings,
-                state: state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.settings)}
           />
         </View>
         <SelectModal
@@ -203,16 +174,11 @@ export const HomeScreen: FC<ScreenModel> = ({ route, navigation }) => {
           )}
           onSelect={(value) => {
             setShowTrainModesList(false);
-            const newState =
-              reduce(state, {
-                name: ActionName.generateTests,
-                trainModeId: parseInt(value, 10)
-              }) || state;
-            navigateWithState({
-              navigation,
-              screen: SCREEN.test,
-              state: newState
+            dispatch({
+              name: ActionName.generateTests,
+              trainModeId: parseInt(value, 10)
             });
+            navigation.navigate(SCREEN.test);
           }}
           onCancel={() => {
             setShowTrainModesList(false);

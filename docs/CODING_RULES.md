@@ -99,8 +99,9 @@ Reuse these. Extend, don't duplicate.
 | DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
 | TestNavDott | `src/components/testNevDott.tsx` | per-test navigation dot in session |
 | WeekActivity | `src/components/weekActivityComponent.tsx` | weekly activity graph |
-| SettingsMenuItem | `src/components/setttingsMenuItem.tsx` | settings row (checkbox/select/modal-opener) |
-| SettingsListWrapper | `src/components/settingsListWrapper.tsx` | wrapper for settings sublists |
+| SettingsMenuItem | `src/components/setttingsMenuItem.tsx` | settings row (label/action/checkbox/select/textinput/taglist) |
+| SettingsSubScreen | `src/components/SettingsSubScreen.tsx` | shared shell (View + Header w/ back + StatusBar) for every settings sub-menu screen; optional `headerRight` (e.g. add button) |
+| SettingsListWrapper | `src/components/settingsListWrapper.tsx` | reusable editable-list screen body (translations/reminders/train-modes); non-modal — list & per-item editor are two views toggled by local state |
 | Level test screens | `src/components/levels/Level1..5.tsx` | one component per test level |
 
 Key utils (check before writing a helper): `addressToString`, `addressFromString`,

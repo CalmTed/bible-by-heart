@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { StyleSheet, View, Text } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
@@ -30,13 +31,18 @@ export const Header: FC<HeaderModel> = ({
   additionalChildren,
   alignChildren
 }) => {
+  const insets = useSafeAreaInsets();
   const handleBack = () => {
     navigation?.goBack();
   };
 
   const headerStyle = StyleSheet.create({
     view: {
-      height: 80,
+      // Clear the device's top safe area (Android status-bar / camera cutouts,
+      // iPhone notch/Dynamic Island) with the real inset instead of a fixed
+      // guess, so the header never sits under the cutout.
+      paddingTop: insets.top,
+      height: 60 + insets.top,
       width: "100%",
       flexDirection: "row",
       justifyContent: alignChildren || "flex-end",

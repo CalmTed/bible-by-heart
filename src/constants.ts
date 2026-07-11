@@ -60,13 +60,26 @@ export const TERMS_OF_SERVICE_LINK =
 export enum SCREEN {
   home = "home",
   listPassage = "listPassage",
+  passage = "passage",
   stats = "stats",
   test = "test",
   testResults = "testResults",
   settings = "settings",
   calendar = "calendar",
   login = "login",
-  register = "register"
+  register = "register",
+  // Settings sub-menus — real stack screens (used to be MiniModals nested in the
+  // settings list; converted to screens to drop the modal slide animation).
+  settingsList = "settingsList",
+  settingsTests = "settingsTests",
+  settingsNotifications = "settingsNotifications",
+  settingsStats = "settingsStats",
+  settingsAbout = "settingsAbout",
+  settingsUser = "settingsUser",
+  // Nested lists inside the sub-menus above (were modal-in-modal).
+  settingsTranslations = "settingsTranslations",
+  settingsReminders = "settingsReminders",
+  settingsTrainModes = "settingsTrainModes"
 }
 
 export enum SORTINGOPTION {
@@ -96,17 +109,6 @@ export const VIBRATION_PATTERNS = {
   wordClick: 10,
   APSelectVerse: 10
 };
-
-//TODO will make it later
-// const colors = Platform.select({
-//     ios: {
-//         bgDark: "#E7DF0B",
-//         bgLight: "#7FDE34"
-//         },
-//     android: {
-//         bgDark: PlatformColor('@android:color/system_accent1_200'),
-//         bgLight: PlatformColor('@android:color/system_accent3_500'),
-//         }})
 
 export const COLOR_DARK = {
   bg: "#272A27",
@@ -252,7 +254,6 @@ export enum SETTINGS {
   soundsEnabled = "soundsEnabled",
   compressOldTestsData = "compressOldTestsData",
   leftSwipeTag = "leftSwipeTag",
-  //TODO not sure wheather its implemented
   autoIncreaseLevel = "autoIncreaseLevel",
 
   translations = "translations",

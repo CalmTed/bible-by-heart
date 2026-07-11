@@ -1,10 +1,9 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
-import { navigateWithState } from "../screeenManagement";
 import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
@@ -19,8 +18,8 @@ import * as SecureStore from "expo-secure-store";
 import { ActionName, AppStateModel } from "../models";
 import { reduce } from "../utils/reduce";
 
-export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, setState, theme } = useApp({ route, navigation });
+export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, t, setState, theme } = useAppContext();
 
   const [tempEmail, setTempEmail] = useState("");
   const [tempPassword, setTempPassword] = useState("");
@@ -126,11 +125,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                   }
                   logger.write(`Authinicated as ${userData?.data?.userName}`);
                   setState(newState);
-                  navigateWithState({
-                    navigation,
-                    screen: SCREEN.settings,
-                    state: newState
-                  });
+                  navigation.navigate(SCREEN.settings);
                   break;
                 case 400:
                   logger.error(
@@ -225,11 +220,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   };
 
   const handleRegisterClick = () => {
-    navigateWithState({
-      navigation,
-      screen: SCREEN.register,
-      state
-    });
+    navigation.navigate(SCREEN.register);
   };
   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
     tempEmail
@@ -259,13 +250,7 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="back"
             theme={theme}
             icon={IconName.back}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.settings,
-                state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.settings)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("loginScreenTitle")}

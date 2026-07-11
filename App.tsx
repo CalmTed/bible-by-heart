@@ -14,6 +14,8 @@ import {
 } from "react";
 import { AppStateModel } from "./src/models";
 import { Navigator, navigationRef } from "./src/navigator";
+import { AppProvider } from "./src/context/AppContext";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useShareIntent } from "expo-share-intent";
 import { createAppState } from "./src/initials";
 import storage from "./src/storage";
@@ -42,11 +44,6 @@ export default function App() {
   const [textInputValue, setTextInputValue] = useState("");
   const [askedForHelp, setAskedForHelp] = useState(false);
 
-  // keep latest state for the share-intent effect (which is keyed on the intent,
-  // not on state, so its closure would otherwise capture a stale state)
-  const stateRef = useRef(state);
-  stateRef.current = state;
-
   // Reads text shared into the app via the Android share sheet (SEND / text/plain).
   // This is the piece that was missing: the intent filter opened the app, but
   // nothing read Intent.EXTRA_TEXT (Linking only surfaces VIEW/URL intents).
@@ -71,7 +68,6 @@ export default function App() {
     const routeToList = () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate(SCREEN.listPassage, {
-          ...stateRef.current,
           passageText: sharedText
         });
         resetShareIntent();
@@ -157,11 +153,31 @@ export default function App() {
 
   // const theme = useColorScheme()
 
+  // Load persisted state EXACTLY ONCE, then hand ownership to AppProvider (the
+  // single source of truth, which does all subsequent storage writes). This
+  // effect previously had no dependency array, so it re-read storage and
+  // re-seeded on every render — an infinite reload loop that fought every state
+  // mutation once state stopped being per-screen.
+  const didLoad = useRef(false);
   useEffect(() => {
+    if (didLoad.current) {
+      return;
+    }
+    didLoad.current = true;
     loadState();
-  });
+  }, []);
   try {
-    return <>{isReady && <Navigator state={state} />}</>;
+    return (
+      <>
+        {isReady && (
+          <SafeAreaProvider>
+            <AppProvider initialState={state}>
+              <Navigator />
+            </AppProvider>
+          </SafeAreaProvider>
+        )}
+      </>
+    );
   } catch (err) {
     logger.error(`Error with rendering state on app start`);
     return (

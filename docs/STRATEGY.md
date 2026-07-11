@@ -192,8 +192,11 @@ Not scheduled work — check the relevant item whenever touching its area.
 - Historical fragility `[D]`: `react-native-fetch-api` polyfill once broke
   `useColorScheme()`; EAS autolinking failures; timezone/streak drops days on import.
   Add regression tests when touching those areas.
-- `constants.ts:100,255` unverified TODO constants; `initials.ts:130` missing default
+- ~~`constants.ts:100,255` unverified TODO constants~~; `initials.ts:130` missing default
   tags/train-modes on fresh install.
+  *(2026-07-11: both constants TODOs resolved — `autoIncreaseLevel` verified implemented
+  (reduce.ts:400 + Tests settings checkbox), stale comment removed; dead Material-You
+  `Platform.select` colors block deleted. `initials.ts:130` still open.)*
 - Dependency staleness after the pause: Expo SDK 53 / RN 0.79 will age; plan one
   SDK upgrade per year max, at a milestone boundary.
 - Play Store compliance: target-API-level deadlines for updates; check current

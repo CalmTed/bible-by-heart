@@ -24,7 +24,6 @@ import {
   AppStateModel,
   PassageModel
 } from "../models";
-import { navigateWithState } from "../screeenManagement";
 
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -33,7 +32,6 @@ import { createAddress, createPassage } from "../initials";
 import { AddressPicker } from "../components/AddressPicker";
 import { WORD, createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
-import { PassageEditor } from "../components/PassageEditor";
 import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
@@ -42,28 +40,18 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { getAddresOrder } from "../utils/addressOrder";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 import addressFromString from "../utils/addressFromString";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, setState, t, theme } = useApp({ route, navigation });
+  const { state, setState, t, theme } = useAppContext();
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);
   const addingFirstPassage = state.passages.length === 0;
   const [isAPOpen, setAPOpen] = useState(addingFirstPassage);
-
-  const [isPEOpen, setPEOpen] = useState(false);
-  const [selectedPassage, setSelectedPassage] = useState(
-    createPassage(
-      createAddress(),
-      "",
-      state.settings.translations.find((tr) => tr.isDefault)?.id,
-      state.userData?.uuid !== null ? state.userData.uuid : undefined
-    )
-  );
 
   const [searchText, setSearch] = useState("");
   const [isFiltersOpen, setOpenFilters] = useState(false);
@@ -94,8 +82,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       [...state.passages, newPassage]
     );
     if (versesInEnglish < 500) {
-      setSelectedPassage(newPassage);
-      setPEOpen(true);
+      // Open the editor screen to add a passage at this address. Nothing is
+      // persisted until the user taps Save there (momentary/draft edit).
+      navigation.navigate(SCREEN.passage, { address });
     } else {
       logger.write("English verses number limit reached");
       toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
@@ -109,7 +98,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       });
       return newState ? newState : prv;
     });
-    setPEOpen(false);
   };
   const handlePERemove = (id: number) => {
     setState((prv) => {
@@ -119,11 +107,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       });
       return newState ? newState : prv;
     });
-    setPEOpen(false);
   };
   const handleListItemEdit = (passage: PassageModel) => {
-    setSelectedPassage(passage);
-    setPEOpen(true);
+    navigation.navigate(SCREEN.passage, { passageId: passage.id });
   };
   const handleListItemToggleTag = (passage: PassageModel, tag: string) => {
     const newTags = passage.tags.includes(tag)
@@ -191,16 +177,16 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       parsedAddressResult !== false
         ? text.replace(parsedAddressResult.addressString, "").trim()
         : text.trim();
-    const ownerId =
-      state.userData.uuid !== null ? state.userData.uuid : undefined;
-    setSelectedPassage({
-      ...createPassage(passageAddress, passageText, passageTranslation, ownerId)
-    });
-    // Open the passage editor directly with the parsed address + verse text (the
-    // "confirm before add" step). Going through the AddressPicker instead would
-    // discard both — it is bound to `selectedAddress` and rebuilds an empty passage.
+    // Open the editor screen with the parsed address + verse text (the "confirm
+    // before add" step). Nothing is persisted until Save. Passing the parsed
+    // fields as small route params — not app state — is the deep-link-friendly
+    // path (also reused by the address picker's plain add).
     setAPOpen(false);
-    setPEOpen(true);
+    navigation.navigate(SCREEN.passage, {
+      address: passageAddress,
+      passageText,
+      translationId: passageTranslation
+    });
   };
   // Run once when shared/intent text arrives (route param), NOT on every render —
   // handleTextFromIntent calls setSelectedPassage with a fresh object, so calling it
@@ -329,13 +315,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             key="back"
             theme={theme}
             icon={IconName.back}
-            onPress={() =>
-              navigateWithState({
-                navigation,
-                screen: SCREEN.home,
-                state
-              })
-            }
+            onPress={() => navigation.navigate(SCREEN.home)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("listScreenTitle")}
@@ -623,17 +603,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         onConfirm={handleAPSubmit}
         t={t}
       />
-      {isPEOpen && (
-        <PassageEditor
-          state={state}
-          visible={isPEOpen}
-          passage={selectedPassage}
-          onConfirm={handlePESubmit}
-          onRemove={handlePERemove}
-          t={t}
-          theme={theme}
-        />
-      )}
       <ConfirmModal
         theme={theme}
         shown={passageIdToRemove !== null}

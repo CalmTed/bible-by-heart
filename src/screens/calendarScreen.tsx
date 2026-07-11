@@ -8,13 +8,12 @@ import {
   Animated,
   LayoutAnimation
 } from "react-native";
-import { navigateWithState } from "../screeenManagement";
 import { DAY, MINUTE, PASSAGELEVEL, SCREEN, THEMETYPE } from "../constants";
 import { Header } from "../components/Header";
 import { IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { getAppStats, getTimeBoundStats } from "../utils/getStats";
 import { dateToString, timeStringFromMS } from "../utils/formatDateTime";
 import { WORD, createT } from "../l10n";
@@ -29,8 +28,8 @@ import { PanGestureHandler } from "react-native-gesture-handler";
 //     UIManager.setLayoutAnimationEnabledExperimental(true);
 // }
 
-export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, t, theme } = useAppContext();
   const currentMonthStart = new Date(
     `${new Date().getFullYear()}-${new Date().getMonth() + 1}-01`
   ).getTime();
@@ -331,13 +330,7 @@ export const CalendarScreen: FC<ScreenModel> = ({ route, navigation }) => {
               key="back"
               theme={theme}
               icon={IconName.back}
-              onPress={() =>
-                navigateWithState({
-                  navigation,
-                  screen: SCREEN.stats,
-                  state
-                })
-              }
+              onPress={() => navigation.navigate(SCREEN.stats)}
             />,
             <Text key="title" style={theme.theme.headerText}>
               {t("calendarScreenTitle")}

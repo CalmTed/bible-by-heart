@@ -2,7 +2,6 @@ import React, { FC, useEffect, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL, SCREEN } from "../constants";
 import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
-import { navigateWithState } from "../screeenManagement";
 
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -17,11 +16,11 @@ import { L30 } from "../components/levels/Level3";
 import { LevelPicker } from "../components/LevelPicker";
 import { L40 } from "../components/levels/Level4";
 import { L50 } from "../components/levels/Level5";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 import { MiniModal } from "../components/miniModal";
 
-export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, setState, t, theme } = useApp({ route, navigation });
+export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { state, setState, t, theme } = useAppContext();
   const nextUnfinishedTestIndex = state.testsActive.indexOf(
     state.testsActive.filter((tst) => !tst.f)[0]
   );
@@ -45,11 +44,10 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
   );
 
   const exitTests = () => {
-    const newState =
-      reduce(state, {
-        name: ActionName.clearActiveTests
-      }) || state;
-    navigateWithState({ navigation, screen: SCREEN.home, state: newState });
+    setState(
+      (prev) => reduce(prev, { name: ActionName.clearActiveTests }) || prev
+    );
+    navigation.navigate(SCREEN.home);
   };
 
   const handleReset = () => {
@@ -76,34 +74,41 @@ export const TestsScreen: FC<ScreenModel> = ({ route, navigation }) => {
           )[0]
         );
       });
+      setState((prv) => {
+        return (
+          reduce(prv, {
+            name: ActionName.updateTest,
+            payload: { test: modifiedTest, isRight }
+          }) || prv
+        );
+      });
     } else if (isRight) {
-      //if last test and right then finish
-      const newState =
-        reduce(state, {
-          name: ActionName.finishTesting,
-          payload: {
-            tests: state.testsActive.map((tst) =>
-              tst.i === modifiedTest.i ? modifiedTest : tst
-            )
-          }
-        }) || state;
-      navigateWithState({
-        navigation,
-        screen: SCREEN.testResults,
-        state: newState
+      //if last test and right then finish: commit the session to history
+      //(finishTesting) into the global state, then open the results screen.
+      //State is global now, so nothing is threaded through route params.
+      setState(
+        (prv) =>
+          reduce(prv, {
+            name: ActionName.finishTesting,
+            payload: {
+              tests: prv.testsActive.map((tst) =>
+                tst.i === modifiedTest.i ? modifiedTest : tst
+              )
+            }
+          }) || prv
+      );
+      navigation.navigate(SCREEN.testResults);
+    } else {
+      //wrong answer
+      setState((prv) => {
+        return (
+          reduce(prv, {
+            name: ActionName.updateTest,
+            payload: { test: modifiedTest, isRight }
+          }) || prv
+        );
       });
     }
-    setState((prv) => {
-      return (
-        reduce(prv, {
-          name: ActionName.updateTest,
-          payload: {
-            test: modifiedTest,
-            isRight
-          }
-        }) || prv
-      );
-    });
   };
   const handleLevelPickerOpen = (passageId: number) => {
     setState((prv) => {

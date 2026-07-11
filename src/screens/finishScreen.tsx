@@ -1,14 +1,13 @@
 import React, { FC } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SCREEN } from "../constants";
-import { navigateWithState } from "../screeenManagement";
 import { Button } from "../components/Button";
 import { FinishCupSVG } from "../svg/finishCup";
 import { ScreenModel } from "./homeScreen";
-import { useApp } from "../utils/useApp";
+import { useAppContext } from "../context/AppContext";
 
-export const FinishScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, t, theme } = useApp({ route, navigation });
+export const FinishScreen: FC<ScreenModel> = ({ navigation }) => {
+  const { t, theme } = useAppContext();
 
   return (
     <View
@@ -29,13 +28,7 @@ export const FinishScreen: FC<ScreenModel> = ({ route, navigation }) => {
           theme={theme}
           type="main"
           title={t("Continue")}
-          onPress={() =>
-            navigateWithState({
-              navigation,
-              screen: SCREEN.home,
-              state: state
-            })
-          }
+          onPress={() => navigation.navigate(SCREEN.home)}
         />
       </View>
     </View>

@@ -1,17 +1,19 @@
 import React, { FC, ReactElement, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Pressable } from "react-native";
+import { ScrollView, StyleSheet, Pressable } from "react-native";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
-import { MiniModal } from "./miniModal";
 import { ReminderModel, TrainModeModel, TranslationModel } from "../models";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
+import { THEMETYPE } from "../constants";
 import { secondsToString } from "../utils/secondsToString";
+import { SettingsSubScreen } from "./SettingsSubScreen";
 
 type ListItemType = TranslationModel | TrainModeModel | ReminderModel;
 
 interface SettingsListWrapperModel {
   theme: ThemeAndColorsModel;
-  shown: boolean;
+  themeType: THEMETYPE;
+  // Back out of the whole list (returns to the parent settings sub-menu).
   handleClose: () => void;
   header: string;
   handleAddNew: () => void;
@@ -29,10 +31,15 @@ interface SettingsListWrapperModel {
   ) => ReactElement;
 }
 
+// A reusable editable-list screen body (translations / reminders / train modes).
+// It used to render as a MiniModal with a second MiniModal for the item editor;
+// now it is a plain screen body: the list and the per-item editor are two views
+// toggled by local state, with no modal slide animation. The owning screen
+// supplies the data handlers and back navigation via handleClose.
 export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
   theme,
+  themeType,
   header,
-  shown,
   handleClose,
   handleAddNew,
   handleRemove,
@@ -43,62 +50,43 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
 }) => {
   const [itemSelectedID, setItemSelected] = useState(null as number | null);
 
-  const settingsListWrapperStyle = StyleSheet.create({
-    headerView: {
-      height: 60,
-      width: "100%",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between"
-    },
-    itemsListView: {
-      width: "100%",
-      gap: 5
-    },
-    itemView: {
-      width: "100%",
-      paddingHorizontal: 20,
-      paddingVertical: 15
-    },
-    minimodalHeaderView: {
-      height: 60,
-      width: "100%",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between"
-    },
-    minimodalContentsView: {
-      width: "100%"
-    }
-  });
   const itemSelected = items.find((i) => i.id === itemSelectedID);
   const titleText =
     typeof (itemSelected as TrainModeModel | TranslationModel)?.name !==
     "undefined"
       ? (itemSelected as TrainModeModel | TranslationModel).name || "---"
       : secondsToString((itemSelected as ReminderModel)?.timeInSec) || "---";
+
+  if (itemSelected) {
+    return (
+      <SettingsSubScreen
+        theme={theme}
+        themeType={themeType}
+        title={titleText}
+        onBack={() => setItemSelected(null)}
+      >
+        <ScrollView style={settingsListWrapperStyle.contentsView}>
+          {renderEditItem(itemSelected, handleItemChange, handleRemove)}
+        </ScrollView>
+      </SettingsSubScreen>
+    );
+  }
+
   return (
-    <MiniModal
+    <SettingsSubScreen
       theme={theme}
-      shown={shown}
-      handleClose={handleClose}
-      style={{ ...theme.theme.fullWidth }}
-    >
-      <View style={settingsListWrapperStyle.headerView}>
-        <IconButton
-          theme={theme}
-          icon={IconName.back}
-          onPress={handleClose}
-          color={theme.colors.text}
-        />
-        <Text style={theme.theme.headerText}>{header}</Text>
+      themeType={themeType}
+      title={header}
+      onBack={handleClose}
+      headerRight={
         <IconButton
           theme={theme}
           icon={IconName.add}
           onPress={handleAddNew}
           color={theme.colors.text}
         />
-      </View>
+      }
+    >
       <ScrollView style={settingsListWrapperStyle.itemsListView}>
         {items.map((item) => (
           <Pressable
@@ -110,32 +98,21 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
           </Pressable>
         ))}
       </ScrollView>
-      <MiniModal
-        theme={theme}
-        shown={!!itemSelected}
-        handleClose={() => setItemSelected(null)}
-      >
-        {itemSelected && (
-          <View style={{ ...theme.theme.fullWidth }}>
-            <View style={settingsListWrapperStyle.minimodalHeaderView}>
-              <IconButton
-                theme={theme}
-                icon={IconName.back}
-                onPress={() => setItemSelected(null)}
-                color={theme.colors.text}
-              />
-              <Text
-                style={{ ...theme.theme.headerText, ...theme.theme.flexOne }}
-              >
-                {titleText}
-              </Text>
-            </View>
-            <ScrollView style={settingsListWrapperStyle.minimodalContentsView}>
-              {renderEditItem(itemSelected, handleItemChange, handleRemove)}
-            </ScrollView>
-          </View>
-        )}
-      </MiniModal>
-    </MiniModal>
+    </SettingsSubScreen>
   );
 };
+
+const settingsListWrapperStyle = StyleSheet.create({
+  itemsListView: {
+    width: "100%",
+    paddingHorizontal: 20
+  },
+  itemView: {
+    width: "100%",
+    paddingVertical: 15
+  },
+  contentsView: {
+    width: "100%",
+    paddingHorizontal: 20
+  }
+});
