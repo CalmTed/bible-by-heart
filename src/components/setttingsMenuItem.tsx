@@ -200,10 +200,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
           </View>
           <View>
-            <Checkbox
-              isEnabled={data.checkBoxState}
-              theme={data.theme}
-            ></Checkbox>
+            <Checkbox isEnabled={data.checkBoxState}></Checkbox>
           </View>
         </Pressable>
       )}
@@ -220,7 +217,6 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             <Text style={settingsMenuItemStyles.subtext}>{data.subtext}</Text>
           </Pressable>
           <SelectModal
-            theme={data.theme}
             isShown={selectOpen}
             options={data.options}
             selectedIndex={data.selectedIndex}
@@ -274,7 +270,6 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             ]}
           </View>
           <SelectModal
-            theme={data.theme}
             isShown={tagSelectOpen}
             options={data.optionsList.map((v) => ({
               value: v,

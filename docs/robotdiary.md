@@ -674,3 +674,237 @@ Verified — `npm run lint` (tsc + eslint) ✓ · `npm test` 54 passed / 22 snap
 settings tests existed to update; only `settingsScreen` imported the removed files).
 Needs Fedir's next device build to confirm the sub-menus feel right (push/pop instead of
 slide-up) and that back navigation lands correctly from the nested list editors.
+
+## 2026-07-11 (navigator refactor — bug/flow re-check, §4.2)
+
+Re-checked the freshly-landed navigator refactor (commit fc3bc11) for bugs and flow
+errors before moving further into §4. Read the whole new nav surface: `navigator.tsx`
+(react-navigation stack + `linking`), `App.tsx` (share-intent + one-time load),
+`AppContext` (notification-tap nav via `navigationRef`), and every screen's
+`navigation`/`route` usage. Two real defects found + fixed; two smells confirmed
+pre-existing and left alone.
+
+### FIXED — crash: passage list opens with no route params
+`listScreen.tsx` did `const { passageText } = route.params;`. react-navigation leaves
+`route.params` **undefined** whenever the list is reached without args — which is the
+*primary* path (home->list tap `homeScreen:118/146`, `PassageScreen` save `:61`, deep
+link `bbh://passages`). Destructuring undefined throws → the passage list crashed on
+open. `PassageScreen` already guarded (`route.params ?? {}`); listScreen didn't. Added
+the same guard. (Almost certainly why it wasn't caught yet: the refactor is on `staging`,
+not device-tested — the earlier diary flagged "needs a device build".)
+
+### FIXED — deep-link flow: `bbh://passage/:passageId` never edited, always "add new"
+Deep links deliver path params as **strings**; `PassageScreen` matched `p.id ===
+params.passageId` with a strict `===` (number vs string) so `bbh://passage/12` never
+found passage 12 and fell through to the create-new branch. Normalised: coerce a string
+`passageId` via `Number(...)`, guard `NaN`, then match. Widened `PassageRouteParams.
+passageId` to `number | string` so the type tells the truth (number in-app, string via
+link). In-app numeric navigation unchanged.
+
+### Confirmed pre-existing, deliberately NOT touched (not from this refactor)
+- `ScreenModel.route: any` (`homeScreen.tsx:19`) — from `865b10f "Basic structure"`, not
+  the nav refactor. CODING_RULES bans `any` in *new* code and says existing offenders get
+  a dedicated pass, not opportunistic fixes. Only 2 screens read `route.params`
+  (list/PassageScreen), so a proper `RootStackParamList` + typed screen props is a clean
+  small follow-up — do it in the §4.4 typing/rename pass.
+- `@ts-ignore` on `navigation.addListener("beforeRemove")` (`testsScreen.tsx:34`) — from
+  `4cf5800`, predates the refactor. Same disposition.
+- `testsScreen` calls `exitTests()` (which `navigation.navigate`s) during render when
+  `!testsActive.length` — pre-existing "navigate during render" smell; left for the
+  §4.6 level-component split.
+
+Verified — `npm run lint` (tsc + eslint) ✓ · `npm test` 54 passed / 22 snapshots ✓.
+No new files, no new l10n keys (pure bug fix). No screen tests yet (they need an
+AppProvider wrapper — still the standing testing follow-up), so both fixes need Fedir's
+next device build to confirm: (1) tapping into the passage list no longer crashes, and
+(2) `bbh://passage/<id>` opens that passage in the editor.
+
+## 2026-07-11 (shared contract package — STRATEGY §4.1)
+
+Created the third repo, **`bbh-shared`** (`c:/Code/bbh-shared`) — the client↔server
+contract both repos will depend on. Standalone package, **not a monorepo** (per
+ARCHITECTURE §4). Scope kept deliberately tight ("unify only what's needed"): only
+what actually crosses the wire or is duplicated verbatim today. Learning-data models
+(full user/passage/history/settings) stay out until the sync feature (§6.2) needs them.
+
+### What's in it
+- `apiVersion.ts` — `API_VERSION` (= "0.0.1", matches bbh-api package.json served by
+  `GET /api/version`), an `API_COMPATIBILITY` table + `isApiVersionCompatible()`
+  (exact-match today, structured so version ranges slot in later without touching
+  call sites), `ApiVersionResponse`.
+- `endpoints.ts` — `API_ENDPOINTS` as the single source of truth for endpoint paths
+  (mirrors the app's `API_LINK` enum and the server's `routes.ts`; keeps the server's
+  real — misspelled — `requestPaswordReset` path so the string matches what's served).
+- `auth.ts` — request/response DTOs for the user/auth endpoints. These replace the
+  app's untyped `Record<string, any>` bodies in `services/fetch.ts`. Plus shared unions
+  (`AppLanguage`, `ProfileVisibility`, `DataVisibility`, `UserRights`).
+- `primitives.ts` — `AddressType` + `PASSAGELEVEL`/`TESTLEVEL` enums (byte-for-byte
+  duplicated in both repos' `constants.ts`/`models.ts` right now).
+
+### Drift found while mapping the contract (worth noting)
+- The server's `AppAddressType` declared `endChapterNum`/`endVerseNum` as non-null
+  `number`; the app (source of truth, §3.2) allows `null` for single-verse/chapter
+  refs. Shared `AddressType` keeps the app's nullable shape — a future consumer of the
+  server type will need this widened.
+- App auth payloads are currently fully untyped (`Record<string, any>`) — the DTOs are
+  the first real typing of that surface.
+
+### Deliberately NOT done this session
+Wiring either repo to *consume* the package. It touches CI: both run `npm ci`, which
+can't resolve a sibling `file:../bbh-shared` path dep (the other repo isn't checked out
+in the Actions runner). Needs a publish/registry decision (npm private pkg vs
+`github:` git dep vs path-dep + CI checkout) — that's Fedir's call; the three options
+are written up in the package README. Until wired, both repos keep their own copies;
+the follow-up per-repo tasks replace those with imports. Broken-in-between: none — this
+is purely additive (new repo), the existing app/API are untouched and still build.
+
+### Win conditions
+`bbh-shared`: `npm run lint` (tsc) ✓ · `npm test` (node:test, 3/3) ✓ · builds to
+`dist/` (CJS + `.d.ts`) ✓. Initial git commit made in the new repo. In this repo:
+FILEMAP updated (new "Repo 3" section) + this diary entry. No app code touched → app
+lint/test unaffected; no new UI strings → no l10n change.
+
+## 2026-07-11 (wire bbh-shared into both repos — STRATEGY §4.1 cont.)
+
+Published `bbh-shared` to GitHub (public, `github:CalmTed/bbh-shared`) and wired both
+repos to consume it as a **git dependency** pinned to tag `#v0.0.1`. Public repo ⇒ no
+registry, no CI auth. Initial consumption kept minimal (unify only what's needed); the
+bigger swaps (API_LINK, auth DTOs, user models) are deliberately left as follow-ups.
+
+### Gotcha that shaped the design: Yarn 1 ignores a git dep's `prepare`
+First attempt shipped `dist/` gitignored and relied on `prepare` (tsc) building on
+install. npm does run `prepare` for git deps — **Yarn 1 does not**. bbh-api uses yarn,
+so its install produced a `dist`-less package and `require("bbh-shared")` failed.
+Fix: **commit `dist/`** (un-ignore it, drop the `prepare` script). Now every consumer
+(npm, yarn, EAS) uses the committed build with no build step. Documented the "rebuild
+`dist/` before tagging" step in the package README + release checklist. Re-cut tag
+`v0.0.1` to the dist-committing commit (force-moved; the tag was minutes old and only
+this in-progress wiring referenced it).
+
+### What each repo consumes now
+- **app** `src/constants.ts`: `API_VERSION` is now `import { API_VERSION } from
+  "bbh-shared"; export { API_VERSION };` (import-then-export form, not `export … from`,
+  so babel/Metro can't type-elide the value binding). `initials.ts` + `fetch.ts` still
+  import it from `../constants` unchanged.
+- **server** `src/models.ts`: `import type { AddressType, PASSAGELEVEL } from
+  "bbh-shared"` (both used only in type positions here → `import type`, babel-safe).
+  `AppAddressType` is now `export type AppAddressType = AddressType` (back-compat alias).
+  This reconciles a real drift: the server type had non-null end fields; the shared
+  (app-derived) type allows null.
+- **server** `src/constants.ts`: local `PASSAGELEVEL`/`TESTLEVEL` enum defs removed,
+  replaced by `export { PASSAGELEVEL, TESTLEVEL } from "bbh-shared"` (TESTLEVEL was
+  entirely unused; PASSAGELEVEL only used as a type in models.ts).
+
+### CI — no workflow YAML changes needed
+Both pipelines already install from the manifest/lock: app runs `npm ci` (package-lock
+updated by `npm install`), bbh-api runs `yarn install` (yarn.lock updated by `yarn
+upgrade`). Public git dep ⇒ the Actions runners clone it with no token; committed `dist/`
+⇒ no build toolchain needed for the dep at install time.
+
+### Verification (local, mirrors CI)
+- **bbh-api**: `yarn lint` (eslint) ✓ · `yarn tsc --noEmit` ✓ · `yarn test` 38/38 ✓
+  (constants.ts still 100% coverage — the re-export survives babel).
+- **app**: `npm run lint` (tsc + eslint) ✓ · `npm test` 54/54, 22 snapshots ✓.
+
+### Not committed
+The consumer-repo changes (package.json + lockfile + the 3 source edits in each) are
+left **uncommitted** for Fedir to review/commit — this session only committed inside the
+`bbh-shared` repo (its creation + the dist/ change). No new UI strings → no l10n change.
+
+## 2026-07-11 (themed Text component — STRATEGY §4.3, first slice)
+
+### Context
+§4.3 is "theme + l10n React contexts: centralize; layered `t("page.title")` keys;
+themed `Text` component." The centralize-into-context half already landed during the
+§4.2 navigator refactor: `context/AppContext.tsx` is the single source of truth and
+already hands out `t` and `theme` via `useAppContext()`. **Screens** consume that;
+**base components** still prop-drill `theme`/`t`. This session took the smallest
+self-contained, non-breaking slice: the themed `<Text>` primitive.
+
+### What changed
+- **New** `src/components/Text.tsx` — themed `<Text>`. Reads `theme` from
+  `useAppContext()`; `color` prop selects a semantic color
+  (`text` default / `textSecond` / `textDanger` / `mainColor`); caller `style` is
+  merged AFTER the color so it still wins; all standard `TextProps` pass through.
+  Kills the `color: theme.colors.text` boilerplate hand-threaded onto every RN `<Text>`.
+- **`context/AppContext.tsx`** — now `export const AppContext` (was module-private) so
+  tests / any narrow provider can supply a context value without mounting the full
+  `AppProvider` (which fires storage + notification side effects on mount).
+- **New** `__tests__/components/Text.test.tsx` — wraps a bare `AppContext.Provider`
+  (value built from `createAppState()` + `getThemeFromScheme`): asserts the default
+  primary color resolves per active theme (dark vs light), a semantic `color` resolves,
+  and caller `style` overrides the themed color. 3/3.
+- Docs: CODING_RULES §7 table + FILEMAP component list get the `Text` row; FILEMAP core
+  table gains a `context/AppContext.tsx` line (was undocumented).
+
+### Deliberately NOT done (the larger, riskier remainder of §4.3)
+- **Migrating prop-drilled base components** (Header/Button/Checkbox/… ~18 files) off
+  `theme`/`t` props onto `useAppContext()` + the new `Text`. Their isolated snapshot
+  tests render WITHOUT a provider, so a strict-context `Text` would crash them — that
+  migration needs the test harness updated to wrap a provider, best done as its own task.
+- **Layered `t("page.title")` keys** — the l10n keys are still flat (`keyof typeof en`).
+  Restructuring 20k-line en.ts/ua.ts + every call site is a big, separate task; kept
+  out of a "swift" session to avoid a giant risky diff.
+
+### Win conditions
+`npm run lint` (tsc + eslint) ✓ · `npm test` (Text 3/3; full suite unaffected) ✓ ·
+FILEMAP + CODING_RULES updated ✓ · robotdiary entry ✓ · no new UI strings → l10n
+files untouched (correct). No manual on-device step required for this slice.
+
+## 2026-07-11 (§4.3 cont. — test harness + first base-component migration)
+
+Picked up the deferred remainder of §4.3. It's genuinely two large tasks (the diary
+above said each warrants its own session); the base-component migration alone is a
+266-`theme={...}`-call-site refactor across 36 files — far beyond the "one small task
+per session" rule. So I did the foundational, fully-completable **first slice**: build
+the missing test harness (the documented blocker) and migrate the lowest-fan-out leaf
+primitives off the prop-drilled `theme`. Left the l10n-key restructuring untouched (a
+separate huge task).
+
+### Test harness (the unblock)
+- New `test-utils/renderWithContext.tsx` (repo ROOT, not `__tests__/` — jest-expo's
+  `testMatch` treats *any* file under `__tests__/` as a suite, so a helper there fails
+  with "must contain at least one test"). Exports `renderWithContext(ui, { themeType?,
+  langCode?, state? })` + `makeContextValue`, wrapping a bare `AppContext.Provider`
+  with a synthetic value (no storage/notification side effects, unlike `AppProvider`).
+- A context Provider emits no host node, so wrapping an existing snapshot test in it
+  leaves the rendered tree — and the snapshot — byte-identical (verified: the only
+  `.snap` diff was a describe-name key rename, below).
+
+### Migrated (drop `theme` prop → `useAppContext()`)
+`DotIndicator` (2 sites), `Checkbox` (3), `Select` (4), `SelectModal` (4). Chosen for
+low fan-out so every call site could be updated in one green diff. Call sites updated:
+Button, LevelPicker (DotIndicator); registerScreen, setttingsMenuItem, homeScreen,
+RemindersSettingsScreen, TranslationsSettingsScreen, PassageEditor (Checkbox/Select/
+SelectModal). `Select`/`SelectModal` are a natural parent→child pair; both still pass
+`theme` down to the un-migrated `Button`/`MiniModal` from context.
+- The `<Checkbox theme={theme}/>` in `PassageEditor:750` is inside a `{/* */}` comment
+  (dead code) — left untouched.
+
+### Tests
+- `checkbox.test`, `select.test` → `renderWithContext` (dropped the `theme` prop).
+- `settingsMenuItem.test` → `renderWithContext` (SettingsMenuItem itself is NOT migrated
+  and keeps its `theme` prop, but it renders the now-context-based Checkbox + SelectModal,
+  so its isolated render needs a provider).
+- Refactored `Text.test` to reuse the shared harness (was an inline provider) — removes
+  the duplication the previous slice left behind.
+- Fixed checkbox.test's copy-paste `describe("testing select")` → `"testing checkbox"`;
+  that renamed its snapshot key, so `npm test -- -u` pruned the one obsolete entry (the
+  View content is unchanged).
+- Confirmed no OTHER test transitively renders a migrated component: the Level tests
+  render only Input/Button (un-migrated); button.test renders Button without `dot` (no
+  DotIndicator). Full suite is green, which is the definitive check.
+
+### Deliberately NOT done (documented remainder)
+- The high-fan-out components — `Button`/`IconButton` (89 sites), `setttingsMenuItem`
+  (53), `Input` (15), `Header` (9), `AddressPicker`, `LevelPicker`, `PassageEditor`,
+  `miniModal`, `weekActivityComponent`, `testNevDott`, `SettingsSubScreen`,
+  `settingsListWrapper`, `levels/Level1..5`. Each is its own bounded session now that the
+  harness exists (pattern: read `useAppContext()`, drop the prop, update its call sites,
+  swap affected tests to `renderWithContext`). Note the `t` prop (21 sites) still rides
+  along on some of these — migrate it the same way when its owner is migrated.
+- The layered `t("page.title")` l10n restructuring — still a big separate task.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (26 suites / 57 tests / 22 snapshots). No new
+UI strings → l10n untouched. Pure structural refactor (theme SOURCE prop→context, same
+values) — no runtime behaviour change, so no on-device step needed for this slice.

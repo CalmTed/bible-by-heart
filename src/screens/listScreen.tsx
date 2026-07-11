@@ -60,7 +60,10 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     null
   );
 
-  const { passageText } = route.params;
+  // route.params is undefined whenever the list is reached without args (the
+  // primary home->list tap, PassageScreen save, deep link `bbh://passages`).
+  // Destructuring it directly crashes the screen — guard with a default.
+  const { passageText } = route.params ?? {};
 
   const handleAPOpen = () => {
     setAPOpen(true);

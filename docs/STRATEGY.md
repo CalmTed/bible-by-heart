@@ -209,6 +209,23 @@ Order matters — each unlocks the next. Big manual test at each milestone.
 1. **Shared contract package** (`bbh-shared`, third repo/package — NOT a monorepo) `[F]`:
    client↔server request/response types, API version compatibility table, checksum/
    sync primitives. Both repos consume it. Do BEFORE sync feature work.
+   *(2026-07-11: package CREATED at `c:/Code/bbh-shared` — standalone TS pkg, builds to
+   `dist/` (CJS + d.ts), node:test on the version-compat helper. Contents kept minimal:
+   `API_VERSION` + `API_COMPATIBILITY` + `isApiVersionCompatible()`, `API_ENDPOINTS`
+   (paths single-source), auth request/response DTOs (replace the app's
+   `Record<string,any>`), and the verbatim-duplicated `AddressType`/`PASSAGELEVEL`/
+   `TESTLEVEL`. Checksum/sync primitives deferred to §6.2 when their shape is known.
+   **DONE — published + wired (public GitHub repo, git dependency).**
+   `github:CalmTed/bbh-shared#v0.0.1` in both repos (public ⇒ no registry/CI-auth). Note:
+   `dist/` is committed because **Yarn 1 doesn't run a git dep's `prepare`** (bbh-api uses
+   yarn), so building-on-install isn't portable — consumers use the committed build. Both
+   repos verified green after wiring (bbh-api: eslint+tsc+38 jest; app: tsc+eslint+54 jest).
+   Initial consumption: app `API_VERSION`, server `AddressType`/`PASSAGELEVEL`/`TESTLEVEL`.
+   The address-nullability drift is now reconciled (server `AppAddressType` = shared
+   nullable `AddressType`). **Follow-up per-repo tasks:** migrate the app's `API_LINK` →
+   `API_ENDPOINTS` and the auth `Record<string,any>` bodies → the shared DTOs; reconcile
+   the divergent user models — do these alongside the sync feature (§6.2). Release flow:
+   bump version, `npm run build`, commit `dist/`, tag, bump `#tag` in both repos.)*
 2. **Navigator → standard react-navigation** `[D/F]`: replace custom
    `navigator.tsx`/`screeenManagement.ts`; add deep linking (fixes notification-tap
    and intent entry); remove top-space bug. **(one-sitting task per screen group)**

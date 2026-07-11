@@ -84,19 +84,20 @@ Reuse these. Extend, don't duplicate.
 
 | Component | File | What it is / key props |
 |---|---|---|
+| Text | `src/components/Text.tsx` | themed `<Text>` — pulls theme from AppContext, defaults to primary text color; `color` prop selects a semantic color (`text`/`textSecond`/`textDanger`/`mainColor`); caller `style` overrides. Use instead of RN `<Text>` in new code (STRATEGY §4.3) |
 | Button | `src/components/Button.tsx` | standard app button (title, onPress, disabled, style variants) |
 | IconButton/Icon | `src/components/Icon.tsx` + `icondata.ts` | SVG icon set by name |
 | Input | `src/components/Input.tsx` | themed text input |
-| Checkbox | `src/components/Checkbox.tsx` | themed checkbox row |
-| Select | `src/components/Select.tsx` | dropdown-style selector |
-| SelectModal | `src/components/SelectModal.tsx` | modal list picker |
+| Checkbox | `src/components/Checkbox.tsx` | themed checkbox row — reads theme from AppContext (§4.3, no `theme` prop) |
+| Select | `src/components/Select.tsx` | dropdown-style selector — reads theme from AppContext (§4.3, no `theme` prop) |
+| SelectModal | `src/components/SelectModal.tsx` | modal list picker — reads theme from AppContext (§4.3, no `theme` prop) |
 | MiniModal | `src/components/miniModal.tsx` | small confirm/content modal (base for confirmations) |
 | ConfirmModal | `src/components/ConfirmModal.tsx` | reusable destructive-action confirmation (text + cancel/confirm; `confirmColor` defaults red) — use before any delete/irreversible action |
 | Header | `src/components/Header.tsx` | screen header with back/actions |
 | AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |
 | PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI |
-| DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
+| DotIndicator | `src/components/DotIndicator.tsx` | progress dots — reads theme from AppContext (§4.3, no `theme` prop) |
 | TestNavDott | `src/components/testNevDott.tsx` | per-test navigation dot in session |
 | WeekActivity | `src/components/weekActivityComponent.tsx` | weekly activity graph |
 | SettingsMenuItem | `src/components/setttingsMenuItem.tsx` | settings row (label/action/checkbox/select/textinput/taglist) |

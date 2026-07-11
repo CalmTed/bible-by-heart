@@ -247,7 +247,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
               setLegalCheckBox(!legalCheckBox);
             }}
           >
-            <Checkbox isEnabled={legalCheckBox} theme={theme} />
+            <Checkbox isEnabled={legalCheckBox} />
           </TouchableOpacity>
           <Text style={{ color: theme.colors.text }}>
             {t("legalCheckLabel")}

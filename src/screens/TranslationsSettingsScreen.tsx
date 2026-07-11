@@ -119,7 +119,6 @@ export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                   addressLanguage: value as LANGCODE
                 })
               }
-              theme={theme}
               disabled={!translationItem.editable}
             />
             {/* set default */}

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { PassageModel } from "./models";
+import { API_VERSION } from "bbh-shared";
 
 export const VERSION = "0.1.0";
 
@@ -13,8 +14,9 @@ export const alowedStateVersions = [
   VERSION
 ]; //make translators for imported data
 
-export const API_VERSION = "0.0.1";
-//cant sync with oudated version
+// API_VERSION is sourced from the shared contract (bbh-shared) - the single source
+// of truth shared with the server. Can't sync with an outdated version.
+export { API_VERSION };
 
 export enum LANGCODE {
   en = "en",

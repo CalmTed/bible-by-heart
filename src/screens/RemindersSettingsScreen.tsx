@@ -165,7 +165,6 @@ export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             />
             <View style={remindersStyle.remindersTimePickerView}>
               <Select
-                theme={theme}
                 options={hoursOptions}
                 selectedIndex={hoursSelected}
                 onSelect={(value) => {
@@ -179,7 +178,6 @@ export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                 }}
               />
               <Select
-                theme={theme}
                 options={minutesOptions}
                 selectedIndex={minutesSelected}
                 onSelect={(value) => {

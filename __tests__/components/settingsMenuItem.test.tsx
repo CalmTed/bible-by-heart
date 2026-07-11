@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react-native";
+import { renderWithContext } from "../../test-utils/renderWithContext";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { ARCHIVED_NAME, LANGCODE, THEMETYPE } from "../../src/constants";
 import { createT } from "../../src/l10n";
@@ -73,27 +73,27 @@ describe("testing settings menu item", () => {
     />
   );
   it("renders action correctly", async () => {
-    const tree = render(actionItem).toJSON();
+    const tree = renderWithContext(actionItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
   it("renders checkbox correctly", async () => {
-    const tree = render(checkboxItem).toJSON();
+    const tree = renderWithContext(checkboxItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
   it("renders label correctly", async () => {
-    const tree = render(labelItem).toJSON();
+    const tree = renderWithContext(labelItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
   it("renders select correctly", async () => {
-    const tree = render(selectItem).toJSON();
+    const tree = renderWithContext(selectItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
   it("renders textInput correctly", async () => {
-    const tree = render(textInputItem).toJSON();
+    const tree = renderWithContext(textInputItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
   it("renders tagList correctly", async () => {
-    const tree = render(tagListItem).toJSON();
+    const tree = renderWithContext(tagListItem).toJSON();
     expect(tree).toMatchSnapshot();
   });
 });

@@ -44,7 +44,9 @@ export interface AppContextModel {
   theme: ThemeAndColorsModel;
 }
 
-const AppContext = createContext<AppContextModel | null>(null);
+// Exported so tests (and any narrowly-scoped provider) can supply a context
+// value directly without mounting the full AppProvider and its side effects.
+export const AppContext = createContext<AppContextModel | null>(null);
 
 export const useAppContext: () => AppContextModel = () => {
   const ctx = useContext(AppContext);

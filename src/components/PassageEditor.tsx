@@ -497,7 +497,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <View style={PEstyle.selectorSectionWrapper}>
               <Text style={theme.theme.subText}>{t("TranslationLabel")}:</Text>
               <Select
-                theme={theme}
                 options={[
                   {
                     label: t("TranslationOther"),

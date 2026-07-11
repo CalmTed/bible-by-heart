@@ -1,12 +1,9 @@
-import { render } from "@testing-library/react-native";
 import { Checkbox } from "../../src/components/Checkbox";
-import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
-import { THEMETYPE } from "../../src/constants";
+import { renderWithContext } from "../../test-utils/renderWithContext";
 
-describe("testing select", () => {
+describe("testing checkbox", () => {
   it("renders correctly", async () => {
-    const theme = getThemeFromScheme(THEMETYPE.dark);
-    const tree = render(<Checkbox theme={theme} isEnabled={false} />).toJSON();
+    const tree = renderWithContext(<Checkbox isEnabled={false} />).toJSON();
     expect(tree).toMatchSnapshot();
   });
 });

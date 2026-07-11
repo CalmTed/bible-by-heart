@@ -1,15 +1,15 @@
 import React, { LinearGradient } from "expo-linear-gradient";
 import { FC } from "react";
 import { View, StyleSheet } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 export const DotIndicator: FC<{
-  theme: ThemeAndColorsModel;
   top?: number;
   bottom?: number;
   left?: number;
   right?: number;
-}> = ({ theme, top = 15, bottom = -15, left = -35, right = 35 }) => {
+}> = ({ top = 15, bottom = -15, left = -35, right = 35 }) => {
+  const { theme } = useAppContext();
   const dotIndicatorStyle = StyleSheet.create({
     view: {
       width: 10,

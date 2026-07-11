@@ -106,15 +106,7 @@ export const Button: FC<ButtonModel> = ({
             {icon && iconAlign === "right" && (
               <Icon iconName={icon} color={iconColor || theme.colors.text} />
             )}
-            {dot && (
-              <DotIndicator
-                theme={theme}
-                left={-5}
-                right={5}
-                top={-10}
-                bottom={10}
-              />
-            )}
+            {dot && <DotIndicator left={-5} right={5} top={-10} bottom={10} />}
           </View>
         </LinearGradient>
       </Pressable>

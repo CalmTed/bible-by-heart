@@ -94,7 +94,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           // icon={IconName.selectArrow}
           onPress={handleLabelPress}
         />
-        {targetPassage.isNewLevelAwalible && <DotIndicator theme={theme} />}
+        {targetPassage.isNewLevelAwalible && <DotIndicator />}
       </View>
       <MiniModal
         theme={theme}

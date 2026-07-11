@@ -30,6 +30,7 @@
   },
   "expo.doctor.reactNativeDirectoryCheck.listUnknownPackages": false,
   "dependencies": {
+    "bbh-shared": "github:CalmTed/bbh-shared#v0.0.1",
     "buffer": "^6.0.3",
     "d": "^1.0.2",
     "eas-cli": "16.13.0",

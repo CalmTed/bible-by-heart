@@ -51,6 +51,7 @@
 | `navigator.tsx` | react-navigation stack setup; exports `navigationRef` for imperative navigation from outside the tree (e.g. share-intent handling in `App.tsx`) |
 | `screeenManagement.ts` | screen enum/stack helpers for the custom navigator |
 | `storage.ts` | AsyncStorage read/write of AppState |
+| `context/AppContext.tsx` | global app context: single source of truth for `state`/`dispatch` + provides `t` (l10n) and `theme`; persists state + daily backup; wires notification-response handling. Exports `AppProvider`, `useAppContext`, and `AppContext` (for tests/narrow providers) |
 
 ### `src/screens/`
 
@@ -79,10 +80,23 @@
 ### `src/components/`
 
 See the component library table in `CODING_RULES.md` §7 for descriptions:
-`AddressPicker` `Button` `Checkbox` `ConfirmModal` `DotIndicator` `Header`
+`Text` `AddressPicker` `Button` `Checkbox` `ConfirmModal` `DotIndicator` `Header`
 `Icon`+`icondata.ts` `Input` `LevelPicker` `PassageEditor` `Select` `SelectModal`
 `miniModal` `SettingsSubScreen` `settingsListWrapper` `setttingsMenuItem`
 `testNevDott` `weekActivityComponent`
+
+`Text.tsx` — themed `<Text>` wrapper (STRATEGY §4.3): reads the theme from
+`AppContext` and applies the semantic text color, so callers stop hand-threading
+`color: theme.colors.text` onto every RN `<Text>`. Requires the AppProvider (or, in
+tests, a bare `AppContext.Provider` — now exported from `context/AppContext.tsx`).
+
+STRATEGY §4.3 base-component migration (in progress): `DotIndicator`, `Checkbox`,
+`Select`, `SelectModal` no longer take a `theme` prop — they read it from
+`useAppContext()`. Call sites dropped `theme={...}`; the components now require a
+provider (see `test-utils/renderWithContext.tsx`). Still prop-drilled and pending
+migration: `Button`/`IconButton`, `Input`, `setttingsMenuItem`, `Header`,
+`AddressPicker`, `LevelPicker`, `miniModal`, `weekActivityComponent`, `testNevDott`,
+`PassageEditor`, `SettingsSubScreen`, `settingsListWrapper`, `levels/Level1..5`.
 
 `SettingsSubScreen.tsx` — shared shell (View + Header with back + StatusBar) for
 every settings sub-menu screen. `settingsListWrapper.tsx` — reusable editable-list
@@ -146,9 +160,15 @@ in `src/screens/` and removed.
 | Area | Files |
 |---|---|
 | smoke | `app.test.tsx` |
-| components | AddressPicker, button, checkbox, ConfirmModal, header, icon, input, miniModal, select, settingsMenuItem (+snapshots) |
+| components | AddressPicker, button, checkbox, ConfirmModal, header, icon, input, miniModal, select, settingsMenuItem, Text (+snapshots) |
 | levels | Level1–5 (+snapshots) |
 | utils | addressFromString, createL11Tests, getNumberOfVerses, getStats, handlePassageExport, isTokenExpired, notifications, reduce |
+
+`test-utils/renderWithContext.tsx` (repo root, outside `__tests__/` so jest doesn't
+treat it as a suite) — shared helper that renders a component under an
+`AppContext.Provider` with a synthetic value (no side effects). `renderWithContext(ui,
+{ themeType?, langCode?, state? })`; used by every test whose render tree contains a
+§4.3-migrated component (Text, Checkbox, Select/SelectModal, settingsMenuItem).
 
 ---
 
@@ -194,8 +214,31 @@ column preserving rows, idempotent), `utils/email.test.ts`, `utils/jwt.test.ts`
 
 ---
 
-## Planned third package (not yet created)
+## Repo 3: `c:/Code/bbh-shared` — shared contract package (standalone, TS)
 
-`bbh-shared` (name TBD): client↔server contract — request/response types, API
-version compatibility table, checksum/sync primitives. Used by both repos.
-See STRATEGY §4.1.
+Created 2026-07-11 (STRATEGY §4.1). Client↔server contract both repos depend on —
+NOT a monorepo. Published public at `github:CalmTed/bbh-shared`, consumed as a **git
+dependency** pinned to a tag (`#v0.0.1`). `dist/` is **committed** (Yarn 1 doesn't run
+a git dep's `prepare`), so consumers need no build step. Zero runtime deps; `tsc` →
+`dist/` (CJS + `.d.ts`); `node:test`.
+
+**Consumed by (as of 2026-07-11):**
+- app `src/constants.ts` — `API_VERSION` re-exported from `bbh-shared` (was a local const).
+- server `src/models.ts` — `AddressType` + `PASSAGELEVEL` from `bbh-shared`; local
+  `AppAddressType` is now an alias of the shared type.
+- server `src/constants.ts` — `PASSAGELEVEL`/`TESTLEVEL` re-exported from `bbh-shared`
+  (local enum defs removed).
+
+Not yet migrated (future per-repo tasks): the app's `API_LINK` enum → `API_ENDPOINTS`,
+auth request/response bodies → the `bbh-shared` DTOs (replacing `Record<string,any>` in
+`services/fetch.ts`), and reconciling the divergent user models.
+
+| File | Description |
+|---|---|
+| `src/apiVersion.ts` | `API_VERSION` (== bbh-api package version), `API_COMPATIBILITY` table, `isApiVersionCompatible()`, `ApiVersionResponse` |
+| `src/endpoints.ts` | `API_ENDPOINTS` — endpoint paths, single source of truth (mirrors app `API_LINK` + server routes) |
+| `src/auth.ts` | request/response DTOs for user/auth endpoints (replace the app's `Record<string,any>`) + shared unions (`AppLanguage`, `ProfileVisibility`, `DataVisibility`, `UserRights`) |
+| `src/primitives.ts` | `AddressType` (nullable end fields) + `PASSAGELEVEL`/`TESTLEVEL` enums (duplicated verbatim in both repos today) |
+| `src/index.ts` | barrel re-export |
+| `src/apiVersion.test.ts` | `node:test` coverage of the version-compat helper |
+| `package.json` / `tsconfig.json` / `README.md` / `.gitignore` | package config; README documents contents + the three consumption options |

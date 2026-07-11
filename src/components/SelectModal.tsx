@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { MiniModal } from "./miniModal";
 import { OptionModel } from "../models";
 import { StyleSheet, Text, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { Button } from "./Button";
 
 interface SelectModel {
@@ -11,7 +11,6 @@ interface SelectModel {
   selectedIndex: number | null;
   onSelect: (value: string) => void;
   onCancel: () => void;
-  theme: ThemeAndColorsModel;
   title?: string;
   disabledIndexes?: number[];
 }
@@ -23,9 +22,9 @@ export const SelectModal: FC<SelectModel> = ({
   onSelect,
   onCancel,
   title,
-  theme,
   disabledIndexes
 }) => {
+  const { theme } = useAppContext();
   const selectStyles = StyleSheet.create({
     list: {
       flexDirection: "column",

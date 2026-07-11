@@ -183,7 +183,6 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
           onCancel={() => {
             setShowTrainModesList(false);
           }}
-          theme={theme}
         />
       </View>
     );

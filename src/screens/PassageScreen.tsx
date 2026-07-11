@@ -14,7 +14,7 @@ import { SCREEN } from "../constants";
 // only committed on Save (with a discard-confirm on back). Route params carry
 // only what identifies/seeds the passage — never app state.
 interface PassageRouteParams {
-  passageId?: number; // edit an existing passage
+  passageId?: number | string; // edit an existing passage (string via deep link)
   address?: AddressType; // add a new passage at this address
   passageText?: string; // add with pre-filled text (shared intent / parsed)
   translationId?: number; // translation for the new passage
@@ -31,9 +31,16 @@ export const PassageScreen: FC<ScreenModel> = ({ route, navigation }) => {
     sourcePassage: PassageModel;
     isNew: boolean;
   }>(() => {
+    // Deep links deliver :passageId as a string ("bbh://passage/12"); in-app
+    // navigation passes a real number. Normalise before matching by id, or the
+    // strict `p.id === passageId` never hits and the editor opens "add new".
+    const passageId =
+      typeof params.passageId === "string"
+        ? Number(params.passageId)
+        : params.passageId;
     const existing =
-      typeof params.passageId !== "undefined"
-        ? state.passages.find((p) => p.id === params.passageId)
+      typeof passageId !== "undefined" && !Number.isNaN(passageId)
+        ? state.passages.find((p) => p.id === passageId)
         : undefined;
     return {
       isNew: !existing,
