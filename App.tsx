@@ -89,7 +89,9 @@ export default function App() {
     return () => {
       Linking.removeAllListeners("url");
     };
-  });
+    // Was missing a dep array → re-subscribed on every App render. Only needs to
+    // re-run when devMode toggles (rare); mount-once otherwise (8.1.1 finding #5).
+  }, [state.settings.devModeEnabled]);
   const loadState = () => {
     storage
       .load({

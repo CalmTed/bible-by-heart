@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Linking } from "react-native";
 import { SCREEN, THEMETYPE } from "../constants";
 import { Button } from "../components/Button";
@@ -25,25 +25,34 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
 
-  let strokeData = getStroke(state.testsHistory);
+  // getStroke walks the whole history (O(history)); recompute only when the
+  // history actually changes, not on every re-render (8.1.1 finding #4/d).
+  const strokeData = useMemo(
+    () => getStroke(state.testsHistory),
+    [state.testsHistory]
+  );
   const activeTrainModes = state.settings.trainModesList.filter(
     (m) => m.enabled
   );
 
-  Linking.getInitialURL()
-    .then((url) => {
-      if (url) {
-        // toastShow(`Recieved text or link, ${url}`, 10000);
-        logger.write(`Recieved text or link, ${JSON.stringify(url)}`);
-      } else {
-        if (state.settings.devModeEnabled) {
-          logger.write(`Recieved NO text or link url:${JSON.stringify(url)}`);
+  // Was firing on EVERY render (async work, no effect guard — 8.1.1 finding #4);
+  // it only needs to read the launch URL once on mount.
+  useEffect(() => {
+    Linking.getInitialURL()
+      .then((url) => {
+        if (url) {
+          // toastShow(`Recieved text or link, ${url}`, 10000);
+          logger.write(`Recieved text or link, ${JSON.stringify(url)}`);
+        } else {
+          if (state.settings.devModeEnabled) {
+            logger.write(`Recieved NO text or link url:${JSON.stringify(url)}`);
+          }
         }
-      }
-    })
-    .catch((err) => {
-      logger.error("An error occurred on home screen no getting initial url");
-    });
+      })
+      .catch((err) => {
+        logger.error("An error occurred on home screen no getting initial url");
+      });
+  }, []);
   // const [data, setData] = React.useState<ExpoIntentReceiver.IntentInfo[]>([]);
   // const refIntent = React.useRef(ExpoIntentReceiver.getInitialIntent());
 
@@ -82,7 +91,11 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
   //     return () => {};
   //   }
   // }, []);
-  const LogoBlock = () => (
+  // Elements, NOT nested component functions. Declaring `const LogoBlock = () =>`
+  // and rendering `<LogoBlock/>` mints a NEW component type every render, so React
+  // unmounts + remounts the whole subtree each time (8.1.1 finding #4/e). Plain
+  // elements just reconcile.
+  const logoBlock = (
     <View style={homeStyle.logoView}>
       {new Date().getMonth() !== 11 && (
         <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
@@ -104,97 +117,95 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
       </Text>
     </View>
   );
-  const MainButtons = () => {
-    return (
+  const mainButtons = (
+    <View style={homeStyle.buttonView}>
       <View style={homeStyle.buttonView}>
-        <View style={homeStyle.buttonView}>
-          {state.passages.length === 0 && (
-            <Button
-              key={"addFirstPassageButton"}
-              theme={theme}
-              type="main"
-              color="green"
-              title={t("AddPassages")}
-              onPress={() => navigation.navigate(SCREEN.listPassage)}
-            />
-          )}
-          {state.passages.length > 0 && [
-            <Button
-              key={"practiceButton"}
-              theme={theme}
-              type="main"
-              color="green"
-              title={t("homePractice")}
-              onPress={() => {
-                if (activeTrainModes.length > 1) {
-                  setShowTrainModesList(true);
-                } else {
-                  dispatch({ name: ActionName.generateTests });
-                  navigation.navigate(SCREEN.test);
-                }
-              }}
-              icon={
-                activeTrainModes.length > 1 ? IconName.selectArrow : undefined
-              }
-              iconAlign="right"
-              disabled={state.passages.length === 0}
-            />,
-            <Button
-              key={"listButton"}
-              theme={theme}
-              title={t("homeList")}
-              onPress={() => navigation.navigate(SCREEN.listPassage)}
-            />,
-            <Button
-              key={"statsButton"}
-              theme={theme}
-              title={t("homeStats")}
-              onPress={() => navigation.navigate(SCREEN.stats)}
-            />
-          ]}
+        {state.passages.length === 0 && (
           <Button
+            key={"addFirstPassageButton"}
             theme={theme}
-            title={t("homeSettings")}
-            onPress={() => navigation.navigate(SCREEN.settings)}
+            type="main"
+            color="green"
+            title={t("AddPassages")}
+            onPress={() => navigation.navigate(SCREEN.listPassage)}
           />
-        </View>
-        <SelectModal
-          isShown={showTrainModesList}
-          options={activeTrainModes.map((m) => ({
-            value: m.id.toString(),
-            label: `${m.name} (${getPassagesByTrainMode(state, m).length})`
-          }))}
-          disabledIndexes={activeTrainModes.map((m, i) =>
-            !getPassagesByTrainMode(state, m).length ? i : Infinity
-          )}
-          selectedIndex={activeTrainModes.indexOf(
-            activeTrainModes.filter(
-              (m) => m.id === state.settings.activeTrainModeId
-            )[0]
-          )}
-          onSelect={(value) => {
-            setShowTrainModesList(false);
-            dispatch({
-              name: ActionName.generateTests,
-              trainModeId: parseInt(value, 10)
-            });
-            navigation.navigate(SCREEN.test);
-          }}
-          onCancel={() => {
-            setShowTrainModesList(false);
-          }}
+        )}
+        {state.passages.length > 0 && [
+          <Button
+            key={"practiceButton"}
+            theme={theme}
+            type="main"
+            color="green"
+            title={t("homePractice")}
+            onPress={() => {
+              if (activeTrainModes.length > 1) {
+                setShowTrainModesList(true);
+              } else {
+                dispatch({ name: ActionName.generateTests });
+                navigation.navigate(SCREEN.test);
+              }
+            }}
+            icon={
+              activeTrainModes.length > 1 ? IconName.selectArrow : undefined
+            }
+            iconAlign="right"
+            disabled={state.passages.length === 0}
+          />,
+          <Button
+            key={"listButton"}
+            theme={theme}
+            title={t("homeList")}
+            onPress={() => navigation.navigate(SCREEN.listPassage)}
+          />,
+          <Button
+            key={"statsButton"}
+            theme={theme}
+            title={t("homeStats")}
+            onPress={() => navigation.navigate(SCREEN.stats)}
+          />
+        ]}
+        <Button
+          theme={theme}
+          title={t("homeSettings")}
+          onPress={() => navigation.navigate(SCREEN.settings)}
         />
       </View>
-    );
-  };
+      <SelectModal
+        isShown={showTrainModesList}
+        options={activeTrainModes.map((m) => ({
+          value: m.id.toString(),
+          label: `${m.name} (${getPassagesByTrainMode(state, m).length})`
+        }))}
+        disabledIndexes={activeTrainModes.map((m, i) =>
+          !getPassagesByTrainMode(state, m).length ? i : Infinity
+        )}
+        selectedIndex={activeTrainModes.indexOf(
+          activeTrainModes.filter(
+            (m) => m.id === state.settings.activeTrainModeId
+          )[0]
+        )}
+        onSelect={(value) => {
+          setShowTrainModesList(false);
+          dispatch({
+            name: ActionName.generateTests,
+            trainModeId: parseInt(value, 10)
+          });
+          navigation.navigate(SCREEN.test);
+        }}
+        onCancel={() => {
+          setShowTrainModesList(false);
+        }}
+      />
+    </View>
+  );
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <StatusBar
         style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
       />
-      <LogoBlock />
+      {logoBlock}
       <WeekActivityComponent theme={theme} state={state} t={t} />
-      <MainButtons />
+      {mainButtons}
     </View>
   );
 };

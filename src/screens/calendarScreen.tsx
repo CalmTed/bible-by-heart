@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -148,7 +148,10 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
       width: "100%"
     }
   });
-  const daysStats = getAppStats(state).allDaysStats;
+  // getAppStats is O(history); this screen re-renders on every day/month
+  // selection (local state) — memoize so the walk only reruns when state
+  // changes, not per interaction (8.1.1 finding #4/d).
+  const daysStats = useMemo(() => getAppStats(state), [state]).allDaysStats;
   const monthDaysArr = new Array(
     new Date(
       new Date(selectedMonth).getFullYear(),

@@ -1,8 +1,10 @@
 import React, {
   createContext,
   FC,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from "react";
@@ -67,17 +69,22 @@ export const AppProvider: FC<AppProviderModel> = ({
 }) => {
   const [state, setState] = useState(initialState);
 
-  const dispatch = (action: ActionModel) => {
+  // Stable identity: the reducer + setState are constant, so dispatch never
+  // needs to change. A fresh dispatch each render used to break React.memo on
+  // every child that received it (render lag P0 — STRATEGY §2/§8.1.2).
+  const dispatch = useCallback((action: ActionModel) => {
     setState((prev) => {
       const next = reduce(prev, action);
       return next ? next : prev;
     });
-  };
-
-  const stateString = JSON.stringify(state);
+  }, []);
 
   // Persist every state change + take a daily backup (moved here from useApp so
-  // there is exactly one writer instead of one per mounted screen).
+  // there is exactly one writer instead of one per mounted screen). Keyed on the
+  // `state` reference — the reducer returns a new object only on a real change,
+  // so this fires exactly when it should WITHOUT the per-render
+  // `JSON.stringify(state)` that ran on every render regardless (O(history) —
+  // a primary render-lag suspect, STRATEGY §8.1.1).
   useEffect(() => {
     storage
       .save({
@@ -89,8 +96,9 @@ export const AppProvider: FC<AppProviderModel> = ({
         toastShow(e, 10000);
       });
 
-    const safeObject = JSON.parse(JSON.stringify(state)) as AppStateModel;
-    if ((safeObject?.lastBackup || 0) < new Date().getTime() - DAY) {
+    if ((state?.lastBackup || 0) < new Date().getTime() - DAY) {
+      // Deep clone only on the once-a-day backup path, not on every save.
+      const safeObject = JSON.parse(JSON.stringify(state)) as AppStateModel;
       storage
         .save({
           key: STORAGE_BACKUP_NAME,
@@ -103,7 +111,7 @@ export const AppProvider: FC<AppProviderModel> = ({
           }));
         });
     }
-  }, [stateString]);
+  }, [state]);
 
   // Notification-response handling. Uses the imperative navigationRef + the
   // deep-link-aware stack instead of a per-screen navigation object.
@@ -172,12 +180,25 @@ export const AppProvider: FC<AppProviderModel> = ({
   }, []);
 
   const colorScheme = useColorScheme();
-  const theme = getThemeFromScheme(state.settings.theme, colorScheme);
-  const t = createT(state?.settings?.langCode || LANGCODE.en);
 
-  return (
-    <AppContext.Provider value={{ state, setState, dispatch, t, theme }}>
-      {children}
-    </AppContext.Provider>
+  // Stabilize theme/t so their identities only change when their real inputs do
+  // (theme setting / OS scheme; language). Previously both were rebuilt every
+  // render, defeating any React.memo downstream and re-styling the whole tree on
+  // every dispatch. Stable now → row/component memoization becomes possible
+  // (the memoization deferred on 2026-07-10; STRATEGY §8.1.2).
+  const theme = useMemo(
+    () => getThemeFromScheme(state.settings.theme, colorScheme),
+    [state.settings.theme, colorScheme]
   );
+  const langCode = state?.settings?.langCode || LANGCODE.en;
+  const t = useMemo(() => createT(langCode), [langCode]);
+
+  // Memoize the context value so a provider re-render that does NOT change
+  // state/theme/t (e.g. a parent re-render) doesn't hand consumers a new object.
+  const value = useMemo(
+    () => ({ state, setState, dispatch, t, theme }),
+    [state, dispatch, t, theme]
+  );
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

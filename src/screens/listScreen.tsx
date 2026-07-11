@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -14,16 +14,12 @@ import {
 } from "react-native";
 import {
   ARCHIVED_NAME,
+  LANGCODE,
   PASSAGELEVEL,
   SORTINGOPTION,
   SCREEN
 } from "../constants";
-import {
-  ActionName,
-  AddressType,
-  AppStateModel,
-  PassageModel
-} from "../models";
+import { ActionName, AddressType, PassageModel } from "../models";
 
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -93,15 +89,22 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
     }
   };
-  const handlePESubmit = (passage: PassageModel) => {
-    setState((prv) => {
-      const newState = reduce(prv, {
-        name: ActionName.setPassage,
-        payload: passage
+  // Row-facing handlers are wrapped in useCallback so their identities stay
+  // stable across renders — this is what lets the React.memo'd ListItem skip
+  // re-rendering rows whose data didn't change (8.1.1 finding #4/c). setState /
+  // navigation / setPassageIdToRemove are all referentially stable.
+  const handlePESubmit = useCallback(
+    (passage: PassageModel) => {
+      setState((prv) => {
+        const newState = reduce(prv, {
+          name: ActionName.setPassage,
+          payload: passage
+        });
+        return newState ? newState : prv;
       });
-      return newState ? newState : prv;
-    });
-  };
+    },
+    [setState]
+  );
   const handlePERemove = (id: number) => {
     setState((prv) => {
       const newState = reduce(prv, {
@@ -111,25 +114,47 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       return newState ? newState : prv;
     });
   };
-  const handleListItemEdit = (passage: PassageModel) => {
-    navigation.navigate(SCREEN.passage, { passageId: passage.id });
-  };
-  const handleListItemToggleTag = (passage: PassageModel, tag: string) => {
-    const newTags = passage.tags.includes(tag)
-      ? passage.tags.filter((tg) => tg !== tag)
-      : [...passage.tags, tag];
-    handlePESubmit({
-      ...passage,
-      tags: newTags
-    });
-  };
-  const handleListItemLongPress = (passage: PassageModel) => {
-    Vibration.vibrate(30);
-    handlePESubmit({
-      ...passage,
-      isCollapsed: !passage.isCollapsed
-    });
-  };
+  const handleListItemEdit = useCallback(
+    (passage: PassageModel) => {
+      navigation.navigate(SCREEN.passage, { passageId: passage.id });
+    },
+    [navigation]
+  );
+  const handleListItemToggleTag = useCallback(
+    (passage: PassageModel, tag: string) => {
+      const newTags = passage.tags.includes(tag)
+        ? passage.tags.filter((tg) => tg !== tag)
+        : [...passage.tags, tag];
+      handlePESubmit({
+        ...passage,
+        tags: newTags
+      });
+    },
+    [handlePESubmit]
+  );
+  const handleListItemLongPress = useCallback(
+    (passage: PassageModel) => {
+      Vibration.vibrate(30);
+      handlePESubmit({
+        ...passage,
+        isCollapsed: !passage.isCollapsed
+      });
+    },
+    [handlePESubmit]
+  );
+  const handleListItemEditTag = useCallback(
+    (passage: PassageModel) =>
+      handleListItemToggleTag(passage, state.settings.leftSwipeTag),
+    [handleListItemToggleTag, state.settings.leftSwipeTag]
+  );
+  const handleListItemArchive = useCallback(
+    (passage: PassageModel) => handleListItemToggleTag(passage, ARCHIVED_NAME),
+    [handleListItemToggleTag]
+  );
+  const handleListItemRemove = useCallback(
+    (passage: PassageModel) => setPassageIdToRemove(passage.id),
+    []
+  );
   const handleSortChange = (option: SORTINGOPTION) => {
     setState((prv) => {
       const newState = reduce(prv, {
@@ -369,17 +394,21 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           keyExtractor={(passage) => passage.id.toString()}
           renderItem={({ item: passage }) => (
             <ListItem
-              state={state}
               theme={theme}
               data={passage}
               t={t}
-              onPress={() => handleListItemEdit(passage)}
-              onRemove={() => setPassageIdToRemove(passage.id)}
-              onToggleTag={() =>
-                handleListItemToggleTag(passage, state.settings.leftSwipeTag)
+              sort={state.sort}
+              leftSwipeTag={state.settings.leftSwipeTag}
+              addressLanguage={
+                state.settings.translations.find(
+                  (tr) => tr.id === passage.verseTranslation
+                )?.addressLanguage || state.settings.langCode
               }
-              onLongPress={() => handleListItemLongPress(passage)}
-              onArchive={() => handleListItemToggleTag(passage, ARCHIVED_NAME)}
+              onPress={handleListItemEdit}
+              onRemove={handleListItemRemove}
+              onToggleTag={handleListItemEditTag}
+              onLongPress={handleListItemLongPress}
+              onArchive={handleListItemArchive}
             />
           )}
           ListFooterComponent={
@@ -624,29 +653,38 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   );
 };
 
-const ListItem: FC<{
+// React.memo: the passage list re-renders on every dispatch AND on every search
+// keystroke (local state). With stable `t`/`theme` from context (8.1.2), stable
+// callbacks, and primitive props (sort/leftSwipeTag/addressLanguage) instead of
+// the whole `state` object, a row only re-renders when its OWN passage data
+// changes — search typing and unrelated edits now skip untouched rows (8.1.1
+// finding #4/c). Callbacks receive the passage so the parent can keep one stable
+// reference instead of a fresh closure per row.
+const ListItemBase: FC<{
   data: PassageModel;
   t: (w: WORD) => string;
   theme: ThemeAndColorsModel;
-  onPress: () => void;
-  onToggleTag: () => void;
-  onRemove: () => void;
-  onLongPress: () => void;
-  onArchive: () => void;
-  state: AppStateModel;
+  sort: SORTINGOPTION;
+  leftSwipeTag: string;
+  addressLanguage: LANGCODE;
+  onPress: (passage: PassageModel) => void;
+  onToggleTag: (passage: PassageModel) => void;
+  onRemove: (passage: PassageModel) => void;
+  onLongPress: (passage: PassageModel) => void;
+  onArchive: (passage: PassageModel) => void;
 }> = ({
   data,
   t,
   theme,
+  sort,
+  leftSwipeTag,
+  addressLanguage,
   onPress,
   onToggleTag,
   onRemove,
   onLongPress,
-  state,
   onArchive
 }) => {
-  const sort = state.sort;
-  const leftSwipeTag = state.settings.leftSwipeTag;
   const additionalStyles = data.isCollapsed
     ? { overflow: "visible" }
     : { overflow: "hidden", height: 22 };
@@ -708,7 +746,11 @@ const ListItem: FC<{
           }
         ]}
       >
-        <Button theme={theme} title={tagName} onPress={onToggleTag} />
+        <Button
+          theme={theme}
+          title={tagName}
+          onPress={() => onToggleTag(data)}
+        />
       </Animated.View>
     );
   };
@@ -725,7 +767,7 @@ const ListItem: FC<{
           <Button
             theme={theme}
             title={t("Remove")}
-            onPress={onRemove}
+            onPress={() => onRemove(data)}
             color="red"
           />
         </Animated.View>
@@ -742,7 +784,7 @@ const ListItem: FC<{
         <Button
           theme={theme}
           title={t("Archive")}
-          onPress={onArchive}
+          onPress={() => onArchive(data)}
           color="green"
         />
       </Animated.View>
@@ -763,12 +805,12 @@ const ListItem: FC<{
         return `${passage.dateTested ? timeToString(passage.dateTested) : t("Never")}`;
     }
   };
-  const customT = createT(
-    state.settings.translations.find((tr) => tr.id === data.verseTranslation)
-      ?.addressLanguage || state.settings.langCode
-  );
+  const customT = createT(addressLanguage);
   return (
-    <Pressable onPress={onPress} onLongPress={onLongPress}>
+    <Pressable
+      onPress={() => onPress(data)}
+      onLongPress={() => onLongPress(data)}
+    >
       <Swipeable
         friction={2}
         overshootFriction={10}
@@ -799,3 +841,5 @@ const ListItem: FC<{
     </Pressable>
   );
 };
+const ListItem = React.memo(ListItemBase);
+ListItem.displayName = "ListItem";

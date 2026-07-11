@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
@@ -113,7 +113,9 @@ export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
       fontWeight: "bold"
     }
   });
-  const statsData = getAppStats(state);
+  // getAppStats is O(history); recompute only when state changes, not on every
+  // re-render (e.g. opening the hint modal) — 8.1.1 finding #4/d.
+  const statsData = useMemo(() => getAppStats(state), [state]);
   const relativeScoreColor =
     statsData.relativeScore === 0
       ? theme.colors.textSecond

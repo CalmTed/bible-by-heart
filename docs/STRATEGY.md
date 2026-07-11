@@ -17,7 +17,8 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
    `FILEMAP.md`, and the active section here.
 2. One task per session, sized to fit comfortably under ~100k context. If a task is
    genuinely better done whole (e.g. a state-model migration), the plan says so
-   explicitly on that task: **(one-sitting task)**.
+   explicitly on that task: **(one-sitting task)**. The task itself comes from the
+   **§8 granular queue** — take the first unchecked item unless Fedir says otherwise.
 3. Win conditions for every task: lint ✓ tests ✓ FILEMAP updated ✓ robotdiary entry ✓
    both l10n files ✓ (details in `CODING_RULES.md` §6).
 4. Broken-in-between is allowed across a refactor's tasks; note it in robotdiary.
@@ -43,6 +44,13 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 
 ### P0
 
+- [ ] **~0.5s lag on EVERY screen render** `[F, on-device 2026-07-11]` — reproduces on
+  both the dev APK and the published Play Store build, and not only on weak phones but
+  on a Pixel 9 Pro. Present in the pre-refactor store build → systemic, predates the
+  navigator refactor. MAJOR. Suspects to profile (don't guess-fix): unmemoized
+  `AppContext` value re-rendering the whole tree on every dispatch; `getTheme`/`createT`
+  recreated per render; per-render StyleSheet creation; synchronous AsyncStorage writes;
+  screen re-mounts on navigate. Diagnose first, then fix — sessions 8.1.1–8.1.3.
 - [x] **Level 11 wrong translation** `[D]` — level 11 test shows answer options in a
   different translation/language than the passage. Open since 2023-11-25.
   Code: `src/utils/generateTests/createL11Tests.ts`. Filter option-source passages
@@ -76,6 +84,16 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 
 ### P1 — behavior bugs / unfinished safety
 
+- [x] **Finish screen always skipped** `[F, on-device 2026-07-11]` — after the last
+  test the results/finish screen flashed and Home landed on top of it (reachable only
+  by pressing back). Regression from the state refactor: `finishTesting` empties the
+  now-global `state.testsActive`, so the still-mounted `testsScreen` re-rendered into
+  its "no active tests → go home" guard and called `exitTests()` **during render**,
+  overriding the just-issued `navigate(testResults)`.
+  *(2026-07-11: moved that redirect out of render into a `useIsFocused`-gated effect —
+  it no-ops while results/finish is focused, still redirects home when you press back
+  onto an emptied session. Both render-time `exitTests()` guards are now pure
+  render-safety returns. lint+tests green; needs device confirmation.)*
 - [x] Confirmation dialogs before all destructive actions (delete passage, delete
   account/data, end session) — partially done, finish the rest `[D]`.
   *(2026-07-10: account-delete + end-session already confirmed; added a reusable
@@ -302,21 +320,241 @@ labels, accessibility pass, prove-imported-passage flow, seasonal icons.
 ## 7. Version milestones (big-test checkpoints until 1.0.0)
 
 Each milestone = Fedir does full manual testing on a real phone + staging build.
+Resequenced 2026-07-11: the old **0.1.2 — Safety net** is folded into **0.2.0**
+(the navigator refactor is already on `staging`, so nothing can ship without it),
+and the intent receiver — already working — moved from 0.4.0 into 0.2.0 as polish.
 
 | Version | Content | Sections |
 |---|---|---|
-| **0.1.1 — Revival** | CI/CD verified; P0 + P1 code bugs fixed; login verified vs new VPS; console.error purge | §1, §2 |
-| **0.1.2 — Safety net** | backup-before-migration; crash-report triage; destructive-action confirms; archive-gated delete; reducer+converter test coverage | §2, §5 |
-| **0.2.0 — Foundations** | shared contract package; navigator → react-navigation + deep links; theme/l10n contexts; file renames | §4.1–4.4 |
-| **0.3.0 — Candy UI** | ground-up UI wrapper refactor (reanimated, gestures, all screen sizes); split level components | §4.8 |
-| **0.4.0 — Accounts+** | Google auth (pluggable providers); minimal intent receiver | §6.1, §2-P2 |
-| **0.5.0 — Sync** | basic data sync with incremental history + checksums | §6.2 |
+| **0.1.1 — Revival** ✓ | CI/CD verified; P0 + P1 code bugs fixed; login verified vs new VPS; console.error purge | §1, §2 |
+| **0.2.0 — Fast & solid** | render-lag P0 fixed; intent-receiver polish (sanitize/aliases/confirm); safety net (backup-before-migration, boot fixes); context migrations done; typed nav; file renames | §2, §4.1–4.4, §5 |
+| **0.3.0 — Candy UI** | reanimated ground-up wrapper refactor (gestures, all screen sizes); split level components; modal purge; L5 similar-chars; address-picker UX | §4.6–4.8 |
+| **0.4.0 — Accounts+** | Expo SDK upgrade + deps cleanup; Google auth (pluggable providers) | §6.1, §3 |
+| **0.5.0 — Sync** | basic data sync with incremental history + checksums; shared-pkg follow-ups | §6.2, §4.1 |
 | **0.6.0 — Content & finish** | Ukrainian text-source capability; finish-screen session data | §6.3, §6.4 |
 | **0.7.0 — Premium** | subscription via Play Billing (+ App Store prep) | §6.5 |
-| **0.8.0 — iOS** | App Store account, Apple ID login, iOS-specific fixes, publish | §6.1 |
+| **0.8.0 — iOS** | App Store account, Apple ID login, iOS share extension, iOS-specific fixes, publish | §6.1 |
 | **1.0.0 — Finished** | no major bugs, both stores, sync + payment live | all |
+
+## 8. Granular session plan to 1.0.0 (one checkbox = one session)
+
+> The working queue. Take the FIRST unchecked item unless Fedir says otherwise.
+> Derived from §2–§6 + robotdiary follow-ups + Fedir's 2026-07-11 on-device feedback.
+> Items marked **(build)** end with a version bump + `build-dev` push so real-life
+> testing happens continuously, not only at milestones.
+>
+> **Version & real-life-testing policy:** any session touching native config or
+> dependencies ends with a patch bump + CI staging build **(build)**. Otherwise bump
+> a patch + push a staging build every ~4–6 sessions. Milestone = minor bump + Fedir's
+> full manual pass (checklist kept in robotdiary).
+
+### 8.1 → 0.2.0 "Fast & solid"
+
+**A. The render-lag P0 (do first — it's live in the store)**
+
+- [x] **8.1.1 Diagnose the ~0.5s screen-render lag.** Profile, don't guess: React
+  Profiler / `console.time` on screen mount in a dev build. Check the §2-P0 suspect
+  list (context value identity, `getTheme`/`createT` per render, StyleSheet-in-render,
+  AsyncStorage writes, screen remounts). Deliverable: written findings + ordered fix
+  list in robotdiary. No fixes yet.
+  *(2026-07-11: findings + ordered fix list in robotdiary. Root causes: single
+  AppContext handing a fresh value + fresh `dispatch`/`t`/`theme` every render →
+  whole subscriber tree re-renders per dispatch and no `React.memo` can skip; a
+  per-render `JSON.stringify(state)` (O(history)) as the persist-effect key; heavy
+  per-render `getStroke`/`getAppStats` in home/stats/calendar. Context-layer causes
+  fixed in 8.1.2; screen-layer (memo rows, memo stats, hoist inline components,
+  freezeOnBlur) deferred to 8.1.3.)*
+- [x] **8.1.2 Lag fix, part 1 — context layer.** Per findings; expected shape: memoize
+  the `AppContext` value, split state/dispatch contexts if needed, stabilize `t`/`theme`
+  (this also unlocks the row-memoization deferred on 2026-07-10). **(build)** — Fedir
+  re-times on Pixel 9 Pro.
+  *(2026-07-11: `AppContext.tsx` — `dispatch`→`useCallback`, `theme`/`t`/value→`useMemo`,
+  and persist effect keyed on `state` ref instead of a per-render `JSON.stringify` (clone
+  only on the daily-backup path). Stable `t`/`theme` unblock the row memoization (8.1.3).
+  lint+tests green. Kept single context — a full state/dispatch split wasn't needed for
+  the memo unlock and would touch every call site; revisit in 8.1.3 only if consumers
+  re-rendering is still the bottleneck. **Build + device re-time is Fedir's to trigger**
+  — `npm run build-dev` (billable EAS staging build) + patch bump.)*
+- [x] **8.1.3 Lag fix, part 2 — screen layer** (only if 8.1.2 isn't enough): `React.memo`
+  heavy rows/components, `freezeOnBlur`/`detachInactiveScreens`, lazy screen mount.
+  *(2026-07-11: did fixes c–f from the 8.1.1 ordered list. (c) `React.memo` the passage
+  `ListItem` — pass primitives (`sort`/`leftSwipeTag`/`addressLanguage`) + stable
+  `useCallback` handlers instead of the whole `state`, so a row only re-renders when its
+  OWN passage changes (search typing no longer re-renders every visible row); also
+  `React.memo` `WeekActivityComponent`+`DayActivityBar`. (d) `useMemo` the O(history)
+  stat walks: `getStroke` (home), `getWeeklyStats` (week activity, keyed on
+  `state.testsHistory`), `getAppStats` (stats + calendar, keyed on `state` — skips
+  recompute on local-state re-renders like day/month selection). (e) home's inline
+  `LogoBlock`/`MainButtons` were new component TYPES each render (full remount) → now
+  plain elements; `Linking.getInitialURL` moved from per-render into a mount effect.
+  (f) `freezeOnBlur` + `detachInactiveScreens` on the stack so blurred-but-mounted
+  screens stop re-rendering on every dispatch. Plus App.tsx's `Linking.addEventListener`
+  effect got its missing dep array. lint+tests green (26/57/22). Device re-time is
+  Fedir's; if the ~0.5s is gone, 8.1.A is done.)*
+
+**B. Intent-receiver polish (Fedir's on-device feedback batch)**
+
+- [ ] **8.1.4 Sanitize shared text** (`listScreen.handleTextFromIntent` path): trim;
+  strip wrapping quotes (`«»`, `""`, `“”`, `‘’`); strip dangling `:`/`;`/`,` at ends;
+  **normalize untypable chars** — em/en dash → `-`, curly quotes/apostrophes → straight,
+  ellipsis `…` → `...`, nbsp → space — because the typing test demands the exact char.
+  Also **strip URLs** from the shared text (share payloads usually append a link).
+  Pure util + unit tests with real shared strings (YouVersion etc.).
+- [ ] **8.1.5 Book-name variants in `addressFromString`**: alias list per book
+  (Івана = Іоана and similar uk spelling variants; common en abbreviations), applied in
+  the candidate-matching pass. Tests per alias.
+- [ ] **8.1.6 Intent finish**: replace the debug toast with the intended confirm flow;
+  remove the now-redundant manual SEND filter in `app.config.js` and the dead
+  `plugins/handlingIntents.js`. **(build)**
+- [ ] **8.1.7 AddressPicker one-verse flow**: after a single verse is picked, show a
+  big colored PRIMARY "add" button by default — one verse is enough — with a clearly
+  secondary affordance to extend the range. l10n en+ua.
+
+**C. Safety net (the old 0.1.2, still owed)**
+
+- [ ] **8.1.8 Boot-path backup fixes** (§3 logged 2026-07-11): give the pre-conversion
+  snapshot its own never-overwritten storage key; make "Restore from backup" accept an
+  old-version snapshot and re-convert it. Device-sensitive — careful, tests first.
+- [ ] **8.1.9 Backup-before-migration prompt** (§5): on state-version upgrade prompt to
+  save a backup file; settings option to restore from a backup file. **(build)**
+- [ ] **8.1.10 Legacy converter coverage**: fixture states for 0.0.6/0.0.7, converted
+  forward, asserted (completes the 2026-07-11 converter test work).
+
+**D. Foundations completion (§4.3/§4.4 remainder)**
+
+- [ ] **8.1.11 Context migration — `Button` + `IconButton`** (~89 call sites; the
+  pattern from 2026-07-11: read `useAppContext()`, drop `theme` prop, update call
+  sites, swap tests to `renderWithContext`).
+- [ ] **8.1.12 Context migration — `settingsMenuItem` + `Input` + `Header`** (~77 sites).
+- [ ] **8.1.13 Context migration — the rest**: `AddressPicker`, `LevelPicker`,
+  `PassageEditor`, `miniModal`, `weekActivityComponent`, `testNevDott`,
+  `SettingsSubScreen`, `settingsListWrapper`, `levels/Level1..5`; retire the `t` prop.
+- [ ] **8.1.14 Typed navigation**: `RootStackParamList` + typed screen props; removes
+  `ScreenModel.route: any` (homeScreen) and the `@ts-ignore` in testsScreen.
+- [ ] **8.1.15 File renames to convention** (CODING_RULES §2): pure `git mv` + import
+  fixes, no logic. **(one-sitting task)**
+- [ ] **8.1.16 Fresh-install defaults** (`initials.ts:130`): default tags/train-modes
+  on first launch.
+- [ ] **8.1.17 bbh-api deploy session**: push the two committed-not-deployed hardenings
+  (`verifyMailer`, `ensureUsersTableColumns`); serve `/.well-known/assetlinks.json` so
+  https App Links open the app; switch the prod container entrypoint from `nodemon` to
+  plain `node dist/app.js`.
+- [ ] **8.1.18 🏁 MILESTONE 0.2.0**: bump minor, staging build, Fedir's full device
+  pass (checklist in robotdiary: scroll feel, search focus, intent → confirm → add,
+  deep links, backup/restore, login).
+
+### 8.2 → 0.3.0 "Candy UI"
+
+- [ ] **8.2.1 Install `react-native-reanimated`** + babel plugin, verify a trivial
+  animation compiles in a dev build. Native change → **(build)**.
+- [ ] **8.2.2 Modal purge**: audit every remaining full-screen `MiniModal`; convert the
+  **filter/tag selection** (listScreen) and any other sub-menu-like ones to screens or
+  anchored non-fullscreen popups. Real dialogs (confirms, About popups) stay modals.
+- [ ] **8.2.3 Wrapper rewrite — navigation transitions + Header** (reanimated springs;
+  fixes "animations feel worse"; retune the FlatList scroll feel from 2026-07-10).
+  *(Device feedback 2026-07-11, after the 8.1.2 build: the default card transition now
+  reads fine on an old Samsung — it fades — but on the Pixel 9 Pro it does a same-side
+  push that runs faster yet **looks broken at the tail end of the animation**. Replace
+  the stack's screen-transition animation here rather than tweak it: define an explicit
+  custom `cardStyleInterpolator` / reanimated transition instead of relying on the
+  platform default, so it's consistent across devices. Keep this in mind when doing the
+  wrapper rewrite.)*
+- [ ] **8.2.4 Wrapper rewrite — home screen + passage list interactions** (gestures,
+  swipe actions, responsive small-Android → tablet/foldable).
+- [ ] **8.2.5 Wrapper rewrite — tests/levels screens + finish screen shell.** **(build)**
+- [ ] **8.2.6 Split level components** (§4.6): one file per level, unify error-message
+  design; fixes the testsScreen navigate-during-render smell.
+- [ ] **8.2.7 Level 5 similar-chars tolerance**: equivalence list (dash variants, quote/
+  apostrophe variants, ellipsis, і/i lookalikes, case of diacritics) used by the L5
+  comparator (`createL50Test.ts` / `Level5.tsx`) so near-identical chars aren't counted
+  as errors — gentler, per philosophy §2.2. Complements 8.1.4 (sanitize on input,
+  tolerate on comparison). Unit tests per pair.
+- [ ] **8.2.8 Haptics/sound util** (§4.7): auto-checks settings; replace scattered calls.
+- [ ] **8.2.9 Layered l10n keys** `t("page.title")` (§4.3 remainder): restructure
+  en.ts/ua.ts + call sites. Big mechanical diff — **(one-sitting task)**, can slip
+  to any later gap if 0.3.0 runs long.
+- [ ] **8.2.10 🏁 MILESTONE 0.3.0**: minor bump, staging build, Fedir's device pass
+  (animation feel is the acceptance criterion) + Play Store release of the accumulated
+  0.2.0+0.3.0 work.
+
+### 8.3 → 0.4.0 "Accounts+"
+
+- [ ] **8.3.1 Expo SDK upgrade** (54 → 55, or straight to current if the jump is
+  documented-safe), per the one-per-year-at-milestone-boundary rule. **(build)**
+- [ ] **8.3.2 Deps cleanup**: drop `eas-cli` from deps; replace `react-native-fs`
+  (unmaintained, New-Arch risk) with `expo-file-system`; `expo-random` → `expo-crypto`.
+  **(build)**
+- [ ] **8.3.3 Google auth — decision doc**: pluggable-provider interface design
+  (Apple ID must slot in later), library choice (`expo-auth-session` vs native), token
+  exchange flow vs bbh-api. Doc only, Fedir signs off.
+- [ ] **8.3.4 Google auth — bbh-api**: provider-agnostic endpoint (`/api/user/oauth`),
+  verify Google ID token, issue the same JWT pair; supertest coverage.
+- [ ] **8.3.5 Google auth — client**: Google sign-in button alongside email/password
+  (never required); wire through the provider interface; l10n en+ua. **(build)**
+- [ ] **8.3.6 🏁 MILESTONE 0.4.0**: minor bump, device pass (both auth paths, fresh
+  install, SDK-upgrade smoke).
+
+### 8.4 → 0.5.0 "Sync"
+
+- [ ] **8.4.1 Shared-pkg follow-ups** (§4.1 debt): migrate app `API_LINK` →
+  `API_ENDPOINTS`; auth `Record<string, any>` bodies → shared DTOs; reconcile the
+  divergent user models. Release bbh-shared v0.0.2 (bump, build dist, tag, re-pin).
+- [ ] **8.4.2 Sync design doc**: state split into parts; LWW + checksum per part;
+  incremental history protocol (append + count/time/checksum verify). Extends
+  ARCHITECTURE §3.4 into concrete request/response shapes in bbh-shared.
+- [ ] **8.4.3 Checksum/sync primitives in bbh-shared** + unit tests (v0.0.3).
+- [ ] **8.4.4 bbh-api sync endpoints** (part get/put, history append/verify) +
+  supertest coverage of all routes incl. failure cases (§5 item).
+- [ ] **8.4.5 Client sync engine — parts** (settings/passages): LWW exchange, checksum
+  verify, api-version compat gate (sync disabled ≠ app broken, §3-constitutional).
+- [ ] **8.4.6 Client sync engine — incremental history** + animated progress bar.
+- [ ] **8.4.7 Sync UI in settings** (status, last sync, manual trigger) l10n en+ua.
+  **(build)**
+- [ ] **8.4.8 🏁 MILESTONE 0.5.0**: minor bump; two-device manual sync test is the
+  acceptance criterion.
+
+### 8.5 → 0.6.0 "Content & finish"
+
+- [ ] **8.5.1 Pluggable text-source interface** (generalize `fetchESV.ts`), so a
+  Ukrainian translation = config + one fetcher file once permission is secured.
+- [ ] **8.5.2 Finish screen session data** (§6.4): what was trained, time, level-ups,
+  what needs repeating — WITHOUT error counts (philosophy §2.2). l10n en+ua.
+- [ ] **8.5.3 Stats correctness pass**: decide the day-average question with Fedir
+  (`getStats.ts:291`), add streak/timezone-DST regression tests (§5). **(build)**
+- [ ] **8.5.4 🏁 MILESTONE 0.6.0**: minor bump, device pass.
+
+### 8.6 → 0.7.0 "Premium"
+
+- [ ] **8.6.1 IAP research + decision doc**: `expo-iap` / RevenueCat / raw Play
+  Billing; subscription product setup; entitlement model. Doc only.
+- [ ] **8.6.2 Entitlement flag** in AppState + bbh-api (user record + endpoint);
+  converter bump + tests.
+- [ ] **8.6.3 Play Billing integration** + purchase/restore flows + premium gate on
+  the chosen features. **(build)**
+- [ ] **8.6.4 🏁 MILESTONE 0.7.0**: minor bump; real test purchase on device.
+
+### 8.7 → 0.8.0 "iOS"
+
+- [ ] **8.7.1 App Store Connect setup**: ascAppId into `eas.json` submit profile
+  (unblocks the CI submit step from 2026-07-09), TestFlight build green. **(build)**
+- [ ] **8.7.2 Apple ID login** through the 8.3.3 provider interface (required by App
+  Store rules once Google login exists on iOS).
+- [ ] **8.7.3 iOS share extension** for the intent receiver (app-group id + the
+  `expo-share-intent` iOS half that was `disableIOS`'d).
+- [ ] **8.7.4 iOS-specific fixes pass** (safe areas, gestures, notifications) from
+  TestFlight feedback.
+- [ ] **8.7.5 🏁 MILESTONE 0.8.0**: App Store publish.
+
+### 8.8 → 1.0.0 "Finished"
+
+- [ ] **8.8.1 Reducer full action coverage** in `reduce.test.ts` (§5).
+- [ ] **8.8.2 End-to-end flow test** (§5): create state → add passage → generate tests
+  → answer with errors → finish → stats correct → error counts NEVER rendered.
+- [ ] **8.8.3 Hardening/bug-triage buffer** — whatever the milestones surfaced.
+- [ ] **8.8.4 🏁 1.0.0**: both stores, sync + payment live, no major bugs.
 
 ---
 
-_Update this file as tasks complete (check boxes, move bugs). Detailed per-part
-plans are derived from here by Fedir when a section becomes active._
+_Update this file as tasks complete (check boxes, move bugs). §8 is the working
+queue; when reality diverges (new bugs, Fedir feedback), insert sessions rather
+than silently reordering._

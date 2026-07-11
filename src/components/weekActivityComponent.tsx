@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useMemo } from "react";
 import { View, Text, StyleSheet, DimensionValue } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { AppStateModel } from "../models";
@@ -6,12 +6,19 @@ import { getWeeklyStats } from "../utils/getStats";
 import { WORD } from "../l10n";
 import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 
+// React.memo: home re-renders on every local state change (e.g. opening the
+// train-modes picker); with stable `t`/`theme` from context (8.1.2) this now
+// skips re-rendering when state/t/theme are unchanged (8.1.1 finding #4/c).
 export const WeekActivityComponent: FC<{
   state: AppStateModel;
   t: (w: WORD) => string;
   theme: ThemeAndColorsModel;
-}> = ({ state, t, theme }) => {
-  const weekActivityData = getWeeklyStats(state);
+}> = React.memo(({ state, t, theme }) => {
+  // getWeeklyStats walks history; recompute only when history changes (#4/d).
+  const weekActivityData = useMemo(
+    () => getWeeklyStats(state),
+    [state.testsHistory]
+  );
   const maxValue = Math.max(...weekActivityData.map((d) => d.number));
   const day = new Date().getDay();
   const weekActivityStyles = StyleSheet.create({
@@ -39,7 +46,8 @@ export const WeekActivityComponent: FC<{
       })}
     </View>
   );
-};
+});
+WeekActivityComponent.displayName = "WeekActivityComponent";
 
 const DayActivityBar: FC<{
   value: number;
@@ -47,7 +55,7 @@ const DayActivityBar: FC<{
   label: string;
   isToday: boolean;
   theme: ThemeAndColorsModel;
-}> = ({ value, maxValue, label, isToday, theme }) => {
+}> = React.memo(({ value, maxValue, label, isToday, theme }) => {
   const barHeight = `${(80 / maxValue) * value + 20}%` as DimensionValue;
   const gradientColors = value
     ? [theme.colors.gradient1, theme.colors.gradient2]
@@ -100,4 +108,5 @@ const DayActivityBar: FC<{
       </Text>
     </View>
   );
-};
+});
+DayActivityBar.displayName = "DayActivityBar";

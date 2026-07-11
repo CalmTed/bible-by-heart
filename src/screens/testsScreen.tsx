@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
+import { useIsFocused } from "@react-navigation/native";
 import { View, StyleSheet, Text } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL, SCREEN } from "../constants";
 import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
@@ -21,6 +22,7 @@ import { MiniModal } from "../components/miniModal";
 
 export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
+  const isFocused = useIsFocused();
   const nextUnfinishedTestIndex = state.testsActive.indexOf(
     state.testsActive.filter((tst) => !tst.f)[0]
   );
@@ -49,6 +51,26 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
     );
     navigation.navigate(SCREEN.home);
   };
+
+  // Bounce out of an empty/invalid session (stale deep link, or a test that
+  // points at a deleted passage) — but ONLY while this screen is focused.
+  // Finishing the last test clears `testsActive` AND navigates to the results
+  // screen; this used to run as a side effect DURING render (the guards below),
+  // so on that same re-render the now-background TestsScreen shoved Home on top
+  // of the finish screen — finish "skipped", reachable only via back
+  // (device feedback 2026-07-11). Focus-gating fixes it: while results/finish is
+  // focused this no-ops; pressing back onto an empty session still redirects home.
+  useEffect(() => {
+    if (!isFocused) {
+      return;
+    }
+    const activeTest = state.testsActive[activeTestIndex];
+    const passageMissing =
+      !!activeTest && !state.passages.some((p) => p.id === activeTest.pi);
+    if (!state.testsActive.length || passageMissing) {
+      exitTests();
+    }
+  }, [isFocused, state.testsActive, state.passages, activeTestIndex]);
 
   const handleReset = () => {
     setActiveTest(0);
@@ -166,9 +188,8 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
     }
   });
 
-  //if no active tests > create them
+  //nothing valid to render — the focus-gated effect above handles redirecting
   if (!state.testsActive.length) {
-    exitTests();
     return <View style={{ ...theme.theme.screen }} />;
   }
   const activeTestObj: TestModel = {
@@ -188,7 +209,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
     (p) => p.id === activeTestObj.pi
   ) as PassageModel;
   if (!targetPassage) {
-    exitTests();
     return <View style={{ ...theme.theme.screen }} />;
   }
   const tempT = createT(

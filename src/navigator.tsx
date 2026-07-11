@@ -80,10 +80,16 @@ export const Navigator: FC = () => {
   return (
     <NavigationContainer ref={navigationRef} linking={linking}>
       <Stack.Navigator
+        detachInactiveScreens
         screenOptions={{
           headerShown: false,
           gestureEnabled: true,
-          presentation: "card"
+          presentation: "card",
+          // Blurred screens stay mounted (react-navigation keeps the stack), so
+          // without this a single dispatch re-renders EVERY mounted screen and
+          // re-runs its O(history) stat work (8.1.1 finding #4). freezeOnBlur
+          // suspends off-screen screens so only the focused one re-renders.
+          freezeOnBlur: true
         }}
       >
         <Stack.Screen name={SCREEN.home} component={HomeScreen} />

@@ -908,3 +908,161 @@ SelectModal). `Select`/`SelectModal` are a natural parent→child pair; both sti
 Verified: `npm run lint` ✓ · `npm test` ✓ (26 suites / 57 tests / 22 snapshots). No new
 UI strings → l10n untouched. Pure structural refactor (theme SOURCE prop→context, same
 values) — no runtime behaviour change, so no on-device step needed for this slice.
+
+## 2026-07-11 (planning — granular session queue to 1.0.0, STRATEGY §8)
+
+Docs-only session. Fedir asked for a granular one-item-per-session plan to 1.0.0,
+folding in his latest on-device feedback + the follow-ups scattered through this diary.
+
+- **New STRATEGY §8**: the working queue — ~50 checkboxed sessions grouped by
+  milestone (8.1 → 0.2.0 … 8.8 → 1.0.0), each sized for one session, with **(build)**
+  markers where a session must end in a version bump + CI staging build so real-life
+  testing happens continuously, not just at milestones. §0 protocol now points at §8
+  ("take the first unchecked item").
+- **New §2 P0**: the ~0.5s lag on EVERY screen render (both dev APK and the published
+  Play Store build, even on Pixel 9 Pro). Key triage fact: it reproduces on the
+  pre-refactor store build → systemic, NOT caused by the navigator refactor. Planned
+  as diagnose-first (8.1.1) then fix in layers (8.1.2 context, 8.1.3 screens) —
+  suspects listed, no guess-fixes.
+- **Milestones resequenced** (§7): old 0.1.2 "Safety net" folded into 0.2.0 (the nav
+  refactor already sits on `staging` — nothing ships without it); intent receiver
+  (working since the 07-10/11 sessions) moved from 0.4.0 into 0.2.0 as polish.
+  0.2.0 renamed "Fast & solid".
+- **Fedir's new tasks placed**: shared-text sanitization incl. URL-stripping +
+  untypable-char normalization (8.1.4); book-name aliases Івана=Іоана (8.1.5);
+  intent debug-toast → confirm flow + dead-plugin cleanup (8.1.6); AddressPicker
+  big-primary one-verse-is-enough button (8.1.7); modal purge starting with filter
+  selection (8.2.2); Level-5 similar-chars tolerance (8.2.7 — deliberately paired
+  with 8.1.4: sanitize on input, tolerate on comparison).
+- **Diary follow-ups absorbed into §8**: boot-backup key + old-version restore
+  (8.1.8), legacy converter fixtures (8.1.10), context-migration remainder
+  (8.1.11–13), typed nav params (8.1.14), renames (8.1.15), initials defaults
+  (8.1.16), bbh-api deploy + assetlinks.json + nodemon→node (8.1.17), reanimated
+  install (8.2.1), layered l10n keys (8.2.9), SDK upgrade + deps cleanup
+  (8.3.1–2), shared-pkg DTO follow-ups (8.4.1), day-average decision (8.5.3),
+  ascAppId (8.7.1), iOS share extension (8.7.3).
+- Nothing coded; no files added/removed → FILEMAP untouched; no UI strings → l10n
+  untouched. Next session = **8.1.1 diagnose the render lag**.
+
+## 2026-07-11 (8.1.1 diagnose render lag + 8.1.2 context-layer fix)
+
+Did 8.1.1 (diagnosis) and 8.1.2 (context-layer fix) together this session.
+
+### 8.1.1 — Findings (code-level; an on-device profiler run couldn't be done in
+this automated session, so these are ranked by expected cost from reading the hot
+paths — Fedir's Pixel 9 Pro re-time after the 8.1.2 **(build)** is the confirmation).
+
+All of `state`/`dispatch`/`t`/`theme` come from ONE context (`AppContext.tsx`) that
+~20 screens + base components subscribe to. Two compounding problems:
+
+1. **New context-value object every provider render.** The provider passed a fresh
+   `{ state, setState, dispatch, t, theme }` literal each render → every
+   `useAppContext()` consumer re-renders on every dispatch. (context layer)
+2. **`dispatch`, `t`, `theme` all rebuilt every render.** `dispatch` was a fresh
+   closure; `t = createT(...)` a fresh closure; `theme = getThemeFromScheme(...)` a
+   fresh object — so even a `React.memo`'d child got new props every time and never
+   skipped. This is exactly why the 2026-07-10 passage-row memoization was deferred
+   "until `t`/`theme` are stable". (context layer)
+3. **`JSON.stringify(state)` on EVERY provider render** (as a `useEffect` dep key),
+   plus a second full `JSON.parse(JSON.stringify(state))` deep clone in the effect
+   body — both O(state size), growing with years of history. A serialize of the
+   whole state on every render is a top suspect for a fixed ~0.5s hit. (context layer)
+4. **Heavy per-render work in screens** (screen layer → 8.1.3, NOT fixed here):
+   - `homeScreen`: `getStroke(state.testsHistory)` recomputed every render;
+     `Linking.getInitialURL()` fired every render (async work, no effect guard);
+     `LogoBlock`/`MainButtons` declared inside render and used as `<LogoBlock/>` →
+     new component types each render → full unmount/remount of those subtrees.
+   - `statsScreen` / `calendarScreen`: `getAppStats(state)` recomputed every render
+     (O(history)).
+   Combined with problem 1, a single dispatch re-renders every mounted screen
+   (react-navigation keeps prior screens mounted) and re-runs all their O(history)
+   stat computations — the compounding lag.
+5. **`App.tsx` `Linking.addEventListener` effect has no dep array** → re-subscribes
+   every App render. Minor; noted for the 8.1.3/navigator pass.
+
+Ordered fix list: **(a)** memoize context value + stabilize `dispatch`/`t`/`theme`;
+**(b)** drop the per-render `JSON.stringify` persist key → key on `state` ref; clone
+only on the daily-backup path — [both done in 8.1.2 below]; **(c)** `React.memo` the
+passage rows + `WeekActivity`, now that `t`/`theme` are stable (8.1.3); **(d)** memoize
+`getStroke`/`getAppStats` per screen (`useMemo` on the history slice) (8.1.3); **(e)**
+hoist `homeScreen`'s inline `LogoBlock`/`MainButtons`, move `Linking.getInitialURL`
+into a mount effect (8.1.3); **(f)** `freezeOnBlur`/`detachInactiveScreens` on the
+stack so blurred screens stop re-rendering (8.1.3).
+
+### 8.1.2 — Context-layer fix (`src/context/AppContext.tsx`)
+- `dispatch` → `useCallback([])` (reducer + `setState` are constant → stable identity).
+- `theme` → `useMemo` keyed on `[state.settings.theme, colorScheme]`.
+- `t` → `useMemo` keyed on `[langCode]`.
+- context `value` → `useMemo` keyed on `[state, dispatch, t, theme]` (setState stable).
+- Persist effect: dep `[stateString]` → `[state]`; deleted the per-render top-level
+  `JSON.stringify(state)`; moved the `JSON.parse(JSON.stringify(state))` deep clone
+  inside the once-a-day backup branch. Fires exactly as before (reducer returns a new
+  ref only on real change) but without serializing the whole state every render.
+
+No behaviour change intended — same values, same persist/backup cadence, just stable
+identities and far less per-render work. This unblocks the row/component memoization
+(fix c). No new files → FILEMAP untouched; no UI strings → l10n untouched.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (26 suites / 57 tests / 22 snapshots).
+**Needs Fedir's device re-time** (this is a **(build)** session): confirm the ~0.5s
+per-screen lag drops; if not enough, proceed to 8.1.3 (screen layer, fixes c–f above).
+
+## 2026-07-11 (8.1.3 render lag — screen layer, fixes c–f)
+
+Did the screen-layer half of the render-lag P0: the four fixes (c–f) the 8.1.1
+diagnosis queued after the 8.1.2 context-layer work. Now that `t`/`theme`/`dispatch`
+have stable identities (8.1.2), `React.memo` can finally bite.
+
+### (c) React.memo the heavy rows/components
+- **`ListScreen` `ListItem`** — the big one. The passage list re-renders on every
+  dispatch AND on every search keystroke (`searchText` local state), and each render
+  re-rendered every visible row. Root blockers to memoizing were: (1) it took the whole
+  `state` object (new identity every dispatch), and (2) `renderItem` handed each row a
+  fresh `() => handler(passage)` closure. Fixed both: split the base out
+  (`ListItemBase` → `const ListItem = React.memo(ListItemBase)`), pass only the
+  primitives a row needs — `sort`, `leftSwipeTag`, and a precomputed `addressLanguage`
+  (LANGCODE, resolved from the passage's translation) instead of `state`; and made the
+  row callbacks stable `useCallback`s that RECEIVE the passage (`onPress(data)` etc.),
+  so their identity no longer changes per render. Net: a row now re-renders only when
+  its own passage data changes — search typing and unrelated single-passage edits skip
+  every untouched row.
+- **`WeekActivityComponent` + its leaf `DayActivityBar`** wrapped in `React.memo`
+  (+`displayName`). Home re-renders on local state (opening the train-modes picker);
+  with stable `state`/`t`/`theme` those re-renders now skip the whole week graph.
+
+### (d) Memoize the O(history) stat walks (useMemo)
+- `homeScreen`: `getStroke(state.testsHistory)` → `useMemo(…, [state.testsHistory])`.
+- `weekActivityComponent`: `getWeeklyStats(state)` → `useMemo(…, [state.testsHistory])`.
+- `statsScreen` + `calendarScreen`: `getAppStats(state)` → `useMemo(…, [state])`. Keyed
+  on the whole `state` (immutable — reducer returns a new ref only on real change), so
+  it recomputes exactly when state changes and SKIPS on local-state re-renders. Big win
+  on calendar, which re-ran the full-history walk on every day/month tap.
+
+### (e) homeScreen inline components + per-render async
+- `LogoBlock`/`MainButtons` were `const X = () => (…)` rendered as `<X/>` — a NEW
+  component type each render, so React unmounted+remounted those subtrees every time.
+  Converted to plain element consts (`logoBlock`/`mainButtons`, rendered `{logoBlock}`).
+- `Linking.getInitialURL()` was called in render body (fires async work every render) →
+  moved into a mount `useEffect([])`.
+
+### (f) Stack: stop blurred screens re-rendering
+- `navigator.tsx` `Stack.Navigator`: added `freezeOnBlur: true` (screenOptions) +
+  `detachInactiveScreens`. react-navigation keeps prior screens mounted, so without this
+  one dispatch re-rendered EVERY mounted screen and re-ran its stat work; now only the
+  focused screen re-renders. (react-native-screens 4.16 / react-navigation v7 — both
+  support it.)
+- Bonus (8.1.1 finding #5): `App.tsx`'s `Linking.addEventListener` effect had no dep
+  array (re-subscribed every render) → keyed on `[state.settings.devModeEnabled]`.
+
+### Notes / gotchas
+- No behaviour change intended — pure render/identity optimization (same values, same
+  outputs). No new files → FILEMAP untouched; no UI strings → l10n untouched.
+- `exhaustive-deps`/`rules-of-hooks` are OFF in this repo's eslint, so the `useMemo`/
+  `useCallback`/effect dep arrays here are hand-chosen for correctness, not lint-forced.
+- Converting `MainButtons` to an element re-indented its JSX one level; `lint-fix`
+  (prettier) reformatted it — no logic change.
+- Can't measure the perf win in-session (RN, needs a device build, like every 8.1.x
+  step). **Needs Fedir's device re-time** — this + 8.1.2 together should kill the
+  ~0.5s per-screen lag. If confirmed, the §2-P0 / §8.1-A render-lag work is done.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (26 suites / 57 tests / 22 snapshots).
