@@ -584,7 +584,7 @@ export interface AppStateModel007 {
     [SETTINGS.compressOldTestsData]: boolean;
     //@ts-ignore
     [SETTINGS.autoIncreeseLevel]: boolean;
-    [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
+    [SETTINGS.leftSwipeTag]: string; // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
     [SETTINGS.remindersEnabled]: boolean;
     [SETTINGS.remindersSmartTime]: boolean; // based on last month of tests history

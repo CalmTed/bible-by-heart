@@ -1,6 +1,8 @@
 import "dotenv/config"
+// single source of truth for the app version — bump it in package.json only
+const { version } = require("./package.json");
 const versionCode = parseInt(
-  new Date().toISOString().slice(2, 14).replace(/[-T:]/g, ""),
+  new Date().toISOString().slice(2, 15).replace(/[-T:]/g, ""),
   10
 );//in the format of yymmddhh. Can ont be larger than 2147483647. Must be an integer. Time is UMT+0
 
@@ -11,7 +13,7 @@ export default {
         ? "Bible by heart"
         : `BBH dev ${versionCode}`,
     slug: "bible-by-heart",
-    version: "0.1.0",
+    version,
     githubUrl: "https://github.com/CalmTed/bible-by-heart",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
@@ -70,6 +72,7 @@ export default {
       bundleIdentifier: "com.CalmTed.bibleByHeart",
       backgroundColor: "#272A27",
       supportsTablet: false,
+      buildNumber: versionCode.toString(),
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }

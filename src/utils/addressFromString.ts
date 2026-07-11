@@ -16,55 +16,71 @@ const addressFromString: (
 ) => addressToStringReturnType | false = (string) => {
   const defaultAddress = createAddress();
   // find needed book
-  let justNumbers = "";
-  let fullAddressString = "";
-  let language: LANGCODE | null = null;
-  const bookIndex = Object.values(LANGCODE)
-    .map((langcode) => {
-      const t = createT(langcode);
-      return bibleReference.map((book, i) => {
-        if (
-          string
-            .toLocaleLowerCase()
-            .startsWith(t(book.longTitle).toLocaleLowerCase()) ||
-          string
-            .toLocaleLowerCase()
-            .startsWith(t(book.titleShort).toLocaleLowerCase())
-        ) {
-          // Which title did the string start with? Compare lower-cased on both
-          // sides so mixed-case input ("GENESIS 1:1") still matches, then keep
-          // the original-case slice for the returned address string.
-          const matchedTitle = string
-            .toLocaleLowerCase()
-            .startsWith(t(book.longTitle).toLocaleLowerCase())
-            ? t(book.longTitle)
-            : t(book.titleShort);
-          const justBook = string.substring(0, matchedTitle.length);
-          const afterBookText = string.substring(
-            matchedTitle.length,
-            matchedTitle.length + 15
-          );
-          justNumbers =
-            afterBookText.match(
-              /(\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}:\d{1,3}|\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}|\s{0,1}\d{1,3}:\d{1,3})/
-            )?.[0] || "";
-          fullAddressString = justNumbers
-            ? justBook + justNumbers
-            : fullAddressString;
-          language = langcode;
-          return i;
-        }
-        return -1;
+  interface BookMatch {
+    bookIndex: number;
+    language: LANGCODE;
+    matchedTitleLength: number;
+    justNumbers: string;
+    fullAddressString: string;
+  }
+  const lowerString = string.toLocaleLowerCase();
+  const matches: BookMatch[] = [];
+  Object.values(LANGCODE).forEach((langcode) => {
+    const t = createT(langcode);
+    bibleReference.forEach((book, i) => {
+      // Compare lower-cased on both sides so mixed-case input ("GENESIS 1:1")
+      // still matches, then keep the original-case slice for the returned string.
+      const startsWithLong = lowerString.startsWith(
+        t(book.longTitle).toLocaleLowerCase()
+      );
+      const startsWithShort = lowerString.startsWith(
+        t(book.titleShort).toLocaleLowerCase()
+      );
+      if (!startsWithLong && !startsWithShort) {
+        return;
+      }
+      // Prefer the longer of this book's two titles it matched with.
+      const matchedTitle = startsWithLong
+        ? t(book.longTitle)
+        : t(book.titleShort);
+      const justBook = string.substring(0, matchedTitle.length);
+      const afterBookText = string.substring(
+        matchedTitle.length,
+        matchedTitle.length + 15
+      );
+      const numbers =
+        afterBookText.match(
+          /(\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}:\d{1,3}|\s{0,1}\d{1,3}:\d{1,3}-\d{1,3}|\s{0,1}\d{1,3}:\d{1,3})/
+        )?.[0] || "";
+      matches.push({
+        bookIndex: i,
+        language: langcode,
+        matchedTitleLength: matchedTitle.length,
+        justNumbers: numbers,
+        fullAddressString: numbers ? justBook + numbers : ""
       });
-    })
-    .flat()
-    .filter((b) => b !== -1)[0];
-  //TODO: consider multiple matches
+    });
+  });
+  // Several books can be prefixes of the input (e.g. "Jud"/Jude is a prefix of
+  // "Judges"). Pick the most specific match — the one that consumed the longest
+  // title — and, on a tie, the one that actually parsed a number. All returned
+  // fields then come from that single chosen match (the old code mixed the
+  // first-matched bookIndex with the last-matched number slice).
+  const bestMatch = [...matches].sort((a, b) => {
+    if (b.matchedTitleLength !== a.matchedTitleLength) {
+      return b.matchedTitleLength - a.matchedTitleLength;
+    }
+    return (b.justNumbers ? 1 : 0) - (a.justNumbers ? 1 : 0);
+  })[0];
 
-  if (!justNumbers.length) {
+  if (!bestMatch || !bestMatch.justNumbers.length) {
     logger.error(`invalid address book. String: ${string}`);
     return false;
   }
+  const bookIndex = bestMatch.bookIndex;
+  const justNumbers = bestMatch.justNumbers;
+  const language: LANGCODE | null = bestMatch.language;
+  const fullAddressString = bestMatch.fullAddressString;
   const part00 = justNumbers.split("-")[0]?.split(":")?.[0];
   const part01 = justNumbers.split("-")[0]?.split(":")?.[1];
   const part10 = justNumbers.split("-")?.[1]?.split(":")?.[0];

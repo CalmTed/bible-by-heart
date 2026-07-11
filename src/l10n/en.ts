@@ -312,6 +312,7 @@ export const en = {
 
   //login
   provideEmailLabel: "email",
+  provideEmailOrUsernameLabel: "email or username",
   providePasswsordLabel: "password",
   providePasswsordAgainLabel: "password again",
   legalCheckLabel: "I agree with privacy policy and terms of service",
@@ -334,7 +335,9 @@ export const en = {
   netUnableToLogOut: "Unable to log out",
   netUnableToGetUserData: "Unable to get user data",
   netUnableToSaveUserData: "Unable to save user data",
-  netUnableToCreateUser409: "Unable to create user 409",
+  netUnableToCreateUser409: "Couldn't create account",
+  netUnableToCreateUser409Sub:
+    "An account with this email or username already exists. Try logging in instead.",
   net200withNoData: "Recieved status 200 with no data",
 
   netBadRequestData400: "Bad request data 400",
@@ -342,6 +345,13 @@ export const en = {
   netForbidden403: "Forbidden 403",
   netUserNotFound406: "User not found 406",
   netServerError500: "Server error 500",
+  // readable subtitles for auth errors (shown instead of raw HTTP statusText)
+  netWrongCredentials: "Wrong email/username or password.",
+  netCheckDataAndRetry: "Please check the entered data and try again.",
+  netServerErrorSub:
+    "Something went wrong on our side. Please try again later.",
+  netSessionExpired: "Your session has expired. Please log in again.",
+  netTryAgainLater: "Something went wrong. Please try again later.",
 
   dayMO: "Mo",
   dayTU: "Tu",

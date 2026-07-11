@@ -7,6 +7,7 @@ import {
 import { AppStateModel, PassageModel, TestModel } from "../../src/models";
 import {
   getAppStats,
+  getMaxStroke,
   getPassageStats,
   getStroke,
   getWeeklyStats
@@ -92,6 +93,54 @@ describe("stats should work", () => {
     expect(justStroke.today).toBe(true);
   });
 
+  it("get max stroke (record consecutive-day run)", () => {
+    expect(getMaxStroke([])).toBe(0);
+    // testHistory spans yesterday + today → two consecutive days
+    expect(getMaxStroke(testHistory as never as TestModel[])).toBe(2);
+  });
+
+  it("caps the most-often address errors at 10", () => {
+    const manyAddressErrors = Array.from({ length: 12 }, (_, i) => ({
+      bookIndex: 0,
+      startChapterNum: 0,
+      startVerseNum: i,
+      endChapterNum: null,
+      endVerseNum: null
+    }));
+    const cappedState = {
+      passages: [
+        {
+          id: 1,
+          address: manyAddressErrors[0],
+          verseText: "word one two",
+          versesNumber: 1,
+          tags: []
+        }
+      ],
+      testsHistory: [
+        {
+          i: 1,
+          si: 1,
+          pi: 1,
+          td: [[0, 1000]],
+          f: true,
+          l: TESTLEVEL.l11,
+          en: 12,
+          et: [],
+          wa: manyAddressErrors,
+          wp: [],
+          ww: []
+        }
+      ],
+      settings: {}
+    } as never as AppStateModel;
+    const passageStats = getPassageStats(
+      cappedState,
+      cappedState.passages[0] as PassageModel
+    );
+    expect(passageStats.mostOftenAdressErrors.length).toBe(10);
+  });
+
   it("get weekly bar chart data", () => {
     const weeklyStats = getWeeklyStats(testStatsState);
     expect(weeklyStats.length).toBe(7);
@@ -134,5 +183,6 @@ describe("stats should work", () => {
     expect(appStats.absoluteScore).toBe(0);
     expect(appStats.avgDayDurationRelativePercent).toBe(100);
     expect(appStats.totalTestsNumber).toBe(2);
+    expect(appStats.maxStroke).toBe(2);
   });
 });

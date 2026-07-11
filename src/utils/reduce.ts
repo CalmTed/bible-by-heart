@@ -590,6 +590,18 @@ export const reduce: (
       changedState.settings.devModeActivationTime = null;
       changedState.settings.devModeEnabled = false;
     }
+    // Heal a dangling left-swipe tag. Tags have no registry — they exist only
+    // as long as some passage carries them — so removing a tag from every
+    // passage can leave settings.leftSwipeTag pointing at a tag that no longer
+    // exists. ARCHIVED_NAME is always available, so fall back to it. Centralized
+    // here so it covers every passage-mutating action (STRATEGY §3).
+    const swipeTag = changedState.settings.leftSwipeTag;
+    if (
+      swipeTag !== ARCHIVED_NAME &&
+      !changedState.passages.some((p) => p.tags.includes(swipeTag))
+    ) {
+      changedState.settings.leftSwipeTag = ARCHIVED_NAME;
+    }
     changedState.lastChange = timeOfChange;
   }
   try {

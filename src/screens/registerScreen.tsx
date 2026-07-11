@@ -86,10 +86,7 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             logger.write(
               `Registration Bad request data 400 ${JSON.stringify(result.response)}`
             );
-            Alert.alert(
-              t("netBadRequestData400"),
-              `${result.response.statusText}`
-            );
+            Alert.alert(t("netBadRequestData400"), t("netCheckDataAndRetry"));
             break;
           case 409:
             logger.write(
@@ -97,21 +94,24 @@ export const RegisterScreen: FC<ScreenModel> = ({ route, navigation }) => {
             );
             Alert.alert(
               t("netUnableToCreateUser409"),
-              `${result.response.statusText}`
+              t("netUnableToCreateUser409Sub")
             );
             break;
           case 500:
             logger.write(
               `Registration Server error 500 ${JSON.stringify(result.response)}`
             );
-            Alert.alert(
-              t("netServerError500"),
-              `${result.response.statusText}`
-            );
+            Alert.alert(t("netServerError500"), t("netServerErrorSub"));
             break;
+          default:
+            logger.write(
+              `Registration unexpected status ${result.response.status} ${JSON.stringify(result.response)}`
+            );
+            Alert.alert(t("netUnknownError"), t("netTryAgainLater"));
         }
       } catch (err) {
         logger.error(`Cant register. Error: ${err}`);
+        Alert.alert(t("newUnknownErrorAuth"), t("netTryAgainLater"));
       }
     }
   };

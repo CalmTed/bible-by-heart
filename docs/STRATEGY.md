@@ -65,15 +65,14 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 - [x] **Case-mismatch in book detection** `[C]` — `addressFromString.ts:36-39`:
   mixed lower/original-case matching mis-slices input like `GENESIS 1:1`.
   *(2026-07-10 fixed + upper-case test.)*
-- [~] **Finish + verify login end-to-end** `[D]` — register done; login started
+- [x] **Finish + verify login end-to-end** `[D]` — register done; login started
   Jul/Aug 2025, never verified against the (new) VPS API. `loginScreen.tsx`,
   `services/fetch.ts`. Verify against the freshly installed VPS.
   *(2026-07-10: fixed two token-refresh bugs in `fetch.ts` — inverted refresh/logout
   branches, and the refreshed access token never being applied to the outgoing
   request. Extracted `isTokenExpired` util (+tests). Verified the login/refresh/version
   client↔server contract by reading bbh-api source: fields + status codes all match,
-  API_VERSION 0.0.1 == server package version. **Still open: Fedir's on-device
-  round-trip against the live VPS** — can't be done off-device.)*
+  API_VERSION 0.0.1 == server package version. )*
 
 ### P1 — behavior bugs / unfinished safety
 
@@ -89,7 +88,7 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
 
 ### P2
 
-- [~] Share/intent receiver — **minimal** scope `[F]`: receive shared text → parse
+- [x] Share/intent receiver — **minimal** scope `[F]`: receive shared text → parse
   address/text (`addressFromString`) → confirm modal → add passage. No language
   detection magic.
   *(2026-07-10: ROOT CAUSE found — the share intent filter was fine (app opened from
@@ -113,6 +112,28 @@ Legend: **P0** critical · **P1** high · **P2** medium · **P3** later ·
   *(2026-07-10: added `notificationChannelName` l10n key (en/ua); channel `name` now
   localized via `createT(langCode)`; channelId stays "Reminders". Caller in `useApp.ts`
   passes `state.settings.langCode`.)*
+- [x] Reminders shown under "Miscellaneous", not the localized "Reminders" channel
+  `[F, on-device 2026-07-11]`.
+  *(2026-07-11: the manual-reminder trigger had no `channelId`; added `channelId:
+  "Reminders"`. Android caches a channel's display name at creation, so the localized
+  name only refreshes on fresh install / cleared data — expected, not a bug.)*
+- [x] Login should accept email OR username `[F, on-device 2026-07-11]` — requiring email
+  only was "not handy".
+  *(2026-07-11: client login field accepts either (email-regex OR username-regex); API
+  `authorizeUserHandler` matches `WHERE email = ? OR userName = ?`.)*
+- [x] **Confirmation email not sending (bbh-api)** `[F, on-device 2026-07-11]` — Gmail SMTP
+  rejects the server creds (`535-5.7.8 Username and Password not accepted`, seen in VPS logs).
+  Fix is env-only (secrets not in git): put a valid Gmail **App Password** in `MAIL_PASS`
+  (+ correct `MAIL_LOGIN`) in `.production.env` / `.staging.env` on the VPS, then restart.
+  *(2026-07-11: rotated `MAIL_PASS` to a fresh Gmail App Password in both env files —
+  locally AND on the VPS (owner/mode preserved: deploy:deploy 600) — then restarted both
+  containers. `MAIL_LOGIN` was already correct. Verified LIVE from inside the production
+  container: `transporter.verify()` → auth accepted, and a real test email was sent +
+  accepted for fedir.moroz.dev@gmail.com. GitHub Actions secrets need NO change — only
+  `VPS_HOST`/`SSH_DEPLOY_KEY` live there; mail creds are VPS-only, gitignored, and survive
+  `git reset --hard`. Also added the suggested boot check: `verifyMailer()` in `email.ts`
+  (non-throwing SMTP `verify()`, logs info/warn) called once from `app.ts` startup, +2 unit
+  tests. This code hardening is committed but NOT yet deployed — deploy at next bbh-api push.)*
 
 ## 3. Risks & potential problems (watchlist)
 
@@ -120,18 +141,52 @@ Not scheduled work — check the relevant item whenever touching its area.
 
 - **State converter chain is high-blast-radius** — every model bump needs a converter;
   a wrong converter destroys years of user stats. Mitigation is §5 backup-prompt task.
-- **bbh-api has NO DB migration mechanism** — `createUsersTable` is `CREATE TABLE IF NOT
+  *(2026-07-11: added the first regression coverage — `stateVersionConvert.test.ts` locks
+  the current-era chain 0.0.8→0.0.9→0.1.0 (the recursive engine + `to009`/`to010`):
+  version progression, passages preserved, only-finished history kept, settings carried,
+  auth stripped, unknown version → null. Legacy 0.0.6/0.0.7 hops still uncovered.
+  While reading the boot path found two real safety-net bugs to fix (own session, needs
+  a device build): (a) the pre-conversion snapshot and the daily backup share ONE key
+  `STORAGE_BACKUP_NAME`, so a bad converter's output overwrites the last-known-good raw
+  state within 24h — give the pre-convert snapshot its own never-overwritten key; (b) the
+  emergency "Restore from backup" (`App.tsx`) hard-rejects any snapshot whose
+  `version !== VERSION` — i.e. it refuses the pre-conversion snapshot it just saved, which
+  is old-version — so restore is unreachable exactly after a bad conversion; make restore
+  accept + re-convert an old-version snapshot. Overlaps the §4.2 boot rewrite + §5 backup
+  feature — do them together.)*
+- [x] **bbh-api has NO DB migration mechanism** — `createUsersTable` is `CREATE TABLE IF NOT
   EXISTS`, so it never alters an existing live table. Any column rename/add in code
   silently diverges from the deployed sqlite schema and breaks INSERTs (this already
   bit us 2026-07-10: live `emailConfirmed` vs code `isEmailConfirmed` broke registration
   + the review-account seed; fixed with a manual `ALTER TABLE RENAME COLUMN` on the VPS).
-  Add a real migration step (or an idempotent "ensure columns exist" on boot) before any
-  further schema change.
-- `settings.leftSwipeTag` dangling after tag removal — TODOs in 4 places
+  *(2026-07-11: added an idempotent "ensure columns exist" step — `usersTableColumns`
+  (declarative authoritative list mirroring `createUsersTable`) + `ensureUsersTableColumns(db)`
+  which runs `ALTER TABLE users ADD COLUMN` for any missing column. Called on boot in
+  `app.ts` before `ensureTestUser`, and from inside `ensureTestUser` itself, so both a fresh
+  and a drifted server converge. Self-heals the common ADD case; a RENAME still leaves the
+  old column orphaned + adds the new one empty (needs an explicit one-off migration keyed on
+  `PRAGMA user_version` — noted in code). Covered by `migration.test.ts`. NOT yet deployed —
+  ships on next bbh-api push.)*
+- [x] `settings.leftSwipeTag` dangling after tag removal — TODOs in 4 places
   (`initials.ts:97,158,409,454`, `models.ts:596`).
-- `addressFromString` multiple-match ambiguity (`:58`) — matters more once intent/import works.
-- `getStats.ts`: `maxStroke` not implemented (`:419`), top-errors uncapped (`:152`),
+  *(2026-07-11: tags have no registry — they exist only while a passage carries them —
+  so removing the last passage with a tag left `leftSwipeTag` pointing at nothing.
+  Added a centralized self-heal in `reduce.ts`'s finalization block: if `leftSwipeTag`
+  is not `ARCHIVED_NAME` and no passage carries it, fall back to `ARCHIVED_NAME`. Covers
+  every passage-mutating action; TODO comments cleared; reduce.test.ts covers it.)*
+- [x] `addressFromString` multiple-match ambiguity (`:58`) — matters more once intent/import works.
+  *(2026-07-11: several books can be prefixes of the input ("Jud"/Jude is a prefix of
+  "Judges"). Old code took the first-matched bookIndex but the LAST-matched number slice —
+  an inconsistency. Rewrote matching to collect all candidates then pick the most specific
+  (longest matched title; tie → the one that parsed a number), with all returned fields
+  from that single match. Regression test: "Judges 1:1" → Judges (idx 6), not Jude (idx 64).)*
+- `getStats.ts`: ~~`maxStroke` not implemented (`:419`)~~, ~~top-errors uncapped (`:152`)~~,
   day-average uncertain (`:291`) — correctness + perf risk as history grows.
+  *(2026-07-11: implemented `getMaxStroke` (longest consecutive-day run, mirrors
+  `getStroke`'s day bucketing) — wired into `getAppStats`. Capped `mostOftenAdressErrors`
+  at `TOP_ADDRESS_ERRORS_LIMIT` (10). Both covered in getStats.test.ts. The day-average
+  question (`:291`, "include missing days or not?") is a deliberate design decision left
+  for Fedir — untouched so displayed stats don't silently change.)*
 - `navigator.tsx:28` deep-link/notification-tap into training is a stub — resolve
   during navigator refactor.
 - Historical fragility `[D]`: `react-native-fetch-api` polyfill once broke
@@ -167,6 +222,11 @@ Order matters — each unlocks the next. Big manual test at each milestone.
    from small old Androids to tablets/foldables. Current visual style is the
    baseline, not a constraint. Do AFTER navigator + theme contexts (it builds on both).
    Note: reanimated/gesture-handler must be added to dependencies properly first.
+   *(2026-07-11 on-device: Fedir reports current animations feel WORSE than before and
+   wants a full rewrite of navigator + wrappers + views with reanimated. This refactor
+   (together with §4.2) IS that rewrite — treat the animation regression as its driver,
+   not a separate bug. The 2026-07-10 FlatList swap may also have changed list-scroll
+   feel; re-tune it here.)*
 9. **API: keep storage-agnostic** — any new endpoint goes through the service layer;
    stay on sqlite until real scale demands otherwise.
 

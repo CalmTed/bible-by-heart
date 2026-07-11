@@ -104,12 +104,12 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 |---|---|
 | `reduce.ts` | THE reducer: every state change (passages, tests, history, settings, user) |
 | `useApp.ts` | hook wiring state + dispatch to components |
-| `stateVersionConvert.ts` | chained migrations between state model versions |
+| `stateVersionConvert.ts` | chained migrations between state model versions (`__tests__/utils/stateVersionConvert.test.ts` locks the current-era 0.0.8→0.1.0 chain) |
 | `getStats.ts` | all stats calculation (streak, scores, heatmap, per-level) |
 | `getPerfectTests.ts` | perfect-run detection for streak/score (?) |
 | `getSimularity.ts` | string similarity (answer checking) |
 | `levelsConvertion.ts` | passageLevel ↔ testLevel conversion |
-| `addressToString.ts` / `addressFromString.ts` | Address ↔ human string (parser has known bugs, see STRATEGY §2) |
+| `addressToString.ts` / `addressFromString.ts` | Address ↔ human string; parser picks the most specific book on prefix ambiguity |
 | `addressDistance.ts` / `addressDifference.ts` / `addressOrder.ts` | address math for test generation/sorting |
 | `getNumberOfVerses.ts` / `getNumberOfEnglishVerses.ts` | verse counting for limits |
 | `fileManager.ts` | import/export files (txt/json) via document picker |
@@ -161,7 +161,7 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 
 | File | Description |
 |---|---|
-| `app.ts` | Express bootstrap: middleware, routes, static, listen; on startup calls `ensureTestUser` to provision the store-review demo account |
+| `app.ts` | Express bootstrap: middleware, routes, static, listen; on startup calls `ensureUsersTableColumns` (schema self-heal) → `ensureTestUser` (demo account) → `verifyMailer` (non-blocking SMTP auth check) |
 | `routes.ts` | all route definitions → controllers |
 | `constants.ts` | API constants (login limits, token times) + `TEST_USER_*` demo-account credentials (env-overridable) |
 | `models.ts` | server-side types |
@@ -169,16 +169,17 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 | `middleware/requireUser.ts` | JWT auth guard |
 | `middleware/validateResource.ts` | zod request validation |
 | `schema/user.schema.ts` | zod schemas for user endpoints |
-| `services/base.servise.ts` | generic sqlite CRUD service (storage-agnostic layer); `createUsersTable`, `dropDB`, and `ensureTestUser` (idempotent demo-account seed) |
+| `services/base.servise.ts` | generic sqlite CRUD service (storage-agnostic layer); `createUsersTable`, `dropDB`, `ensureTestUser` (idempotent demo-account seed), and `usersTableColumns` + `ensureUsersTableColumns` (idempotent "ensure columns exist" migration — self-heals schema drift, STRATEGY §3) |
 | `services/user.service.ts` | user-specific db logic |
 | `utils/jwt.ts` | sign/verify access + refresh tokens |
-| `utils/email.ts` | nodemailer confirmation/reset emails |
+| `utils/email.ts` | nodemailer confirmation/reset emails (`sendEmail`) + `verifyMailer` boot-time SMTP auth check; creds from `MAIL_LOGIN`/`MAIL_PASS` env |
 | `utils/logger.ts` | pino logger |
 
 ### `__tests__/`
 
 `app.test.ts`, `controller/user.controller.test.ts`, `services/base.service.test.ts`,
-`utils/email.test.ts`, `utils/jwt.test.ts`
+`services/migration.test.ts` (ensureUsersTableColumns: fresh-DB create, adds missing
+column preserving rows, idempotent), `utils/email.test.ts`, `utils/jwt.test.ts`
 
 ---
 

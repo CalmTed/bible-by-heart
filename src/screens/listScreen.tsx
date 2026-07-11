@@ -196,7 +196,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
     setSelectedPassage({
       ...createPassage(passageAddress, passageText, passageTranslation, ownerId)
     });
-    setAPOpen(true);
+    // Open the passage editor directly with the parsed address + verse text (the
+    // "confirm before add" step). Going through the AddressPicker instead would
+    // discard both — it is bound to `selectedAddress` and rebuilds an empty passage.
+    setAPOpen(false);
+    setPEOpen(true);
   };
   // Run once when shared/intent text arrives (route param), NOT on every render —
   // handleTextFromIntent calls setSelectedPassage with a fresh object, so calling it

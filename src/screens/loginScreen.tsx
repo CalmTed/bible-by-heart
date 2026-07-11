@@ -137,8 +137,8 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     `Login geting data: Error 400: ${JSON.stringify(userData.response)}`
                   );
                   Alert.alert(
-                    t("netUnableToGetUserData") + t("netBadRequestData400"),
-                    `${userData.response.statusText}`
+                    t("netUnableToGetUserData"),
+                    t("netCheckDataAndRetry")
                   );
                   break;
                 case 401:
@@ -146,8 +146,8 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     `Login geting data: Error 401: ${JSON.stringify(userData.response)}`
                   );
                   Alert.alert(
-                    t("netUnableToGetUserData") + t("netUnauthorized401"),
-                    `${userData.response.statusText}`
+                    t("netUnableToGetUserData"),
+                    t("netSessionExpired")
                   );
                   break;
                 case 403:
@@ -155,8 +155,8 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     `Login geting data: Error 403: ${JSON.stringify(userData.response)}`
                   );
                   Alert.alert(
-                    t("netUnableToGetUserData") + t("netForbidden403"),
-                    `${userData.response.statusText}`
+                    t("netUnableToGetUserData"),
+                    t("netTryAgainLater")
                   );
                   break;
                 case 406:
@@ -164,8 +164,8 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     `Login geting data: Error 406: ${JSON.stringify(userData.response)}`
                   );
                   Alert.alert(
-                    t("netUnableToGetUserData") + t("netUserNotFound406"),
-                    `${userData.response.statusText}`
+                    t("netUnableToGetUserData"),
+                    t("netTryAgainLater")
                   );
                   break;
                 case 500:
@@ -173,10 +173,18 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
                     `Login : Error 500: ${JSON.stringify(userData.response)}`
                   );
                   Alert.alert(
-                    t("netUnableToGetUserData") + t("netServerError500"),
-                    `${userData.response.statusText}`
+                    t("netUnableToGetUserData"),
+                    t("netServerErrorSub")
                   );
                   break;
+                default:
+                  logger.error(
+                    `Login geting data: Unexpected status ${userData.response.status}: ${JSON.stringify(userData.response)}`
+                  );
+                  Alert.alert(
+                    t("netUnableToGetUserData"),
+                    t("netTryAgainLater")
+                  );
               }
             } else {
               logger.error(
@@ -189,29 +197,25 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
             logger.error(
               `Login: Error 400: ${JSON.stringify(result.response)}`
             );
-            Alert.alert(
-              t("netBadRequestData400"),
-              `${result.response.statusText}`
-            );
+            Alert.alert(t("netBadRequestData400"), t("netCheckDataAndRetry"));
             break;
           case 401:
             logger.error(
               `Login: Error 401: ${JSON.stringify(result.response)}`
             );
-            Alert.alert(
-              t("netUnauthorized401"),
-              `${result.response.statusText}`
-            );
+            Alert.alert(t("netUnauthorized401"), t("netWrongCredentials"));
             break;
           case 500:
             logger.error(
               `Login: Error 500: ${JSON.stringify(result.response)}`
             );
-            Alert.alert(
-              t("netServerError500"),
-              `${result.response.statusText}`
-            );
+            Alert.alert(t("netServerError500"), t("netServerErrorSub"));
             break;
+          default:
+            logger.error(
+              `Login: Unexpected status ${result.response.status}: ${JSON.stringify(result.response)}`
+            );
+            Alert.alert(t("netUnknownError"), t("netTryAgainLater"));
         }
       } catch (err) {
         logger.error(`Cant login. Error: ${err}`);
@@ -230,13 +234,17 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
     tempEmail
   );
+  // Login accepts either an email or a username (same username rule as registration).
+  // The server matches the value against email OR userName.
+  const isUserNameValid = /^[A-Za-z]{1}[A-Za-z0-9]{2,}$/.test(tempEmail);
+  const isIdentifierValid = isEmailValid || isUserNameValid;
 
   // Login must NOT enforce password-format rules (those belong on the register
   // screen and are enforced server-side). Requiring only a non-empty password lets
   // existing accounts — e.g. the store-review demo account — sign in regardless of
   // how their password is shaped.
   const isPasswordEntered = tempPassword.length > 0;
-  const loginPossible = isEmailValid && isPasswordEntered;
+  const loginPossible = isIdentifierValid && isPasswordEntered;
   return (
     <ScrollView
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
@@ -269,13 +277,13 @@ export const LoginScreen: FC<ScreenModel> = ({ route, navigation }) => {
           wrapperStyle={{ ...loginStyle.wrapperInput }}
           value={tempEmail}
           onChange={setTempEmail}
-          placeholder={t("provideEmailLabel")}
+          placeholder={t("provideEmailOrUsernameLabel")}
           theme={theme}
-          inputMode="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          iconAfter={isEmailValid ? IconName.greenCheck : IconName.redCross}
-          autoComplete="email"
+          inputMode="text"
+          iconAfter={
+            isIdentifierValid ? IconName.greenCheck : IconName.redCross
+          }
+          autoComplete="username"
         />
         <Input
           wrapperStyle={{ ...loginStyle.wrapperInput }}

@@ -355,3 +355,218 @@ localhost:2410/2411 AND on public https://biblebyheart.app + https://staging.bib
 - Minor: staging/production container logs show a stray `npm error ... nodemon` line from an
   earlier start; containers are Up and serving 200, but the prod entrypoint running under
   `nodemon` is worth revisiting (should be plain `node dist/app.js` in prod).
+
+## 2026-07-11 — on-device test fixes (share intent lands text; reminders channel; 409; version)
+
+Fedir built + tested on device. Result: share intent WORKS — text arrives via toast on
+both cold and warm start. Fixed the tractable bugs from his report:
+
+### Share intent didn't fill address/verse, and "clicking list opens address selector"
+Same root cause. `handleTextFromIntent` parsed the address + verse text into
+`selectedPassage`, then opened the **AddressPicker** (`setAPOpen(true)`). But AddressPicker
+is bound to a different state (`selectedAddress`, empty) and its submit rebuilds a fresh
+EMPTY passage — so the parsed data was thrown away, and the address selector popping up on
+arrival read as "clicking list opens address selector". Fix: open the PassageEditor directly
+(`setPEOpen(true)`, and `setAPOpen(false)` to close any first-passage picker) with the
+already-parsed `selectedPassage`. That's the intended confirm-before-add step.
+
+### Reminders showed under "Miscellaneous", not the localized "Reminders" channel
+The manual-reminder scheduler in `notifications.ts` built its trigger without a `channelId`,
+so Android used the default channel. (The auto-time trigger already set it.) Added
+`channelId: "Reminders"` to the manual trigger. Note for Fedir: Android caches a channel's
+display NAME at creation — the localized name only updates when the channel is first
+registered (fresh install / cleared data), which matches what he saw ("works after restart
+when it registers"). That's an Android limitation, not a bug.
+
+### Registration 409 was unfriendly
+Register showed title "Unable to create user 409" + the raw server statusText. Now:
+friendly `netUnableToCreateUser409` ("Couldn't create account") + new
+`netUnableToCreateUser409Sub` ("...email or username already exists. Try logging in.")
+in en + ua.
+
+### Centralize app version (Fedir's earlier request)
+`app.config.js` hardcoded the version (had drifted: package.json 0.1.1 vs config 0.1.0).
+Now `const { version } = require("./package.json")` → `version,`. Verified via
+`expo config --type public`: resolves to 0.1.1. Bump the version in package.json only.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (24/45/22) · `expo config` evaluates.
+
+### Reported back to Fedir but NOT done here (triage)
+- **Animations "worse than before", wants full rewrite** → that's the planned STRATEGY
+  §4.2 (navigator → react-navigation) + §4.8 (candy UI / reanimated) refactor; its own
+  milestone (0.2.0/0.3.0), not a quick fix. The FlatList swap may also have changed scroll
+  feel — revisit during that refactor.
+- **"add login by username but just email"** → ambiguous; asked Fedir to clarify (allow
+  login via username too? or drop the username requirement from registration?).
+- **Confirmation email never arrives** → NOT app code: the VPS gmail SMTP creds are
+  rejected (`535-5.7.8 Username and Password not accepted` seen in server logs). Needs a
+  valid Gmail App Password in `.production.env`/`.staging.env` `MAIL_PASS` on the VPS.
+
+## 2026-07-11 (2) — login by email OR username; plan updates (redesign, email)
+
+Follow-up to the on-device report.
+
+### Login by email OR username (Fedir: "requires email, not handy")
+- API `authorizeUserHandler`: `SELECT ... WHERE email = ? OR userName = ?` (same value
+  bound twice). The client still sends the identifier in the `email` body field, so the
+  contract is unchanged and existing email logins keep working. Added a supertest case
+  logging in by username (now 33 tests).
+- Client `loginScreen.tsx`: field accepts email OR username — `isIdentifierValid =
+  isEmailValid || isUserNameValid` (username rule mirrors registration). Placeholder →
+  new l10n `provideEmailOrUsernameLabel` (en/ua); dropped the email-only keyboard/
+  autocomplete hints.
+- Lockout-exempt demo account still works: after the OR-match, `user.email` is still the
+  real email, so the `TEST_USER_EMAIL` check is unaffected.
+
+### Plan updates (Fedir asked)
+- STRATEGY §4.8: added the 2026-07-11 note that the "animations feel worse / full rewrite"
+  feedback IS this candy-UI refactor (+ §4.2 navigator) — its driver, not a separate bug.
+  Redesign was already in the plan; just tied the feedback to it.
+- STRATEGY §2: added the confirmation-email API task (Gmail SMTP creds rejected on VPS →
+  set a valid App Password in `MAIL_PASS` in the env files + restart; env-only, no code;
+  suggested a boot-time SMTP-auth check). Also recorded the reminders-channel + login-OR
+  fixes as done.
+
+Verified — client: `npm run lint` ✓ · `npm test` ✓ (24/45/22). bbh-api: `tsc` ✓ ·
+`eslint` ✓ · `npm test` ✓ (5 suites / 33 tests).
+
+Note: the API login-OR change needs a bbh-api deploy; the client changes need a new build.
+
+## 2026-07-11 (3) — P2 mailer fix: rotate Gmail App Password + boot SMTP check
+
+STRATEGY §2 P2 "Confirmation email not sending". Root cause was known (Gmail rejected
+the old creds, `535-5.7.8`); fix is env-only. Fedir supplied a fresh Gmail **App
+Password**.
+
+### The fix (env-only, no app-repo code)
+- Updated `MAIL_PASS` in `.production.env` + `.staging.env` in BOTH places:
+  - locally in `c:/Code/bbh-api` (Edit), and
+  - on the VPS via `ssh root@… -i ~/.ssh/id_ed25519`. Wrote back through redirection
+    (`sed … > file`) so the original inode's owner/mode are preserved (`deploy:deploy`,
+    `600`) — a `sed -i` as root would have flipped ownership to root and broken deploy's
+    read. Kept timestamped `.bak` copies during the edit, removed them after.
+- `MAIL_LOGIN` was already correct (`biblebyheartapp@gmail.com`), left as-is.
+- Restarted both containers (`docker compose restart production staging`). The env is a
+  bind-mounted volume consumed via `--env-file`, so a plain restart re-reads it — no
+  rebuild/redeploy needed.
+
+### Live verification (real send, from inside the prod container)
+- Ran a throwaway script with `node --env-file=/app/.production.env`: `transporter.verify()`
+  → **auth accepted**, then `sendMail` to fedir.moroz.dev@gmail.com → **accepted**. Cleaned
+  the script up afterwards. This is the first confirmed real email from the server.
+
+### GitHub Actions secrets — NO change needed (Fedir asked mid-task)
+Only `VPS_HOST` + `SSH_DEPLOY_KEY` are Actions secrets (SSH deploy). Mail creds live solely
+in the gitignored env files on the VPS + local copies; `git reset --hard` on deploy never
+touches gitignored files, so they persist.
+
+### Boot-time SMTP check (the suggested hardening — committed, NOT yet deployed)
+- `bbh-api/src/utils/email.ts`: added `verifyMailer()` — non-throwing `transporter.verify()`
+  that logs `info` on success / `warn` on failure, so bad creds surface on boot instead of
+  silently failing per-send.
+- `bbh-api/src/app.ts`: call it once at startup after `ensureTestUser` (awaited, non-blocking).
+- Tests: 2 cases in `__tests__/utils/email.test.ts` with a mocked transporter (no network).
+
+Verified — bbh-api: `tsc --noEmit` ✓ · `eslint` ✓ · `npm test` ✓ (5 suites / 35 tests).
+No bible-by-heart app code changed (docs only: STRATEGY §2 checked off, FILEMAP email.ts/
+app.ts descriptions). The env/restart fix is LIVE now; the `verifyMailer` code hardening
+awaits the next bbh-api deploy.
+
+## 2026-07-11 (4) — STRATEGY §3 risks: DB migration mechanism + converter-chain coverage
+
+Fedir asked to start §3 (risks watchlist) from the top and take the first two. §3 is mostly
+"watch, don't schedule", so most items defer to a refactor/milestone; the two top items had
+genuinely actionable, off-device-verifiable work.
+
+### Risk #2 — bbh-api has no DB migration mechanism (the crown jewel, DONE)
+Root of the 2026-07-10 prod incident: `CREATE TABLE IF NOT EXISTS` never alters a live table,
+so a column added/renamed in code silently diverges from the deployed sqlite and breaks INSERTs.
+- `services/base.servise.ts`: added `usersTableColumns` — a declarative authoritative column
+  list mirroring `createUsersTable` (name + TEXT/INTEGER type) — and `ensureUsersTableColumns(db)`:
+  ensures the table exists, reads `PRAGMA table_info(users)`, and runs `ALTER TABLE users ADD
+  COLUMN` for any expected column the live table lacks (logs each add). Idempotent; a no-op on an
+  up-to-date DB. Types only — `ALTER ADD COLUMN` can't carry NOT NULL/UNIQUE/PK without a default,
+  and a nullable add is all that's needed to stop INSERTs erroring on a missing column (code always
+  supplies the value on insert).
+- Wired on boot: `app.ts` calls it before `ensureTestUser`; also `ensureTestUser` now calls it
+  (replacing its bare `createUsersTable`) so both a fresh and a drifted server converge.
+- LIMITATION documented in code + STRATEGY: this ADDS missing columns; it does NOT rename/backfill.
+  For a rename it leaves the old column orphaned (harmless) + adds the new one empty. A real
+  rename/backfill still needs an explicit one-off migration (suggested: key it on `PRAGMA
+  user_version`). Chose the simple "ensure columns" path per the §3 note — zero-maintenance for the
+  common ADD case, which is what keeps biting us.
+- Tests: `__tests__/services/migration.test.ts` (in-memory DBs, isolated) — fresh DB gets every
+  column; a drifted table (has old `emailConfirmed`, lacks `isEmailConfirmed`) gains the missing
+  column while preserving its existing row; second run is a no-op. bbh-api now 6 suites / 38 tests.
+- NOT yet deployed — ships on the next bbh-api push (like the earlier `verifyMailer` hardening).
+
+### Risk #1 — state converter chain is high-blast-radius (partial: coverage added, bugs logged)
+The mitigation the plan names is the §5 backup-prompt feature (a whole 0.1.2 task), so I did the
+safest high-value off-device thing instead of editing the boot flow blind: the first regression
+tests for the converter chain (§5 calls these "highest-value tests in the repo").
+- `__tests__/utils/stateVersionConvert.test.ts`: builds a realistic 0.0.8 state from the real
+  `createAppState008()` factory (+ a passage, a finished and an unfinished test) and asserts the
+  full chain to current: version → "0.1.0", passages preserved, only finished history kept,
+  settings (langCode, leftSwipeTag) carried, auth/account stripped by `to010`, unknown version →
+  null. This exercises the recursive `convertState` engine (partialMatch→goodMatch→finalMatch) plus
+  `to009` (the complex one) and `to010`. Legacy 0.0.6/0.0.7 hops still uncovered (noted).
+- While reading the boot path (`App.tsx` `loadState`) found TWO real safety-net bugs — logged in
+  STRATEGY §3 for their own device-verified session (they overlap the §4.2 boot rewrite + §5 backup
+  feature, and editing the single most critical data path blind risks the very loss I'm guarding):
+  1. The pre-conversion snapshot and the daily backup share ONE key (`STORAGE_BACKUP_NAME`), so
+     within 24h `useApp`'s daily backup overwrites the last-known-good raw state with the
+     (possibly bad) converted state → a wrong converter's output is unrecoverable after a day.
+  2. The critical-error "Restore from backup" hard-rejects any snapshot whose `version !== VERSION`
+     — but the pre-conversion snapshot is by definition the OLD version, so restore refuses it
+     exactly when you'd need it after a bad conversion. Fix: dedicated never-overwritten pre-convert
+     key + let restore accept & re-convert an old-version snapshot.
+
+Verified — bible-by-heart: `npm run lint` ✓ · `npm test` ✓ (25 suites / 50 tests, +1 suite +5).
+bbh-api: `tsc --noEmit` ✓ · `eslint` ✓ · `npm test` ✓ (6 suites / 38 tests, +1 suite +5).
+No UI strings added → no l10n change. Neither repo's runtime behaviour was changed in a way that
+needs a device (migration is off-device-provable; converter change is tests-only) EXCEPT the two
+logged boot bugs, which are deferred, not shipped.
+
+## 2026-07-11 (5) — STRATEGY §3 risks: leftSwipeTag, addressFromString ambiguity, getStats + readable auth errors
+Cleared three §3 watchlist items plus a Fedir mid-session ask (readable login/register errors).
+
+**1. `settings.leftSwipeTag` dangling after tag removal.** Tags have no registry — they exist only
+while a passage carries them — so removing the last passage with a given tag left `leftSwipeTag`
+pointing at a tag that no longer appears in the settings Select or anywhere. Fix: a centralized
+self-heal in `reduce.ts`'s finalization block (runs for every action): if `leftSwipeTag !==
+ARCHIVED_NAME` and no passage carries it, fall back to `ARCHIVED_NAME`. Cheap, covers setPassage /
+setPassagesList / removePassage / importPassages and any future passage mutation. Cleared the four
+`TODO check on tag removing` comments (initials, models, stateVersionConvert). Test in reduce.test.ts:
+set a custom tag → keep while present → remove tag from the passage → heals to ARCHIVED_NAME.
+
+**2. `addressFromString` multiple-match ambiguity.** Several books can be prefixes of the input
+(e.g. short title "Jud"/Jude is a prefix of "Judges"). The old code returned the FIRST-matched
+`bookIndex` but the LAST-matched number slice / language via shared closure vars — an actual
+inconsistency, not just a TODO. Rewrote the matcher to collect ALL candidate matches, then pick the
+most specific one (longest matched title; tie-break → the one that actually parsed a number), and
+take every returned field from that single chosen match. Regression test: "Judges 1:1" → Judges
+(idx 6), not Jude (idx 64). Existing "Gen 1:2-2:3" / uppercase / single-verse tests still pass.
+
+**3. `getStats.ts`.** Implemented `getMaxStroke` (longest run of consecutive active days over all
+history; mirrors `getStroke`'s local calendar-day bucketing so the two agree) and wired it into
+`getAppStats` (`maxStroke` was hardcoded `0`). Capped `mostOftenAdressErrors` at
+`TOP_ADDRESS_ERRORS_LIMIT = 10` (was uncapped → unbounded array as history grows). Tests: max-stroke
+over the yesterday+today fixture = 2, empty = 0, appStats.maxStroke = 2, and a 12-distinct-address
+history caps to 10. **Deliberately left** the day-average `:291` question ("include missing days or
+not?") untouched — it's a real design decision for Fedir and changing it would silently move
+displayed stats numbers.
+
+**4. (Fedir mid-session) readable auth errors.** Login/register Alerts were dumping raw
+`result.response.statusText` (often empty or technical) as the body. Replaced those bodies with
+localized subtitles and added `default` cases so unhandled statuses still inform the user; also added
+an Alert to the register `catch` (it previously only logged). New l10n keys in en+ua:
+`netWrongCredentials` (login 401), `netCheckDataAndRetry` (400), `netServerErrorSub` (500),
+`netSessionExpired` (get-user-data 401), `netTryAgainLater` (default/unexpected + register catch).
+
+Gotcha: the day-string streak logic (`getStroke`/`getMaxStroke`) inherits the known DST/timezone
+fragility (§3) — a 25h DST day can look like a break. Kept consistent with the existing `getStroke`
+rather than diverging; worth a dedicated timezone regression pass (§5) later.
+
+Verified — `npm run lint` ✓ · `npm test` ✓ (25 suites / 54 tests, +4). l10n: 5 keys × en+ua ✓.
+Runtime behaviour changes (swipe-tag heal, stats numbers, auth Alerts) are logic/tests-provable;
+the auth Alert copy is worth an eyeball on-device at the next milestone but needs no code verify.

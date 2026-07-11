@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 3.12.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "staging": {
@@ -49,6 +49,12 @@
     "production": {
       "android": {
         "track": "production"
+      },
+      "ios": {
+        "ascAppId": "6751531075",
+        "ascApiKeyPath": "AuthKey_PF576JZ6Z3.p8",
+        "ascApiKeyIssuerId": "62818914-e60f-4045-89de-ea133cb0fd06",
+        "ascApiKeyId": "PF576JZ6Z3"
       }
     }
   }

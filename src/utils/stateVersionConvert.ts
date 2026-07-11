@@ -186,7 +186,7 @@ const to009: ConverterType = (stateFrom) => {
       [SETTINGS.compressOldTestsData]: true, //not implemented yet
       //@ts-ignore
       [SETTINGS.autoIncreaseLevel]: from.settings.autoIncreaseLevel,
-      [SETTINGS.leftSwipeTag]: from.settings.leftSwipeTag, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: from.settings.leftSwipeTag, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: from.settings.remindersEnabled,
       [SETTINGS.remindersSmartTime]: from.settings.remindersSmartTime, // based on last month of tests history
