@@ -3,7 +3,7 @@ import { StyleSheet, View, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 
 interface HeaderModel {
@@ -19,11 +19,9 @@ interface HeaderModel {
     | "space-between"
     | "space-around"
     | "space-evenly";
-  theme: ThemeAndColorsModel;
 }
 
 export const Header: FC<HeaderModel> = ({
-  theme,
   navigation,
   title,
   showBackButton,
@@ -31,6 +29,7 @@ export const Header: FC<HeaderModel> = ({
   additionalChildren,
   alignChildren
 }) => {
+  const { theme } = useAppContext();
   const insets = useSafeAreaInsets();
   const handleBack = () => {
     navigation?.goBack();
@@ -64,7 +63,7 @@ export const Header: FC<HeaderModel> = ({
   return (
     <View style={headerStyle.view}>
       {showBackButton && navigation && (
-        <IconButton theme={theme} onPress={handleBack} icon={IconName.back} />
+        <IconButton onPress={handleBack} icon={IconName.back} />
       )}
       {title && (
         <View style={headerStyle.textView}>

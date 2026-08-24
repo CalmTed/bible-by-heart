@@ -27,7 +27,6 @@ export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsListWrapper
-      theme={theme}
       themeType={state.settings.theme}
       handleClose={() => navigation.goBack()}
       header={t("settsTranslationsListHeader")}
@@ -100,7 +99,6 @@ export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                 })
               }
               placeholder={t("settsTranslationItemName")}
-              theme={theme}
               disabled={!translationItem.editable}
               maxLength={20}
             />
@@ -123,7 +121,6 @@ export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             />
             {/* set default */}
             <Button
-              theme={theme}
               onPress={() =>
                 setState(
                   (st) =>
@@ -152,7 +149,6 @@ export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               )}
             />
             <Button
-              theme={theme}
               onPress={() => handleRemove(translationItem)}
               type={translationItem.editable ? "outline" : "transparent"}
               color="red"

@@ -25,7 +25,6 @@ export const FinishScreen: FC<ScreenModel> = ({ navigation }) => {
       </View>
       <View style={finishStyle.buttonView}>
         <Button
-          theme={theme}
           type="main"
           title={t("Continue")}
           onPress={() => navigation.navigate(SCREEN.home)}

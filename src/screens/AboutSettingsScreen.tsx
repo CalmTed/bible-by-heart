@@ -119,14 +119,12 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={t("settsAboutHeader")}
       onBack={() => navigation.goBack()}
     >
       <ScrollView style={aboutSettingsStyle.scrollView}>
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsAboutHeader")}
           subtext={`${t("settsAboutSubtext")}: ${VERSION}`}
@@ -135,7 +133,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <MiniModal
-          theme={theme}
           shown={isAboutTextModalShown}
           handleClose={() => setIsAboutTextModalShown(false)}
         >
@@ -145,13 +142,11 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             {t("version")}: {VERSION}
           </Text>
           <Button
-            theme={theme}
             title={t("Close")}
             onPress={() => setIsAboutTextModalShown(false)}
           />
         </MiniModal>
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsLegalHeader")}
           subtext={t("settsLegalSubtext")}
@@ -160,7 +155,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <MiniModal
-          theme={theme}
           shown={isLegalModalShown}
           handleClose={() => setIsLegalModalShown(false)}
         >
@@ -168,13 +162,11 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           <Text style={theme.theme.text}>{t("LegalText")}</Text>
           <Text style={theme.theme.text}>{t("LegalText2")}</Text>
           <Button
-            theme={theme}
             title={t("Close")}
             onPress={() => setIsLegalModalShown(false)}
           />
         </MiniModal>
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsPrivacyPolicyHeader")}
           subtext={t("OpenExternalLink")}
@@ -183,7 +175,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsTermsOfServiceHeader")}
           subtext={t("OpenExternalLink")}
@@ -192,7 +183,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           header={t("settsDevMode")}
           subtext={
             t(
@@ -228,7 +218,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <MiniModal
-          theme={theme}
           shown={isDevPasswordModalOpen}
           handleClose={() => setIsDevPasswordModalOpen(false)}
         >
@@ -236,7 +225,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             {t("settsDevPasswordHeader")}: {devModeKey}
           </Text>
           <Input
-            theme={theme}
             placeholder={t("settsDevPasswordPlaceholder")}
             onChange={() => {}}
             onSubmit={handleCheckDevPassword}
@@ -251,7 +239,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             </Text>
             <Input
               inputMode="numeric"
-              theme={theme}
               onSubmit={(text) => {
                 logger.write(
                   `Requested dev key for number: ${text} is ${encodeDevKey(parseInt(text, 10))}`
@@ -266,7 +253,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
-              theme={theme}
               header={t("settsShowLogHeader")}
               subtext={t("settsShowLogSubtext")}
               type="action"
@@ -275,7 +261,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               }}
             />
             <MiniModal
-              theme={theme}
               shown={logModalOpen}
               handleClose={() => setLogModalOpen(false)}
               style={aboutSettingsStyle.logMiniModal}
@@ -290,7 +275,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                   iconAlign="left"
                   title={t("Cancel")}
                   onPress={() => setLogModalOpen(false)}
-                  theme={theme}
                 />
                 <Button
                   title={t("settsExportLog")}
@@ -311,7 +295,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                         toastShow(t("ErrorWhileWritingFile"), 1000);
                       });
                   }}
-                  theme={theme}
                 />
                 <Button
                   color="red"
@@ -320,7 +303,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
                     logger.clearAll();
                     setLoggerText([]);
                   }}
-                  theme={theme}
                 />
                 <Text
                   style={{ ...theme.theme.text }}
@@ -373,7 +355,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
-              theme={theme}
               type="action"
               subtext={t("settsExportStateSubtext")}
               header={t("settsExportStateHeader")}
@@ -398,7 +379,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
-              theme={theme}
               type="action"
               subtext={t("settsImportStateSubtext")}
               header={t("settsImportStateHeader")}
@@ -455,7 +435,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               }}
             />
             <SettingsMenuItem
-              theme={theme}
               type="action"
               subtext=""
               header={t("settsResetLocalUserData")}
@@ -479,7 +458,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.settings.devModeEnabled && (
           <View>
             <SettingsMenuItem
-              theme={theme}
               type="action"
               subtext={t("settsOneWayDoor")}
               header={t("settsClearPassages")}
@@ -492,7 +470,6 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               }}
             />
             <SettingsMenuItem
-              theme={theme}
               type="action"
               subtext={t("settsOneWayDoor")}
               header={t("settsClearData")}

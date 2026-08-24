@@ -137,14 +137,12 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
     >
       <Header
-        theme={theme}
         navigation={navigation}
         showBackButton={false}
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
             key="back"
-            theme={theme}
             icon={IconName.back}
             onPress={() => navigation.navigate(SCREEN.settings)}
           />,
@@ -165,7 +163,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
           value={tempUserName}
           onChange={setTempUserName}
           placeholder={t("provideUserNameLabel")}
-          theme={theme}
           inputMode="text"
           iconAfter={isUserNameValid ? IconName.greenCheck : IconName.redCross}
           autoComplete="username-new"
@@ -175,7 +172,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
           value={tempEmail}
           onChange={setTempEmail}
           placeholder={t("provideEmailLabel")}
-          theme={theme}
           inputMode="email"
           keyboardType="email-address"
           textContentType="emailAddress"
@@ -189,7 +185,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
           placeholder={t("providePasswsordLabel")}
           inputMode="text"
           secureTextEntry
-          theme={theme}
           iconAfter={isPasswordValid ? IconName.greenCheck : IconName.redCross}
           autoComplete="password-new"
         />
@@ -199,7 +194,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
           onChange={setTempPasswordRepeat}
           placeholder={t("providePasswsordAgainLabel")}
           secureTextEntry
-          theme={theme}
           autoComplete="password-new"
           iconAfter={
             isRepeatPasswordValid || false
@@ -255,7 +249,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
         </View>
         <Button
           title={t("registerButton")}
-          theme={theme}
           type="main"
           color="green"
           disabled={!regPossible}
@@ -271,7 +264,6 @@ export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
       </View>
       <Button
         title={t("loginButton")}
-        theme={theme}
         type="transparent"
         onPress={handleLoginClick}
       />

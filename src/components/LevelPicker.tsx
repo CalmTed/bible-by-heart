@@ -5,20 +5,17 @@ import {
   PASSAGELEVEL,
   TESTLEVEL
 } from "../constants";
-import { WORD } from "../l10n";
 import { AppStateModel, PassageModel } from "../models";
 import { MiniModal } from "./miniModal";
 import { Button } from "./Button";
 import { getPerfectTestsNumber } from "../utils/getPerfectTests";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { DotIndicator } from "./DotIndicator";
+import { useAppContext } from "../context/AppContext";
 
 interface LevelPickerModel {
   targetPassage: PassageModel;
   handleChange: (level: PASSAGELEVEL, passageId: number) => void;
   handleOpen: (passageId: number) => void;
-  t: (w: WORD) => string;
-  theme: ThemeAndColorsModel;
   state: AppStateModel;
   testLevel?: TESTLEVEL;
   handleRestart?: () => void;
@@ -26,14 +23,13 @@ interface LevelPickerModel {
 
 export const LevelPicker: FC<LevelPickerModel> = ({
   targetPassage,
-  t,
-  theme,
   handleChange,
   handleOpen,
   state,
   testLevel,
   handleRestart
 }) => {
+  const { theme, t } = useAppContext();
   const [levelPickerShown, setLevelPickerShown] = useState(false);
   const closeLevelPicker = () => {
     setLevelPickerShown(false);
@@ -83,7 +79,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
     <View style={{ ...levelPickerStyles.levelPickerView }}>
       <View style={{ ...levelPickerStyles.levelPickerWrapper }}>
         <Button
-          theme={theme}
           title={`${t("Level")} ${
             isNaN(passageLevelFromTestLevel)
               ? targetPassage.selectedLevel
@@ -97,7 +92,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
         {targetPassage.isNewLevelAwalible && <DotIndicator />}
       </View>
       <MiniModal
-        theme={theme}
         shown={levelPickerShown}
         handleClose={() => setLevelPickerShown(false)}
       >
@@ -116,7 +110,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
             const disabled = n > targetPassage.maxLevel; //&& !state.settings.devMode;
             return (
               <Button
-                theme={theme}
                 type={disabled ? "secondary" : "outline"}
                 color={color}
                 style={levelPickerStyles.buttonStyle}
@@ -167,7 +160,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           targetPassage.selectedLevel.toString() !==
             testLevel.toString().slice(0, 1) && (
             <Button
-              theme={theme}
               title={t("RestartTests")}
               onPress={() => {
                 closeLevelPicker();
@@ -177,7 +169,6 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           )}
 
         <Button
-          theme={theme}
           color="green"
           type="outline"
           title={t("Close")}

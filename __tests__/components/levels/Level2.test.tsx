@@ -1,10 +1,9 @@
-import { render } from "@testing-library/react-native";
+import { renderWithContext } from "../../../test-utils/renderWithContext";
 import { LANGCODE, PASSAGELEVEL } from "../../../src/constants";
 import { L20, L21 } from "../../../src/components/levels/Level2";
 import { createT } from "../../../src/l10n";
 import { AppStateModel, PassageModel } from "../../../src/models";
 import { createAppState, createTest } from "../../../src/initials";
-import { getThemeFromScheme } from "../../../src/utils/getThemeFromScheme";
 
 describe("testing level 2 rendering", () => {
   it("Level 2 renders correctly", async () => {
@@ -46,25 +45,19 @@ describe("testing level 2 rendering", () => {
       ]
     } as AppStateModel;
     const test = createTest(123123, 212610751, PASSAGELEVEL.l2);
-    const theme = getThemeFromScheme(testState.settings.theme, "dark");
-    const t = createT(LANGCODE.en);
-    const level20Tree = render(
+    const level20Tree = renderWithContext(
       <L20
         test={test}
-        theme={theme}
         state={testState}
-        t={t}
         submitTest={() => {}}
         dispatch={(action) => {}}
       />
     ).toJSON();
     expect(level20Tree).toMatchSnapshot();
-    const level21Tree = render(
+    const level21Tree = renderWithContext(
       <L21
         test={test}
-        theme={theme}
         state={testState}
-        t={t}
         submitTest={() => {}}
         dispatch={(action) => {}}
       />

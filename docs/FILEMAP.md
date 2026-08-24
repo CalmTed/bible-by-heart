@@ -3,7 +3,9 @@
 > Covers BOTH repos so every session has the whole picture.
 > **Maintenance rule (win condition of every task):** when you add, remove, or
 > change the purpose of a file — update its line here in the same task.
-> Descriptions marked `(?)` were inferred from names, not verified by reading.
+> Descriptions marked `(?)` are inferred from names, not verified by reading —
+> resolve them when you touch the file (STRATEGY §1). **As of 2026-07-22 there are
+> none: every line below was verified against the source.**
 
 ---
 
@@ -13,9 +15,9 @@
 
 | File | Description |
 |---|---|
-| `App.tsx` | App entry: loads state, wires navigator, splash, error boundary; reads Android share-intent text (`useShareIntent`) and routes it into the add-passage flow |
+| `App.tsx` | App entry: loads state once, converts it forward when the version differs (snapshotting the raw state first via `utils/bootBackup`), wires navigator, splash, emergency-recovery screen (two restore slots — daily backup + pre-update snapshot — both version-tolerant, 8.1.8); reads Android share-intent text (`useShareIntent`) and routes it into the add-passage flow |
 | `index.js` | RN registry entry point |
-| `app.config.js` | Expo config (name, icons, plugins, env-driven variants) |
+| `app.config.js` | Expo config (name, icons, env-driven staging/prod variants, extra secrets, Android App-Links VIEW filter) + plugins: `expo-build-properties` (compile/target SDK **36**, min 24 — the only place the Android SDK level is declared, there is no `android/` dir), `expo-share-intent` (Android only, `disableIOS`, `androidIntentFilters: ["text/*"]` — declares the SEND filter itself and sets MainActivity `launchMode=singleTask`), `expo-localization`, `expo-secure-store`, `expo-notifications` |
 | `eas.json` | EAS build profiles (staging, production) |
 | `babel.config.js` / `metro.config.js` | build toolchain config |
 | `eslint.config.js` / `tsconfig.json` | lint + TS config |
@@ -26,8 +28,7 @@
 | `.github/workflows/submitStagingToPlayMarket.yml` / `submitProductionToPlayMarket.yml` | CI: on push to staging/production, run `npm ci` + lint + test, then EAS build/submit |
 | `projectdiary.md` | **Fedir's personal diary — never edit** |
 | `readme.md` | public description + (stale) roadmap |
-| `plugins/handlingIntents.js` | Expo config plugin adding a (bogus) custom intent action; now dead — share-intent receiving is handled by `expo-share-intent`. Slated for removal |
-| `app.config.js` plugins | includes `expo-share-intent` (Android only, `disableIOS`, `androidIntentFilters: ["text/*"]`): native reader for SEND/text shares + sets MainActivity `launchMode=singleTask` |
+| `test-utils/renderWithContext.tsx` | test helper (outside `__tests__/` so jest doesn't treat it as a suite) — see the `__tests__/` section below |
 | `assets/` | icons, splash, notification images (prod + dev variants) |
 
 ### `docs/` — AI working docs
@@ -37,7 +38,8 @@
 | `ARCHITECTURE.md` | vision, philosophy, core technical decisions (read first) |
 | `CODING_RULES.md` | style rules + reusable component/util library |
 | `FILEMAP.md` | this file |
-| `STRATEGY.md` | master plan: workflow, bugs, risks, refactors, testing, features |
+| `PLAN.md` | **the working queue** — one checkbox = one session, each step with Goal/Files/Acceptance/Risk, `(build)`/`(device)`/`(one-sitting)`/`[api]`/`[shared]` tags, milestone device-checklists, the locked planning decisions, and an archive of finished steps. The only file where work is marked done (since 2026-07-22) |
+| `STRATEGY.md` | the *why*: bug register, risk watchlist, refactor list, testing goals, feature order, milestone table. Its §8 queue moved to `PLAN.md` |
 | `robotdiary.md` | AI session log (append every session) |
 
 ### `src/` — core
@@ -46,12 +48,11 @@
 |---|---|
 | `models.ts` | ALL data model types: AppState, Passage, Address, history, settings, action types |
 | `initials.ts` | initial/default values for every state version |
-| `constants.ts` | app-wide constants (levels, limits, API version, colors?) |
-| `bibleReference.ts` | Bible structure data: books, chapter/verse counts |
-| `navigator.tsx` | react-navigation stack setup; exports `navigationRef` for imperative navigation from outside the tree (e.g. share-intent handling in `App.tsx`) |
-| `screeenManagement.ts` | screen enum/stack helpers for the custom navigator |
-| `storage.ts` | AsyncStorage read/write of AppState |
-| `context/AppContext.tsx` | global app context: single source of truth for `state`/`dispatch` + provides `t` (l10n) and `theme`; persists state + daily backup; wires notification-response handling. Exports `AppProvider`, `useAppContext`, and `AppContext` (for tests/narrow providers) |
+| `constants.ts` | app-wide constants: `VERSION` (state model) + `alowedStateVersions`, `API_VERSION` (re-exported from `bbh-shared`) + `API_LINK` endpoint enum, storage keys (`STORAGE_NAME`/`STORAGE_BACKUP_NAME` rolling daily/`STORAGE_PRECONVERT_BACKUP_NAME` write-once pre-migration snapshot/`STORAGE_LOGGER`, token names), training tuning (`PERFECT_TESTS_TO_PROCEED`, `ERRORS_TO_DOWNGRADE`, `MAX_L50_TRIES`, sentence rules), enums (`SCREEN`, `SETTINGS`, `LANGCODE`, `THEMETYPE`, `SORTINGOPTION`, `STATSMETRICS`, `TESTLEVEL`, `PASSAGELEVEL`), vibration patterns, and the palettes `COLOR_DARK`/`COLOR_LIGHT` + `THEME_DARK`/`THEME_LIGHT` StyleSheets |
+| `bibleReference.ts` | Bible structure data: 66 books as `{ titleShort, longTitle }` l10n WORD keys + `chapters` (verse count per chapter, `chaptersAlternative` where translations differ) |
+| `navigator.tsx` | react-navigation stack: all screens, `headerShown:false`, `freezeOnBlur` + `detachInactiveScreens` (render-lag fix 8.1.3), `linking` config for `bbh://` / `bible-by-heart://` / `https://biblebyheart.app` deep links, and the background-notification TaskManager task. Exports `navigationRef` (imperative navigation from outside the tree: share intent in `App.tsx`, notification taps in `AppContext`) and `RootStackParamList` (still loosely typed — 8.1.14) |
+| `storage.ts` | single `react-native-storage` instance over AsyncStorage (`defaultExpires: null`), default-exported; every persist/load goes through it |
+| `context/AppContext.tsx` | global app context: single source of truth for `state`/`dispatch` + provides `t` (l10n) and `theme`; persists state + the rolling daily backup (`STORAGE_BACKUP_NAME`; the pre-migration snapshot is a separate write-once key owned by the boot path); wires notification-response handling. Exports `AppProvider`, `useAppContext`, and `AppContext` (for tests/narrow providers) |
 
 ### `src/screens/`
 
@@ -90,13 +91,22 @@ See the component library table in `CODING_RULES.md` §7 for descriptions:
 `color: theme.colors.text` onto every RN `<Text>`. Requires the AppProvider (or, in
 tests, a bare `AppContext.Provider` — now exported from `context/AppContext.tsx`).
 
-STRATEGY §4.3 base-component migration (in progress): `DotIndicator`, `Checkbox`,
-`Select`, `SelectModal` no longer take a `theme` prop — they read it from
-`useAppContext()`. Call sites dropped `theme={...}`; the components now require a
-provider (see `test-utils/renderWithContext.tsx`). Still prop-drilled and pending
-migration: `Button`/`IconButton`, `Input`, `setttingsMenuItem`, `Header`,
-`AddressPicker`, `LevelPicker`, `miniModal`, `weekActivityComponent`, `testNevDott`,
-`PassageEditor`, `SettingsSubScreen`, `settingsListWrapper`, `levels/Level1..5`.
+STRATEGY §4.3 base-component migration — **COMPLETE** (2026-08-24, sessions
+8.1.11–8.1.13). No component in `src/` takes `theme` or `t` as a prop any more; every
+one reads them from `useAppContext()`, and all ~277 `theme={...}` / `t={...}` call
+sites are gone. Consequence: **every** component now requires a provider above it —
+tests use `test-utils/renderWithContext.tsx`, never a bare `render()`.
+
+The one deliberate exception is the crash screen in `App.tsx`: it renders *outside*
+`AppProvider` (that is the point — it must work when state/theme code is broken), so
+it keeps raw `react-native` primitives and hardcoded bilingual strings. `useAppContext()`
+still throws without a provider, on purpose, so a missing provider anywhere else is a
+loud failure rather than a silent fallback theme.
+
+Two `theme={theme}` occurrences survive inside `{/* ... */}` JSX comment blocks
+(`PassageEditor.tsx` reminder toggle, `testsScreen.tsx` dev-mode "Pass" button) — dead
+code that predates the migration, left untouched to keep the diff honest. A grep for
+`theme={` will hit them; they are not live call sites.
 
 `SettingsSubScreen.tsx` — shared shell (View + Header with back + StatusBar) for
 every settings sub-menu screen. `settingsListWrapper.tsx` — reusable editable-list
@@ -114,40 +124,42 @@ in `src/screens/` and removed.
 | File | Description |
 |---|---|
 | `fetch.ts` | API client: auth endpoints, token refresh (expired-access→refresh via `isTokenExpired`), APIversion check, error handling |
-| `fetchESV.ts` | fetch passage text from ESV API |
+| `fetchESV.ts` | fetch passage text from the ESV API (token from `expoConfig.extra.ESVTOKEN`; no token → empty string, so the app still works offline/unconfigured). The template for the pluggable text-source interface in STRATEGY §6.3 |
 
 ### `src/l10n/`
 
 | File | Description |
 |---|---|
-| `index.ts` | `t()` translation lookup by lang code |
-| `en.ts` / `ua.ts` | English / Ukrainian UI strings (always update both) |
+| `index.ts` | `createT(langCode)` → `t(word)` lookup (falls back to the key itself); exports the `WORD` union = `keyof typeof en`, so a key missing from `en.ts` is a type error |
+| `en.ts` / `ua.ts` | English / Ukrainian UI strings, flat key→string maps (always update both; ~470 keys each) |
 
 ### `src/utils/`
 
 | File | Description |
 |---|---|
-| `reduce.ts` | THE reducer: every state change (passages, tests, history, settings, user) |
-| `useApp.ts` | hook wiring state + dispatch to components |
-| `stateVersionConvert.ts` | chained migrations between state model versions (`__tests__/utils/stateVersionConvert.test.ts` locks the current-era 0.0.8→0.1.0 chain) |
-| `getStats.ts` | all stats calculation (streak, scores, heatmap, per-level) |
-| `getPerfectTests.ts` | perfect-run detection for streak/score (?) |
+| `reduce.ts` | THE reducer: every state change (passages, tests, history, settings, user); finalization block also self-heals a dangling `settings.leftSwipeTag` |
+| `stateVersionConvert.ts` | chained migrations between state model versions — `versionsConvertionTable` + recursive `convertState` (`__tests__/utils/stateVersionConvert.test.ts` locks the current-era 0.0.8→0.1.0 chain) |
+| `bootBackup.ts` | the boot path's safety net (8.1.8): `savePreConvertSnapshot` (write-once into `STORAGE_PRECONVERT_BACKUP_NAME`, never overwrites), `restoreStateFromBackup` (accepts an OLDER snapshot and converts it forward), `loadRestorableBackup(key)`. All total — they log and resolve instead of throwing, because every caller is on the cold-start path |
+| `getStats.ts` | all stats calculation: `getStroke` / `getMaxStroke` (current + longest day streak), `getWeeklyStats` (home week bars), `getPassageStats`, `getAppStats` (stats + calendar screens), `getTimeBoundStats`. Callers memoize these — they walk the whole history |
+| `getPerfectTests.ts` | `getPerfectTestsNumber(history, passage)` — length of the newest unbroken run of error-free tests at/above the passage's `maxLevel`; compared against `PERFECT_TESTS_TO_PROCEED` to level a passage up |
 | `getSimularity.ts` | string similarity (answer checking) |
 | `levelsConvertion.ts` | passageLevel ↔ testLevel conversion |
-| `addressToString.ts` / `addressFromString.ts` | Address ↔ human string; parser picks the most specific book on prefix ambiguity |
+| `addressToString.ts` / `addressFromString.ts` | Address ↔ human string; parser finds the reference ANYWHERE in the text (title + chapter:verse, word-boundary-guarded), picks the most specific book, and matches per-book aliases from `bookAliases.ts` |
+| `bookAliases.ts` | Per-language abbreviation / spelling-variant lists per book (keyed by long-title WORD), consumed by `addressFromString` in addition to the localized titles |
+| `sanitizeSharedText.ts` | Pure cleaner for share-sheet text: normalizes untypable chars (dashes, curly quotes, nbsp, ellipsis), strips URLs + wrapping quotes + dangling separators. Used by `listScreen.handleTextFromIntent` |
 | `addressDistance.ts` / `addressDifference.ts` / `addressOrder.ts` | address math for test generation/sorting |
-| `getNumberOfVerses.ts` / `getNumberOfEnglishVerses.ts` | verse counting for limits |
-| `fileManager.ts` | import/export files (txt/json) via document picker |
-| `handlePassageExport.ts` | passage export/import serialization + dedupe |
-| `notifications.ts` | reminders scheduling/permissions (expo-notifications) |
-| `formatDateTime.ts` / `secondsToString.ts` / `addZero.ts` | formatting helpers |
-| `randomizers.ts` | shuffle/random helpers for test generation |
-| `getThemeFromScheme.ts` | dark/light theme object |
+| `getNumberOfVerses.ts` / `getNumberOfEnglishVerses.ts` | verse counting for limits (localized vs English chapter numbering) |
+| `fileManager.ts` | `writeFile`/`readFile` — import/export files (txt/json) via document picker |
+| `handlePassageExport.ts` | passage export/import serialization (`passagesToLSV`/`arrayToLSV`/`LSVToArray`/`arrayToPassages`) + dedupe |
+| `notifications.ts` | reminders: `schedulePushNotification`, `getAutoTimeTrigger` (smart time), `checkSchedule` (re-plan on state change), `registerForPushNotificationsAsync` (permissions + localized Android channel) |
+| `formatDateTime.ts` (`timeStringFromMS`/`dateToString`/`timeToString`) / `secondsToString.ts` / `addZero.ts` | formatting helpers |
+| `randomizers.ts` | `randomRange`/`randomItem`/`randomListRange` — used by test generation |
+| `getThemeFromScheme.ts` | `getThemeFromScheme(themeType, colorScheme)` → `{ theme, colors }` (dark/light, `auto` resolved from the passed OS scheme — never calls `useColorScheme` itself, see §3 polyfill history); exports `ThemeAndColorsModel` |
 | `toastShow.ts` | toast notifications |
-| `logger.ts` | app logger (+ log viewer storage for debugging) |
+| `logger.ts` | app logger — `logger.write`/`.error`/`.readAll`/`.clearAll`; appends to a `STORAGE_LOGGER` array capped at `LOGGER_MAX_ARRAY_SIZE`, read by the dev-mode log viewer |
 | `isTokenExpired.ts` | JWT payload decode + expiry check (used by `services/fetch.ts` auth/refresh) |
-| `generateTests/index.ts` | orchestrates per-passage test generation by level |
-| `generateTests/createL10Test.ts` … `createL50Test.ts` | one generator per level (10,11,2X,30,40,50) |
+| `generateTests/index.ts` | `getPassagesByTrainMode` (which passages are due) + `generateTests`/`generateATest` — orchestrates per-passage test generation by level |
+| `generateTests/createL10Test.ts` … `createL50Test.ts` | one generator per test level (10, 11, 20/21 in `createL2XTest`, 30, 40; `createL50Test` = `createL40Test` today). `createL10Test.ts` also owns the shared `CreateTestInputModel` / `CreateTestMethodModel` types |
 | `generateTests/getErrorGradedSentences.ts` | pick hardest sentences from error history |
 | `generateTests/getWordsFromErrors.ts` | pick hardest words from error history |
 
@@ -162,13 +174,16 @@ in `src/screens/` and removed.
 | smoke | `app.test.tsx` |
 | components | AddressPicker, button, checkbox, ConfirmModal, header, icon, input, miniModal, select, settingsMenuItem, Text (+snapshots) |
 | levels | Level1–5 (+snapshots) |
-| utils | addressFromString, createL11Tests, getNumberOfVerses, getStats, handlePassageExport, isTokenExpired, notifications, reduce |
+| utils | addressFromString, bootBackup, createL11Tests, getNumberOfVerses, getStats, handlePassageExport, isTokenExpired, notifications, reduce, sanitizeSharedText, stateVersionConvert |
+| e2e | `e2e/flow.test.tsx` — the release guard (8.1.16a): one test drives create state → add passage → `generateTests` → answer with errors → finish → assert stats, through the reducer + generators only (no rendering), plus an explicit assertion that no error count is exposed |
+| fixtures | `fixtures/state006.ts`, `fixtures/state007.ts` — realistic legacy states (passages, history, settings) for the 8.1.10 converter hops. **Not test suites**: `package.json`'s jest `testPathIgnorePatterns` excludes `__tests__/fixtures/`, otherwise jest's default `testMatch` picks them up and fails them as suites with no tests |
 
 `test-utils/renderWithContext.tsx` (repo root, outside `__tests__/` so jest doesn't
 treat it as a suite) — shared helper that renders a component under an
 `AppContext.Provider` with a synthetic value (no side effects). `renderWithContext(ui,
-{ themeType?, langCode?, state? })`; used by every test whose render tree contains a
-§4.3-migrated component (Text, Checkbox, Select/SelectModal, settingsMenuItem).
+{ themeType?, langCode?, state? })`. As of the 8.1.11–8.1.13 migration **every**
+component reads `theme`/`t` from context, so any test that renders app UI goes through
+this helper rather than a bare `render()`.
 
 ---
 
@@ -184,7 +199,7 @@ treat it as a suite) — shared helper that renders a component under an
 | `babel.config.json` / `tsconfig.json` / `jest.config.ts` / `.eslintrc.json` / `.prettierrc` | toolchain |
 | `package.json` | scripts: dev (babel watch + node watch), build, test, docker, genKey |
 | `codingdiary.md` | **Fedir's personal diary — never edit** |
-| `README.md` | API docs/setup (?) |
+| `README.md` | Fedir's own planned-arch checklist (version/auth/user done; sync, feedback, payment, broadcast open) + yarn/docker/test setup commands. Not an endpoint reference |
 | `data/test.db` | sqlite test database |
 | `static/` | privacy policy, ToS, account-deletion pages, favicon, logo (store compliance) |
 

@@ -64,6 +64,8 @@ export const ua: typeof en = {
   listScreenTitle: "Список віршів",
   statsScreenTitle: "Cтатистика",
   APSelectBook: "Обрання книги",
+  APAddVerse: "Додати",
+  APExtendRange: "Розширити діапазон",
   EditPassageTitle: "Редагування тексту",
   AddPassageTitle: "Додати текст",
   Save: "Зберегти",

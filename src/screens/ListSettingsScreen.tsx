@@ -21,7 +21,7 @@ import toastShow from "../utils/toastShow";
 // List settings — was a MiniModal rendered inline in the settings list. Now a
 // stack screen reached from settingsScreen.
 export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, t } = useAppContext();
 
   const allTags = [
     ARCHIVED_NAME,
@@ -30,14 +30,12 @@ export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={t("settsLabelList")}
       onBack={() => navigation.goBack()}
     >
       <ScrollView style={listSettingsStyle.scrollView}>
         <SettingsMenuItem
-          theme={theme}
           header={t("settsLeftSwipeTag")}
           subtext={`"${
             state.settings.leftSwipeTag === ARCHIVED_NAME
@@ -63,7 +61,6 @@ export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsTranslationsListHeader")}
           subtext={t("settsTranslationsListSubtext")}
@@ -72,7 +69,6 @@ export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }
         />
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settingsExportPassages")}
           subtext={t("settsExportPassagesSubtext")}
@@ -99,7 +95,6 @@ export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settingsImportPassages")}
           subtext={t("settsImportPassagesSubtext")}

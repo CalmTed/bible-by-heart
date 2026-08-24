@@ -11,18 +11,16 @@ import { reduce } from "../utils/reduce";
 // Tests settings — was a MiniModal rendered inline in the settings list. Now a
 // stack screen reached from settingsScreen.
 export const TestsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, t } = useAppContext();
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={t("settsLabelTests")}
       onBack={() => navigation.goBack()}
     >
       <ScrollView style={testsSettingsStyle.scrollView}>
         <SettingsMenuItem
-          theme={theme}
           header={t("settsHaptics")}
           subtext={t(
             state.settings.hapticsEnabled ? "settsEnabled" : "settsDisabled"
@@ -43,7 +41,6 @@ export const TestsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           header={t("settsAutoIncreseLevel")}
           subtext={t(
             state.settings.autoIncreaseLevel ? "settsEnabled" : "settsDisabled"
@@ -65,7 +62,6 @@ export const TestsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         />
         <SettingsMenuItem
           type="action"
-          theme={theme}
           actionCallBack={() => navigation.navigate(SCREEN.settingsTrainModes)}
           header={t("settingsTrainModesListHeader")}
           subtext={t("settingsTrainModesListSubtext")}

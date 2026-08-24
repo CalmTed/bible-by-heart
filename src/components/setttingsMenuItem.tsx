@@ -2,16 +2,14 @@ import React, { FC, useState } from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { OptionModel } from "../models";
 import { SelectModal } from "./SelectModal";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { Input } from "./Input";
 import { TagItem } from "./PassageEditor";
 import { ARCHIVED_NAME } from "../constants";
-import { WORD } from "../l10n";
 import { Checkbox } from "./Checkbox";
 
 type SettingsMenuItemModel =
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       subtext: string;
       type: "action";
@@ -19,7 +17,6 @@ type SettingsMenuItemModel =
       disabled?: boolean;
     }
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       subtext: string;
       type: "checkbox";
@@ -28,7 +25,6 @@ type SettingsMenuItemModel =
       disabled?: boolean;
     }
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       subtext: string;
       type: "select";
@@ -38,7 +34,6 @@ type SettingsMenuItemModel =
       disabled?: boolean;
     }
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       type: "textinput";
       value: string;
@@ -87,24 +82,22 @@ type SettingsMenuItemModel =
       autoCorrect?: boolean;
     }
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       type: "taglist";
       optionsList: string[];
       valuesList: string[];
       onListChange: (newList: string[]) => void;
-      t: (w: WORD) => string;
       maxLength?: number;
       maxNumber?: number;
       disabled?: boolean;
     }
   | {
-      theme: ThemeAndColorsModel;
       header: string;
       type: "label";
     };
 
 export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
+  const { theme, t } = useAppContext();
   const [selectOpen, setSelectOpen] = useState(false);
   const [tagSelectOpen, setTagSelectOpen] = useState(false);
 
@@ -132,16 +125,16 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
       // paddingVertical: 5,
     },
     header: {
-      color: data.theme.colors.text,
+      color: theme.colors.text,
       fontSize: 21,
       fontWeight: "600"
     },
     subtext: {
-      color: data.theme.colors.textSecond,
+      color: theme.colors.textSecond,
       fontSize: 14
     },
     label: {
-      color: data.theme.colors.textSecond,
+      color: theme.colors.textSecond,
       fontSize: 14,
       textTransform: "uppercase",
       fontWeight: "600"
@@ -205,7 +198,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
         </Pressable>
       )}
       {data.type === "select" && (
-        <View style={{ ...data.theme.theme.fullWidth }}>
+        <View style={{ ...theme.theme.fullWidth }}>
           <Pressable
             onPress={handleOpenSelectList}
             style={{
@@ -226,14 +219,13 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
         </View>
       )}
       {data.type === "textinput" && (
-        <View style={{ ...data.theme.theme.fullWidth }}>
+        <View style={{ ...theme.theme.fullWidth }}>
           <Text style={settingsMenuItemStyles.subtext}>{data.header}:</Text>
           <Input
             value={data.value}
             onChange={data.onChange}
             onEndEditing={data.onEndEditing}
             placeholder={data.header}
-            theme={data.theme}
             maxLength={data.maxLength}
             disabled={data.disabled}
             autoComplete={data.autoComplete}
@@ -243,13 +235,12 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
       )}
 
       {data.type === "taglist" && (
-        <View style={{ ...data.theme.theme.fullWidth }}>
+        <View style={{ ...theme.theme.fullWidth }}>
           <Text style={settingsMenuItemStyles.subtext}>{data.header}:</Text>
           <View style={{ ...settingsMenuItemStyles.tagListWrapper }}>
             {[
               <TagItem
                 key={"addNew"}
-                theme={data.theme}
                 title={"+"}
                 onPress={() => setTagSelectOpen(true)}
                 disabled={!data.optionsList.length}
@@ -257,10 +248,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
               ...data.valuesList.map((p) => (
                 <TagItem
                   key={p}
-                  theme={data.theme}
-                  title={
-                    p === ARCHIVED_NAME ? data.t("Archived") : p.slice(0, 20)
-                  }
+                  title={p === ARCHIVED_NAME ? t("Archived") : p.slice(0, 20)}
                   onRemove={() =>
                     data.onListChange(data.valuesList.filter((v) => v !== p))
                   }
@@ -273,7 +261,7 @@ export const SettingsMenuItem: FC<SettingsMenuItemModel> = (data) => {
             isShown={tagSelectOpen}
             options={data.optionsList.map((v) => ({
               value: v,
-              label: v === ARCHIVED_NAME ? data.t("Archived") : v
+              label: v === ARCHIVED_NAME ? t("Archived") : v
             }))}
             selectedIndex={null}
             onSelect={(newVal) => {

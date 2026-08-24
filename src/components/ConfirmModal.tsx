@@ -1,12 +1,11 @@
 import React, { FC } from "react";
 import { Text, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { MiniModal } from "./miniModal";
 import { Button } from "./Button";
 
 interface ConfirmModalModel {
   shown: boolean;
-  theme: ThemeAndColorsModel;
   text: string;
   confirmTitle: string;
   cancelTitle: string;
@@ -20,7 +19,6 @@ interface ConfirmModalModel {
 // Built on MiniModal so it renders above whichever surface triggered it.
 export const ConfirmModal: FC<ConfirmModalModel> = ({
   shown,
-  theme,
   text,
   confirmTitle,
   cancelTitle,
@@ -28,8 +26,9 @@ export const ConfirmModal: FC<ConfirmModalModel> = ({
   onCancel,
   confirmColor = "red"
 }) => {
+  const { theme } = useAppContext();
   return (
-    <MiniModal theme={theme} shown={shown} handleClose={onCancel}>
+    <MiniModal shown={shown} handleClose={onCancel}>
       <Text style={{ ...theme.theme.text, fontSize: 18 }}>{text}</Text>
       <View
         style={{
@@ -38,14 +37,8 @@ export const ConfirmModal: FC<ConfirmModalModel> = ({
           ...theme.theme.gap20
         }}
       >
+        <Button onPress={onCancel} type="secondary" title={cancelTitle} />
         <Button
-          theme={theme}
-          onPress={onCancel}
-          type="secondary"
-          title={cancelTitle}
-        />
-        <Button
-          theme={theme}
           onPress={onConfirm}
           type="main"
           color={confirmColor}

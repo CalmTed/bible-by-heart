@@ -20,20 +20,18 @@ import { randomRange } from "../utils/randomizers";
 export const NotificationsSettingsScreen: FC<ScreenModel> = ({
   navigation
 }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, t } = useAppContext();
 
   const autoTime = getAutoTimeTrigger(state.testsHistory);
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={t("settsLabelReminders")}
       onBack={() => navigation.goBack()}
     >
       <ScrollView style={notificationsSettingsStyle.scrollView}>
         <SettingsMenuItem
-          theme={theme}
           header={t("settsEnableReminders")}
           subtext={t(
             state.settings.remindersEnabled ? "settsEnabled" : "settsDisabled"
@@ -54,7 +52,6 @@ export const NotificationsSettingsScreen: FC<ScreenModel> = ({
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           header={t("settsRemindersAutomaticTime")}
           subtext={`${t("settsRemindersAutomaticTimeSubtext")}: ${
             state.settings.remindersSmartTime
@@ -80,7 +77,6 @@ export const NotificationsSettingsScreen: FC<ScreenModel> = ({
           }}
         />
         <SettingsMenuItem
-          theme={theme}
           type="action"
           header={t("settsRemindersListHeader")}
           subtext={t("settsRemindersListSubtext")}
@@ -92,7 +88,6 @@ export const NotificationsSettingsScreen: FC<ScreenModel> = ({
         />
         {state.settings.devModeEnabled && (
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsTestNotification")}
             subtext=""

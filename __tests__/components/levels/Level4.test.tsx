@@ -1,10 +1,9 @@
-import { render } from "@testing-library/react-native";
+import { renderWithContext } from "../../../test-utils/renderWithContext";
 import { LANGCODE, PASSAGELEVEL } from "../../../src/constants";
 import { L40 } from "../../../src/components/levels/Level4";
 import { createT } from "../../../src/l10n";
 import { AppStateModel, PassageModel } from "../../../src/models";
 import { createAppState, createTest } from "../../../src/initials";
-import { getThemeFromScheme } from "../../../src/utils/getThemeFromScheme";
 
 describe("testing level 4 rendering", () => {
   it("Level 4 renders correctly", async () => {
@@ -46,14 +45,10 @@ describe("testing level 4 rendering", () => {
       ]
     } as AppStateModel;
     const test = createTest(123123, 212610751, PASSAGELEVEL.l4);
-    const theme = getThemeFromScheme(testState.settings.theme, "dark");
-    const t = createT(LANGCODE.en);
-    const level40Tree = render(
+    const level40Tree = renderWithContext(
       <L40
         test={test}
-        theme={theme}
         state={testState}
-        t={t}
         submitTest={() => {}}
         dispatch={(action) => {}}
       />

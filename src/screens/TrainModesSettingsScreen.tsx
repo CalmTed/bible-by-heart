@@ -17,7 +17,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsListWrapper
-      theme={theme}
       themeType={state.settings.theme}
       handleClose={() => navigation.goBack()}
       header={t("settingsTrainModesListHeader")}
@@ -116,7 +115,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         return (
           <View>
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeNameInput")}
               type="textinput"
               value={trainModeItem.name}
@@ -129,7 +127,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               maxLength={20}
             />
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeEnabled")}
               subtext={`${t(
                 trainModeItem.enabled ? "settsEnabled" : "settsDisabled"
@@ -145,7 +142,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeLengthHeader")}
               subtext={`${t("settsTrainModeLengthSubtext")}: ${
                 trainModeItem.length.toString() === "Infinity"
@@ -173,7 +169,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeTranslationHeader")}
               subtext={`${t("settsTrainModeTranslationSubtext")}: ${
                 state.settings.translations.find(
@@ -198,7 +193,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               }}
             />
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeSortingHeader")}
               subtext={`${t("settsTrainModeSortingSubtext")}: ${t(
                 trainModeItem.sort
@@ -222,7 +216,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <SettingsMenuItem
-              theme={theme}
               header={t("settsTrainModeLevelHeader")}
               subtext={`${t("settsTrainModeLevelSubtext")}: ${
                 trainModeItem.testAsLevel === null
@@ -250,8 +243,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <SettingsMenuItem
-              theme={theme}
-              t={t}
               header={t("settsTrainModeIncludeTagsHeader")}
               type="taglist"
               optionsList={allTags.filter(
@@ -269,8 +260,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <SettingsMenuItem
-              theme={theme}
-              t={t}
               header={t("settsTrainModeExcludeTagsHeader")}
               type="taglist"
               optionsList={allTags.filter(
@@ -288,7 +277,6 @@ export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               disabled={!trainModeItem.editable}
             />
             <Button
-              theme={theme}
               color="red"
               title={t("Remove")}
               onPress={() => {

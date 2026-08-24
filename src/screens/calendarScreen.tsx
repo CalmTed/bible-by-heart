@@ -324,14 +324,12 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       {!selectedDay && (
         <Header
-          theme={theme}
           navigation={navigation}
           showBackButton={false}
           alignChildren="flex-start"
           additionalChildren={[
             <IconButton
               key="back"
-              theme={theme}
               icon={IconName.back}
               onPress={() => navigation.navigate(SCREEN.stats)}
             />,
@@ -343,14 +341,12 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
       )}
       {selectedDay && (
         <Header
-          theme={theme}
           navigation={navigation}
           showBackButton={false}
           alignChildren="flex-start"
           additionalChildren={[
             <IconButton
               key="back"
-              theme={theme}
               icon={IconName.back}
               onPress={() => setSelectedDay(null)}
             />,
@@ -365,7 +361,6 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
         <View style={calendarStyle.listView}>
           <View style={calendarStyle.buttons}>
             <IconButton
-              theme={theme}
               icon={IconName.back}
               disabled={!previusMonthAvalible}
               onPress={() => handleSetPreviusMonth()}
@@ -374,7 +369,6 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
               {monthName} {new Date().getFullYear()}
             </Text>
             <IconButton
-              theme={theme}
               icon={IconName.forward}
               disabled={!nextMonthAvalible}
               onPress={() => handleSetNextMonth()}
@@ -472,7 +466,6 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
         <View style={calendarStyle.listView}>
           <View style={calendarStyle.buttons}>
             <IconButton
-              theme={theme}
               icon={IconName.back}
               disabled={!previusDayAvalible}
               onPress={() => handleSetPreviusDay()}
@@ -481,7 +474,6 @@ export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
               {dateToString(selectedDay)}
             </Text>
             <IconButton
-              theme={theme}
               icon={IconName.forward}
               disabled={!nextDayAvalible}
               onPress={() => handleSetNextDay()}

@@ -21,7 +21,7 @@ interface PassageRouteParams {
 }
 
 export const PassageScreen: FC<ScreenModel> = ({ route, navigation }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, theme } = useAppContext();
   const params: PassageRouteParams = route.params ?? {};
 
   // Freeze the source passage ONCE at mount. Rebuilding it per render would mint
@@ -92,8 +92,6 @@ export const PassageScreen: FC<ScreenModel> = ({ route, navigation }) => {
         onConfirm={handleSave}
         onRemove={handleRemove}
         onBack={handleBack}
-        t={t}
-        theme={theme}
       />
     </View>
   );

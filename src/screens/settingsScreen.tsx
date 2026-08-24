@@ -119,14 +119,12 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        theme={theme}
         navigation={navigation}
         showBackButton={false}
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
             key="back"
-            theme={theme}
             icon={IconName.back}
             onPress={() => navigation.navigate(SCREEN.home)}
           />,
@@ -147,7 +145,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           </View>
           {!isAutorized && (
             <Button
-              theme={theme}
               onPress={() => handleLoginPress()}
               title={t("loginButton")}
               type="transparent"
@@ -160,13 +157,11 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               </Text>
               <Text style={theme.theme.text}>@{state.userData.userName}</Text>
               {/* <Button
-              theme={theme}
               onPress={() => updateUserData()}
               title={t("update")}
               type="transparent"
             /> */}
               <Button
-                theme={theme}
                 onPress={() => handleLogoutPress()}
                 title={t("logoutButton")}
                 type="transparent"
@@ -176,13 +171,8 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         </View>
         <View style={settingsStyle.menuItemsListView}>
           {/* MAIN */}
+          <SettingsMenuItem header={t("settsLabelMain")} type="label" />
           <SettingsMenuItem
-            theme={theme}
-            header={t("settsLabelMain")}
-            type="label"
-          />
-          <SettingsMenuItem
-            theme={theme}
             header={t("settsChangeLang")}
             subtext={`${t("name")} ${t("flag")}`}
             type="select"
@@ -202,7 +192,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             }}
           />
           <SettingsMenuItem
-            theme={theme}
             header={t("settsChangeTheme")}
             subtext={t(state.settings.theme)}
             type="select"
@@ -226,7 +215,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           {/* USER (account) — only when signed in */}
           {isAutorized && (
             <SettingsMenuItem
-              theme={theme}
               type="action"
               header={t("settsUserHeader")}
               subtext=""
@@ -235,7 +223,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           )}
           {/* LISTS */}
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsLabelList")}
             subtext=""
@@ -243,7 +230,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           />
           {/* TESTS */}
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsLabelTests")}
             subtext=""
@@ -251,7 +237,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           />
           {/* NOTIFICATIONS */}
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsLabelReminders")}
             subtext=""
@@ -261,7 +246,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           />
           {/* STATS */}
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsLabelStats")}
             subtext=""
@@ -269,7 +253,6 @@ export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
           />
           {/* ABOUT */}
           <SettingsMenuItem
-            theme={theme}
             type="action"
             header={t("settsAboutHeader")}
             subtext=""

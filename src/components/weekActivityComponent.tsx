@@ -4,16 +4,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { AppStateModel } from "../models";
 import { getWeeklyStats } from "../utils/getStats";
 import { WORD } from "../l10n";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 // React.memo: home re-renders on every local state change (e.g. opening the
-// train-modes picker); with stable `t`/`theme` from context (8.1.2) this now
-// skips re-rendering when state/t/theme are unchanged (8.1.1 finding #4/c).
+// train-modes picker); `t`/`theme` now come from context (stable identities,
+// 8.1.2), so this skips re-rendering while state is unchanged (8.1.1 #4/c).
 export const WeekActivityComponent: FC<{
   state: AppStateModel;
-  t: (w: WORD) => string;
-  theme: ThemeAndColorsModel;
-}> = React.memo(({ state, t, theme }) => {
+}> = React.memo(({ state }) => {
+  const { t } = useAppContext();
   // getWeeklyStats walks history; recompute only when history changes (#4/d).
   const weekActivityData = useMemo(
     () => getWeeklyStats(state),
@@ -35,7 +34,6 @@ export const WeekActivityComponent: FC<{
       {weekActivityData.map((data, i) => {
         return (
           <DayActivityBar
-            theme={theme}
             key={data.label}
             value={data.number}
             maxValue={maxValue}
@@ -54,8 +52,8 @@ const DayActivityBar: FC<{
   maxValue: number;
   label: string;
   isToday: boolean;
-  theme: ThemeAndColorsModel;
-}> = React.memo(({ value, maxValue, label, isToday, theme }) => {
+}> = React.memo(({ value, maxValue, label, isToday }) => {
+  const { theme } = useAppContext();
   const barHeight = `${(80 / maxValue) * value + 20}%` as DimensionValue;
   const gradientColors = value
     ? [theme.colors.gradient1, theme.colors.gradient2]

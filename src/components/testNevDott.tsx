@@ -1,21 +1,20 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { FC } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 interface TestNavDottModel {
   isCurrent: boolean;
   color: "red" | "green" | "gray" | "text";
-  theme: ThemeAndColorsModel;
   onPress?: () => void;
 }
 
 export const TestNavDott: FC<TestNavDottModel> = ({
   isCurrent,
   color,
-  onPress,
-  theme
+  onPress
 }) => {
+  const { theme } = useAppContext();
   const colors =
     color === "gray"
       ? [theme.colors.textSecond, theme.colors.textSecond]

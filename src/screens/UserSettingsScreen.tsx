@@ -298,7 +298,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={`${t("settsUserHeader")}${loadingState ? " ⏳" : ""}`}
       onBack={() => navigation.goBack()}
@@ -306,12 +305,10 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
       <ScrollView style={userSettingsStyle.scrollView}>
         <SettingsMenuItem
           type="label"
-          theme={theme}
           header={`${t("settsUserEmail")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}
         />
         <SettingsMenuItem
           type="label"
-          theme={theme}
           header={t(
             `${state.userData.isEmailConfirmed ? "settsUserEmailConfirmed" : "settsUserEmailNOTConfirmed"}`
           )}
@@ -319,7 +316,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {!state.userData.isEmailConfirmed && (
           <SettingsMenuItem
             type="action"
-            theme={theme}
             header={t("settsUserRequestEmailConfLinkHeadert")}
             subtext={t("settsUserRequestEmailConfLinkSubtext")}
             actionCallBack={() => handleRequestEmailConfirmation()}
@@ -327,19 +323,16 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         )}
         <SettingsMenuItem
           type="label"
-          theme={theme}
           header={`${t("settsUserRegDate")}: ${dateToString(state.userData.registrationDate || 0)}`}
         />
         {state.userData.userRights !== "free" && (
           <SettingsMenuItem
             type="label"
-            theme={theme}
             header={`User type: ${state.userData.userRights}`}
           />
         )}
         <SettingsMenuItem
           type="textinput"
-          theme={theme}
           header={t("settsUserUserName")}
           //TODO limit charachters
           value={state.userData.userName || ""}
@@ -348,7 +341,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         />
         <SettingsMenuItem
           type="textinput"
-          theme={theme}
           header={t("settsUserUserTitle")}
           value={state.userData.userTitle || ""}
           onChange={(newValue) => handleUserTitleChange(newValue)}
@@ -358,14 +350,12 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.settings.devModeEnabled && (
           <SettingsMenuItem
             type="label"
-            theme={theme}
             header={`${t("settsUserLastSyncDate")}: ${timeToString(state.userData.lastUserDataSync || 0)}`}
           />
         )}
         {state.settings.devModeEnabled && (
           <SettingsMenuItem
             type="action"
-            theme={theme}
             header={t("settsUserGetRemoteUserDataHeader")}
             subtext={t("settsUserGetRemoteUserDataSubtext")}
             actionCallBack={() => updateUserData()}
@@ -373,7 +363,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         )}
         <SettingsMenuItem
           type="select"
-          theme={theme}
           header={t("settsUserProfilePublic")}
           subtext={
             isProfilePublicOptions[isProfilePublicOptnionsSelected].label
@@ -388,7 +377,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         />
         <SettingsMenuItem
           type="select"
-          theme={theme}
           header={t("settsUserDataPublic")}
           subtext={isDataPublicOptions[isDataPublicOptnionsSelected].label}
           selectedIndex={isDataPublicOptnionsSelected}
@@ -401,21 +389,18 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         />
         <SettingsMenuItem
           type="action"
-          theme={theme}
           header={t("settsUserDeleteAccountHeader")}
           subtext={t("settsUserDeleteAccountSubtext")}
           actionCallBack={() => setDeletionConfirmationModalShown(true)}
         />
       </ScrollView>
       <MiniModal
-        theme={theme}
         shown={isDeletionConfirmationModalShown}
         handleClose={() => handleClosingDeletionConfirmationModal()}
         style={userSettingsStyle.deletionMiniModal}
       >
         <View style={userSettingsStyle.deletionModalHeader}>
           <IconButton
-            theme={theme}
             icon={IconName.back}
             onPress={() => handleClosingDeletionConfirmationModal()}
           />
@@ -433,7 +418,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             {deletionText}
           </Text>
           <Input
-            theme={theme}
             type="main"
             value={deletionConfirmationTextValue}
             onChange={setDeletionConfirmationTextValue}
@@ -442,7 +426,6 @@ export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
             )}
           />
           <Button
-            theme={theme}
             color="red"
             type={
               deletionConfirmationTextValue === deletionText

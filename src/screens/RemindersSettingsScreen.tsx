@@ -54,7 +54,6 @@ export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
 
   return (
     <SettingsListWrapper
-      theme={theme}
       themeType={state.settings.theme}
       handleClose={() => navigation.goBack()}
       header={t("settsRemindersList")}
@@ -149,7 +148,6 @@ export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
         return (
           <View style={remindersStyle.remindersEnabledView}>
             <SettingsMenuItem
-              theme={theme}
               header={t("settsReminderEnabled")}
               subtext={`${t(
                 reminderItem.enabled ? "settsEnabled" : "settsDisabled"
@@ -192,7 +190,6 @@ export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               />
             </View>
             <Button
-              theme={theme}
               onPress={() => handleRemove(reminderItem)}
               color="red"
               title={t("Remove")}

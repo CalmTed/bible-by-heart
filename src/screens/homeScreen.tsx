@@ -123,7 +123,6 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.passages.length === 0 && (
           <Button
             key={"addFirstPassageButton"}
-            theme={theme}
             type="main"
             color="green"
             title={t("AddPassages")}
@@ -133,7 +132,6 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
         {state.passages.length > 0 && [
           <Button
             key={"practiceButton"}
-            theme={theme}
             type="main"
             color="green"
             title={t("homePractice")}
@@ -153,19 +151,16 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
           />,
           <Button
             key={"listButton"}
-            theme={theme}
             title={t("homeList")}
             onPress={() => navigation.navigate(SCREEN.listPassage)}
           />,
           <Button
             key={"statsButton"}
-            theme={theme}
             title={t("homeStats")}
             onPress={() => navigation.navigate(SCREEN.stats)}
           />
         ]}
         <Button
-          theme={theme}
           title={t("homeSettings")}
           onPress={() => navigation.navigate(SCREEN.settings)}
         />
@@ -204,7 +199,7 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
         style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
       />
       {logoBlock}
-      <WeekActivityComponent theme={theme} state={state} t={t} />
+      <WeekActivityComponent state={state} />
       {mainButtons}
     </View>
   );

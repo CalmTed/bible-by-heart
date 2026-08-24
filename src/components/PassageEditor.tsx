@@ -21,7 +21,6 @@ import {
 } from "../utils/formatDateTime";
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
@@ -33,6 +32,7 @@ import { getPassageStats } from "../utils/getStats";
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
+import { useAppContext } from "../context/AppContext";
 
 interface PassageEditorModel {
   passage: PassageModel;
@@ -42,21 +42,18 @@ interface PassageEditorModel {
   onConfirm: (passage: PassageModel) => void;
   onRemove: (arg: number) => void;
   onBack: () => void;
-  t: (w: WORD) => string;
-  theme: ThemeAndColorsModel;
   state: AppStateModel;
 }
 
 export const PassageEditor: FC<PassageEditorModel> = ({
-  theme,
   passage,
   isNew,
   onConfirm,
   onRemove,
   onBack,
-  t,
   state
 }) => {
+  const { theme, t } = useAppContext();
   const insets = useSafeAreaInsets();
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
@@ -401,7 +398,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     <View style={PEstyle.screen}>
       <View style={PEstyle.headerView}>
         <IconButton
-          theme={theme}
           style={PEstyle.headerBotton}
           icon={IconName.back}
           onPress={handleBackPress}
@@ -410,7 +406,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           {isNew ? t("AddPassageTitle") : t("EditPassageTitle")}
         </Text>
         <Button
-          theme={theme}
           title={t("Save")}
           type="transparent"
           color="green"
@@ -434,7 +429,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                   ? IconName.bellGradient
                   : IconName.bellOutline
               }
-              theme={theme}
             />
           </View>
           <View style={PEstyle.bodyText}>
@@ -459,7 +453,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               {tempPassage.tags.map((p) => (
                 <TagItem
                   key={p}
-                  theme={theme}
                   title={p === ARCHIVED_NAME ? t("Archived") : p.slice(0, 20)}
                   onRemove={() => handleTagRemove(p)}
                 />
@@ -520,8 +513,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <View style={PEstyle.selectorSectionWrapper}>
               <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
               <LevelPicker
-                t={t}
-                theme={theme}
                 targetPassage={tempPassage}
                 handleChange={handleLevelChange}
                 handleOpen={handleLevelPickerOpen}
@@ -531,7 +522,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           </View>
           <View style={PEstyle.bodyButtons}>
             <Button
-              theme={theme}
               title={
                 tempPassage.tags.includes(ARCHIVED_NAME)
                   ? t("Unrchive")
@@ -541,7 +531,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             />
             {tempPassage.tags.includes(ARCHIVED_NAME) && (
               <Button
-                theme={theme}
                 title={t("Remove")}
                 onPress={() => setRemoveConfirmShown(true)}
                 color="red"
@@ -676,15 +665,12 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         </ScrollView>
       </View>
       <AddressPicker
-        theme={theme}
         visible={isAPVisible}
         address={tempPassage.address}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddresChange}
-        t={tempT}
       />
       <ConfirmModal
-        theme={theme}
         shown={isRemoveConfirmShown}
         text={t("PassageDeleteConfirmationText")}
         confirmTitle={t("Remove")}
@@ -696,7 +682,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         }}
       />
       <ConfirmModal
-        theme={theme}
         shown={isDiscardConfirmShown}
         text={t("PassageDiscardConfirmText")}
         confirmTitle={t("Discard")}
@@ -708,7 +693,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         }}
       />
       <MiniModal
-        theme={theme}
         shown={isFetchPropositionOpen}
         handleClose={() => setFetchPropositionOpen(false)}
       >
@@ -721,13 +705,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           }}
         >
           <Button
-            theme={theme}
             onPress={() => setFetchPropositionOpen(false)}
             type="secondary"
             title={t("Cancel")}
           />
           <Button
-            theme={theme}
             onPress={() => handleFetchConfirm()}
             type="main"
             color="green"
@@ -738,7 +720,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       <MiniModal
         shown={reminderModalShown}
         handleClose={() => setReminderModalShown(false)}
-        theme={theme}
       >
         <View style={PEstyle.reminderModalHeader}>
           {/* <Icon iconName={tempPassage.isReminderOn ? IconName.bellGradient : IconName.bellOutline}/> */}
@@ -753,7 +734,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           <Input
             onChange={handleRepeatingIntervalChange}
             placeholder={"0"}
-            theme={theme}
             value={tempPassage.minIntervalDaysNum?.toString() || ""}
             textStyle={{ minWidth: 50, width: 50 }}
             inputMode="numeric"
@@ -781,7 +761,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           </Text>
         )}
         <Button
-          theme={theme}
           type="main"
           color="green"
           onPress={() => setReminderModalShown(false)}
@@ -796,18 +775,17 @@ export const TagItem: FC<
   | {
       title: string;
       onRemove: () => void;
-      theme: ThemeAndColorsModel;
       onPress?: () => void;
       disabled?: boolean;
     }
   | {
       title: string;
       onPress: () => void;
-      theme: ThemeAndColorsModel;
       onRemove?: () => void;
       disabled?: boolean;
     }
-> = ({ theme, onPress, onRemove, title, disabled }) => {
+> = ({ onPress, onRemove, title, disabled }) => {
+  const { theme } = useAppContext();
   const tagItemStyles = StyleSheet.create({
     tagItemView: {
       borderRadius: 50,
@@ -829,19 +807,13 @@ export const TagItem: FC<
       {!!onRemove && <Text style={tagItemStyles.tagItemText}> {title}</Text>}
       {!!onRemove && (
         <IconButton
-          theme={theme}
           icon={IconName.cross}
           onPress={onRemove}
           disabled={disabled}
         />
       )}
       {!onRemove && !!onPress && (
-        <IconButton
-          theme={theme}
-          icon={IconName.add}
-          onPress={onPress}
-          disabled={disabled}
-        />
+        <IconButton icon={IconName.add} onPress={onPress} disabled={disabled} />
       )}
     </View>
   );

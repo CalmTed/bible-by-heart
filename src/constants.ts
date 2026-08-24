@@ -24,7 +24,16 @@ export enum LANGCODE {
 }
 
 export const STORAGE_NAME = "data";
+// Two separate recovery slots on purpose (8.1.8). STORAGE_BACKUP_NAME is the
+// rolling daily backup written by AppProvider - it is always at the CURRENT
+// state version and is overwritten every 24h. STORAGE_PRECONVERT_BACKUP_NAME
+// holds the raw state as it was BEFORE the very first state-version conversion
+// this install ever ran; it is written once and never overwritten, so a broken
+// converter (or a chain of them) can never destroy the last known-good data.
+// They shared one key until 8.1.8, which meant the daily backup silently ate
+// the pre-conversion snapshot within a day of an upgrade.
 export const STORAGE_BACKUP_NAME = "backup";
+export const STORAGE_PRECONVERT_BACKUP_NAME = "preConvertBackup";
 export const STORAGE_LOGGER = "logs";
 
 export const ARCHIVED_NAME = "Archived";

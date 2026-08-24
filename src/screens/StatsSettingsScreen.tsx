@@ -11,18 +11,16 @@ import { reduce } from "../utils/reduce";
 // Stats settings — was a MiniModal rendered inline in the settings list. Now a
 // stack screen reached from settingsScreen.
 export const StatsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, t } = useAppContext();
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={state.settings.theme}
       title={t("settsLabelStats")}
       onBack={() => navigation.goBack()}
     >
       <ScrollView style={statsSettingsStyle.scrollView}>
         <SettingsMenuItem
-          theme={theme}
           header={t("settsWeeklyMetrics")}
           subtext={`${t(state.settings.homeScreenWeeklyMetric)}`}
           type="select"

@@ -1,15 +1,12 @@
 import { renderWithContext } from "../../test-utils/renderWithContext";
-import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
-import { ARCHIVED_NAME, LANGCODE, THEMETYPE } from "../../src/constants";
+import { ARCHIVED_NAME, LANGCODE } from "../../src/constants";
 import { createT } from "../../src/l10n";
 import { SettingsMenuItem } from "../../src/components/setttingsMenuItem";
 
 describe("testing settings menu item", () => {
-  const theme = getThemeFromScheme(THEMETYPE.dark);
   const t = createT(LANGCODE.ua);
   const actionItem = (
     <SettingsMenuItem
-      theme={theme}
       type="action"
       subtext={t("settsOneWayDoor")}
       header={t("settsClearPassages")}
@@ -18,7 +15,6 @@ describe("testing settings menu item", () => {
   );
   const checkboxItem = (
     <SettingsMenuItem
-      theme={theme}
       header={t("settsDevMode")}
       subtext={t("settsEnabled")}
       type="checkbox"
@@ -27,16 +23,11 @@ describe("testing settings menu item", () => {
     />
   );
   const labelItem = (
-    <SettingsMenuItem
-      theme={theme}
-      header={t("settsLabelAbout")}
-      type="label"
-    />
+    <SettingsMenuItem header={t("settsLabelAbout")} type="label" />
   );
   const allTags = ["tag1", "tag2"];
   const selectItem = (
     <SettingsMenuItem
-      theme={theme}
       header={t("settsLeftSwipeTag")}
       subtext={t(ARCHIVED_NAME)}
       type="select"
@@ -52,7 +43,6 @@ describe("testing settings menu item", () => {
   );
   const textInputItem = (
     <SettingsMenuItem
-      theme={theme}
       header={t("settsTrainModeNameInput")}
       type="textinput"
       value={"trainModeName"}
@@ -62,8 +52,6 @@ describe("testing settings menu item", () => {
   );
   const tagListItem = (
     <SettingsMenuItem
-      theme={theme}
-      t={t}
       header={t("settsTrainModeIncludeTagsHeader")}
       type="taglist"
       optionsList={allTags}

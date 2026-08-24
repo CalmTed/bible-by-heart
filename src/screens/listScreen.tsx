@@ -26,7 +26,7 @@ import { Button, IconButton } from "../components/Button";
 import { Icon, IconName } from "../components/Icon";
 import { createAddress, createPassage } from "../initials";
 import { AddressPicker } from "../components/AddressPicker";
-import { WORD, createT } from "../l10n";
+import { createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
 import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
@@ -34,13 +34,13 @@ import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/miniModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useAppContext } from "../context/AppContext";
 import { getAddresOrder } from "../utils/addressOrder";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 import addressFromString from "../utils/addressFromString";
+import { sanitizeSharedText } from "../utils/sanitizeSharedText";
 
 export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   const { state, setState, t, theme } = useAppContext();
@@ -183,7 +183,11 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
       return newState ? newState : prv;
     });
   };
-  const handleTextFromIntent: (text: string) => void = (text) => {
+  const handleTextFromIntent: (rawText: string) => void = (rawText) => {
+    // Shared text comes from arbitrary apps (YouVersion etc.): normalize
+    // untypable chars, strip URLs and wrapping quotes/punctuation before parsing
+    // the address — the typing test later demands the exact character (8.1.4).
+    const text = sanitizeSharedText(rawText);
     const parsedAddressResult = addressFromString(text);
     const passageAddress =
       parsedAddressResult !== false
@@ -334,26 +338,19 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        theme={theme}
         navigation={navigation}
         showBackButton={false}
         alignChildren="space-between"
         additionalChildren={[
           <IconButton
             key="back"
-            theme={theme}
             icon={IconName.back}
             onPress={() => navigation.navigate(SCREEN.home)}
           />,
           <Text key="title" style={theme.theme.headerText}>
             {t("listScreenTitle")}
           </Text>,
-          <IconButton
-            key="add"
-            theme={theme}
-            icon={IconName.add}
-            onPress={handleAPOpen}
-          />
+          <IconButton key="add" icon={IconName.add} onPress={handleAPOpen} />
         ]}
       />
       <View style={listStyle.listView}>
@@ -365,20 +362,14 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             onChangeText={(newVal) => setSearch(newVal)}
           />
           {!!searchText.length && (
-            <IconButton
-              theme={theme}
-              icon={IconName.cross}
-              onPress={() => setSearch("")}
-            />
+            <IconButton icon={IconName.cross} onPress={() => setSearch("")} />
           )}
           <IconButton
-            theme={theme}
             icon={IconName.sort}
             onPress={() => setOpenSorting(true)}
             color={theme.colors.textSecond}
           />
           <IconButton
-            theme={theme}
             icon={IconName.filter}
             onPress={() => setOpenFilters(true)}
             color={theme.colors.textSecond}
@@ -394,9 +385,7 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
           keyExtractor={(passage) => passage.id.toString()}
           renderItem={({ item: passage }) => (
             <ListItem
-              theme={theme}
               data={passage}
-              t={t}
               sort={state.sort}
               leftSwipeTag={state.settings.leftSwipeTag}
               addressLanguage={
@@ -498,14 +487,12 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
         )} */}
       </View>
       <MiniModal
-        theme={theme}
         shown={isSortingOpen}
         handleClose={() => setOpenSorting(false)}
       >
         <Text style={theme.theme.headerText}>{t("TitleSort")}</Text>
         {Object.values(SORTINGOPTION).map((option) => (
           <Button
-            theme={theme}
             key={option}
             type="outline"
             color={option === state.sort ? "green" : "gray"}
@@ -513,14 +500,9 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             onPress={() => handleSortChange(option)}
           />
         ))}
-        <Button
-          theme={theme}
-          title={t("Close")}
-          onPress={() => setOpenSorting(false)}
-        />
+        <Button title={t("Close")} onPress={() => setOpenSorting(false)} />
       </MiniModal>
       <MiniModal
-        theme={theme}
         shown={isFiltersOpen}
         handleClose={() => setOpenFilters(false)}
       >
@@ -536,7 +518,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               PASSAGELEVEL.l5
             ].map((sl) => (
               <Button
-                theme={theme}
                 key={sl}
                 type="outline"
                 color={
@@ -557,7 +538,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               PASSAGELEVEL.l5
             ].map((ml) => (
               <Button
-                theme={theme}
                 key={ml}
                 type="outline"
                 color={state.filters.maxLevels.includes(ml) ? "gray" : "green"}
@@ -572,7 +552,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
               <View style={listStyle.optionsView}>
                 {allTags.map((option) => (
                   <Button
-                    theme={theme}
                     key={option}
                     type="outline"
                     color={
@@ -602,7 +581,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             <View style={listStyle.optionsView}>
               {state.settings.translations.map((option) => (
                 <Button
-                  theme={theme}
                   key={option.id}
                   type="outline"
                   color={
@@ -621,22 +599,15 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
             </View>
           </View>
         </ScrollView>
-        <Button
-          theme={theme}
-          title={t("Close")}
-          onPress={() => setOpenFilters(false)}
-        />
+        <Button title={t("Close")} onPress={() => setOpenFilters(false)} />
       </MiniModal>
       <AddressPicker
-        theme={theme}
         visible={isAPOpen}
         address={selectedAddress}
         onCancel={handleAPCancel}
         onConfirm={handleAPSubmit}
-        t={t}
       />
       <ConfirmModal
-        theme={theme}
         shown={passageIdToRemove !== null}
         text={t("PassageDeleteConfirmationText")}
         confirmTitle={t("Remove")}
@@ -662,8 +633,6 @@ export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
 // reference instead of a fresh closure per row.
 const ListItemBase: FC<{
   data: PassageModel;
-  t: (w: WORD) => string;
-  theme: ThemeAndColorsModel;
   sort: SORTINGOPTION;
   leftSwipeTag: string;
   addressLanguage: LANGCODE;
@@ -674,8 +643,6 @@ const ListItemBase: FC<{
   onArchive: (passage: PassageModel) => void;
 }> = ({
   data,
-  t,
-  theme,
   sort,
   leftSwipeTag,
   addressLanguage,
@@ -685,6 +652,7 @@ const ListItemBase: FC<{
   onLongPress,
   onArchive
 }) => {
+  const { t, theme } = useAppContext();
   const additionalStyles = data.isCollapsed
     ? { overflow: "visible" }
     : { overflow: "hidden", height: 22 };
@@ -746,11 +714,7 @@ const ListItemBase: FC<{
           }
         ]}
       >
-        <Button
-          theme={theme}
-          title={tagName}
-          onPress={() => onToggleTag(data)}
-        />
+        <Button title={tagName} onPress={() => onToggleTag(data)} />
       </Animated.View>
     );
   };
@@ -765,7 +729,6 @@ const ListItemBase: FC<{
           ]}
         >
           <Button
-            theme={theme}
             title={t("Remove")}
             onPress={() => onRemove(data)}
             color="red"
@@ -782,7 +745,6 @@ const ListItemBase: FC<{
         ]}
       >
         <Button
-          theme={theme}
           title={t("Archive")}
           onPress={() => onArchive(data)}
           color="green"

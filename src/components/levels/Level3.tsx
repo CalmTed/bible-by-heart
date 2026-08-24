@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
+import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
 import { getAddressDifference } from "../../utils/addressDifference";
@@ -64,11 +65,10 @@ const levelComponentStyle = StyleSheet.create({
 export const L30: FC<LevelComponentModel> = ({
   test,
   state,
-  theme,
-  t,
   submitTest,
   dispatch
 }) => {
+  const { theme, t } = useAppContext();
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
@@ -262,7 +262,6 @@ export const L30: FC<LevelComponentModel> = ({
                 unselectedWords.map((mwi) => {
                   return (
                     <Button
-                      theme={theme}
                       type="outline"
                       key={`${words[mwi]}-${mwi}`}
                       title={words[mwi]}
@@ -285,7 +284,6 @@ export const L30: FC<LevelComponentModel> = ({
                   .map((mwi, i) => {
                     return (
                       <Button
-                        theme={theme}
                         type="main"
                         key={`${mwi}-${i}`}
                         title={words[mwi]}
@@ -297,7 +295,6 @@ export const L30: FC<LevelComponentModel> = ({
                     );
                   }),
                 <Button
-                  theme={theme}
                   key="nextButton"
                   type="outline"
                   color="green"
@@ -313,7 +310,6 @@ export const L30: FC<LevelComponentModel> = ({
             }
             {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
               <Button
-                theme={theme}
                 key="nextButton"
                 type="transparent"
                 color="gray"
@@ -328,7 +324,6 @@ export const L30: FC<LevelComponentModel> = ({
       {!unselectedWords.length && !errorIndex && !wrongAddress && (
         <View style={levelComponentStyle.optionButtonsWrapper}>
           <Button
-            theme={theme}
             type="outline"
             color="green"
             title={
@@ -340,7 +335,6 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
           <Button
-            theme={theme}
             type="main"
             color="green"
             title={t("Submit")}
@@ -350,11 +344,9 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={!selectedAddress || levelFinished}
           />
           <AddressPicker
-            theme={theme}
             visible={APVisible}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}
-            t={t}
           />
         </View>
       )}
@@ -362,7 +354,6 @@ export const L30: FC<LevelComponentModel> = ({
       {!unselectedWords.length && !errorIndex && wrongAddress && (
         <View style={levelComponentStyle.optionButtonsWrapper}>
           <Button
-            theme={theme}
             type="outline"
             color="green"
             title={addressToString(targetPassage.address, t)}
@@ -370,7 +361,6 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
           <Button
-            theme={theme}
             type="outline"
             color="red"
             title={selectedAddress ? addressToString(selectedAddress, t) : ""}
@@ -378,7 +368,6 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
           <Button
-            theme={theme}
             type="main"
             color="green"
             title={t("ButtonContinue")}
@@ -386,11 +375,9 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
           <AddressPicker
-            theme={theme}
             visible={APVisible}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}
-            t={t}
           />
         </View>
       )}

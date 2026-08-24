@@ -241,14 +241,12 @@ export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
     >
       <Header
-        theme={theme}
         navigation={navigation}
         showBackButton={false}
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
             key="back"
-            theme={theme}
             icon={IconName.back}
             onPress={() => navigation.navigate(SCREEN.settings)}
           />,
@@ -263,7 +261,6 @@ export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
           value={tempEmail}
           onChange={setTempEmail}
           placeholder={t("provideEmailOrUsernameLabel")}
-          theme={theme}
           inputMode="text"
           iconAfter={
             isIdentifierValid ? IconName.greenCheck : IconName.redCross
@@ -276,7 +273,6 @@ export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
           onChange={setTempPassword}
           placeholder={t("providePasswsordLabel")}
           secureTextEntry
-          theme={theme}
           iconAfter={
             isPasswordEntered ? IconName.greenCheck : IconName.redCross
           }
@@ -284,7 +280,6 @@ export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
         />
         <Button
           title={t("loginButton")}
-          theme={theme}
           type="main"
           color="green"
           disabled={!loginPossible}
@@ -295,7 +290,6 @@ export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
       </View>
       <Button
         title={t("registerButton")}
-        theme={theme}
         type="transparent"
         onPress={handleRegisterClick}
       />

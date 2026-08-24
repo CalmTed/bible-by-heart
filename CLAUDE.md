@@ -6,7 +6,10 @@ docs (they cover this repo AND the API repo at `c:/Code/bbh-api`):
 1. `docs/ARCHITECTURE.md` — vision, philosophy, core decisions (the grand context)
 2. `docs/CODING_RULES.md` — style rules + reusable component library (reuse, don't recreate)
 3. `docs/FILEMAP.md` — where everything lives, both repos
-4. `docs/STRATEGY.md` — the master plan; the current task usually comes from here
+4. `docs/PLAN.md` — **the working queue; take the first unchecked step.** It is also
+   the only file where work is marked done (move the finished step to its Archive)
+5. `docs/STRATEGY.md` — the *why* behind the queue: bug register, risk watchlist,
+   refactors, testing goals, feature order, milestones. Read the section a step points at
 
 ## Hard rules
 
@@ -15,6 +18,8 @@ docs (they cover this repo AND the API repo at `c:/Code/bbh-api`):
 - Never show error counts to the user in UI — errors are stored for stats/scheduling only.
 - Offline-first: no feature may require network/account to use the core app.
 - No `any`, no `@ts-ignore`. UI strings always in both `src/l10n/en.ts` and `ua.ts`.
+- Work found outside the current step's scope: **report it and ask Fedir** — don't fix
+  it silently, don't silently add it to `docs/PLAN.md`. He decides where it goes.
 
 ## Win conditions of every task
 

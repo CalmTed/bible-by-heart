@@ -125,14 +125,12 @@ export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        theme={theme}
         navigation={navigation}
         showBackButton={false}
         alignChildren="flex-start"
         additionalChildren={[
           <IconButton
             key="back"
-            theme={theme}
             icon={IconName.back}
             onPress={() => navigation.navigate(SCREEN.home)}
           />,
@@ -141,7 +139,6 @@ export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
           </Text>,
           <IconButton
             key="calendar"
-            theme={theme}
             icon={IconName.clock}
             onPress={() => navigation.navigate(SCREEN.calendar)}
           />
@@ -333,19 +330,11 @@ export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
           );
         })}
       </ScrollView>
-      <MiniModal
-        shown={hintModalOpen}
-        handleClose={() => openHintModal(false)}
-        theme={theme}
-      >
+      <MiniModal shown={hintModalOpen} handleClose={() => openHintModal(false)}>
         <Text style={{ ...theme.theme.text, fontSize: 17 }}>
           {t("statsScoreCalculatingHintText")}
         </Text>
-        <Button
-          theme={theme}
-          onPress={() => openHintModal(false)}
-          title={t("Close")}
-        />
+        <Button onPress={() => openHintModal(false)} title={t("Close")} />
       </MiniModal>
     </View>
   );

@@ -61,6 +61,8 @@ export const en = {
   listScreenTitle: "Passages list",
   statsScreenTitle: "Statistics",
   APSelectBook: "Select book",
+  APAddVerse: "Add",
+  APExtendRange: "Extend range",
   EditPassageTitle: "Edit passage",
   AddPassageTitle: "Add passage",
   Save: "Save",

@@ -1,11 +1,10 @@
 import React, { FC } from "react";
 import { Modal, StyleSheet, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 interface MiniModalModel {
   shown: boolean;
   handleClose: () => void;
-  theme: ThemeAndColorsModel;
   children?: React.ReactNode;
   style?: StyleSheet.NamedStyles<object>;
 }
@@ -14,9 +13,9 @@ export const MiniModal: FC<MiniModalModel> = ({
   shown,
   children,
   handleClose,
-  theme,
   style: customStyles
 }) => {
+  const { theme } = useAppContext();
   const styles = StyleSheet.create({
     centeredView: {
       flex: 1,

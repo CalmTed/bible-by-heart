@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, useState } from "react";
 import { ScrollView, StyleSheet, Pressable } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { ReminderModel, TrainModeModel, TranslationModel } from "../models";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
@@ -11,7 +11,6 @@ import { SettingsSubScreen } from "./SettingsSubScreen";
 type ListItemType = TranslationModel | TrainModeModel | ReminderModel;
 
 interface SettingsListWrapperModel {
-  theme: ThemeAndColorsModel;
   themeType: THEMETYPE;
   // Back out of the whole list (returns to the parent settings sub-menu).
   handleClose: () => void;
@@ -37,7 +36,6 @@ interface SettingsListWrapperModel {
 // toggled by local state, with no modal slide animation. The owning screen
 // supplies the data handlers and back navigation via handleClose.
 export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
-  theme,
   themeType,
   header,
   handleClose,
@@ -48,6 +46,7 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
   renderListItem,
   renderEditItem
 }) => {
+  const { theme } = useAppContext();
   const [itemSelectedID, setItemSelected] = useState(null as number | null);
 
   const itemSelected = items.find((i) => i.id === itemSelectedID);
@@ -60,7 +59,6 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
   if (itemSelected) {
     return (
       <SettingsSubScreen
-        theme={theme}
         themeType={themeType}
         title={titleText}
         onBack={() => setItemSelected(null)}
@@ -74,13 +72,11 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
 
   return (
     <SettingsSubScreen
-      theme={theme}
       themeType={themeType}
       title={header}
       onBack={handleClose}
       headerRight={
         <IconButton
-          theme={theme}
           icon={IconName.add}
           onPress={handleAddNew}
           color={theme.colors.text}

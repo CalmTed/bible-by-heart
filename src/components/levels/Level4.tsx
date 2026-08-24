@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
+import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
@@ -95,11 +96,10 @@ const levelComponentStyle = StyleSheet.create({
 export const L40: FC<LevelComponentModel> = ({
   test,
   state,
-  t,
-  theme,
   submitTest,
   dispatch
 }) => {
+  const { theme, t } = useAppContext();
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
@@ -325,7 +325,6 @@ export const L40: FC<LevelComponentModel> = ({
         }}
       >
         <Input
-          theme={theme}
           multiline
           disabled={levelFinished}
           value={passageText}
@@ -366,7 +365,6 @@ export const L40: FC<LevelComponentModel> = ({
         <View style={levelComponentStyle.optionButtonsWrapper}>
           {!isAddressProvided && (
             <Button
-              theme={theme}
               type="outline"
               color="green"
               title={
@@ -379,7 +377,6 @@ export const L40: FC<LevelComponentModel> = ({
             />
           )}
           <Button
-            theme={theme}
             type="main"
             color="green"
             title={t("Submit")}
@@ -395,17 +392,14 @@ export const L40: FC<LevelComponentModel> = ({
         </View>
       )}
       <AddressPicker
-        theme={theme}
         visible={APVisible}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddressSelect}
-        t={t}
       />
       <ScrollView style={{ ...levelComponentStyle.optionButtonsScrollWrapper }}>
         <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
           {wordOptions.map((w, i) => (
             <Button
-              theme={theme}
               type="outline"
               key={`${w}-${i}`}
               title={w}
@@ -420,7 +414,6 @@ export const L40: FC<LevelComponentModel> = ({
       {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
         new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 5) && (
         <Button
-          theme={theme}
           type="secondary"
           color="gray"
           title={`${t("DowngradeLevel")}`}

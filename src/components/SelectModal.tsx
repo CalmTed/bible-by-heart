@@ -55,7 +55,7 @@ export const SelectModal: FC<SelectModel> = ({
     }
   });
   return (
-    <MiniModal theme={theme} shown={isShown} handleClose={onCancel}>
+    <MiniModal shown={isShown} handleClose={onCancel}>
       {title && (
         <View style={selectStyles.titleView}>
           <Text style={selectStyles.titleText}>{title}</Text>
@@ -72,7 +72,6 @@ export const SelectModal: FC<SelectModel> = ({
         {options.map((option, i) => (
           <Button
             key={option.value}
-            theme={theme}
             color={selectedIndex === i ? "green" : "gray"}
             type={selectedIndex === i ? "outline" : "outline"}
             onPress={() => onSelect(option.value)}

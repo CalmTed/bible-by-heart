@@ -99,6 +99,11 @@ export const AppProvider: FC<AppProviderModel> = ({
     if ((state?.lastBackup || 0) < new Date().getTime() - DAY) {
       // Deep clone only on the once-a-day backup path, not on every save.
       const safeObject = JSON.parse(JSON.stringify(state)) as AppStateModel;
+      // This is the ROLLING slot - always current-version, overwritten daily.
+      // The pre-conversion snapshot lives in its own write-once key
+      // (STORAGE_PRECONVERT_BACKUP_NAME, written by the boot path in App.tsx),
+      // so this write can no longer bury the last known-good pre-upgrade state
+      // 24h after an upgrade (8.1.8).
       storage
         .save({
           key: STORAGE_BACKUP_NAME,
@@ -109,6 +114,11 @@ export const AppProvider: FC<AppProviderModel> = ({
             ...prev,
             lastBackup: new Date().getTime()
           }));
+        })
+        .catch((e) => {
+          // Never let a failed backup take the app down - the real state was
+          // already saved above; lastBackup stays put so the next change retries.
+          logger.error(`Error on saving daily backup in AppProvider e:${e}`);
         });
     }
   }, [state]);

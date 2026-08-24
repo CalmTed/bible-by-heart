@@ -7,7 +7,6 @@ import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
-import { createT } from "../l10n";
 import { ScreenModel } from "./homeScreen";
 import { reduce } from "../utils/reduce";
 import { TestNavDott } from "../components/testNevDott";
@@ -211,11 +210,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
   if (!targetPassage) {
     return <View style={{ ...theme.theme.screen }} />;
   }
-  const tempT = createT(
-    state.settings.translations.find(
-      (tr) => tr.id === targetPassage.verseTranslation
-    )?.addressLanguage || state.settings.langCode
-  );
   const DottList =
     state.testsActive.length < 13
       ? () => (
@@ -238,7 +232,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
                       : "gray";
               return (
                 <TestNavDott
-                  theme={theme}
                   key={tst.i}
                   isCurrent={activeTestIndex === i}
                   color={color}
@@ -255,7 +248,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
       : () => (
           <View style={{ ...testsStyle.testNav }}>
             <TestNavDott
-              theme={theme}
               key={"testDoddGreen"}
               isCurrent={false}
               color={"green"}
@@ -265,7 +257,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
               {state.testsActive.filter((t) => t.f).length}x
             </Text>
             <TestNavDott
-              theme={theme}
               key={"testDoddRed"}
               isCurrent={false}
               color={"red"}
@@ -275,7 +266,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
               {state.testsActive.filter((t) => t.en && !t.f).length}x
             </Text>
             <TestNavDott
-              theme={theme}
               key={"testDoddGray"}
               isCurrent={false}
               color={"gray"}
@@ -299,14 +289,12 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         }}
       >
         <Header
-          theme={theme}
           navigation={navigation}
           showBackButton={false}
           alignChildren="flex-start"
           additionalChildren={[
             <IconButton
               key="icon"
-              theme={theme}
               icon={IconName.cross}
               onPress={() => setShowExitConfirm(true)}
             />,
@@ -314,8 +302,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
           ]}
         />
         <LevelPicker
-          t={t}
-          theme={theme}
           state={state}
           targetPassage={targetPassage}
           testLevel={activeTestObj.l}
@@ -326,9 +312,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l10 && (
           <L10
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -336,9 +320,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l11 && (
           <L11
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -346,9 +328,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l20 && (
           <L20
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -356,9 +336,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l21 && (
           <L21
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -366,9 +344,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l30 && (
           <L30
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -376,9 +352,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l40 && (
           <L40
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
@@ -386,15 +360,13 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         {activeTestObj?.l === TESTLEVEL.l50 && (
           <L50
             test={activeTestObj}
-            theme={theme}
             state={state}
-            t={tempT}
             submitTest={handleTestSubmit}
             dispatch={handleDispatch}
           />
         )}
         {state.settings.devModeEnabled && (
-          <Button theme={theme} onPress={handleReset} title={t("Reset")} />
+          <Button onPress={handleReset} title={t("Reset")} />
         )}
         {/* {
         state.settings.devModeEnabled &&
@@ -407,7 +379,6 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         } */}
       </View>
       <MiniModal
-        theme={theme}
         shown={showExitConfirm}
         handleClose={() => setShowExitConfirm(false)}
       >
@@ -422,13 +393,11 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
           }}
         >
           <Button
-            theme={theme}
             onPress={() => setShowExitConfirm(false)}
             type="secondary"
             title={t("Cancel")}
           />
           <Button
-            theme={theme}
             onPress={() => {
               exitTests();
               setShowExitConfirm(false);

@@ -1,6 +1,7 @@
 import {
   VERSION,
   STORAGE_BACKUP_NAME,
+  STORAGE_PRECONVERT_BACKUP_NAME,
   STORAGE_NAME,
   SCREEN
 } from "./src/constants";
@@ -20,6 +21,10 @@ import { useShareIntent } from "expo-share-intent";
 import { createAppState } from "./src/initials";
 import storage from "./src/storage";
 import { convertState } from "./src/utils/stateVersionConvert";
+import {
+  loadRestorableBackup,
+  savePreConvertSnapshot
+} from "./src/utils/bootBackup";
 import React, {
   Button,
   ScrollView,
@@ -48,7 +53,7 @@ export default function App() {
   // This is the piece that was missing: the intent filter opened the app, but
   // nothing read Intent.EXTRA_TEXT (Linking only surfaces VIEW/URL intents).
   const { hasShareIntent, shareIntent, resetShareIntent, error } =
-    useShareIntent({ debug: true, resetOnBackground: true });
+    useShareIntent({ resetOnBackground: true });
 
   useEffect(() => {
     if (error) {
@@ -58,11 +63,10 @@ export default function App() {
       return;
     }
     const sharedText = shareIntent.text ?? shareIntent.webUrl ?? "";
-    // proof it arrived — visible toast + persisted log (viewable in the log viewer)
-    logger.write(`[SHARE INTENT] received: ${JSON.stringify(shareIntent)}`);
-    toastShow(`Shared text: ${sharedText}`, 10000);
-    // route into the passage-add flow: listScreen reads route.params.passageText
-    // and runs handleTextFromIntent. On a cold start the nav container may not be
+    logger.write(`[SHARE INTENT] received (${sharedText.length} chars)`);
+    // route into the passage-add flow: listScreen reads route.params.passageText,
+    // sanitizes it (8.1.4) and opens the passage editor pre-filled — the review /
+    // confirm-before-add step. On a cold start the nav container may not be
     // mounted yet, so retry briefly until it is ready.
     let tries = 0;
     const routeToList = () => {
@@ -106,12 +110,16 @@ export default function App() {
         } else {
           //if versions does not match
           //try to convert
-          storage
-            .save({
-              key: STORAGE_BACKUP_NAME,
-              data: dataObj
-            })
-            .then(() => {
+          // The raw state goes into its OWN write-once slot, not the rolling
+          // daily backup - the daily backup used to overwrite this snapshot
+          // within 24h of an upgrade, so a converter bug became unrecoverable
+          // after one day (8.1.8). savePreConvertSnapshot never rejects, so a
+          // failed snapshot can't leave the app stuck at "not ready".
+          savePreConvertSnapshot(dataObj)
+            .then((didWrite) => {
+              logger.write(
+                `State version ${dataObj?.version} != ${VERSION}. Pre-conversion snapshot ${didWrite ? "saved" : "already present"}.`
+              );
               const convertedState = convertState(dataObj);
               if (convertedState) {
                 toastShow(
@@ -150,6 +158,39 @@ export default function App() {
           .then(() => {
               setReady(true);
           });
+      });
+  };
+
+  // Emergency-screen restore, shared by both recovery slots. It accepts an
+  // OLDER-version snapshot and converts it forward (8.1.8): the previous
+  // version-equality check made restore reject the very pre-conversion snapshot
+  // the app had just saved, so recovery was unreachable exactly when it was
+  // needed - right after a bad conversion.
+  const restoreFromKey = (storageKey: string, label: string) => {
+    loadRestorableBackup(storageKey)
+      .then((restored) => {
+        if (!restored) {
+          toastShow(`No usable ${label} / Немає придатної копії`, 10000);
+          return;
+        }
+        storage
+          .save({
+            key: `${STORAGE_NAME}`,
+            data: restored
+          })
+          .then(() => {
+            setState(restored);
+            setReady(true);
+            toastShow(`Loaded from ${label} / Відновлено`, 10000);
+          })
+          .catch((err) => {
+            logger.error(`Error on saving restored ${label} e:${err}`);
+            toastShow("😟 Nope. Error here too...", 10000);
+          });
+      })
+      .catch((err) => {
+        logger.error(`Error on loading ${label} e:${err}`);
+        toastShow("😟 Nope. Error here too...", 10000);
       });
   };
 
@@ -202,36 +243,27 @@ export default function App() {
             🤕 Critical error/Критична помилка
           </Text>
           <Button
-            title="🫣 Restore from daily backup / Відновити з щоденого бекапу"
+            title="🫣 Restore from daily backup / Відновити з щоденного бекапу"
             onPress={() => {
               try {
-                storage
-                  .load({
-                    key: STORAGE_BACKUP_NAME
-                  })
-                  .then((data) => {
-                    const dataObj: AppStateModel = data as AppStateModel;
-                    //check if version is correct
-                    if (dataObj.version === VERSION) {
-                      storage
-                        .save({
-                          key: `${STORAGE_NAME}`,
-                          data: dataObj
-                        })
-                        .then(() => {
-                          setState(dataObj);
-                          setReady(true);
-                          toastShow("Loaded from backup", 10000);
-                        });
-                    } else {
-                      toastShow(
-                        "Backup version does not match :(",
-                        10000
-                      );
-                    }
-                  });
+                restoreFromKey(STORAGE_BACKUP_NAME, "daily backup");
               } catch (err) {
-                logger.error(`Error on bloading backup`);
+                logger.error(`Error on loading daily backup e:${err}`);
+                toastShow("😟 Nope. Error here too...", 10000);
+              }
+            }}
+          />
+          <Button
+            title="🛟 Restore pre-update snapshot / Відновити копію до оновлення"
+            color={"#44a"}
+            onPress={() => {
+              try {
+                restoreFromKey(
+                  STORAGE_PRECONVERT_BACKUP_NAME,
+                  "pre-update snapshot"
+                );
+              } catch (err) {
+                logger.error(`Error on loading pre-update snapshot e:${err}`);
                 toastShow("😟 Nope. Error here too...", 10000);
               }
             }}

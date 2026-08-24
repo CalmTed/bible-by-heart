@@ -16,6 +16,10 @@
   },
   "jest": {
     "preset": "jest-expo",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/__tests__/fixtures/"
+    ],
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],

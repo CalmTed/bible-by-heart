@@ -1066,3 +1066,380 @@ have stable identities (8.1.2), `React.memo` can finally bite.
   ~0.5s per-screen lag. If confirmed, the §2-P0 / §8.1-A render-lag work is done.
 
 Verified: `npm run lint` ✓ · `npm test` ✓ (26 suites / 57 tests / 22 snapshots).
+
+## 2026-07-11 (8.1.4 + 8.1.5 + 8.1.6 — intent-receiver polish)
+
+Did the whole intent-receiver polish batch (§8.1-B) in one session.
+
+### 8.1.4 — sanitize shared text
+- New pure util `src/utils/sanitizeSharedText.ts`. Shared payloads come from
+  arbitrary apps and the typing test later demands the EXACT character, so it:
+  normalizes untypable chars (en/em dash → `-`, curly double/low quotes → `"`,
+  curly single/apostrophes → `'`, `…` → `...`, nbsp/narrow-nbsp/thin-space →
+  regular space); strips URLs (`https?://` or `www.`); collapses space runs (keeps
+  newlines); peels wrapping quotes (`"`, `'`, `«»`) and dangling `:`/`;`/`,` at the
+  ends, alternating until stable (a comma can hide a quote and vice-versa).
+- Wrapping-quote peel only fires when the quote does NOT reappear inside, so
+  `"peace" and "love"` (two spans) is left intact.
+- Wired into `listScreen.handleTextFromIntent` as the first step (renamed its arg
+  to `rawText`, sanitizes into `text`).
+- Tests: `__tests__/utils/sanitizeSharedText.test.ts` — real shared strings incl. a
+  YouVersion-style multi-line share + URL. All special chars written as `\u`-derived
+  constants so the source stays pure ASCII (no invisible nbsp bytes).
+
+### 8.1.5 — book-name aliases in `addressFromString`
+- New data file `src/utils/bookAliases.ts`: per-language abbreviation / spelling-variant
+  lists keyed by the book's long-title WORD (readable + index-independent). Includes
+  common English abbreviations that differ from the app's own short titles (Mt, Mk, Lk,
+  Jn, Gn, Ex, Psalms, Jas, Rv…) and Ukrainian variants — the task's example
+  Івана = Іоана/Йоана, plus the correct **Судді** for Judges (the app's UA long title is
+  misspelled "Сідді"; aliasing avoids touching the shipped l10n).
+- `addressFromString` matching pass now builds candidate titles = `[long, short,
+  ...aliases[langcode]]`, filters those the input starts with, and picks the LONGEST
+  matched title (kept the existing most-specific-wins tiebreak). No behaviour change for
+  existing inputs; the "Judges 1:1" regression test still passes.
+- Tests: added an alias block to `addressFromString.test.ts` (one case per alias, en+ua,
+  asserting book index + language; plus a "Psalms" specificity case).
+
+### 8.1.6 — intent finish
+- Removed the debug toast in `App.tsx` (`toastShow("Shared text: …")`) and the noisy
+  `JSON.stringify(shareIntent)` log; kept a concise length-only log line and turned off
+  `useShareIntent({ debug })`. The "confirm before add" flow is the existing route into
+  the pre-filled passage editor (`SCREEN.passage` with address+text+translationId) — the
+  user reviews there and taps Save; no separate modal added (the editor IS the confirm
+  surface).
+- Removed the now-redundant manual Android SEND intent filter from `app.config.js`
+  (expo-share-intent's `androidIntentFilters: ["text/*"]` already declares it) and dropped
+  the dead `["./plugins/handlingIntents"]` plugin; `git rm plugins/handlingIntents.js`.
+
+### Notes / gotchas
+- No new UI strings → l10n untouched. FILEMAP updated (2 new utils, removed plugin row,
+  test index). This is a **(build)** task — needs Fedir's `npm run build-dev` + a device
+  build to confirm a real share → sanitize → editor round-trip on-device.
+- Scope stayed minimal: `addressFromString` still expects the address at the START of the
+  string, so a verse-first YouVersion share still won't auto-parse the reference — that's
+  pre-existing and out of scope for this batch.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 90 tests / 22 snapshots).
+
+### Follow-up (same session): parse address from ANY part of the text
+- Per Fedir: `addressFromString` now searches the WHOLE string, not just the start —
+  a verse-first YouVersion share ("For God so loved… John 3:16 ESV") auto-detects the
+  reference. Replaced the `startsWith` + substring match with a per-title regex
+  `escapeRegExp(title) + NUMBER_PATTERN` run via `matchAll`, requiring the title to sit
+  on a word boundary (custom `isWordChar` with `\p{L}` — JS `\b` is ASCII-only and would
+  break Cyrillic titles). The number pattern must sit immediately after the title, which
+  filters out prose occurrences of book words. Existing longest-title tiebreak still picks
+  the numbered book (1 John over John) and the most specific alias.
+- `handleTextFromIntent` needed no change — it already strips the found `addressString`
+  from the text to get the verse body, which now works from mid-string.
+- Added tests: reference after a quote (en + ua), "1 John" mid-text, and a negative case
+  ("regenerate 1:1" must NOT parse as Genesis). Suite: 27 / 94.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 94 tests / 22 snapshots).
+
+---
+
+## 2026-07-11 — 8.1.7 AddressPicker one-verse flow
+
+### What
+- Reworked the start-verse step of `AddressPicker`. Previously a tap on a start verse
+  auto-advanced into range mode (pick end chapter → end verse), and only a hidden
+  long-press finished a single verse. Now a tap **selects + highlights** the verse and
+  stays put, revealing a bottom footer:
+  - PRIMARY green `Button` (`type="main" color="green"`, `APAddVerse` = "Add") → confirms
+    the single verse (end filled from start via the existing `handleConfirm`).
+  - Secondary transparent `Button` (`APExtendRange` = "Extend range") → steps to
+    `endChapterNum` for anyone who actually wants a range.
+- Added `APAddVerse` / `APExtendRange` to both `en.ts` and `ua.ts`.
+
+### Why
+- One verse is the common case; the old flow buried it behind a long-press and made the
+  range the default path. STRATEGY 8.1.7.
+
+### Notes / gotchas
+- Implemented by early-returning from `handleListButtonPress` when `addressPart ===
+  "startVerseNum"` (no auto-advance) + an `isStartVerseSelected` flag driving the footer
+  and the selected-verse highlight. The long-press single-verse shortcut is kept, now
+  redundant but harmless.
+- Selected verse highlight uses `mainColor` bg + `bg` label color (no `textInverted` in
+  the palette). Footer is absolutely positioned over the bottom of the scroll list.
+- No new files → FILEMAP unchanged. Two new interaction tests added to
+  `AddressPicker.test.tsx` (add-one-verse confirms start==end; extend-range hides the
+  footer without confirming). Initial-render snapshot unchanged (footer only appears at
+  the verse step).
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 96 tests / 22 snapshots).
+
+## 2026-07-22 — Target Android 16 (API 36) for Play compliance
+
+### What
+- `app.config.js` → `expo-build-properties`: `compileSdkVersion` / `targetSdkVersion`
+  35 → 36, `buildToolsVersion` `35.0.0` → `36.0.0`. `minSdkVersion` stays 24.
+
+### Why
+- Google Play flagged the app: "highest non-compliant target API level is Android 15
+  (API 35)"; new releases must target Android 16 (API 36) or higher. The explicit
+  build-properties override was pinning us to 35 even though Expo SDK 54 / RN 0.81
+  support 36.
+
+### Notes / gotchas
+- No `android/` dir in the repo (prebuild happens on EAS), so this is the only place
+  the SDK level is declared — nothing else to patch.
+- API 36 enforces edge-to-edge; `android.edgeToEdgeEnabled: true` was already set, so
+  no layout work expected — still worth eyeballing screens with system bars on a real
+  device after the next staging build.
+- Not pushed / not built. Next step: `npm run build-dev` (staging → internal track),
+  verify, then `npm run build-prod`.
+- No source files changed → FILEMAP unchanged, no new l10n strings.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 96 tests / 22 snapshots) ·
+`npx expo config` resolves compileSdk/targetSdk = 36.
+
+---
+
+## 2026-07-22 — docs accuracy pass: FILEMAP `(?)` refinement + STRATEGY §4 status audit
+
+Docs-only session (no source touched). Two halves, per Fedir's ask.
+
+### 1. FILEMAP refinement (STRATEGY §1, last unchecked item)
+Diffed `git ls-files` of both repos against every FILEMAP row, then read the files
+behind the vague/`(?)` ones instead of guessing.
+
+- **Resolved the three `(?)`**: `src/constants.ts` (now lists what's actually in it —
+  state `VERSION` + allowed versions, `API_VERSION` re-export from `bbh-shared`,
+  `API_LINK`, storage keys, training tuning constants, the enums, and the
+  `COLOR_*`/`THEME_*` palettes), `utils/getPerfectTests.ts` (`getPerfectTestsNumber` =
+  newest unbroken run of error-free tests at/above `passage.maxLevel`, compared against
+  `PERFECT_TESTS_TO_PROCEED` to level up — it is a level-up gate, not a "streak/score"
+  helper as the guess said), bbh-api `README.md` (Fedir's own planned-arch checklist +
+  yarn/docker setup, NOT an endpoint reference).
+- **Removed two dead rows**: `src/screeenManagement.ts` and `src/utils/useApp.ts` —
+  both deleted in fc3bc11 (navigator refactor) but still documented as live.
+- **Rewrote stale/thin rows**: `navigator.tsx` (linking config, `freezeOnBlur` +
+  `detachInactiveScreens`, background-notification task, `navigationRef` +
+  `RootStackParamList`), `storage.ts` (a `react-native-storage` instance over
+  AsyncStorage — it is not AppState-specific), `bibleReference.ts` (l10n WORD keys +
+  per-chapter verse counts, `chaptersAlternative`), `getStats.ts` / `notifications.ts` /
+  `handlePassageExport.ts` / `fileManager.ts` / `randomizers.ts` / `formatDateTime.ts`
+  (real export names), `logger.ts` (write/error/readAll/clearAll + capped ring buffer),
+  `getThemeFromScheme.ts` (takes `colorScheme` as an argument — deliberately does NOT
+  call `useColorScheme`, cf. the polyfill history in §3), `l10n/index.ts` (`createT` +
+  the `WORD = keyof typeof en` union), `fetchESV.ts`, `generateTests/*`, `reduce.ts`.
+- **Merged the duplicated `app.config.js` rows** into one that also records the
+  2026-07-22 compile/target SDK 36 and the full plugin list; added
+  `test-utils/renderWithContext.tsx` to the root table.
+- Header now states the `(?)` convention AND that none remain as of today.
+
+### 2. STRATEGY status marks
+- **§4 got checkboxes** (it had none) with a `[x]` / `[~]` / `[ ]` legend, each status
+  verified against source, not memory: **1 shared package [x]**, **2 navigator [x]**
+  (with the safe-area top-space fix + the two queued follow-ups 8.1.14/8.2.3 named),
+  **3 theme+l10n contexts [~]** (centralize + `Text` + test harness + leaf primitives
+  done; high-fan-out components 8.1.11–8.1.13 and layered keys 8.2.9 remain),
+  **4 file renames [ ]** — now lists the actual offending filenames so 8.1.15 can start
+  cold, **5 [ ]** (no session scheduled yet), **6 [ ] → 8.2.6**, **7 [ ] → 8.2.8**,
+  **8 [ ] → 8.2.1–8.2.5**, **9 [~]** standing rule (verified: `base.servise.ts` is still
+  the only file in bbh-api that touches sqlite).
+- **§3 watchlist**: the `navigator.tsx:28` deep-link/notification-tap stub is DONE —
+  `AppContext`'s notification listener dispatches `generateTests` + navigates to
+  `SCREEN.test`; what's left at `navigator.tsx:66` is the separate BACKGROUND-notification
+  task (logs only). Play-Store target-API item marked done (SDK 36, 2026-07-22).
+- **§1** FILEMAP-refinement item checked with a note that the maintenance rule stays live.
+
+### Notes / gotchas
+- `getPerfectTests` and `storage.ts` are the two rows whose old descriptions would have
+  actively misled a future session — worth the read-before-writing rule.
+- Nothing was marked done on trust: every `[x]` above was checked in the source or in
+  `git log --diff-filter=D`.
+- Queue is unchanged; next session is still **8.1.8 boot-path backup fixes**.
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 96 tests / 22 snapshots) ·
+no source files changed → no l10n work, FILEMAP updated (it was the task).
+
+---
+
+## 2026-07-22 — PLAN.md created; STRATEGY §8 retired (planning interview)
+
+### What
+Fedir asked for a detailed plan doc, separate from STRATEGY, where completion is
+marked — built from a 30-question interview (8 batches). Docs-only session.
+
+- **New `docs/PLAN.md`** — the working queue, all the way to 1.0.0 with graded detail
+  (0.2.0/0.3.0 fully specified, later milestones one-liners to expand when active).
+  Every step carries **Goal · Files · Acceptance · Risk** and the tags
+  `(build)` / `(device)` / `(one-sitting)` / `[api]` / `[shared]`.
+- **`STRATEGY.md` §8 replaced by a pointer.** §1–§7 stay as the *why* (bug register,
+  risk watchlist, refactor list, testing goals, feature order, milestone table);
+  scheduling lives only in PLAN.md. Header + §0 protocol rewritten to match.
+- `CLAUDE.md` reading order now lists PLAN.md as #4 (queue) and STRATEGY as #5 (why),
+  plus a new hard rule: work found outside the current step is **reported to Fedir**,
+  never silently fixed or silently added to the plan (his explicit choice).
+- `FILEMAP.md` docs table gains the PLAN.md row.
+
+### Decisions locked (interview answers — PLAN.md §3 holds the table)
+Backup goes through the system save/share sheet · pre-conversion snapshot is silent,
+the file export is only *offered* · restore accepts old-version snapshots and
+re-converts · `fileManager` moves to `expo-file-system` inside the backup step (not
+later at 8.3.2) · stats day-average counts **active days only** · **Play release at
+0.2.0**, not bundled with Candy UI · reanimated at 8.2.1 · milestone order unchanged ·
+context migration stays 3 steps · renames app-repo-only · layered l10n keys kept but
+late · Passage/Address abstraction folded into the level split (8.2.6) · a build after
+**each** wrapper-rewrite step.
+
+### Structural choices
+- IDs are **stable and never renumbered** (new work inserts as `8.1.8a`), so robotdiary
+  entries that cite a step ID stay true. Existing 8.1.x IDs carried over unchanged.
+- Done steps **leave the queue** into an Archive section, one line each; the full story
+  stays here in robotdiary.
+- Test backlog interleaved near its risk instead of piling up at 1.0.0: the e2e flow
+  test became **8.1.16a** (guards the first store release in a year) and reducer
+  coverage **8.4.4a** (just before sync adds actions to `reduce.ts`).
+- Two steps were merged per his answers: the expo-file-system swap into 8.1.9, and
+  §4.5 Passage/Address into 8.2.6.
+
+### Notes / gotchas
+- **Encoding trap:** editing a UTF-8-without-BOM doc via PowerShell `Get-Content` /
+  `Out-File` double-encoded every non-ASCII char (`—` → `â€"`). Repaired by re-reading
+  as UTF-8, re-encoding the affected span through CP1252 and writing back without BOM.
+  **Use the Edit tool for docs**, or .NET `[IO.File]::ReadAllText/WriteAllText` with an
+  explicit `UTF8Encoding($false)` — never the PS 5.1 text cmdlets.
+- The 2026-07-22 SDK-36 bump is still unbuilt; PLAN.md flags it as riding on the next
+  `(build)` step, 8.1.9.
+- Next session: **8.1.8 boot-path backup fixes** (device-sensitive, tests first).
+
+Verified: `npm run lint` ✓ · `npm test` ✓ (27 suites / 96 tests / 22 snapshots) ·
+docs only, no source or l10n changes.
+
+---
+
+## 2026-08-24 — 8.1.8 boot-path backup fixes
+
+Fedir asked for a bigger-than-usual session, so several PLAN steps ran in parallel
+(one worker per disjoint file set, coordinated here). This section covers 8.1.8, the
+one with the highest blast radius; the others follow below.
+
+### What (the two bugs from STRATEGY §3)
+
+**(a) One key for two different backups.** The pre-conversion snapshot and the rolling
+daily backup both wrote `STORAGE_BACKUP_NAME`, so within 24h of an upgrade the daily
+backup — now holding the *converted* (possibly corrupted) state — overwrote the last
+known-good raw state. Fixed with a second key, `STORAGE_PRECONVERT_BACKUP_NAME`
+("preConvertBackup"), written by `savePreConvertSnapshot` **once and never again**:
+per Fedir's call, the OLDEST snapshot is the valuable one, because a converter that
+shipped broken would otherwise have every later boot overwrite good data with bad.
+
+**(b) Restore refused the snapshot it had just saved.** The emergency screen compared
+`version !== VERSION` and bailed — i.e. it rejected the pre-conversion snapshot (which
+is *by definition* old-version), making recovery unreachable exactly after a bad
+conversion. `restoreStateFromBackup` now passes a current-version snapshot through and
+runs an older one forward through the same `convertState` chain the boot path uses.
+The emergency screen offers **both** slots now: "Restore from daily backup" (fresher)
+and "Restore pre-update snapshot" (pre-migration truth), both version-tolerant.
+
+### How
+- New `src/utils/bootBackup.ts` — `savePreConvertSnapshot` / `restoreStateFromBackup` /
+  `loadRestorableBackup`. Extracted from `App.tsx` for one reason: the boot path was
+  unreachable by tests while it lived inside a component. All three are **total** — they
+  log and resolve instead of throwing, because every caller sits on the cold-start path
+  where an unhandled rejection means the app never becomes ready at all. Storage is
+  injected through a narrow `BackupStorageModel` so tests drive the empty / present /
+  failing cases directly.
+- `App.tsx` conversion branch now calls `savePreConvertSnapshot(dataObj)` instead of
+  writing the daily-backup key, and logs whether it wrote or found one already.
+- `AppContext.tsx` daily-backup write gained the `.catch` it never had (a failed backup
+  used to be an unhandled rejection) and a comment saying which slot it owns.
+- 12 tests in `__tests__/utils/bootBackup.test.ts`, including explicit regressions for
+  both bugs: "never overwrites an existing snapshot", "does not touch the daily backup
+  slot", "converts an older-version snapshot forward instead of rejecting it".
+
+### No new l10n strings
+The emergency screen deliberately stays raw `react-native` with hardcoded bilingual
+labels — it must render when theme/l10n/state code is exactly what's broken, and
+`useAppContext()` throws outside a provider. Fedir confirmed that design. (One typo
+fixed in passing on the button that was being rewritten anyway: "щоденого" →
+"щоденного".)
+
+### Found on the boot path, NOT fixed (reported to Fedir, awaiting his call)
+1. **The emergency recovery screen is effectively unreachable.** `App.tsx` wraps its
+   return in `try { return <JSX/> } catch` — but creating elements never throws, and a
+   function component's try/catch cannot catch its children's render errors. So the
+   recovery UI users are told about basically never appears. It needs a real
+   `ErrorBoundary` (class component or `react-error-boundary`).
+2. **`loadState`'s single trailing `.catch` can wipe real data.** It is attached after
+   the success handler, so an error *inside* conversion is indistinguishable from "no
+   saved state" — and that branch writes a fresh empty state over `STORAGE_NAME`.
+   The narrow fix is a two-argument `.then(onLoaded, onNothingStored)`, but deciding
+   what the app should then DO (it can't reach the emergency screen — see 1) makes this
+   a step of its own, not a side edit.
+
+Both are the same bug class 8.1.8 was written to kill, but PLAN's own rule for this step
+is "never widen it; anything else found here is reported, not fixed."
+
+---
+
+## 2026-08-24 — 8.1.10, 8.1.11–8.1.13, 8.1.16a (multi-step session)
+
+Fedir asked for as much of the queue as one session could carry, and approved running
+several steps in parallel on one working tree with disjoint file scopes (PLAN §2's
+"broken-in-between is allowed" applies). The session hit its usage limit partway; the
+parallel workers all died mid-edit and the tree was left half-migrated. Everything
+below describes the **finished, verified** end state after that fallout was cleaned up
+by hand. Nothing is committed — Fedir reviews the diff himself.
+
+### 8.1.11 + 8.1.12 + 8.1.13 — context migration, COMPLETE
+`Button`/`IconButton`, `Input`, `Header`, `setttingsMenuItem`, `AddressPicker`,
+`LevelPicker`, `PassageEditor`, `miniModal`, `SelectModal`, `weekActivityComponent`,
+`testNevDott`, `SettingsSubScreen`, `settingsListWrapper` and `levels/Level1..5` all
+dropped the `theme` prop; the `t` prop went with them in the same pass. ~277 call
+sites across 35 files. STRATEGY §4.3 is now fully done — `CODING_RULES.md` §7 carries
+the rule for new code and `FILEMAP.md` records the completion.
+
+**The result that matters: all 22 snapshots matched their stored versions, and no
+`.snap` file changed on disk.** That is the acceptance criterion for these three steps
+— a context Provider emits no host node, so a purely structural migration must leave
+the rendered tree byte-identical. It did.
+
+### 8.1.10 — legacy converter coverage
+`__tests__/fixtures/state006.ts` + `state007.ts` hold realistic 0.0.6/0.0.7 states
+(passages, history, settings), converted forward and asserted in
+`stateVersionConvert.test.ts`. The recursive chain from the oldest allowed version now
+reaches `VERSION` under test. No converter bug surfaced.
+
+### 8.1.16a — end-to-end flow test
+`__tests__/e2e/flow.test.tsx`: create state → add passage → `generateTests` → answer
+with errors → finish → assert stats, driven through the reducer + generators with no
+rendering (Fedir's call — a rendered version would break on every UI tweak, and the
+whole Candy UI rewrite is next). It asserts explicitly that no error count is exposed.
+
+### Notes / gotchas
+- **Jest ate the new fixtures.** `jest-expo`'s default `testMatch` claims *everything*
+  under `__tests__/`, so `fixtures/state006.ts` and `state007.ts` were collected as
+  suites and failed with "no tests". Fixed with `testPathIgnorePatterns` in
+  `package.json`'s jest block. Any future non-suite helper under `__tests__/` needs the
+  same treatment — or lives in `test-utils/` at the repo root, like `renderWithContext`.
+- **Level tests had to move onto the harness.** `Level1..5.test.tsx` and
+  `AddressPicker.test.tsx` still used a bare `render()`; once the components read
+  context they threw "useAppContext must be used within an AppProvider". They now use
+  `renderWithContext`, and `AddressPicker`'s Ukrainian case passes
+  `{ langCode: LANGCODE.ua }` instead of a `t={tUa}` prop.
+- **Two `theme={theme}` hits survive a grep of `src/`** — both inside `{/* ... */}`
+  JSX comment blocks (`PassageEditor.tsx` reminder toggle, `testsScreen.tsx` dev-mode
+  "Pass" button). Dead code that predates the migration; left alone rather than
+  silently widening the diff. Recorded in FILEMAP so the next grep doesn't confuse
+  anyone.
+- `DayActivityBar` (private to `weekActivityComponent.tsx`) was still receiving `theme`
+  from its own parent. Migrated too, since 8.1.13 names that file; `theme` from context
+  is memoized, so `React.memo` on that row still behaves.
+
+### Needs manual verification (nothing here can be proven off-device)
+The migration is snapshot-proven structural, so the risk is not "wrong colors" but
+"missing provider at runtime". Worth eyeballing on the next build: the login and
+register screens (their `Header`/`IconButton`/`Input` call sites were rewritten last
+and are outside every snapshot test), and each of the five level screens in a real
+training session.
+
+### Left undone from the intended scope
+8.1.14 (typed navigation) was in the stretch plan and was not started — it rewrites
+every screen's props and would have collided with the migration. It stays the next
+unchecked step after 8.1.9.

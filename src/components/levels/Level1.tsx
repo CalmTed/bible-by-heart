@@ -1,5 +1,4 @@
 import React, { FC, useEffect, useState } from "react";
-import { WORD } from "../../l10n";
 import {
   ActionModel,
   AddressType,
@@ -9,7 +8,7 @@ import {
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
-import { ThemeAndColorsModel } from "../../utils/getThemeFromScheme";
+import { useAppContext } from "../../context/AppContext";
 import {
   MINIMUM_SENTENCE_LENGTH,
   SENTENCE_SEPARATOR,
@@ -18,9 +17,7 @@ import {
 
 export interface LevelComponentModel {
   test: TestModel;
-  theme: ThemeAndColorsModel;
   state: AppStateModel;
-  t: (w: WORD) => string;
   submitTest: (data: { isRight: boolean; modifiedTest: TestModel }) => void;
   dispatch: (action: ActionModel) => void;
 }
@@ -65,13 +62,8 @@ const levelComponentStyle = StyleSheet.create({
   }
 });
 
-export const L10: FC<LevelComponentModel> = ({
-  test,
-  state,
-  theme,
-  t,
-  submitTest
-}) => {
+export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
+  const { theme, t } = useAppContext();
   const [errorValue, setErrorValue] = useState(null as AddressType | null);
   useEffect(() => {
     setErrorValue(null);
@@ -139,7 +131,6 @@ export const L10: FC<LevelComponentModel> = ({
             if (!errorValue) {
               return (
                 <Button
-                  theme={theme}
                   key={JSON.stringify(op)}
                   title={addressToString(op, t)}
                   type="outline"
@@ -160,7 +151,6 @@ export const L10: FC<LevelComponentModel> = ({
                 JSON.stringify(op) === JSON.stringify(errorValue);
               return (
                 <Button
-                  theme={theme}
                   key={JSON.stringify(op)}
                   title={addressToString(op, t)}
                   type="outline"
@@ -175,7 +165,6 @@ export const L10: FC<LevelComponentModel> = ({
           })}
         {!!errorValue && (
           <Button
-            theme={theme}
             title={t("ButtonContinue")}
             type="main"
             color="green"
@@ -187,13 +176,8 @@ export const L10: FC<LevelComponentModel> = ({
   );
 };
 
-export const L11: FC<LevelComponentModel> = ({
-  test,
-  state,
-  theme,
-  t,
-  submitTest
-}) => {
+export const L11: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
+  const { theme, t } = useAppContext();
   const [errorValue, setErrorValue] = useState(null as number | null);
   useEffect(() => {
     setErrorValue(null);
@@ -285,7 +269,6 @@ export const L11: FC<LevelComponentModel> = ({
             if (!errorValue) {
               return (
                 <Button
-                  theme={theme}
                   key={op.id}
                   title={limitedTitle}
                   type="outline"
@@ -300,7 +283,6 @@ export const L11: FC<LevelComponentModel> = ({
               const isWrong = errorValue === op.id;
               return (
                 <Button
-                  theme={theme}
                   key={op.id}
                   title={limitedTitle}
                   type="outline"
@@ -314,7 +296,6 @@ export const L11: FC<LevelComponentModel> = ({
           })}
         {!!errorValue && (
           <Button
-            theme={theme}
             title={t("ButtonContinue")}
             type="main"
             color="green"
