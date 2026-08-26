@@ -1,12 +1,11 @@
 import React, { FC } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { SCREEN, SETTINGS } from "../constants";
 import { WORD } from "../l10n";
-import { ActionName } from "../models";
+import { ActionName, ScreenPropsModel } from "../models";
 import addZero from "../utils/addZero";
 import { reduce } from "../utils/reduce";
 import {
@@ -17,9 +16,9 @@ import { randomRange } from "../utils/randomizers";
 
 // Reminders/notifications settings — was a MiniModal rendered inline in the
 // settings list. Now a stack screen reached from settingsScreen.
-export const NotificationsSettingsScreen: FC<ScreenModel> = ({
-  navigation
-}) => {
+export const NotificationsSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsNotifications>
+> = ({ navigation }) => {
   const { state, setState, t } = useAppContext();
 
   const autoTime = getAutoTimeTrigger(state.testsHistory);

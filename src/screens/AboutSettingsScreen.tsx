@@ -2,27 +2,27 @@ import React, { FC, useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
-import { MiniModal } from "../components/miniModal";
+import { MiniModal } from "../components/MiniModal";
 import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
   DAY,
   PRIVACY_POLICY_LINK,
   REFRESH_TOKEN_NAME,
+  SCREEN,
   TERMS_OF_SERVICE_LINK,
   VERSION
 } from "../constants";
 import { createAppState } from "../initials";
-import { ActionName, AppStateModel } from "../models";
+import { ActionName, ScreenPropsModel } from "../models";
 import { reduce } from "../utils/reduce";
-import { readFile, writeFile } from "../utils/fileManager";
-import { convertState } from "../utils/stateVersionConvert";
+import { writeFile } from "../utils/fileManager";
+import { exportBackupFile, importBackupFile } from "../utils/backupFile";
 import { dateToString } from "../utils/formatDateTime";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
@@ -30,7 +30,9 @@ import toastShow from "../utils/toastShow";
 // About / dev settings — was a MiniModal rendered inline in the settings list.
 // Now a stack screen reached from settingsScreen. The small info / dev-password /
 // log popups inside stay MiniModals (they are dialogs, not sub-menus).
-export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const AboutSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsAbout>
+> = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
 
   const [isDevPasswordModalOpen, setIsDevPasswordModalOpen] = useState(false);
@@ -358,20 +360,11 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               type="action"
               subtext={t("settsExportStateSubtext")}
               header={t("settsExportStateHeader")}
+              // Same file format as the user-facing backup rows in List
+              // settings (8.1.9) - one writer, so a dev export can be restored
+              // by an ordinary user and vice versa.
               actionCallBack={() => {
-                const content = JSON.stringify(state, null, " ");
-                const fileName = `BibleByHeartState_${VERSION}_${dateToString(new Date().getTime())}.json`;
-                writeFile(fileName, content, "application/json")
-                  .then((r) => {
-                    if (r) {
-                      logger.write(`State exported`);
-                      toastShow(t("settsExported"), 1000);
-                    }
-                  })
-                  .catch((err) => {
-                    logger.error(`Error while exporting state. Error: ${err}`);
-                    toastShow(t("ErrorWhileWritingFile"), 1000);
-                  });
+                exportBackupFile(state, t);
               }}
             />
           </View>
@@ -382,56 +375,17 @@ export const AboutSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               type="action"
               subtext={t("settsImportStateSubtext")}
               header={t("settsImportStateHeader")}
+              // Stays unconfirmed on purpose: this row only exists behind dev
+              // mode. The confirmed, user-facing restore lives in List settings.
               actionCallBack={() => {
-                readFile(["application/json"])
-                  .then((r) => {
-                    if (!r) {
-                      logger.error(`Cant read file`);
-                      toastShow(t("ErrorWhileReadingFile"), 1000);
-                      return;
-                    }
-                    switch (r.mimeType) {
-                      case "application/json":
-                        const decodedData =
-                          (JSON.parse(
-                            r.content.replace(/_ /g, " ")
-                          ) as AppStateModel) || undefined;
-                        if (!decodedData) {
-                          logger.error(`Unable to decode imported state file`);
-                          toastShow(t("ErrorWhileDecoding"), 1000);
-                          break;
-                        }
-                        if (!decodedData?.version) {
-                          logger.error(`Impored state version in undefined`);
-                          toastShow("Wrong version", 1000);
-                          break;
-                        }
-                        const validData =
-                          decodedData?.version === VERSION
-                            ? decodedData
-                            : convertState(decodedData);
-                        if (!validData) {
-                          logger.error(
-                            `Cant convert from version: ${decodedData?.version} to version: ${VERSION}`
-                          );
-                          toastShow(
-                            `Unable to convert to current version ${decodedData.version}>${VERSION}`,
-                            1000
-                          );
-                          break;
-                        }
-                        logger.write(`State imported`);
-                        toastShow(`${t("settsImported")}`, 1000);
-                        setState(() => validData);
-                        break;
-                      default:
-                        toastShow(t("ErrorWhileDecoding"), 1000);
-                    }
-                  })
-                  .catch((err) => {
-                    logger.error(`Error while importing state. Error: ${err}`);
-                    toastShow(t("ErrorWhileReadingFile"), 1000);
-                  });
+                importBackupFile(t).then((restored) => {
+                  if (!restored) {
+                    return;
+                  }
+                  logger.write(`State imported`);
+                  toastShow(`${t("settsImported")}`, 1000);
+                  setState(restored);
+                });
               }}
             />
             <SettingsMenuItem

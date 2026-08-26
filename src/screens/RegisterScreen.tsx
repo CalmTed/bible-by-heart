@@ -8,7 +8,6 @@ import {
   Linking,
   ScrollView
 } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -19,13 +18,16 @@ import {
   SCREEN,
   TERMS_OF_SERVICE_LINK
 } from "../constants";
+import { ScreenPropsModel } from "../models";
 import { Input } from "../components/Input";
 import { Checkbox } from "../components/Checkbox";
 import { fetchAPI } from "../services/fetch";
 import { logger } from "../utils/logger";
 import Constants from "expo-constants";
 
-export const RegisterScreen: FC<ScreenModel> = ({ navigation }) => {
+export const RegisterScreen: FC<ScreenPropsModel<SCREEN.register>> = ({
+  navigation
+}) => {
   const { state, t, theme, setState } = useAppContext();
 
   const [tempUserName, setTempUserName] = useState("");

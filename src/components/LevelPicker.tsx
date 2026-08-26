@@ -6,7 +6,7 @@ import {
   TESTLEVEL
 } from "../constants";
 import { AppStateModel, PassageModel } from "../models";
-import { MiniModal } from "./miniModal";
+import { MiniModal } from "./MiniModal";
 import { Button } from "./Button";
 import { getPerfectTestsNumber } from "../utils/getPerfectTests";
 import { DotIndicator } from "./DotIndicator";

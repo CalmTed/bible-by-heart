@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Text, View } from "react-native";
 import { useAppContext } from "../context/AppContext";
-import { MiniModal } from "./miniModal";
+import { MiniModal } from "./MiniModal";
 import { Button } from "./Button";
 
 interface ConfirmModalModel {

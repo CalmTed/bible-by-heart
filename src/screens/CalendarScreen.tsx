@@ -12,7 +12,7 @@ import { DAY, MINUTE, PASSAGELEVEL, SCREEN, THEMETYPE } from "../constants";
 import { Header } from "../components/Header";
 import { IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
-import { ScreenModel } from "./homeScreen";
+import { ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 import { getAppStats, getTimeBoundStats } from "../utils/getStats";
 import { dateToString, timeStringFromMS } from "../utils/formatDateTime";
@@ -28,7 +28,9 @@ import { PanGestureHandler } from "react-native-gesture-handler";
 //     UIManager.setLayoutAnimationEnabledExperimental(true);
 // }
 
-export const CalendarScreen: FC<ScreenModel> = ({ navigation }) => {
+export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
+  navigation
+}) => {
   const { state, t, theme } = useAppContext();
   const currentMonthStart = new Date(
     `${new Date().getFullYear()}-${new Date().getMonth() + 1}-01`

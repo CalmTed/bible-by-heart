@@ -10,8 +10,8 @@ import {
   SCREEN
 } from "../constants";
 import { logger } from "../utils/logger";
-import { ActionName, AppStateModel } from "../models";
-import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import { ActionName, AppStateModel, RootStackNavigationModel } from "../models";
+import { CommonActions } from "@react-navigation/native";
 import { reduce } from "../utils/reduce";
 import * as SecureStore from "expo-secure-store";
 import { isTokenExpired } from "../utils/isTokenExpired";
@@ -33,7 +33,7 @@ export const fetchAPI: (a: {
     //mandatory, in case of invalid refresh token
     state: AppStateModel;
     setState: React.Dispatch<React.SetStateAction<AppStateModel>>;
-    navigation: StackNavigationHelpers;
+    navigation: RootStackNavigationModel;
     screen: SCREEN;
   };
   headers?: Record<string, string>;
@@ -49,7 +49,7 @@ export const fetchAPI: (a: {
     const initiateLogout: (
       state: AppStateModel,
       setState: React.Dispatch<React.SetStateAction<AppStateModel>>,
-      navigation: StackNavigationHelpers,
+      navigation: RootStackNavigationModel,
       screen: SCREEN
     ) => Promise<void> = async (state, setState, navigation, screen) => {
       const newState = reduce(state, {
@@ -62,8 +62,10 @@ export const fetchAPI: (a: {
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
       // State lives in AppContext now (setState above already reset it); just
-      // navigate — no state travels through route params.
-      navigation.navigate(screen);
+      // navigate — no state travels through route params. `screen` is the whole
+      // SCREEN union rather than one literal, which typed `navigate()` can't
+      // resolve; the equivalent dispatch takes a plain name (8.1.14).
+      navigation.dispatch(CommonActions.navigate(screen));
       logger.write(`Logging out b.c. of invalid token`);
     };
     //if headers have an auth value, check whether the access token is still valid

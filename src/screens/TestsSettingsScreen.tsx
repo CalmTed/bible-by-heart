@@ -1,16 +1,17 @@
 import React, { FC } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { SCREEN, SETTINGS } from "../constants";
-import { ActionName } from "../models";
+import { ActionName, ScreenPropsModel } from "../models";
 import { reduce } from "../utils/reduce";
 
 // Tests settings — was a MiniModal rendered inline in the settings list. Now a
 // stack screen reached from settingsScreen.
-export const TestsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const TestsSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsTests>
+> = ({ navigation }) => {
   const { state, setState, t } = useAppContext();
 
   return (

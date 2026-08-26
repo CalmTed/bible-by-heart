@@ -148,8 +148,10 @@ export const AppProvider: FC<AppProviderModel> = ({
               "android.intent.extra.TEXT"
             ];
           if (typeof intentText !== "undefined" && navigationRef.isReady()) {
+            // The notification payload is untyped data; the param list wants a
+            // string (8.1.14).
             navigationRef.navigate(SCREEN.listPassage, {
-              passageText: intentText
+              passageText: String(intentText)
             });
           }
           if (

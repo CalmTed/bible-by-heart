@@ -2,13 +2,12 @@ import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import * as SecureStore from "expo-secure-store";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { Button, IconButton } from "../components/Button";
 import { Input } from "../components/Input";
-import { MiniModal } from "../components/miniModal";
+import { MiniModal } from "../components/MiniModal";
 import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
@@ -16,7 +15,7 @@ import {
   REFRESH_TOKEN_NAME,
   SCREEN
 } from "../constants";
-import { ActionName, AppStateModel } from "../models";
+import { ActionName, AppStateModel, ScreenPropsModel } from "../models";
 import { dateToString, timeToString } from "../utils/formatDateTime";
 import { reduce } from "../utils/reduce";
 import { fetchAPI } from "../services/fetch";
@@ -25,7 +24,9 @@ import { logger } from "../utils/logger";
 // User / account settings — was a MiniModal rendered inline in the settings list.
 // Now a stack screen reached from settingsScreen (only when authorized). The
 // delete-account confirmation stays a MiniModal (it is a dialog, not a sub-menu).
-export const UserSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
+  navigation
+}) => {
   const { state, setState, t, theme } = useAppContext();
 
   const [isDeletionConfirmationModalShown, setDeletionConfirmationModalShown] =

@@ -1,15 +1,19 @@
 import React, { FC, useEffect } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
-import { SettingsListWrapper } from "../components/settingsListWrapper";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsListWrapper } from "../components/SettingsListWrapper";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { Button } from "../components/Button";
 import { Icon, IconName } from "../components/Icon";
 import { Select } from "../components/Select";
-import { HOUR, MINUTE } from "../constants";
+import { HOUR, MINUTE, SCREEN } from "../constants";
 import { WORD } from "../l10n";
-import { ActionName, OptionModel, ReminderModel } from "../models";
+import {
+  ActionName,
+  OptionModel,
+  ReminderModel,
+  ScreenPropsModel
+} from "../models";
 import { createReminder } from "../initials";
 import addZero from "../utils/addZero";
 import { reduce } from "../utils/reduce";
@@ -18,7 +22,9 @@ import { checkSchedule } from "../utils/notifications";
 
 // Reminders list — was a modal-in-modal (SettingsListWrapper inside the
 // Reminders MiniModal). Now a stack screen reached from NotificationsSettingsScreen.
-export const RemindersSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const RemindersSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsReminders>
+> = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
 
   const remindersListString = JSON.stringify(state.settings.remindersList);

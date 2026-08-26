@@ -19,7 +19,12 @@ import {
   SORTINGOPTION,
   SCREEN
 } from "../constants";
-import { ActionName, AddressType, PassageModel } from "../models";
+import {
+  ActionName,
+  AddressType,
+  PassageModel,
+  ScreenPropsModel
+} from "../models";
 
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -27,11 +32,10 @@ import { Icon, IconName } from "../components/Icon";
 import { createAddress, createPassage } from "../initials";
 import { AddressPicker } from "../components/AddressPicker";
 import { createT } from "../l10n";
-import { ScreenModel } from "./homeScreen";
 import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
-import { MiniModal } from "../components/miniModal";
+import { MiniModal } from "../components/MiniModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
@@ -42,7 +46,10 @@ import toastShow from "../utils/toastShow";
 import addressFromString from "../utils/addressFromString";
 import { sanitizeSharedText } from "../utils/sanitizeSharedText";
 
-export const ListScreen: FC<ScreenModel> = ({ route, navigation }) => {
+export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
+  route,
+  navigation
+}) => {
   const { state, setState, t, theme } = useAppContext();
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);

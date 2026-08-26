@@ -1,10 +1,9 @@
 import React, { FC, useState } from "react";
 import { View } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { PassageEditor } from "../components/PassageEditor";
 import { createAddress, createPassage } from "../initials";
-import { ActionName, AddressType, PassageModel } from "../models";
+import { ActionName, PassageModel, ScreenPropsModel } from "../models";
 import { reduce } from "../utils/reduce";
 import { SCREEN } from "../constants";
 
@@ -12,17 +11,14 @@ import { SCREEN } from "../constants";
 // draft whenever the surrounding screen re-rendered. It is now a real stack
 // screen: state lives in AppContext, and the editor keeps a local draft that is
 // only committed on Save (with a discard-confirm on back). Route params carry
-// only what identifies/seeds the passage — never app state.
-interface PassageRouteParams {
-  passageId?: number | string; // edit an existing passage (string via deep link)
-  address?: AddressType; // add a new passage at this address
-  passageText?: string; // add with pre-filled text (shared intent / parsed)
-  translationId?: number; // translation for the new passage
-}
-
-export const PassageScreen: FC<ScreenModel> = ({ route, navigation }) => {
+// only what identifies/seeds the passage — never app state; their shape is
+// `PassageScreenParamsModel` in the root param list (models.ts, 8.1.14).
+export const PassageScreen: FC<ScreenPropsModel<SCREEN.passage>> = ({
+  route,
+  navigation
+}) => {
   const { state, setState, theme } = useAppContext();
-  const params: PassageRouteParams = route.params ?? {};
+  const params = route.params ?? {};
 
   // Freeze the source passage ONCE at mount. Rebuilding it per render would mint
   // a new random id every time (createPassage) and desync PassageEditor's draft.

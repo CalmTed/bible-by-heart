@@ -1,6 +1,5 @@
 import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
@@ -15,10 +14,12 @@ import { Input } from "../components/Input";
 import { logger } from "../utils/logger";
 import { fetchAPI } from "../services/fetch";
 import * as SecureStore from "expo-secure-store";
-import { ActionName, AppStateModel } from "../models";
+import { ActionName, AppStateModel, ScreenPropsModel } from "../models";
 import { reduce } from "../utils/reduce";
 
-export const LoginScreen: FC<ScreenModel> = ({ navigation }) => {
+export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
+  navigation
+}) => {
   const { state, t, setState, theme } = useAppContext();
 
   const [tempEmail, setTempEmail] = useState("");

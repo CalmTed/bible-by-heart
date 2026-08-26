@@ -6,10 +6,11 @@ docs (they cover this repo AND the API repo at `c:/Code/bbh-api`):
 1. `docs/ARCHITECTURE.md` — vision, philosophy, core decisions (the grand context)
 2. `docs/CODING_RULES.md` — style rules + reusable component library (reuse, don't recreate)
 3. `docs/FILEMAP.md` — where everything lives, both repos
-4. `docs/PLAN.md` — **the working queue; take the first unchecked step.** It is also
+4. `docs/PLAN.md` — **the roadmap; take the first unchecked step.** It is also
    the only file where work is marked done (move the finished step to its Archive)
-5. `docs/STRATEGY.md` — the *why* behind the queue: bug register, risk watchlist,
-   refactors, testing goals, feature order, milestones. Read the section a step points at
+5. `docs/STRATEGY.md` — the vision behind the roadmap: what "finished" means, the
+   milestone ladder, feature/technical direction, quality bar, risks, locked decisions.
+   No checkboxes live here
 
 ## Hard rules
 

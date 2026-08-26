@@ -26,6 +26,7 @@ import {
   LANGCODE,
   PASSAGELEVEL,
   PERFECT_TESTS_TO_PROCEED,
+  SCREEN,
   TESTLEVEL
 } from "../../src/constants";
 import { createAppState, createPassage } from "../../src/initials";
@@ -48,10 +49,13 @@ import {
   makeContextValue,
   renderWithContext
 } from "../../test-utils/renderWithContext";
-import { FinishScreen } from "../../src/screens/finishScreen";
-import { StatsScreen } from "../../src/screens/statsScreen";
-import { WeekActivityComponent } from "../../src/components/weekActivityComponent";
-import type { ScreenModel } from "../../src/screens/homeScreen";
+import { FinishScreen } from "../../src/screens/FinishScreen";
+import { StatsScreen } from "../../src/screens/StatsScreen";
+import { WeekActivity } from "../../src/components/WeekActivity";
+import type {
+  RootStackParamList,
+  ScreenPropsModel
+} from "../../src/models";
 
 const DAY_MS = DAY * 1000;
 /** how many training sessions the flow plays */
@@ -308,11 +312,18 @@ const collectRenderedText = (node: unknown): string[] => {
   return [];
 };
 
-const navigationStub = {
-  navigate: () => {},
-  goBack: () => {},
-  addListener: () => () => {}
-} as unknown as ScreenModel["navigation"];
+// Inert `{ route, navigation }` for a screen rendered outside a navigator. The
+// cast is the only honest option — a real StackNavigationProp has ~20 methods
+// none of these surfaces call (8.1.14 made the shape typed, not fakeable).
+const makeScreenProps = <T extends keyof RootStackParamList>(name: T) =>
+  ({
+    navigation: {
+      navigate: () => {},
+      goBack: () => {},
+      addListener: () => () => {}
+    },
+    route: { key: `${String(name)}-stub`, name, params: undefined }
+  }) as unknown as ScreenPropsModel<T>;
 
 // SafeAreaProvider renders nothing until it knows the insets, so tests must hand
 // it metrics or every assertion below would pass against an empty tree.
@@ -507,13 +518,11 @@ describe("end-to-end learning flow (8.1.16a)", () => {
 
     const surfaces = {
       finish: renderSurface(
-        <FinishScreen navigation={navigationStub} route={{}} />
+        <FinishScreen {...makeScreenProps(SCREEN.testResults)} />
       ),
-      stats: renderSurface(
-        <StatsScreen navigation={navigationStub} route={{}} />
-      ),
+      stats: renderSurface(<StatsScreen {...makeScreenProps(SCREEN.stats)} />),
       weekActivity: renderSurface(
-        <WeekActivityComponent
+        <WeekActivity
           state={sentinelState}
           t={t}
           theme={makeContextValue().theme}

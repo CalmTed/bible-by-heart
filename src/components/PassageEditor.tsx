@@ -24,7 +24,7 @@ import { LevelPicker } from "./LevelPicker";
 import { Select } from "./Select";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
-import { MiniModal } from "./miniModal";
+import { MiniModal } from "./MiniModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { Input } from "./Input";
 import { getPassageStats } from "../utils/getStats";

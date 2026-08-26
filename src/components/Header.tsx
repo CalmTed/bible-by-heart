@@ -4,10 +4,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { useAppContext } from "../context/AppContext";
-import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import { RootStackNavigationModel } from "../models";
 
 interface HeaderModel {
-  navigation?: StackNavigationHelpers;
+  // Only `goBack()` is used, but the real navigation type keeps a wrong object
+  // from being passed in — it replaced an import through a raw
+  // `node_modules/...` path (8.1.14).
+  navigation?: RootStackNavigationModel;
   showBackButton?: boolean;
   title?: string;
   additionalChild?: React.ReactNode;

@@ -1,7 +1,7 @@
 import { renderWithContext } from "../../test-utils/renderWithContext";
 import { ARCHIVED_NAME, LANGCODE } from "../../src/constants";
 import { createT } from "../../src/l10n";
-import { SettingsMenuItem } from "../../src/components/setttingsMenuItem";
+import { SettingsMenuItem } from "../../src/components/SettingsMenuItem";
 
 describe("testing settings menu item", () => {
   const t = createT(LANGCODE.ua);

@@ -4,23 +4,19 @@ import { SCREEN, THEMETYPE } from "../constants";
 import { Button } from "../components/Button";
 import { DaggerLogoSVG } from "../svg/daggetLogo";
 import { getStroke } from "../utils/getStats";
-import { WeekActivityComponent } from "../components/weekActivityComponent";
+import { WeekActivity } from "../components/WeekActivity";
 import { StatusBar } from "expo-status-bar";
 import { useAppContext } from "../context/AppContext";
 import { IconName } from "../components/Icon";
 import { SelectModal } from "../components/SelectModal";
-import { ActionName } from "../models";
+import { ActionName, ScreenPropsModel } from "../models";
 import { getPassagesByTrainMode } from "../utils/generateTests";
 import { MangerSVG } from "../svg/manger";
-import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
 import { logger } from "../utils/logger";
 
-export interface ScreenModel {
-  route: any;
-  navigation: StackNavigationHelpers;
-}
-
-export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
+export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
+  navigation
+}) => {
   const { state, dispatch, t, theme } = useAppContext();
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
@@ -199,7 +195,7 @@ export const HomeScreen: FC<ScreenModel> = ({ navigation }) => {
         style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
       />
       {logoBlock}
-      <WeekActivityComponent state={state} />
+      <WeekActivity state={state} />
       {mainButtons}
     </View>
   );
