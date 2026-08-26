@@ -183,6 +183,19 @@ export const ua: typeof en = {
   settsExportStateSubtext: "Зберегти стан даних додатку у JSON файл",
   settsImportStateHeader: "Імпортувати стан додатку",
   settsImportStateSubtext: "Відкрити стан даних додатку з JSON файлу",
+  settsBackupExportHeader: "Зберегти резервну копію",
+  settsBackupExportSubtext: "Записати всі дані додатку у .json файл",
+  settsBackupRestoreHeader: "Відновити з резервної копії",
+  settsBackupRestoreSubtext:
+    "Замінити всі дані додатку збереженим файлом копії",
+  settsBackupRestoreConfirm: "Відновити",
+  settsRestored: "Відновлено!",
+  BackupRestoreConfirmationText:
+    "Замінити всі дані додатку цією резервною копією? Поточні дані буде втрачено.",
+  BackupOfferText:
+    "Дані додатку оновлено до нового формату. Зберегти резервну копію попередніх даних про всяк випадок?",
+  BackupOfferConfirm: "Зберегти копію",
+  BackupOfferLater: "Пізніше",
   settingsExportPassages: "Експортувати вірші",
   settingsImportPassages: "Імпортувати вірші",
   settsExportPassagesSubtext: "Записати вірші у txt файл",

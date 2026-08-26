@@ -9,7 +9,7 @@ import { useAppContext } from "../context/AppContext";
 // React.memo: home re-renders on every local state change (e.g. opening the
 // train-modes picker); `t`/`theme` now come from context (stable identities,
 // 8.1.2), so this skips re-rendering while state is unchanged (8.1.1 #4/c).
-export const WeekActivityComponent: FC<{
+export const WeekActivity: FC<{
   state: AppStateModel;
 }> = React.memo(({ state }) => {
   const { t } = useAppContext();
@@ -45,7 +45,7 @@ export const WeekActivityComponent: FC<{
     </View>
   );
 });
-WeekActivityComponent.displayName = "WeekActivityComponent";
+WeekActivity.displayName = "WeekActivity";
 
 const DayActivityBar: FC<{
   value: number;

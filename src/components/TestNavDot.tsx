@@ -3,13 +3,13 @@ import React, { FC } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { useAppContext } from "../context/AppContext";
 
-interface TestNavDottModel {
+interface TestNavDotModel {
   isCurrent: boolean;
   color: "red" | "green" | "gray" | "text";
   onPress?: () => void;
 }
 
-export const TestNavDott: FC<TestNavDottModel> = ({
+export const TestNavDot: FC<TestNavDotModel> = ({
   isCurrent,
   color,
   onPress

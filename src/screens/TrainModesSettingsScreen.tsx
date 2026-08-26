@@ -1,18 +1,29 @@
 import React, { FC } from "react";
 import { View, Text } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
-import { SettingsListWrapper } from "../components/settingsListWrapper";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsListWrapper } from "../components/SettingsListWrapper";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { Button } from "../components/Button";
-import { PASSAGELEVEL, SORTINGOPTION, ARCHIVED_NAME } from "../constants";
-import { ActionName, OptionModel, TrainModeModel } from "../models";
+import {
+  PASSAGELEVEL,
+  SORTINGOPTION,
+  ARCHIVED_NAME,
+  SCREEN
+} from "../constants";
+import {
+  ActionName,
+  OptionModel,
+  ScreenPropsModel,
+  TrainModeModel
+} from "../models";
 import { createTrainMode } from "../initials";
 import { reduce } from "../utils/reduce";
 
 // Train modes list — was a modal-in-modal (SettingsListWrapper inside the Tests
 // settings MiniModal). Now a stack screen reached from TestsSettingsScreen.
-export const TrainModesSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const TrainModesSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsTrainModes>
+> = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
 
   return (

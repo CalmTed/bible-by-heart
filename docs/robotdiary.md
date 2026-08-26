@@ -1443,3 +1443,529 @@ training session.
 8.1.14 (typed navigation) was in the stretch plan and was not started — it rewrites
 every screen's props and would have collided with the migration. It stays the next
 unchecked step after 8.1.9.
+
+---
+
+## 2026-08-24 — docs cleanup: STRATEGY becomes vision, PLAN becomes a roadmap
+
+Fedir's call: the two planning docs had drifted into each other. STRATEGY had grown a
+second queue (checkboxes in §1, §2, §4, §5) plus a session-by-session changelog inside
+parentheses, and PLAN carried a session protocol, a conventions section and per-step
+Goal/Files/Acceptance/Risk blocks. Split cleanly along the line he drew: **STRATEGY is
+where we want to be, PLAN is yes/no marks.**
+
+### STRATEGY.md — rewritten, 432 → ~150 lines
+- **Every checkbox removed.** No `[x]`, no `[~]`, no `[ ]`.
+- **Bug register deleted.** Every entry in it was already fixed; the fix notes are in
+  this diary under their dates, which is where history belongs.
+- **The dated parenthetical notes are gone** — they were a changelog living in a
+  planning doc.
+- New shape: what "finished" means (1.0.0 definition) · the milestone ladder · feature
+  vision in priority order · technical direction · quality bar · risk watchlist ·
+  decisions locked (moved here from PLAN §3, since it is reasoning, not scheduling).
+- Only the *open* risks survived into the watchlist. Two of them are the boot-path holes
+  found during 8.1.8.
+
+### PLAN.md — rewritten, 380 → ~215 lines
+- Steps compressed to a title + a few lines. Goal/Files stayed where it saves a session
+  re-deriving them; Acceptance/Risk prose dropped except where it warns of a real trap
+  (Windows case-insensitive renames, memoized rows, babel config).
+- **`(device)` tags and the milestone device checklists removed** — Fedir asked to stop
+  planning around manual real-device testing. Milestones are now "bump, build, release".
+- **Dropped from the queue:** 8.1.16 fresh-install defaults, the standalone
+  error-message-design unification (clauses removed from 8.2.5 and 8.2.6), and 8.2.9
+  layered l10n keys (moved to the post-1.0 pool — a giant mechanical diff worth nothing
+  to a user). All three recorded in PLAN "Not scheduled" and in STRATEGY §7 so the
+  decisions do not get re-litigated.
+- **Added 8.1.9a** (flagged to Fedir, not slipped in silently): the two boot-path
+  problems reported at the end of 8.1.8 had never been scheduled. `loadState`'s `.catch`
+  treats any load failure as "no state yet" and writes a blank state over storage, and
+  the emergency screen sits in a render-time `try/catch`, which React does not use for
+  errors thrown by children — so recovery is unreachable. Both are data-loss class and
+  belong before the Play release.
+- **8.1.9 shrank:** its "swap `fileManager` from `react-native-fs` to `expo-file-system`"
+  half is already done — `fileManager.ts` imports `expo-file-system/legacy`, and no
+  source file imports `react-native-fs` at all. The dep is dead weight in
+  `package.json`; dropping it moved to 8.3.2 with the other dep cleanup.
+
+### Verified against the source, not assumed
+Everything still unchecked really is unchecked: `react-native-reanimated` absent,
+`RootStackParamList` still `Record<string, object | undefined>`, `homeScreen`'s
+`route: any` and `testsScreen`'s `@ts-ignore` still there, screens still camelCase.
+
+### Also updated
+`FILEMAP.md` docs table (both descriptions were stale) and `CLAUDE.md` step 5, which
+still told the next session STRATEGY held a bug register and a testing queue.
+
+---
+
+## 2026-08-24 — 8.1.9 backup export + restore from file
+
+The safety net finally reaches outside the app. Before today every copy of a user's
+data lived in the same AsyncStorage the app could corrupt: the rolling daily backup and
+the write-once pre-conversion snapshot from 8.1.8. Both die with the install. This step
+adds the copy that survives — a file the user owns.
+
+### What was found first
+The feature was already half-built, in the wrong place. `AboutSettingsScreen` had
+dev-mode-only "Export state" / "Import state" rows, complete with l10n keys in both
+languages, doing `JSON.stringify(state)` → `writeFile` and `JSON.parse` → `convertState`
+inline. So the step became *promote and harden*, not *invent*:
+
+- the import switched on `r.mimeType` and silently did nothing for any other type;
+- it ran `r.content.replace(/_ /g, " ")` before parsing — a hack that corrupts any real
+  `"_ "` inside the JSON;
+- no confirmation before replacing the whole state;
+- and it was invisible to the ~5 people who actually use the app.
+
+### What was built
+- **`src/utils/backupFile.ts`** — split down the middle on purpose. Pure half:
+  `serializeBackup` (state → `{app, exportedAt, stateVersion, state}`), `parseBackup`,
+  `createBackupFileName`, `readStateVersion`. IO half: `exportBackupFile` /
+  `importBackupFile`, the wrapper all three call sites share. Version tolerance is
+  delegated to `restoreStateFromBackup` from 8.1.8 rather than re-implemented, so an old
+  backup converts forward through the one chain that is already tested.
+- **The envelope, and why `parseBackup` also accepts a bare state.** Files written
+  before today (the dev export) and anything pasted out of the emergency screen's state
+  dump are plain state objects. Refusing them would have made restore useless for
+  exactly the person who needed it most, so the parser accepts either shape: if there is
+  a `.state` object, use it; otherwise treat the whole document as the state.
+- **`BackupOfferModal`** — the post-upgrade offer. Built on `ConfirmModal`
+  (`confirmColor="green"`, it is not a destructive action), not a new modal.
+- **`App.tsx`** sets the offer inside `savePreConvertSnapshot().then(...)`, *before*
+  `convertState` runs, so it appears whether the conversion succeeds or falls back to a
+  blank state — in the failure case that raw object is the only copy of the data that
+  exists outside storage. It carries the **raw pre-conversion state**, not the converted
+  one: a file of the data as the previous build had it is what a broken converter needs.
+- **List settings** got the two user-facing rows. Restore decodes *first* and shows the
+  `ConfirmModal` with the passage and test counts read out of the decoded file, so the
+  confirmation describes the file the user actually picked instead of asking them to
+  confirm blind. Applying it is a plain `setState` — AppProvider's persist effect owns
+  the storage write (CODING_RULES §4).
+
+### Reported, not slipped in
+The dev-mode rows in `AboutSettingsScreen` now delegate to `backupFile` instead of
+keeping their own copy of the logic. That file was not in the step's *Files* list. It is
+the same feature (leaving a second, worse state-import implementation next to the new
+util was not defensible), the `_ `-mangling and the mimeType switch are gone, and dev
+import is now version-tolerant. Flagged here and to Fedir rather than done quietly.
+
+### Gotchas for next time
+- `writeFile` returns `false` both for "user declined the folder picker" and for a real
+  failure, and `readFile` does the same for cancel vs error. Export stays silent on
+  `false` (a cancel must not toast an error); import toasts, matching what the passage
+  import has always done. Fixing that distinction means changing `fileManager`, which
+  belongs to a different step.
+- The offer does not persist a "don't ask again" flag and does not need one: it can only
+  be set on a boot that converted a state, and the next boot finds a matching version.
+- **`(build)` was not completed.** The version bump to 0.1.2 is in `package.json` (the
+  single source `app.config.js` reads), but `npm run build-dev` auto-submits to the Play
+  staging track, so it is Fedir's to trigger. The SDK-36 native bump from 2026-07-22 is
+  still riding along unbuilt; the ⚠️ note at the top of PLAN.md now says so.
+
+### Needs manual verification on a device
+Storage Access Framework is the part tests cannot reach: pick a folder, confirm the
+`.json` lands there and opens, then restore it back and check the passage list and
+stats survive. Worth also restoring a backup exported by an *older* build (the bare-state
+shape) to exercise the conversion path, and cancelling both pickers to confirm nothing
+is lost. `npm run lint` ✓ · `npm test` ✓ 30 suites / 136 tests / 22 snapshots.
+
+## 2026-08-25 — 8.1.9a boot path cannot eat a state + 8.1.14 typed navigation
+
+Two steps in one session. They share nothing except that both were holes the type
+system and React semantics were quietly hiding.
+
+### 8.1.9a — the two data-loss holes
+
+**Hole 1: `.catch` meant "no state yet".** `loadState` read storage and, on *any*
+rejection, wrote a blank state on top. react-native-storage rejects with a
+`NotFoundError` for a key that was never written — but it rejects the same way for a
+`JSON.parse` failure over a half-written record and for a native/disk failure. One
+unreadable read of a real install and the data was gone, overwritten by the fresh state
+the load path had already seeded in memory.
+
+The fix is a classification, not a try harder: `loadStoredState` in `bootBackup.ts`
+returns `{status:"found"|"empty"|"failed"}`, keying "empty" on the error *name*
+(`NotFoundError`) and nothing else. `ExpiredError` deliberately counts as a failure —
+this app sets `defaultExpires: null` so it cannot fire, and if it ever did it would mean
+data exists. On `failed` the boot path now writes **nothing at all** and shows the
+emergency screen. A test asserts that no outcome — found, empty, corrupted, backend
+failure — ever calls `save`.
+
+**Hole 2: the emergency screen was unreachable.** It sat inside a `try/catch` wrapped
+around App's `return (...)`. React does not propagate a child's render error up the
+parent's JS call stack — it unmounts the tree and looks for the nearest error boundary.
+There was none, so the `catch` could never fire and a broken state rendered a blank app.
+New `src/components/ErrorBoundary.tsx` is a real class boundary
+(`getDerivedStateFromError` + `componentDidCatch`), with `renderFallback(error, reset)`
+so the recovery buttons can clear the caught error after putting a usable state back.
+The recovery UI itself moved to `src/components/EmergencyScreen.tsx` because it now has
+two entry points (the caught render error, and the failed read).
+
+The extracted screen keeps its raw `react-native` primitives and hardcoded bilingual
+strings on purpose: it renders outside `AppProvider`, which is the whole point — it must
+work when the state, theme or l10n code is what is broken (CODING_RULES §7).
+
+While in there: `storage.save` after a conversion, and the initial-state write, were
+both unguarded promises — a rejection left the app stuck before "ready" forever. Both
+have handlers now; a failed persist after conversion runs on the in-memory state instead
+of hanging, a failed *initial* write goes to the emergency screen.
+
+### 8.1.14 — typed navigation
+
+`ScreenModel` was `{ route: any; navigation: StackNavigationHelpers }`, and that
+navigation type was imported through a literal `node_modules/@react-navigation/stack/
+lib/typescript/src/types` path — in two files.
+
+`RootStackParamList` is now a real map of all 19 `SCREEN` members to their params, and
+it lives in **`models.ts`**, not `navigator.tsx`. That is the load-bearing choice:
+`navigator.tsx` imports every screen, so a screen importing its props type from the
+navigator would be a cycle. Screens use `ScreenPropsModel<SCREEN.x>` (an alias of
+`StackScreenProps`), so `route.params` is typed per screen; `PassageScreen`'s local
+`PassageRouteParams` became `PassageScreenParamsModel` in the param list. The
+`@ts-ignore` on `navigation.addListener("beforeRemove", …)` in `testsScreen` is gone —
+`beforeRemove` was always there, just not on the loose helpers type. `Header` takes the
+real navigation type too, which removed the second raw `node_modules/…` import.
+
+One call site could not be typed the obvious way: `services/fetch.ts`'s forced logout
+takes `screen: SCREEN` — the whole union, not a literal — and react-navigation's
+`navigate()` distributes its conditional over the union, so no single tuple matches.
+`navigation.dispatch(CommonActions.navigate(screen))` is the same action with a plain
+`string` name. No cast, no `any`.
+
+### Reported, not slipped in
+**`tsc --noEmit` does not cover `__tests__/`.** tsconfig's `include` is
+`["*", "src/*", "src/**/*", "plugins/*"]` — `"*"` matches only top-level files, so the
+whole test tree is unchecked. This surfaced when the e2e test compiled clean and then
+threw `ReferenceError: SCREEN is not defined` at runtime; it is also why `route={{}}`
+had been passing to screens whose route type never allowed it. Not fixed here — adding
+`__tests__` to `include` will surface a batch of existing type errors and deserves its
+own step. Fedir decides where it goes.
+
+### Gotchas for next time
+- A boundary's `reset()` re-renders the *same* children element it already holds. That
+  is why the restore buttons must put the good state back **before** calling reset —
+  reset alone just replays the crash.
+- The e2e test now builds screen props through `makeScreenProps(SCREEN.x)`; a
+  `StackNavigationProp` has ~20 methods, so a stub is honestly a cast. Keep it in one
+  helper rather than casting at each render site.
+- 8.1.14 is type-only: no runtime behaviour changed, and the 22 snapshots matching
+  unchanged is the evidence. The two real runtime edits are the `CommonActions` dispatch
+  above and `String(intentText)` in AppContext's notification handler (the payload is
+  untyped data; the param list wants a string).
+
+### Needs manual verification on a device
+The boundary and the failed-read path cannot be reached from tests end to end. Worth
+provoking once on a device: corrupt the state key (the dev-mode state rows can write a
+truncated file back) and confirm the app shows the emergency screen **and leaves the
+stored data alone**, then restore from the daily backup and confirm the app continues
+without a restart. Also tap through every screen once — the navigation refactor touched
+all 19 screens' props, and a wrong `SCREEN` key would now be a compile error, but a
+missing back button would not.
+
+`npm run lint` ✓ · `npm test` ✓ 31 suites / 149 tests / 22 snapshots. No build run:
+neither step touches native config, and the 0.1.2 + SDK-36 bumps are still waiting on
+Fedir's `npm run build-dev` (see the ⚠️ note at the top of PLAN.md).
+
+---
+
+## 2026-08-26 — 8.1.15 File renames to convention
+
+The last naming debt in the app repo. 15 files renamed, 23 import sites rewritten,
+**zero logic diff** — no exported identifier, no JSX, no behaviour touched.
+
+Screens → PascalCase: `homeScreen` `listScreen` `testsScreen` `finishScreen`
+`statsScreen` `calendarScreen` `settingsScreen` `loginScreen` `registerScreen`.
+Components: `miniModal.tsx` → `MiniModal.tsx`, `setttingsMenuItem.tsx` (three t's) →
+`SettingsMenuItem.tsx`, `testNevDott.tsx` → `TestNavDot.tsx`, `settingsListWrapper.tsx`
+→ `SettingsListWrapper.tsx`, `weekActivityComponent.tsx` → `WeekActivity.tsx`,
+`icondata.ts` → `iconData.ts`.
+
+### How the case-only rename was done safely
+Windows' filesystem is case-insensitive, so `git mv homeScreen.tsx HomeScreen.tsx` is a
+rename onto itself. Every one went through a temp name —
+`git mv X X.__tmp && git mv X.__tmp NewX` — and the result was verified against
+`git ls-files` (the index, not the directory listing, which would lie about case) plus
+`ls -1` for the on-disk casing. `git status` reports all 15 as `R`, so history follows
+the files.
+
+### What was deliberately NOT renamed
+- **Exported identifiers.** `TestNavDot.tsx` still exports `TestNavDott` and
+  `WeekActivity.tsx` still exports `WeekActivityComponent`. CODING_RULES §2 wants the
+  file named after its export, so these two are half-done — but renaming identifiers is
+  a different diff from renaming files, and the step said zero logic diff. Both are now
+  noted in CODING_RULES §2 and FILEMAP so they can't be forgotten.
+- **Test filenames.** `button.test.tsx`, `miniModal.test.tsx`, `settingsMenuItem.test.tsx`
+  are camelCase, which §2 already allows for non-component modules, so no `.snap` file
+  had to move with a test. That is why all 22 snapshots matched with no `.snap` churn —
+  the strongest evidence available that this refactor changed nothing.
+
+### Gotchas for next time
+- **`sed -i` across the tree makes `git status` lie.** After rewriting imports, ~80 files
+  that were never edited showed up as ` M`. They are unchanged: `git diff` on them is
+  empty. `core.autocrlf=true` with no `.gitattributes` means git compares a normalized
+  copy; those files already had LF-only endings in the working tree and git had been
+  skipping the content check on a stale stat cache. Touching them (same bytes, new
+  mtime) forced the real comparison and the "LF will be replaced by CRLF" warning. `sed`
+  does not rewrite line endings — files that genuinely had CRLF (e.g. `levels/Level1.tsx`)
+  stayed clean. Check `git diff --stat`, not `git status`, after a bulk edit here.
+- Renames land in the index immediately (`git mv` stages them), so the working tree and
+  the index disagree until the import fixes are staged too. Expect `RM` rows.
+
+### Reported, not slipped in
+- The two stale exports above (`TestNavDott`, `WeekActivityComponent`) — an identifier
+  rename is its own small step if Fedir wants it.
+- `__tests__/` filename casing is a coin-flip mix (`AddressPicker.test.tsx` and
+  `Text.test.tsx` vs `button.test.tsx` and `header.test.tsx`). Nothing is broken and no
+  rule is violated; purely cosmetic. Fedir decides whether it is worth a step.
+
+### Needs manual verification on a device
+Nothing specific — but this is a Metro-resolution change, and Metro caches module paths
+aggressively on a case-insensitive filesystem. The first `npm run dev` after this should
+be started with a cleared cache (`npx expo start -c`) at least once; a stale cache can
+resolve `screens/homeScreen` from memory and hide a broken import that CI would catch.
+
+`npm run lint` ✓ · `npm test` ✓ 31 suites / 149 tests / 22 snapshots, no `.snap`
+changed. No build run: no native config or dependency touched. The 0.1.2 + SDK-36 bumps
+are still waiting on Fedir's `npm run build-dev` (⚠️ note at the top of PLAN.md).
+
+---
+
+## 2026-08-26 — 8.1.15a Naming tail (the two findings 8.1.15 reported)
+
+Fedir approved both out-of-scope items from the previous entry, so they were done as a
+follow-up rather than being carried. Same shape as 8.1.15: renames only, no behaviour.
+
+### 1. The last two near-miss exports
+`TestNavDot.tsx` exported `TestNavDott` and `WeekActivity.tsx` exported
+`WeekActivityComponent` — files renamed in 8.1.15, identifiers left behind. Now
+`TestNavDot` / `TestNavDotModel` and `WeekActivity` (including its
+`.displayName`, which was still the old string and would have shown up wrong in React
+DevTools). 11 call sites across `TestsScreen.tsx`, `HomeScreen.tsx` and
+`e2e/flow.test.tsx`. Grepping either old spelling now returns nothing.
+
+Safe because the import paths were already the *new* file names: `s/TestNavDott/TestNavDot/g`
+cannot touch `from "../components/TestNavDot"`, and `s/WeekActivityComponent/WeekActivity/g`
+cannot touch `from "../components/WeekActivity"`. Doing the file renames first and the
+identifier renames second is what made each pass a single unambiguous substitution —
+the reverse order would have needed anchored patterns.
+
+### 2. Test filenames match their subjects
+Eight camelCase component tests and their snapshots renamed, plus the root smoke test:
+`button` `checkbox` `header` `icon` `input` `miniModal` `select`
+`settingsMenuItem` → PascalCase, `app.test.tsx` → `App.test.tsx`. Every
+`__snapshots__/*.test.tsx.snap` moved with its test in the same temp-name `git mv`
+pair. `__tests__/utils/*` already matched their camelCase subjects and were not
+touched; `e2e/flow.test.tsx` is a scenario, not a module test, so it stays camelCase.
+
+**Jest resolves snapshots by test filename**, so a `.snap` left behind would not have
+failed — it would have silently written a fresh empty snapshot file and reported the 22
+as passing. The real check is that the run reported no *written* and no *obsolete*
+snapshots (`npm test` prints both). That is the assertion to grep for after any test
+rename, not the pass count.
+
+### Rules added so this cannot drift again
+CODING_RULES §2 now says the file is named after its export **exactly** (no
+near-misses), and adds the missing rule: a test is named after its subject, casing
+included, and a snapshot always moves with its test. Both were unwritten conventions
+that everything had been half-following.
+
+### Needs manual verification on a device
+Nothing beyond 8.1.15's note (start once with `npx expo start -c`). The only runtime
+change in this entry is `WeekActivity.displayName`, which is a DevTools label.
+
+`npm run lint` ✓ · `npm test` ✓ 31 suites / 149 tests / 22 snapshots, none written,
+none obsolete. No build run: no native config or dependency touched.
+
+## 2026-08-26 — 8.1.17 + 8.1.18 prepared for release (nothing committed)
+
+Fedir asked for both steps *and* explicitly for no commits — "just prepare". So both
+boxes stay unchecked in PLAN: the code is on disk and green, but a deploy that has not
+been pushed is not a deploy. The handover block at the top of PLAN is the source of
+truth for what he still has to do; this entry is why each piece looks the way it does.
+
+### 8.1.17 — the three sub-tasks
+
+**1. The undeployed mailer/migration hardening.** Nothing to write: `verifyMailer` and
+`ensureUsersTableColumns` were already correct and already wired into `app.ts`. The
+reason they have never run in production is duller than a bug — the two commits that
+add them (`c8bd06e`, `09c950a`, 2026-07-11) exist **only in the local clone**.
+`origin/staging` and `origin/production` are identical and predate both. So "ship it"
+here is literally `git push`, and the risk is that a year from now someone reads
+"committed but undeployed" and goes looking for a deploy problem that never existed.
+Worth knowing: `git log origin/<branch>..<branch>` is the check, not `git log`.
+
+**2. `/.well-known/assetlinks.json`.** Fedir's answer to "where do I get the signing
+fingerprint" was that he doesn't need one, EAS builds and signs the app. That is true
+of *signing* and not of *verification*: Android fetches this file and compares the
+SHA-256 in it against the certificate that actually signed the installed APK — with
+Play App Signing that is Google's app-signing key, which EAS uses but never writes
+anywhere the server can read. Without the value the file cannot be correct, so the
+value had to become configuration rather than a constant:
+
+- `src/utils/assetLinks.ts` — the pure half. `parseFingerprints` takes the raw env
+  string (comma / semicolon / newline separated), uppercases, and **drops** anything
+  that is not 32 colon-separated hex pairs. Dropping rather than passing through is
+  deliberate: Android rejects the *entire* file if one statement is malformed, so a
+  partial list beats a broken one. It logs what it dropped so a typo is findable.
+  `buildAssetLinks` returns the `delegate_permission/common.handle_all_urls` statement.
+- `routes.ts` — `GET /.well-known/assetlinks.json`, reading
+  `process.env.ANDROID_CERT_FINGERPRINTS` **inside the handler**, not at module load.
+  That is what makes the supertest case possible at all (a module-load read would bake
+  in whatever the env was when jest imported `app.ts`) and it means changing the value
+  is an env edit plus a restart, never a rebuild.
+- With nothing configured it answers **503, not 404 and not an empty statement**. An
+  empty `sha256_cert_fingerprints` array is a *valid-looking* file that silently never
+  verifies — the worst possible failure here, because everything looks wired up.
+- 5 tests: parse/build incl. the malformed cases, plus 200-with-`application/json` and
+  503 through supertest.
+
+**3. nodemon → node.** Fedir chose the wider fix. Both *deployed* compose services
+(`staging`, `production`) now run `node --env-file=... ./dist/app.js`; a built image has
+no source to watch, and `restart: unless-stopped` already is the supervisor, so nodemon
+was a process in the middle that could only add failure modes. `local` keeps it — that
+service bind-mounts the source, which is the one place a watcher earns its keep. The
+Dockerfile's `CMD` was also wrong in a way nobody would have noticed: it pointed at
+`./app.js`, which does not exist (the build emits `./dist/app.js`), and was dead only
+because every compose service overrides it. It is now env-agnostic `node ./dist/app.js`
+— the compose service picks the environment, the image does not guess.
+
+**`.production.env` survives — verified, not assumed.** The deploy script runs
+`git reset --hard origin/production`. That only rewrites *tracked* files, and
+`git log --all -- .production.env .staging.env` returns nothing: they have never been
+tracked in any branch, on top of being gitignored. There is no `git clean` in the
+script either. Both conditions have to hold, so both were checked.
+
+### Also done here: `base.servise.ts` → `base.service.ts`
+Not scope creep — STRATEGY §7 and CODING_RULES §2 both say this rename happens
+"whenever bbh-api is next touched", and this is that session. 7 import sites plus one
+stale mention in a `constants.ts` comment. `servise` → `service` is a real letter
+change, so unlike the app-repo renames in 8.1.15 it needed no temp-name dance on
+case-insensitive Windows. Both repos now have zero naming offenders; the rule in
+CODING_RULES §2 was updated to say so rather than to point at a remaining one.
+
+### 8.1.18 — the bump, and a lockfile that had drifted
+`package.json` 0.1.2 → 0.2.0. The find worth recording: `package-lock.json` still said
+**0.1.1** in both root `version` fields — the 8.1.9 bump edited `package.json` alone,
+and the drift survived because CI has not run since (the app repo has 5 unpushed
+commits). Both fields are now 0.2.0, and `npm ci --dry-run` resolves clean, which is
+the actual gate — every workflow's first real step is `npm ci`, so a lockfile CI
+refuses kills the run before lint, tests or EAS ever start.
+
+### Gotchas for next time
+- **Encoding.** `routes.ts` contains `res.send("Вітаю!")` and the docs are full of
+  em-dashes; patches went through `node` with explicit utf8 (and re-checked with
+  `file`) rather than PowerShell text cmdlets, which double-encode UTF-8 here.
+- **CRLF.** `__tests__/app.test.ts` and most docs are CRLF while prettier writes LF.
+  `core.autocrlf=true` normalizes on commit so the diff stays clean either way, but a
+  literal multi-line anchor match fails unless the needle is converted first.
+- `data/test.db` is modified by every test run and is tracked, so it shows up in the
+  diff. Pre-existing habit (both 2026-07-11 commits carry it); see the follow-up below.
+
+### Follow-up the same session: the mailer, and an answer about `test.db`
+
+Fedir asked for the SMTP finding to be fixed, and asked what the problem with
+`data/test.db` actually is given that it is only a test database. Both below.
+
+**The mailer no longer touches the network.** The obvious fix — inject a fake
+transport — only covers *direct* callers of `sendEmail`. Three of the four real
+connections came from controller tests hitting `/api/user/requestEmailConfirmation`
+and the password-reset routes, which reach the mailer through a controller and cannot
+pass anything in. And `email.ts` builds its transporter at module load, so by the time
+a test runs, the object already exists. The only place that covers every path,
+including routes added later, is the library itself: new `jest.setup.ts`
+(`setupFilesAfterEnv`) mocks `nodemailer` so `createTransport` hands back a stub.
+
+`__tests__/utils/email.test.ts` was rewritten rather than left alone, because one of
+its cases was actively wrong: *"should return false when sent in testing env"* passed
+only because the credentials in `.test.env` are broken. It asserted the state of an
+environment, not the behaviour of the code — fix the credentials and the test fails.
+It now injects an accepting transport (expect true), a rejecting one (expect false,
+and specifically **not** a throw — every `sendEmail` call in `user.controller.ts` is
+fired without `await`, so a throw would surface as an unhandled rejection instead of
+a failed request), and a spy proving the missing-argument guard returns before it
+reaches the transport at all. 4 email tests → 6, suite 48 → 50, run time unchanged at
+~3.6s but with zero sockets. The dead `dotenv.config({ path: "../.staging.env" })` at
+the top of that file went with it — it pointed outside the repo and loaded nothing
+(the same dead line is still at the top of `app.test.ts`; left alone, not in scope).
+
+**`data/test.db`: Fedir is right that there is no correctness problem.** Checked
+rather than assumed — deleted the file, ran the full suite: 50/50 pass and sqlite3
+recreates it. Nothing reads its contents. The controller suite opens with
+`POST /api/createDB` and closes with `DELETE /api/dropDB`, so it builds and tears down
+its own schema; the committed file is an **artifact, not a fixture**. It is tracked
+only because `.gitignore` says `*.db` and then explicitly `!test.db`.
+
+So the cost is not correctness, it is diff hygiene: every test run rewrites sqlite
+page headers, so an unreadable 20KB binary lands in every commit that ran tests, and a
+binary conflict between two branches cannot be merged — you pick a side and hope. If
+Fedir wants it gone it is two commands (drop the `!test.db` line, `git rm --cached
+data/test.db`) and the suite is unaffected. **Not done — his call**, and it is a
+one-line `.gitignore` change either way.
+
+### Needs manual verification
+- After the bbh-api push **and** the env value: `curl -sI https://biblebyheart.app/.well-known/assetlinks.json`
+  must be `200` with `content-type: application/json` and **no redirect** — Android
+  fails verification on a 301/302, which a reverse proxy can easily introduce.
+  Then reinstall the app and tap an `https://biblebyheart.app/passages` link: it should
+  open the app, not the browser. `adb shell pm get-app-links com.CalmTed.bibleByHeart`
+  shows the verification state if it does not.
+  **Order matters:** Android verifies at *install time* and caches the answer, so the
+  file has to be live and correct **before** the 0.2.0 build is installed — otherwise
+  the app was told "no" and will keep believing it. Forcing a recheck on an
+  already-installed app is `adb shell pm verify-app-links --re-verify com.CalmTed.bibleByHeart`.
+  The fingerprint to use is Google's **app signing key** (Play Console → Test and
+  release → Setup → App integrity → App signing), not the EAS upload key: Play re-signs
+  the delivered APK, so the upload cert is not what the device sees. Add the EAS
+  keystore's SHA-256 as a second entry only if App Links should also work on builds
+  installed outside Play.
+- The production container: confirm it comes up under plain `node` and that
+  `ensureUsersTableColumns` + `verifyMailer` log on boot — that is the first proof
+  those two have ever run outside a test.
+
+`npm run lint` ✓ both repos · bbh-api `npm test` ✓ 7 suites / **50** tests (was 6/38) ·
+app `npm test` ✓ 31 suites / 149 tests / 22 snapshots, none written, none obsolete ·
+`npm ci --dry-run` ✓. No build run and no commit made — both are Fedir's to trigger.
+
+### Follow-up: the fingerprint is on the VPS (2026-08-26, same session)
+
+Fedir supplied the Play app-signing SHA-256 and asked for it to be written to the env
+file using the credentials in bbh-api's `.agent`. Done as the `deploy` user (it owns
+both env files and needs no sudo — root was available but unnecessary).
+
+**The append nearly ate `MAIL_PASS`.** Neither `.production.env` nor `.staging.env`
+ended with a newline, so the obvious `echo "KEY=VAL" >> file` would have produced
+`MAIL_PASS=<secret>ANDROID_CERT_FINGERPRINTS=…` — one line, mail broken, and nothing
+would have complained until the next email failed to send. `printf "\nKEY=%s\n"` is
+what was actually used. **Check `tail -c1` before appending to any env file on that
+box**; a blank line is harmless to node's `--env-file` parser, a fused line is not.
+
+Guard rails used, worth repeating for any future server edit:
+- timestamped copies to `~/env-backups/` — deliberately *outside* `/usr/src/bbh-api`,
+  so they cannot show up as untracked files in the deploy checkout;
+- the pre-edit md5 of each file was recorded first, then re-checked against
+  `head -c <original bytes>` afterwards. Both matched, which proves the edit was purely
+  an append and touched no existing secret;
+- the value was run through the **built** `dist/utils/assetLinks.js` before being sent,
+  not through the source — the artifact production actually loads;
+- nothing was restarted. Node reads `--env-file` at process start, so the value is
+  inert until the deploy in step 1 rebuilds the container, and that is the correct
+  order anyway. Both containers still report `Up 6 weeks`.
+
+**Pre-flight that removed the last real unknown.** `/.well-known/` is exactly the kind
+of path a reverse proxy claims for itself (Caddy uses `/.well-known/acme-challenge/`),
+and if it did, the endpoint would have been unreachable no matter how correct the code
+was. Requesting it today, before deploy, answers that: the 404 comes back as Express's
+own `Cannot GET /.well-known/assetlinks.json`, not a Caddy page — so the path proxies
+through and only the route is missing. `curl -L` also reported `redirects=0`, the other
+thing Android refuses. Both boxes ticked before a line of it ships.
+
+Incidental: production still answers `{"version":"0.0.1"}` and both containers have
+been up six weeks, which is independent confirmation that `verifyMailer` and
+`ensureUsersTableColumns` have never run outside a test.
+
+**Found, not fixed, needs Fedir's decision:** Caddy serves **`www.biblebyheart.app`**
+alongside the bare domain, but the App-Links intent filter in `app.config.js` lists
+only `biblebyheart.app`. A shared `www.` link will therefore open the browser, not the
+app. Fixing it is a second `data` entry in the intent filter plus a rebuild — so it is
+either part of a build step or nothing, not a drive-by edit.

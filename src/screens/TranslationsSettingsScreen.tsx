@@ -1,20 +1,21 @@
 import React, { FC } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
-import { SettingsListWrapper } from "../components/settingsListWrapper";
+import { SettingsListWrapper } from "../components/SettingsListWrapper";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Select } from "../components/Select";
-import { LANGCODE } from "../constants";
+import { LANGCODE, SCREEN } from "../constants";
 import { createT } from "../l10n";
-import { ActionName, TranslationModel } from "../models";
+import { ActionName, ScreenPropsModel, TranslationModel } from "../models";
 import { createTranslation } from "../initials";
 import { reduce } from "../utils/reduce";
 
 // Translations list — was a modal-in-modal (SettingsListWrapper inside the List
 // settings MiniModal). Now a stack screen reached from ListSettingsScreen.
-export const TranslationsSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const TranslationsSettingsScreen: FC<
+  ScreenPropsModel<SCREEN.settingsTranslations>
+> = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
 
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {

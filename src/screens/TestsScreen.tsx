@@ -2,14 +2,19 @@ import React, { FC, useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
 import { View, StyleSheet, Text } from "react-native";
 import { TESTLEVEL, PASSAGELEVEL, SCREEN } from "../constants";
-import { ActionModel, ActionName, PassageModel, TestModel } from "../models";
+import {
+  ActionModel,
+  ActionName,
+  PassageModel,
+  ScreenPropsModel,
+  TestModel
+} from "../models";
 
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
-import { ScreenModel } from "./homeScreen";
 import { reduce } from "../utils/reduce";
-import { TestNavDott } from "../components/testNevDott";
+import { TestNavDot } from "../components/TestNavDot";
 import { L10, L11 } from "../components/levels/Level1";
 import { L20, L21 } from "../components/levels/Level2";
 import { L30 } from "../components/levels/Level3";
@@ -17,9 +22,11 @@ import { LevelPicker } from "../components/LevelPicker";
 import { L40 } from "../components/levels/Level4";
 import { L50 } from "../components/levels/Level5";
 import { useAppContext } from "../context/AppContext";
-import { MiniModal } from "../components/miniModal";
+import { MiniModal } from "../components/MiniModal";
 
-export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
+  navigation
+}) => {
   const { state, setState, t, theme } = useAppContext();
   const isFocused = useIsFocused();
   const nextUnfinishedTestIndex = state.testsActive.indexOf(
@@ -30,9 +37,10 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
   );
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
+  // `beforeRemove` is only in the STACK navigation type — with the old loose
+  // `StackNavigationHelpers` prop it needed a @ts-ignore (8.1.14).
   useEffect(
     () =>
-      // @ts-ignore
       navigation.addListener("beforeRemove", (e) => {
         if (showExitConfirm) {
           return;
@@ -231,7 +239,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
                       ? "text"
                       : "gray";
               return (
-                <TestNavDott
+                <TestNavDot
                   key={tst.i}
                   isCurrent={activeTestIndex === i}
                   color={color}
@@ -247,7 +255,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
         )
       : () => (
           <View style={{ ...testsStyle.testNav }}>
-            <TestNavDott
+            <TestNavDot
               key={"testDoddGreen"}
               isCurrent={false}
               color={"green"}
@@ -256,7 +264,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
             <Text style={theme.theme.text}>
               {state.testsActive.filter((t) => t.f).length}x
             </Text>
-            <TestNavDott
+            <TestNavDot
               key={"testDoddRed"}
               isCurrent={false}
               color={"red"}
@@ -265,7 +273,7 @@ export const TestsScreen: FC<ScreenModel> = ({ navigation }) => {
             <Text style={theme.theme.text}>
               {state.testsActive.filter((t) => t.en && !t.f).length}x
             </Text>
-            <TestNavDott
+            <TestNavDot
               key={"testDoddGray"}
               isCurrent={false}
               color={"gray"}

@@ -1,11 +1,12 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
-import { ScreenModel } from "./homeScreen";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { ARCHIVED_NAME, SCREEN } from "../constants";
-import { ActionName } from "../models";
+import { ActionName, AppStateModel, ScreenPropsModel } from "../models";
+import { exportBackupFile, importBackupFile } from "../utils/backupFile";
 import { reduce } from "../utils/reduce";
 import {
   LSVToArray,
@@ -20,8 +21,16 @@ import toastShow from "../utils/toastShow";
 
 // List settings — was a MiniModal rendered inline in the settings list. Now a
 // stack screen reached from settingsScreen.
-export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
+  navigation
+}) => {
   const { state, setState, t } = useAppContext();
+  // Decoded and already converted forward, but NOT applied: the state swap
+  // waits behind the confirmation, so the counts shown in it describe the file
+  // the user actually picked (8.1.9).
+  const [pendingRestore, setPendingRestore] = useState<AppStateModel | null>(
+    null
+  );
 
   const allTags = [
     ARCHIVED_NAME,
@@ -165,7 +174,44 @@ export const ListSettingsScreen: FC<ScreenModel> = ({ navigation }) => {
               });
           }}
         />
+        <SettingsMenuItem
+          type="action"
+          header={t("settsBackupExportHeader")}
+          subtext={t("settsBackupExportSubtext")}
+          actionCallBack={() => {
+            exportBackupFile(state, t);
+          }}
+        />
+        <SettingsMenuItem
+          type="action"
+          header={t("settsBackupRestoreHeader")}
+          subtext={t("settsBackupRestoreSubtext")}
+          actionCallBack={() => {
+            importBackupFile(t).then(setPendingRestore);
+          }}
+        />
       </ScrollView>
+      <ConfirmModal
+        shown={pendingRestore !== null}
+        text={`${t("BackupRestoreConfirmationText")}\n${t("NumberOfPassages")}: ${
+          pendingRestore?.passages.length ?? 0
+        }\n${t("TestsCompleted")}: ${pendingRestore?.testsHistory.length ?? 0}`}
+        confirmTitle={t("settsBackupRestoreConfirm")}
+        cancelTitle={t("Cancel")}
+        onCancel={() => setPendingRestore(null)}
+        onConfirm={() => {
+          if (pendingRestore) {
+            // AppProvider's persist effect writes the new state to storage; no
+            // component touches storage directly (CODING_RULES §4).
+            setState(pendingRestore);
+            logger.write(
+              `State restored from backup file (${pendingRestore.passages.length} passages)`
+            );
+            toastShow(t("settsRestored"), 1000);
+          }
+          setPendingRestore(null);
+        }}
+      />
     </SettingsSubScreen>
   );
 };

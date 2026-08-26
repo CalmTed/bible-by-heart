@@ -184,6 +184,18 @@ export const en = {
   settsExportStateSubtext: "Save state data as JSON file",
   settsImportStateHeader: "Import state",
   settsImportStateSubtext: "Open state from JSON file",
+  settsBackupExportHeader: "Save backup file",
+  settsBackupExportSubtext: "Write all app data to a .json file you keep",
+  settsBackupRestoreHeader: "Restore from backup file",
+  settsBackupRestoreSubtext: "Replace all app data with a saved backup file",
+  settsBackupRestoreConfirm: "Restore",
+  settsRestored: "Restored!",
+  BackupRestoreConfirmationText:
+    "Replace everything in the app with this backup? Current data will be lost.",
+  BackupOfferText:
+    "App data has been updated to a new format. Save a backup file of the previous data, just in case?",
+  BackupOfferConfirm: "Save backup",
+  BackupOfferLater: "Later",
   settsClearHistory: "Clear history",
   settsClearPassages: "Clear passages",
   settsClearData: "Reset all data",

@@ -8,12 +8,13 @@ import {
 import { createStackNavigator } from "@react-navigation/stack";
 
 import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
-import { HomeScreen } from "./screens/homeScreen";
-import { ListScreen } from "./screens/listScreen";
+import { RootStackParamList } from "./models";
+import { HomeScreen } from "./screens/HomeScreen";
+import { ListScreen } from "./screens/ListScreen";
 import { PassageScreen } from "./screens/PassageScreen";
-import { TestsScreen } from "./screens/testsScreen";
-import { FinishScreen } from "./screens/finishScreen";
-import { SettingsScreen } from "./screens/settingsScreen";
+import { TestsScreen } from "./screens/TestsScreen";
+import { FinishScreen } from "./screens/FinishScreen";
+import { SettingsScreen } from "./screens/SettingsScreen";
 import { ListSettingsScreen } from "./screens/ListSettingsScreen";
 import { TranslationsSettingsScreen } from "./screens/TranslationsSettingsScreen";
 import { TestsSettingsScreen } from "./screens/TestsSettingsScreen";
@@ -23,20 +24,28 @@ import { RemindersSettingsScreen } from "./screens/RemindersSettingsScreen";
 import { StatsSettingsScreen } from "./screens/StatsSettingsScreen";
 import { AboutSettingsScreen } from "./screens/AboutSettingsScreen";
 import { UserSettingsScreen } from "./screens/UserSettingsScreen";
-import { StatsScreen } from "./screens/statsScreen";
-import { CalendarScreen } from "./screens/calendarScreen";
-import { LoginScreen } from "./screens/loginScreen";
-import { RegisterScreen } from "./screens/registerScreen";
+import { StatsScreen } from "./screens/StatsScreen";
+import { CalendarScreen } from "./screens/CalendarScreen";
+import { LoginScreen } from "./screens/LoginScreen";
+import { RegisterScreen } from "./screens/RegisterScreen";
 
 import { logger } from "./utils/logger";
 import toastShow from "./utils/toastShow";
 
-const Stack = createStackNavigator();
+// `RootStackParamList` lives in models.ts next to the rest of the data model,
+// so screens can type their props without importing this file — which imports
+// every screen, so that would be a cycle (8.1.14).
+const Stack = createStackNavigator<RootStackParamList>();
 
-// State no longer travels through route params — it lives in AppContext. Route
-// params now carry only small screen-specific args (e.g. { passageId } or
-// { passageText } for the add-passage flow / deep links).
-export type RootStackParamList = Record<string, object | undefined>;
+// Makes the untyped hooks (`useNavigation`, `useRoute`) resolve to the real
+// param list app-wide, so a screen name typo is a type error even outside a
+// screen component.
+declare global {
+  namespace ReactNavigation {
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    interface RootParamList extends RootStackParamList {}
+  }
+}
 
 // Ref so code outside the navigator tree (AppContext notifications, share-intent
 // handling in App.tsx) can drive navigation once the container is mounted.

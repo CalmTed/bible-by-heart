@@ -4,13 +4,15 @@ import { SCREEN } from "../constants";
 import { Header } from "../components/Header";
 import { Button, IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
-import { ScreenModel } from "./homeScreen";
+import { ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 import { getAppStats } from "../utils/getStats";
-import { MiniModal } from "../components/miniModal";
+import { MiniModal } from "../components/MiniModal";
 import { timeStringFromMS } from "../utils/formatDateTime";
 
-export const StatsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const StatsScreen: FC<ScreenPropsModel<SCREEN.stats>> = ({
+  navigation
+}) => {
   const { state, t, theme } = useAppContext();
   const [hintModalOpen, openHintModal] = useState(false);
 

@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { LANGCODE, THEMETYPE } from "../../src/constants";
 import { createT } from "../../src/l10n";
-import { MiniModal } from "../../src/components/miniModal";
+import { MiniModal } from "../../src/components/MiniModal";
 import { Button } from "../../src/components/Button";
 import { renderWithContext } from "../../test-utils/renderWithContext";
 

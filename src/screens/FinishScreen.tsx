@@ -3,10 +3,12 @@ import { View, Text, StyleSheet } from "react-native";
 import { SCREEN } from "../constants";
 import { Button } from "../components/Button";
 import { FinishCupSVG } from "../svg/finishCup";
-import { ScreenModel } from "./homeScreen";
+import { ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 
-export const FinishScreen: FC<ScreenModel> = ({ navigation }) => {
+export const FinishScreen: FC<ScreenPropsModel<SCREEN.testResults>> = ({
+  navigation
+}) => {
   const { t, theme } = useAppContext();
 
   return (

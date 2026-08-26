@@ -8,21 +8,22 @@ import {
   API_LINK,
   REFRESH_TOKEN_NAME
 } from "../constants";
-import { ActionName } from "../models";
+import { ActionName, ScreenPropsModel } from "../models";
 import { createT } from "../l10n";
 import { Button, IconButton } from "../components/Button";
 import { reduce } from "../utils/reduce";
 import { Header } from "../components/Header";
 import { Icon, IconName } from "../components/Icon";
-import { ScreenModel } from "./homeScreen";
-import { SettingsMenuItem } from "../components/setttingsMenuItem";
+import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { StatusBar } from "expo-status-bar";
 import { useAppContext } from "../context/AppContext";
 import * as SecureStore from "expo-secure-store";
 import { fetchAPI } from "../services/fetch";
 import { logger } from "../utils/logger";
 
-export const SettingsScreen: FC<ScreenModel> = ({ navigation }) => {
+export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
+  navigation
+}) => {
   const { state, setState, t, theme } = useAppContext();
   const [loadingState, setLoadingState] = useState(false);
 

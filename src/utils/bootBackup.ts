@@ -1,4 +1,8 @@
-import { STORAGE_PRECONVERT_BACKUP_NAME, VERSION } from "../constants";
+import {
+  STORAGE_NAME,
+  STORAGE_PRECONVERT_BACKUP_NAME,
+  VERSION
+} from "../constants";
 import { AppStateModel } from "../models";
 import defaultStorage from "../storage";
 import { logger } from "./logger";
@@ -16,6 +20,62 @@ export interface BackupStorageModel {
   load: (params: { key: string }) => Promise<unknown>;
   save: (params: { key: string; data: unknown }) => Promise<void>;
 }
+
+/**
+ * What a read of the persisted state slot turned out to be. The distinction is
+ * the whole point: "empty" is a fresh install and may be overwritten with a
+ * blank state, "failed" must NEVER be, because the key is probably still there
+ * and simply unreadable right now (8.1.9a).
+ */
+export type StoredStateModel =
+  | { status: "found"; raw: unknown }
+  | { status: "empty" }
+  | { status: "failed"; error: unknown };
+
+/**
+ * react-native-storage rejects with a `NotFoundError` when a key was never
+ * written - that, and only that, means "no state yet". Every other rejection
+ * (a JSON.parse SyntaxError over half-written data, a native AsyncStorage or
+ * disk failure) leaves the stored state intact and unread, so treating it as a
+ * fresh install is how a working install got erased.
+ *
+ * `ExpiredError` deliberately counts as a failure: this app sets
+ * `defaultExpires: null` so it cannot happen, and if it ever did it would mean
+ * data exists.
+ */
+export const isKeyMissingError: (e: unknown) => boolean = (e) =>
+  typeof e === "object" &&
+  e !== null &&
+  (e as { name?: unknown }).name === "NotFoundError";
+
+/**
+ * Read the persisted state and say which of the three cases it is, instead of
+ * collapsing "unreadable" into "absent" the way a bare `.catch` does.
+ * Total - it never rejects, so the caller cannot get stuck before "ready".
+ */
+export const loadStoredState: (
+  key?: string,
+  storage?: BackupStorageModel
+) => Promise<StoredStateModel> = async (
+  key = STORAGE_NAME,
+  storage = defaultStorage
+) => {
+  try {
+    const raw = await storage.load({ key });
+    if (raw === null || typeof raw === "undefined") {
+      // The library rejects instead of resolving nothing, but a backend that
+      // resolves null still means the same thing: nothing was ever stored.
+      return { status: "empty" };
+    }
+    return { status: "found", raw };
+  } catch (e) {
+    if (isKeyMissingError(e)) {
+      return { status: "empty" };
+    }
+    logger.error(`Unable to read stored state from key ${key} e:${e}`);
+    return { status: "failed", error: e };
+  }
+};
 
 /**
  * Write the raw, still-unconverted state into the pre-conversion slot - but

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { MiniModal } from "./miniModal";
+import { MiniModal } from "./MiniModal";
 import { OptionModel } from "../models";
 import { StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../context/AppContext";
