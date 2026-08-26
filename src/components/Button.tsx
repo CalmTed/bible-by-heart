@@ -2,11 +2,10 @@ import React, { FC } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { DotIndicator } from "./DotIndicator";
 
 interface ButtonModel {
-  theme: ThemeAndColorsModel;
   onPress: () => void;
   style?: StyleSheet.NamedStyles<object>;
   textStyle?: StyleSheet.NamedStyles<object>;
@@ -29,14 +28,11 @@ export const Button: FC<ButtonModel> = ({
   type = "transparent",
   icon,
   color = "gray",
-  theme,
   iconColor,
   dot,
   iconAlign = "left"
 }) => {
-  if (!theme) {
-    return <View></View>;
-  }
+  const { theme } = useAppContext();
   const gradientColors = disabled
     ? [theme.colors.bg, theme.colors.bgSecond]
     : type === "transparent"
@@ -106,15 +102,7 @@ export const Button: FC<ButtonModel> = ({
             {icon && iconAlign === "right" && (
               <Icon iconName={icon} color={iconColor || theme.colors.text} />
             )}
-            {dot && (
-              <DotIndicator
-                theme={theme}
-                left={-5}
-                right={5}
-                top={-10}
-                bottom={10}
-              />
-            )}
+            {dot && <DotIndicator left={-5} right={5} top={-10} bottom={10} />}
           </View>
         </LinearGradient>
       </Pressable>
@@ -125,7 +113,6 @@ export const Button: FC<ButtonModel> = ({
 interface IconButtonModel {
   icon: IconName;
   onPress: () => void;
-  theme: ThemeAndColorsModel;
   style?: StyleSheet.NamedStyles<object>;
   disabled?: boolean;
   color?: string;
@@ -133,7 +120,6 @@ interface IconButtonModel {
 }
 
 export const IconButton: FC<IconButtonModel> = ({
-  theme,
   icon,
   onPress,
   style,
@@ -141,9 +127,9 @@ export const IconButton: FC<IconButtonModel> = ({
   color,
   dot
 }) => {
+  const { theme } = useAppContext();
   return (
     <Button
-      theme={theme}
       icon={icon}
       onPress={onPress}
       style={{ ...buttonStyles.iconButton, ...style }}

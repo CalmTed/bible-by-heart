@@ -1,14 +1,14 @@
 import React, { FC } from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 interface SettingsMenuItemModel {
   isEnabled: boolean;
-  theme: ThemeAndColorsModel;
 }
 
 export const Checkbox: FC<SettingsMenuItemModel> = (data) => {
+  const { theme } = useAppContext();
   const checkboxStyles = StyleSheet.create({
     checkBoxWrapper: {
       height: 30,
@@ -30,10 +30,10 @@ export const Checkbox: FC<SettingsMenuItemModel> = (data) => {
       aspectRatio: 1
     },
     bgText: {
-      backgroundColor: data.theme.colors.text
+      backgroundColor: theme.colors.text
     },
     bgSecond: {
-      backgroundColor: data.theme.colors.bgSecond
+      backgroundColor: theme.colors.bgSecond
     },
     ml50: {
       marginLeft: "50%"
@@ -51,8 +51,8 @@ export const Checkbox: FC<SettingsMenuItemModel> = (data) => {
       <LinearGradient
         colors={
           data.isEnabled
-            ? [data.theme.colors.gradient2, data.theme.colors.gradient1]
-            : [data.theme.colors.textSecond, data.theme.colors.textSecond]
+            ? [theme.colors.gradient2, theme.colors.gradient1]
+            : [theme.colors.textSecond, theme.colors.textSecond]
         }
         start={{ x: 0.0, y: 0 }}
         end={{ x: 0.0, y: 1.0 }}

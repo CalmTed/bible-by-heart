@@ -64,7 +64,13 @@ export const ua: typeof en = {
   listScreenTitle: "Список віршів",
   statsScreenTitle: "Cтатистика",
   APSelectBook: "Обрання книги",
+  APAddVerse: "Додати",
+  APExtendRange: "Розширити діапазон",
   EditPassageTitle: "Редагування тексту",
+  AddPassageTitle: "Додати текст",
+  Save: "Зберегти",
+  Discard: "Відхилити",
+  PassageDiscardConfirmText: "Відхилити незбережені зміни цього тексту?",
   titleWelldone: "Чудова робота!",
   LevelPickerHeading: "Обрання рівня",
   settingsScreenTitle: "Налаштування",
@@ -177,6 +183,19 @@ export const ua: typeof en = {
   settsExportStateSubtext: "Зберегти стан даних додатку у JSON файл",
   settsImportStateHeader: "Імпортувати стан додатку",
   settsImportStateSubtext: "Відкрити стан даних додатку з JSON файлу",
+  settsBackupExportHeader: "Зберегти резервну копію",
+  settsBackupExportSubtext: "Записати всі дані додатку у .json файл",
+  settsBackupRestoreHeader: "Відновити з резервної копії",
+  settsBackupRestoreSubtext:
+    "Замінити всі дані додатку збереженим файлом копії",
+  settsBackupRestoreConfirm: "Відновити",
+  settsRestored: "Відновлено!",
+  BackupRestoreConfirmationText:
+    "Замінити всі дані додатку цією резервною копією? Поточні дані буде втрачено.",
+  BackupOfferText:
+    "Дані додатку оновлено до нового формату. Зберегти резервну копію попередніх даних про всяк випадок?",
+  BackupOfferConfirm: "Зберегти копію",
+  BackupOfferLater: "Пізніше",
   settingsExportPassages: "Експортувати вірші",
   settingsImportPassages: "Імпортувати вірші",
   settsExportPassagesSubtext: "Записати вірші у txt файл",
@@ -321,6 +340,7 @@ export const ua: typeof en = {
 
   //login
   provideEmailLabel: "ел. пошта",
+  provideEmailOrUsernameLabel: "ел. пошта або імʼя користувача",
   providePasswsordLabel: "пароль",
   providePasswsordAgainLabel: "пароль ще раз",
   legalCheckLabel:
@@ -344,7 +364,9 @@ export const ua: typeof en = {
   netUnableToLogOut: "Невдалось вийти",
   netUnableToGetUserData: "Невдалось отримати дані користувача",
   netUnableToSaveUserData: "Невдалось зберегти дані користувача",
-  netUnableToCreateUser409: "Невдалось створити користувача 409",
+  netUnableToCreateUser409: "Не вдалося створити акаунт",
+  netUnableToCreateUser409Sub:
+    "Акаунт із такою поштою або іменем уже існує. Спробуй увійти.",
   net200withNoData: "Отримано статус 200 без данних",
 
   netBadRequestData400: "Неправильний запит 400",
@@ -352,6 +374,12 @@ export const ua: typeof en = {
   netForbidden403: "Недостатньо прав 403",
   netUserNotFound406: "Користувача не знайдено 406",
   netServerError500: "Помилка серверу 500",
+  // readable subtitles for auth errors (shown instead of raw HTTP statusText)
+  netWrongCredentials: "Неправильна пошта/ім'я або пароль.",
+  netCheckDataAndRetry: "Перевір введені дані та спробуй ще раз.",
+  netServerErrorSub: "Щось пішло не так на нашому боці. Спробуй пізніше.",
+  netSessionExpired: "Твоя сесія завершилася. Будь ласка, увійди знову.",
+  netTryAgainLater: "Щось пішло не так. Спробуй пізніше.",
 
   dayMO: "Пн",
   dayTU: "Вт",

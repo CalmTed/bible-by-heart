@@ -167,4 +167,31 @@ describe("reducer must return valid state for every call", () => {
     });
     expect(changedSettings?.settings.langCode).toBe(LANGCODE.ua);
   });
+
+  it("heals a dangling left-swipe tag when its tag disappears", () => {
+    const taggedPassage = {
+      ...createPassage(createAddress(), "tagged passage"),
+      tags: ["custom"]
+    };
+    const withPassage = reduce(testState, {
+      name: ActionName.setPassage,
+      payload: taggedPassage
+    });
+    const withSwipeTag =
+      withPassage &&
+      reduce(withPassage, {
+        name: ActionName.setLeftSwipeTag,
+        payload: "custom"
+      });
+    // tag still exists on a passage → kept
+    expect(withSwipeTag?.settings.leftSwipeTag).toBe("custom");
+    // remove the tag from the only passage that carried it → must fall back
+    const afterUntag =
+      withSwipeTag &&
+      reduce(withSwipeTag, {
+        name: ActionName.setPassage,
+        payload: { ...taggedPassage, tags: [] }
+      });
+    expect(afterUntag?.settings.leftSwipeTag).toBe(ARCHIVED_NAME);
+  });
 });

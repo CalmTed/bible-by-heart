@@ -21,11 +21,19 @@
 - **Components & screens:** `PascalCase.tsx` — `Button.tsx`, `HomeScreen.tsx`.
 - **Non-component modules (utils, services, config):** `camelCase.ts` —
   `addressToString.ts`, `stateVersionConvert.ts`.
-- Existing offenders (`homeScreen.tsx`, `miniModal.tsx`, `setttingsMenuItem.tsx`,
-  `testNevDott.tsx`, `settingsListWrapper.tsx`, `screeenManagement.ts`,
-  `base.servise.ts`…) get renamed in a dedicated refactor task (STRATEGY §4) —
-  don't rename them as a side effect of unrelated work, it pollutes diffs.
-- One component per file; the file is named after its default export.
+- **The app repo has no offenders left** — 8.1.15 (2026-08-26) renamed the last of them
+  (9 screens, `miniModal`, `setttingsMenuItem`, `testNevDott`, `settingsListWrapper`,
+  `weekActivityComponent`, `icondata`), and 8.1.17 (2026-08-26) closed the last one in
+  bbh-api: `base.servise.ts` → `base.service.ts`, 7 import sites. **Neither repo has an
+  offender left.** New files are born conventional; never rename as a side effect of
+  unrelated work, it pollutes diffs.
+- One component per file; **the file is named after its export, exactly** — no
+  near-misses. 8.1.15a (2026-08-26) closed the last two: `TestNavDott` → `TestNavDot`,
+  `WeekActivityComponent` → `WeekActivity`.
+- **Tests are named after their subject, casing included:** `Button.tsx` →
+  `Button.test.tsx`, `getStats.ts` → `getStats.test.ts`, and a snapshot file always
+  moves with its test (`__snapshots__/Button.test.tsx.snap`). A scenario test with no
+  single subject is camelCase after the scenario — `e2e/flow.test.tsx`.
 
 ## 3. Reuse before create (strict)
 
@@ -55,6 +63,14 @@
   standard. No `Animated` from RN core in new code.
 - **State model changes:** bump version + write converter in `stateVersionConvert.ts`
   + update `initials.ts` + prompt-backup flow. All four or nothing.
+- **Navigation is typed** (8.1.14). A screen's props are `ScreenPropsModel<SCREEN.x>`
+  (from `models.ts`), never a hand-rolled `{ route: any }`. A new screen means: a
+  `SCREEN` member, a line in `RootStackParamList`, and a `Stack.Screen` — the param
+  list is what makes the first two impossible to forget. Params carry small
+  identifying args only; app state lives in AppContext.
+- **The boot path never overwrites state it could not read.** `bootBackup.loadStoredState`
+  classifies a read as found / empty / failed; only "empty" (a `NotFoundError`) may be
+  followed by a write. Anything else goes to `EmergencyScreen` with storage untouched.
 
 ## 5. Patterns to follow (bbh-api)
 
@@ -63,7 +79,20 @@
 - All input validated with zod schemas in `src/schema/`.
 - Data access only through the service layer (keeps sqlite swappable — ARCHITECTURE §3.5).
 - Log with pino (`utils/logger.ts`); never leak secrets/tokens into logs.
+- **No test opens a network socket.** `jest.setup.ts` mocks nodemailer globally; a
+  suite that needs the real thing's behaviour injects its own transport (`sendEmail`
+  and `verifyMailer` both take one). Anything new that talks to the outside world gets
+  the same treatment — a test that fails because someone's credentials expired is not
+  testing the code.
 - Auth: `requireUser` middleware; JWT utils in `utils/jwt.ts`.
+- **Per-environment values come from the env file, never the repo** — `.staging.env` /
+  `.production.env` are untracked and have never been tracked, which is the only reason
+  the VPS deploy's `git reset --hard` cannot eat them. Read them *inside* the handler,
+  not at module load, so a value is testable and a container restart is enough to change
+  it (`ANDROID_CERT_FINGERPRINTS` in `routes.ts` is the pattern).
+- **The deployed containers run plain `node`**, not `nodemon` — a built image has no
+  source to watch and Docker's restart policy is the supervisor. Only the `local`
+  compose service, which bind-mounts the source, keeps a watcher.
 
 ## 6. Testing & verification (win conditions)
 
@@ -82,32 +111,53 @@ per task — but SAY in the diary entry what needs manual verification.
 
 Reuse these. Extend, don't duplicate.
 
+> **No component takes `theme` or `t` as a prop.** The STRATEGY §4.3 migration
+> finished 2026-08-24 (sessions 8.1.11–8.1.13): every component reads them via
+> `useAppContext()`. New components MUST do the same — never reintroduce a `theme`
+> or `t` prop, and never prop-drill them to a child. Consequence for tests: anything
+> rendering app UI goes through `test-utils/renderWithContext.tsx`, because
+> `useAppContext()` throws without a provider. The single exception is
+> `EmergencyScreen.tsx` (the crash screen), which renders outside the provider by
+> design and therefore stays on raw `react-native` primitives with hardcoded
+> bilingual strings.
+
 | Component | File | What it is / key props |
 |---|---|---|
+| Text | `src/components/Text.tsx` | themed `<Text>` — defaults to primary text color; `color` prop selects a semantic color (`text`/`textSecond`/`textDanger`/`mainColor`); caller `style` overrides. Use instead of RN `<Text>` in new code (STRATEGY §4.3) |
 | Button | `src/components/Button.tsx` | standard app button (title, onPress, disabled, style variants) |
-| IconButton/Icon | `src/components/Icon.tsx` + `icondata.ts` | SVG icon set by name |
+| IconButton/Icon | `src/components/Icon.tsx` + `iconData.ts` | SVG icon set by name |
 | Input | `src/components/Input.tsx` | themed text input |
 | Checkbox | `src/components/Checkbox.tsx` | themed checkbox row |
 | Select | `src/components/Select.tsx` | dropdown-style selector |
 | SelectModal | `src/components/SelectModal.tsx` | modal list picker |
-| MiniModal | `src/components/miniModal.tsx` | small confirm/content modal (base for confirmations) |
+| MiniModal | `src/components/MiniModal.tsx` | small confirm/content modal (base for confirmations) |
 | ConfirmModal | `src/components/ConfirmModal.tsx` | reusable destructive-action confirmation (text + cancel/confirm; `confirmColor` defaults red) — use before any delete/irreversible action |
+| ErrorBoundary | `src/components/ErrorBoundary.tsx` | the only thing that catches a render error thrown by a child (a `try/catch` around a parent's `return` never will). `renderFallback(error, reset)`; `reset()` clears the caught error, so recovery UI calls it **after** putting a usable state back. Dependency-free on purpose — no context, no themed components — so it survives a broken theme/l10n |
+| EmergencyScreen | `src/components/EmergencyScreen.tsx` | the last-resort recovery UI (restore from either backup slot, dump state, ask for help, erase). Rendered by `App.tsx` from two places: the `ErrorBoundary` fallback and a **failed** state read on boot. Renders outside `AppProvider` by design → raw RN primitives + hardcoded bilingual strings, the one place `t()`/theme do not apply. Feature-specific, not a base component |
+| BackupOfferModal | `src/components/BackupOfferModal.tsx` | the one-shot post-upgrade "save a backup file?" offer (8.1.9). Rendered by `App.tsx` inside the provider, shown only on a boot that converted a state, dismissible and never blocking. Feature-specific — not a base component to build on |
 | Header | `src/components/Header.tsx` | screen header with back/actions |
 | AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |
 | PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI |
 | DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
-| TestNavDott | `src/components/testNevDott.tsx` | per-test navigation dot in session |
-| WeekActivity | `src/components/weekActivityComponent.tsx` | weekly activity graph |
-| SettingsMenuItem | `src/components/setttingsMenuItem.tsx` | settings row (checkbox/select/modal-opener) |
-| SettingsListWrapper | `src/components/settingsListWrapper.tsx` | wrapper for settings sublists |
+| TestNavDot | `src/components/TestNavDot.tsx` | per-test navigation dot in session |
+| WeekActivity | `src/components/WeekActivity.tsx` | weekly activity graph |
+| SettingsMenuItem | `src/components/SettingsMenuItem.tsx` | settings row (label/action/checkbox/select/textinput/taglist) |
+| SettingsSubScreen | `src/components/SettingsSubScreen.tsx` | shared shell (View + Header w/ back + StatusBar) for every settings sub-menu screen; optional `headerRight` (e.g. add button) |
+| SettingsListWrapper | `src/components/SettingsListWrapper.tsx` | reusable editable-list screen body (translations/reminders/train-modes); non-modal — list & per-item editor are two views toggled by local state |
 | Level test screens | `src/components/levels/Level1..5.tsx` | one component per test level |
 
 Key utils (check before writing a helper): `addressToString`, `addressFromString`,
 `addressDistance`, `addressDifference`, `addressOrder`, `formatDateTime`,
 `secondsToString`, `addZero`, `randomizers`, `getSimularity`, `getStats`,
 `getPerfectTests`, `levelsConvertion`, `toastShow`, `notifications`, `fileManager`,
-`handlePassageExport`.
+`handlePassageExport`, `bootBackup`, `backupFile`.
+
+> **Backups have exactly two owners.** `bootBackup.ts` = copies inside storage (the
+> write-once pre-conversion snapshot + the version-tolerant restore). `backupFile.ts`
+> = copies in a file the user owns (serialize/parse the envelope + the shared export /
+> import IO). Anything that reads or writes app data as a file goes through
+> `backupFile`; never hand-roll `JSON.stringify(state)` + `writeFile` again.
 
 ## 8. Git & workflow
 

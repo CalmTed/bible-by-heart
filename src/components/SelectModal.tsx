@@ -1,8 +1,8 @@
 import React, { FC } from "react";
-import { MiniModal } from "./miniModal";
+import { MiniModal } from "./MiniModal";
 import { OptionModel } from "../models";
 import { StyleSheet, Text, View } from "react-native";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { Button } from "./Button";
 
 interface SelectModel {
@@ -11,7 +11,6 @@ interface SelectModel {
   selectedIndex: number | null;
   onSelect: (value: string) => void;
   onCancel: () => void;
-  theme: ThemeAndColorsModel;
   title?: string;
   disabledIndexes?: number[];
 }
@@ -23,9 +22,9 @@ export const SelectModal: FC<SelectModel> = ({
   onSelect,
   onCancel,
   title,
-  theme,
   disabledIndexes
 }) => {
+  const { theme } = useAppContext();
   const selectStyles = StyleSheet.create({
     list: {
       flexDirection: "column",
@@ -56,7 +55,7 @@ export const SelectModal: FC<SelectModel> = ({
     }
   });
   return (
-    <MiniModal theme={theme} shown={isShown} handleClose={onCancel}>
+    <MiniModal shown={isShown} handleClose={onCancel}>
       {title && (
         <View style={selectStyles.titleView}>
           <Text style={selectStyles.titleText}>{title}</Text>
@@ -73,7 +72,6 @@ export const SelectModal: FC<SelectModel> = ({
         {options.map((option, i) => (
           <Button
             key={option.value}
-            theme={theme}
             color={selectedIndex === i ? "green" : "gray"}
             type={selectedIndex === i ? "outline" : "outline"}
             onPress={() => onSelect(option.value)}

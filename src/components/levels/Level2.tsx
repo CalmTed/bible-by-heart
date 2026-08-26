@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
+import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import {
@@ -59,11 +60,10 @@ const levelComponentStyle = StyleSheet.create({
 export const L20: FC<LevelComponentModel> = ({
   test,
   state,
-  theme,
-  t,
   submitTest,
   dispatch
 }) => {
+  const { theme, t } = useAppContext();
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
@@ -155,7 +155,6 @@ export const L20: FC<LevelComponentModel> = ({
       <View style={levelComponentStyle.optionButtonsWrapper}>
         {!!errorValue && [
           <Button
-            theme={theme}
             key="right"
             title={addressToString(targetPassage.address, t)}
             type="outline"
@@ -163,7 +162,6 @@ export const L20: FC<LevelComponentModel> = ({
             onPress={() => {}}
           />,
           <Button
-            theme={theme}
             key="wrong"
             title={addressToString(errorValue, t)}
             type="outline"
@@ -171,7 +169,6 @@ export const L20: FC<LevelComponentModel> = ({
             onPress={() => {}}
           />,
           <Button
-            theme={theme}
             key="continue"
             title={t("ButtonContinue")}
             type="main"
@@ -182,7 +179,6 @@ export const L20: FC<LevelComponentModel> = ({
         ]}
         {!errorValue && [
           <Button
-            theme={theme}
             key="address"
             title={
               selectedAddress
@@ -195,7 +191,6 @@ export const L20: FC<LevelComponentModel> = ({
             disabled={levelFinished || !!errorValue}
           />,
           <Button
-            theme={theme}
             key="submit"
             title={t("Submit")}
             type="main"
@@ -208,7 +203,6 @@ export const L20: FC<LevelComponentModel> = ({
         ]}
         {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
           <Button
-            theme={theme}
             key="nextButton"
             type="secondary"
             color="gray"
@@ -218,11 +212,9 @@ export const L20: FC<LevelComponentModel> = ({
         )}
       </View>
       <AddressPicker
-        theme={theme}
         visible={APVisible}
         onCancel={handleAddressCancel}
         onConfirm={handleAddressSelect}
-        t={t}
       />
     </View>
   );
@@ -232,11 +224,10 @@ export const L20: FC<LevelComponentModel> = ({
 export const L21: FC<LevelComponentModel> = ({
   test,
   state,
-  theme,
-  t,
   submitTest,
   dispatch
 }) => {
+  const { theme, t } = useAppContext();
   const [passagesOptions, setPassageOptions] = useState([] as PassageModel[]);
   const [errorValue, setErrorValue] = useState(null as number | null);
   const [searchText, setSearchText] = useState("");
@@ -335,7 +326,6 @@ export const L21: FC<LevelComponentModel> = ({
                       .slice(0, 50) + "...";
               return (
                 <Button
-                  theme={theme}
                   key={p.id}
                   type="outline"
                   color="green"
@@ -363,7 +353,6 @@ export const L21: FC<LevelComponentModel> = ({
                         .slice(0, 50) + "...";
                 return (
                   <Button
-                    theme={theme}
                     key={p.id}
                     type="outline"
                     color={p.id === targetPassage.id ? "green" : "red"}
@@ -375,7 +364,6 @@ export const L21: FC<LevelComponentModel> = ({
                 );
               }),
             <Button
-              theme={theme}
               key="continue"
               title={t("ButtonContinue")}
               type="main"
@@ -387,7 +375,6 @@ export const L21: FC<LevelComponentModel> = ({
         </View>
         {!errorValue && (
           <Input
-            theme={theme}
             placeholder={t("LevelStartWritingPassage")}
             value={searchText}
             onChange={(value) => {
@@ -401,7 +388,6 @@ export const L21: FC<LevelComponentModel> = ({
         )}
         {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
           <Button
-            theme={theme}
             key="nextButton"
             type="secondary"
             color="gray"

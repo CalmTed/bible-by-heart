@@ -1,11 +1,5 @@
-import {
-  VERSION,
-  STORAGE_BACKUP_NAME,
-  STORAGE_NAME,
-  SCREEN
-} from "./src/constants";
-import {
-  act,
+import { VERSION, STORAGE_NAME, SCREEN } from "./src/constants";
+import React, {
   Dispatch,
   SetStateAction,
   useEffect,
@@ -14,20 +8,24 @@ import {
 } from "react";
 import { AppStateModel } from "./src/models";
 import { Navigator, navigationRef } from "./src/navigator";
+import { AppProvider } from "./src/context/AppContext";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useShareIntent } from "expo-share-intent";
 import { createAppState } from "./src/initials";
 import storage from "./src/storage";
 import { convertState } from "./src/utils/stateVersionConvert";
-import React, {
-  Button,
-  ScrollView,
-  View,
-  Text,
-  TextInput,
-  Linking,
-  AppRegistry,
-  useColorScheme
-} from "react-native";
+import {
+  loadRestorableBackup,
+  loadStoredState,
+  savePreConvertSnapshot
+} from "./src/utils/bootBackup";
+import {
+  BackupOfferModal,
+  BackupOfferModel
+} from "./src/components/BackupOfferModal";
+import { EmergencyScreen } from "./src/components/EmergencyScreen";
+import { ErrorBoundary } from "./src/components/ErrorBoundary";
+import { Linking, AppRegistry } from "react-native";
 import { logger } from "./src/utils/logger";
 import toastShow from "./src/utils/toastShow";
 
@@ -37,21 +35,20 @@ export default function App() {
     AppStateModel,
     Dispatch<SetStateAction<AppStateModel>>
   ] = useState(createAppState);
-  const [clickCounter, setClickCounter] = useState(0);
-  const counterMax = 5;
-  const [textInputValue, setTextInputValue] = useState("");
-  const [askedForHelp, setAskedForHelp] = useState(false);
-
-  // keep latest state for the share-intent effect (which is keyed on the intent,
-  // not on state, so its closure would otherwise capture a stale state)
-  const stateRef = useRef(state);
-  stateRef.current = state;
+  // The boot read failed (as opposed to finding nothing). The stored state is
+  // left strictly untouched and the emergency screen is shown instead (8.1.9a).
+  const [bootFailed, setBootFailed] = useState(false);
+  // Set only when this boot actually converted a state, and carries the raw
+  // pre-conversion data so the offer can write THAT to a file (8.1.9) - the
+  // in-storage snapshot is worthless once the device is wiped or the app
+  // uninstalled. Null on every ordinary boot, so nothing is ever shown.
+  const [backupOffer, setBackupOffer] = useState<BackupOfferModel | null>(null);
 
   // Reads text shared into the app via the Android share sheet (SEND / text/plain).
   // This is the piece that was missing: the intent filter opened the app, but
   // nothing read Intent.EXTRA_TEXT (Linking only surfaces VIEW/URL intents).
   const { hasShareIntent, shareIntent, resetShareIntent, error } =
-    useShareIntent({ debug: true, resetOnBackground: true });
+    useShareIntent({ resetOnBackground: true });
 
   useEffect(() => {
     if (error) {
@@ -61,17 +58,15 @@ export default function App() {
       return;
     }
     const sharedText = shareIntent.text ?? shareIntent.webUrl ?? "";
-    // proof it arrived — visible toast + persisted log (viewable in the log viewer)
-    logger.write(`[SHARE INTENT] received: ${JSON.stringify(shareIntent)}`);
-    toastShow(`Shared text: ${sharedText}`, 10000);
-    // route into the passage-add flow: listScreen reads route.params.passageText
-    // and runs handleTextFromIntent. On a cold start the nav container may not be
+    logger.write(`[SHARE INTENT] received (${sharedText.length} chars)`);
+    // route into the passage-add flow: listScreen reads route.params.passageText,
+    // sanitizes it (8.1.4) and opens the passage editor pre-filled — the review /
+    // confirm-before-add step. On a cold start the nav container may not be
     // mounted yet, so retry briefly until it is ready.
     let tries = 0;
     const routeToList = () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate(SCREEN.listPassage, {
-          ...stateRef.current,
           passageText: sharedText
         });
         resetShareIntent();
@@ -93,231 +88,217 @@ export default function App() {
     return () => {
       Linking.removeAllListeners("url");
     };
-  });
-  const loadState = () => {
+    // Was missing a dep array → re-subscribed on every App render. Only needs to
+    // re-run when devMode toggles (rare); mount-once otherwise (8.1.1 finding #5).
+  }, [state.settings.devModeEnabled]);
+
+  // Persist the freshly converted state, then hand ownership to AppProvider. A
+  // failed write is NOT fatal - the app runs on the converted state in memory
+  // and AppProvider will try to persist it again on the next change.
+  const saveAndRun = (nextState: AppStateModel) =>
     storage
-      .load({
-        key: `${STORAGE_NAME}`
+      .save({
+        key: `${STORAGE_NAME}`,
+        data: nextState
       })
-      .then((data) => {
-        const dataObj: AppStateModel = data as AppStateModel;
-        //check if version is correct
-        if (dataObj?.version === VERSION) {
-          setState(data);
-          setReady(true);
-        } else {
-          //if versions does not match
-          //try to convert
-          storage
-            .save({
-              key: STORAGE_BACKUP_NAME,
-              data: dataObj
-            })
-            .then(() => {
-              const convertedState = convertState(dataObj);
-              if (convertedState) {
-                toastShow(
-                  `State converted from ${dataObj.version} to ${VERSION}`,
-                  10000
-                );
-                storage
-                  .save({
-                    key: `${STORAGE_NAME}`,
-                    data: convertedState
-                  })
-                  .then(() => {
-                    setState(convertedState);
-                    setReady(true);
-                  });
-              } else {
-                //if it is not possible to convert create new one with backup
-                toastShow(
-                  "Error with convering app state. Backup saved.",
-                  10000
-                );
-                setState(createAppState);
-                setReady(true);
-              }
-            });
-        }
+      .catch((err) => {
+        logger.error(`Unable to persist state on boot e:${err}`);
       })
-      .catch((e) => {
-        logger.write("Creating new state b.c. there were none")
-        // toastShow("Creating new state", 10000);
+      .then(() => {
+        setState(nextState);
+        setReady(true);
+      });
+
+  const loadState = () => {
+    // loadStoredState separates "the key was never written" from "the read
+    // failed" (8.1.9a). The old bare .catch collapsed both into "no state yet"
+    // and then SAVED a blank state, so one unreadable read - a half-written
+    // record, a flaky native call - permanently erased a real install.
+    loadStoredState().then((result) => {
+      if (result.status === "failed") {
+        logger.error(
+          `Boot read failed, storage left untouched. e:${result.error}`
+        );
+        setBootFailed(true);
+        return;
+      }
+      if (result.status === "empty") {
+        logger.write("Creating new state b.c. there were none");
         storage
           .save({
             key: `${STORAGE_NAME}`,
             data: state
           })
           .then(() => {
-              setReady(true);
+            setReady(true);
+          })
+          .catch((err) => {
+            logger.error(`Unable to save the initial state e:${err}`);
+            setBootFailed(true);
           });
+        return;
+      }
+      const dataObj = result.raw as AppStateModel;
+      //check if version is correct
+      if (dataObj?.version === VERSION) {
+        setState(dataObj);
+        setReady(true);
+        return;
+      }
+      //if versions does not match
+      //try to convert
+      // The raw state goes into its OWN write-once slot, not the rolling
+      // daily backup - the daily backup used to overwrite this snapshot
+      // within 24h of an upgrade, so a converter bug became unrecoverable
+      // after one day (8.1.8). savePreConvertSnapshot never rejects, so a
+      // failed snapshot can't leave the app stuck at "not ready".
+      savePreConvertSnapshot(dataObj).then((didWrite) => {
+        logger.write(
+          `State version ${dataObj?.version} != ${VERSION}. Pre-conversion snapshot ${didWrite ? "saved" : "already present"}.`
+        );
+        // Offer the file export regardless of what the conversion does
+        // next: if it succeeds the user gets a copy of the last state the
+        // previous build ran, and if it fails this raw object is the only
+        // copy of their data that exists outside storage.
+        setBackupOffer({
+          rawState: dataObj,
+          fromVersion: dataObj?.version || "unknown"
+        });
+        const convertedState = convertState(dataObj);
+        if (convertedState) {
+          toastShow(
+            `State converted from ${dataObj.version} to ${VERSION}`,
+            10000
+          );
+          saveAndRun(convertedState);
+        } else {
+          // Unconvertible. The snapshot above is safe, so the running app may
+          // start empty - but storage keeps the original until the user
+          // decides, and the offer modal still hands them the file.
+          toastShow("Error with convering app state. Backup saved.", 10000);
+          setState(createAppState);
+          setReady(true);
+        }
+      });
+    });
+  };
+
+  // Emergency-screen restore, shared by both recovery slots. It accepts an
+  // OLDER-version snapshot and converts it forward (8.1.8): the previous
+  // version-equality check made restore reject the very pre-conversion snapshot
+  // the app had just saved, so recovery was unreachable exactly when it was
+  // needed - right after a bad conversion.
+  const restoreFromKey = (
+    storageKey: string,
+    label: string,
+    onRecovered: () => void
+  ) => {
+    loadRestorableBackup(storageKey)
+      .then((restored) => {
+        if (!restored) {
+          toastShow(`No usable ${label} / Немає придатної копії`, 10000);
+          return;
+        }
+        storage
+          .save({
+            key: `${STORAGE_NAME}`,
+            data: restored
+          })
+          .then(() => {
+            setState(restored);
+            setReady(true);
+            setBootFailed(false);
+            onRecovered();
+            toastShow(`Loaded from ${label} / Відновлено`, 10000);
+          })
+          .catch((err) => {
+            logger.error(`Error on saving restored ${label} e:${err}`);
+            toastShow("😟 Nope. Error here too...", 10000);
+          });
+      })
+      .catch((err) => {
+        logger.error(`Error on loading ${label} e:${err}`);
+        toastShow("😟 Nope. Error here too...", 10000);
       });
   };
 
-  // const theme = useColorScheme()
+  // The emergency screen's last button. Only reachable after "ask developer for
+  // help", and it overwrites storage on purpose - unlike the boot path, which
+  // now never does.
+  const eraseAllData = (onRecovered: () => void) => {
+    const newState = createAppState();
+    storage
+      .save({
+        key: `${STORAGE_NAME}`,
+        data: newState
+      })
+      .then(() => {
+        setState(newState);
+        setReady(true);
+        setBootFailed(false);
+        onRecovered();
+        toastShow("Brand new data for you", 10000);
+      })
+      .catch((err) => {
+        logger.error(`Unable to create new state e:${err}`);
+        toastShow("😟 Nope. " + err, 10000);
+      });
+  };
 
+  // Load persisted state EXACTLY ONCE, then hand ownership to AppProvider (the
+  // single source of truth, which does all subsequent storage writes). This
+  // effect previously had no dependency array, so it re-read storage and
+  // re-seeded on every render — an infinite reload loop that fought every state
+  // mutation once state stopped being per-screen.
+  const didLoad = useRef(false);
   useEffect(() => {
+    if (didLoad.current) {
+      return;
+    }
+    didLoad.current = true;
     loadState();
-  });
-  try {
-    return <>{isReady && <Navigator state={state} />}</>;
-  } catch (err) {
-    logger.error(`Error with rendering state on app start`);
-    return (
-      <ScrollView>
-        <View
-          style={{
-            padding: 30,
-            justifyContent: "center",
-            gap: 30,
-            minHeight: 600
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 30,
-              fontWeight: "600",
-              color: "#fff"
-            }}
-          >
-            🤕 Critical error/Критична помилка
-          </Text>
-          <Button
-            title="🫣 Restore from daily backup / Відновити з щоденого бекапу"
-            onPress={() => {
-              try {
-                storage
-                  .load({
-                    key: STORAGE_BACKUP_NAME
-                  })
-                  .then((data) => {
-                    const dataObj: AppStateModel = data as AppStateModel;
-                    //check if version is correct
-                    if (dataObj.version === VERSION) {
-                      storage
-                        .save({
-                          key: `${STORAGE_NAME}`,
-                          data: dataObj
-                        })
-                        .then(() => {
-                          setState(dataObj);
-                          setReady(true);
-                          toastShow("Loaded from backup", 10000);
-                        });
-                    } else {
-                      toastShow(
-                        "Backup version does not match :(",
-                        10000
-                      );
-                    }
-                  });
-              } catch (err) {
-                logger.error(`Error on bloading backup`);
-                toastShow("😟 Nope. Error here too...", 10000);
-              }
-            }}
-          />
-          <Button
-            title={
-              "🧳 Export passages list/Експортувати список текстів " +
-              clickCounter
-            }
-            color={"#4a4"}
-            onPress={() => {
-              if (clickCounter < counterMax) {
-                try {
-                  storage
-                    .load({
-                      key: `${STORAGE_NAME}`
-                    })
-                    .then((data) => {
-                      setTextInputValue(JSON.stringify(data.passages, null, 4));
-                      toastShow("Showing passages", 10000);
-                    })
-                    .catch((err) => {
-                      logger.error(`Error on encoding while exporting`);
-                      toastShow("😟 Nope. " + err, 10000);
-                    });
-                } catch (err) {
-                  logger.error(`Error while exporting`);
-                  toastShow("😟 Nope. " + err, 10000);
-                }
-              } else {
-                try {
-                  storage
-                    .load({
-                      key: `${STORAGE_NAME}`
-                    })
-                    .then((data) => {
-                      setTextInputValue(JSON.stringify(data, null, 4));
-                      toastShow("Showing state", 10000);
-                    })
-                    .catch((err) => {
-                      logger.error(`Error while getting data from storage`);
-                      toastShow("😟 Nope. " + err, 10000);
-                    });
-                } catch (err) {
-                  logger.error(`Error while getting data from storage 2`);
-                  toastShow("😟 Nope. " + err, 10000);
-                }
-              }
-              if (clickCounter >= counterMax * 2) {
-                setClickCounter(0);
-              } else {
-                setClickCounter((prv) => prv + 1);
-              }
-            }}
-          />
-          <Button
-            title="🛎️ Ask developer for help/Спитати допомоги у розробника"
-            color={"#aa4"}
-            onPress={() => {
-              try {
-                setAskedForHelp(true);
-                Linking.openURL("https://t.me/BibleByHeartApp");
-              } catch (err) {
-                logger.error(`Unable to open telegram link`);
-                toastShow("😟 Nope. " + err, 10000);
-              }
-            }}
-          />
-          <Button
-            title="😣 Erase all data/Стерти всі данні"
-            color={"#a44"}
-            disabled={!askedForHelp}
-            onPress={() => {
-              try {
-                const newState = createAppState();
-                storage
-                  .save({
-                    key: `${STORAGE_NAME}`,
-                    data: newState
-                  })
-                  .then(() => {
-                    setState(newState);
-                    setReady(true);
-                    toastShow("Brand new data for you", 10000);
-                  });
-              } catch (err) {
-                logger.error(`Unable to create new state`);
-                toastShow("😟 Nope. " + err, 10000);
-              }
-            }}
-          />
+  }, []);
 
-          <TextInput
-            multiline
-            value={textInputValue}
-            style={{
-              maxHeight: 600,
-              color: clickCounter < counterMax + 1 ? "#fff" : "#0f0"
-            }}
-          />
-        </View>
-      </ScrollView>
+  // A read failure means the app must not boot at all: showing the normal UI
+  // would let AppProvider persist the blank in-memory state over the real one.
+  if (bootFailed) {
+    return (
+      <EmergencyScreen
+        onRestore={(storageKey, label) =>
+          restoreFromKey(storageKey, label, () => {})
+        }
+        onErase={() => eraseAllData(() => {})}
+      />
     );
   }
+  // A REAL error boundary, not the render-time try/catch this used to be: React
+  // never routes a child's render error through the parent's call stack, so the
+  // old catch block could not fire and the emergency screen was dead code
+  // (8.1.9a). `reset` clears the caught error once a usable state is back.
+  return (
+    <ErrorBoundary
+      renderFallback={(_error, reset) => (
+        <EmergencyScreen
+          onRestore={(storageKey, label) =>
+            restoreFromKey(storageKey, label, reset)
+          }
+          onErase={() => eraseAllData(reset)}
+        />
+      )}
+    >
+      {isReady && (
+        <SafeAreaProvider>
+          <AppProvider initialState={state}>
+            <Navigator />
+            <BackupOfferModal
+              offer={backupOffer}
+              onClose={() => setBackupOffer(null)}
+            />
+          </AppProvider>
+        </SafeAreaProvider>
+      )}
+    </ErrorBoundary>
+  );
 }
 
 AppRegistry.registerComponent("Bible by heart", () => App);

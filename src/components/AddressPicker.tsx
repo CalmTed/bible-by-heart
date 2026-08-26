@@ -9,22 +9,20 @@ import {
   View
 } from "react-native";
 import { AddressType } from "../models";
-import { IconButton } from "./Button";
+import { Button, IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { VIBRATION_PATTERNS } from "../constants";
+import { useAppContext } from "../context/AppContext";
 
 interface AddressPickerModel {
   visible: boolean;
   onCancel: () => void;
   onConfirm: (address: AddressType) => void;
-  t: (w: WORD) => string;
   address?: AddressType;
-  theme: ThemeAndColorsModel;
 }
 
 const bookList = bibleReference.map((book) => book.titleShort);
@@ -33,10 +31,9 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   visible,
   address,
   onCancel,
-  onConfirm,
-  t,
-  theme
+  onConfirm
 }) => {
+  const { theme, t } = useAppContext();
   const isNoAddress = !address;
   const isAddressNull =
     address?.bookIndex === null ||
@@ -95,6 +92,11 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     setAddress((prv) => {
       return { ...prv, [addressPart]: index };
     });
+    //after the start verse is picked, stop and let the footer offer a primary
+    //"add one verse" action with a secondary "extend range" affordance (8.1.7).
+    if (addressPart === "startVerseNum") {
+      return;
+    }
     const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
     switch (curPartIndex) {
       case -1:
@@ -148,6 +150,10 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     //if more then one chapter and more then half of the book
     (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
       getNumberOfVerses(tempAddress) > getNumberOfVerses(allBookAddress) / 2);
+  //once a start verse is chosen, a single verse is already a valid passage — show
+  //the primary "add" / secondary "extend range" footer (8.1.7).
+  const isStartVerseSelected =
+    addressPart === "startVerseNum" && !isNaN(tempAddress.startVerseNum);
 
   const TitleLabel: (a: {
     addressPart: string;
@@ -180,14 +186,12 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       {/* HEADER */}
       <View style={{ ...theme.theme.view, ...APstyle.headerView }}>
         <IconButton
-          theme={theme}
           style={APstyle.headerBotton}
           icon={IconName.back}
           onPress={handleBack}
         />
         <TitleLabel addressPart={addressPart} tempAddress={tempAddress} />
         <IconButton
-          theme={theme}
           style={APstyle.headerBotton}
           icon={IconName.done}
           onPress={() => {
@@ -213,7 +217,6 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                     key={title}
                     title={t(title)}
                     onPress={() => handleListButtonPress(i)}
-                    theme={theme}
                   />
                 );
               })}
@@ -226,7 +229,6 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                       key={title}
                       title={title}
                       onPress={() => handleListButtonPress(i)}
-                      theme={theme}
                     />
                   );
                 }
@@ -243,7 +245,6 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                       key={title}
                       title={title}
                       onPress={() => handleListButtonPress(i)}
-                      theme={theme}
                     />
                   );
                 }
@@ -258,7 +259,9 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                       title={title}
                       onPress={() => handleListButtonPress(i)}
                       onLongPress={() => handleListButtonLongPress(i)}
-                      theme={theme}
+                      selected={
+                        isStartVerseSelected && i === tempAddress.startVerseNum
+                      }
                     />
                   );
                 }
@@ -278,7 +281,6 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                       key={title}
                       title={title}
                       onPress={() => handleListButtonPress(i)}
-                      theme={theme}
                     />
                   );
                 }
@@ -286,6 +288,34 @@ export const AddressPicker: FC<AddressPickerModel> = ({
           </View>
         </ScrollView>
       </View>
+      {/* SINGLE-VERSE FOOTER — one verse is enough by default (8.1.7) */}
+      {isStartVerseSelected && (
+        <View
+          style={{
+            ...APstyle.footerView,
+            backgroundColor: theme.colors.bgSecond
+          }}
+        >
+          <Button
+            type="main"
+            color="green"
+            title={t("APAddVerse")}
+            style={APstyle.footerPrimary}
+            onPress={() => handleConfirm(tempAddress)}
+          />
+          <Button
+            type="transparent"
+            title={t("APExtendRange")}
+            onPress={() =>
+              setAddressPart(
+                Object.keys(tempAddress)[
+                  Object.keys(tempAddress).indexOf("startVerseNum") + 1
+                ]
+              )
+            }
+          />
+        </View>
+      )}
     </Modal>
   );
 };
@@ -294,15 +324,26 @@ const ListButton: FC<{
   title: string;
   onPress: () => void;
   onLongPress?: () => void;
-  theme: ThemeAndColorsModel;
-}> = ({ title, onPress, onLongPress = () => {}, theme }) => {
+  selected?: boolean;
+}> = ({ title, onPress, onLongPress = () => {}, selected = false }) => {
+  const { theme } = useAppContext();
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
-      <View style={APstyle.listButton}>
+      <View
+        style={{
+          ...APstyle.listButton,
+          ...(selected
+            ? {
+                backgroundColor: theme.colors.mainColor,
+                borderRadius: 33
+              }
+            : {})
+        }}
+      >
         <Text
           style={{
             ...APstyle.listButtonLabel,
-            color: theme.colors.text
+            color: selected ? theme.colors.bg : theme.colors.text
           }}
         >
           {title}
@@ -348,5 +389,18 @@ const APstyle = StyleSheet.create({
   listButtonLabel: {
     textTransform: "capitalize",
     fontSize: 15
+  },
+  footerView: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingTop: 12,
+    paddingBottom: 24,
+    gap: 4
+  },
+  footerPrimary: {
+    paddingHorizontal: 40
   }
 });

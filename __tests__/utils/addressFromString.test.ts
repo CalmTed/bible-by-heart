@@ -32,6 +32,17 @@ describe("address from string", () => {
     }
   });
 
+  it("prefers the most specific book when several titles are prefixes", () => {
+    // "Jud" (Jude, book index 64) is a prefix of "Judges" (book index 6);
+    // the longer matched title must win instead of whichever matched first.
+    const addressObject = addressFromString("Judges 1:1");
+    expect(addressObject).not.toBe(false);
+    if (addressObject !== false) {
+      expect(addressObject.address.bookIndex).toBe(6);
+      expect(addressObject.language).toBe(LANGCODE.en);
+    }
+  });
+
   it("leaves end fields null for a single-verse address", () => {
     const addressObject = addressFromString("Gen 1:2");
     expect(addressObject).not.toBe(false);
@@ -44,5 +55,94 @@ describe("address from string", () => {
         endVerseNum: null
       });
     }
+  });
+
+  describe("address anywhere in the text", () => {
+    it("finds the reference after a shared quote", () => {
+      const addressObject = addressFromString(
+        "For God so loved the world John 3:16 ESV"
+      );
+      expect(addressObject).not.toBe(false);
+      if (addressObject !== false) {
+        expect(addressObject.address.bookIndex).toBe(42);
+        expect(addressObject.addressString).toBe("John 3:16");
+      }
+    });
+
+    it("finds a Ukrainian reference after the verse text", () => {
+      const addressObject = addressFromString("Бо так полюбив Бог Івана 3:16");
+      expect(addressObject).not.toBe(false);
+      if (addressObject !== false) {
+        expect(addressObject.address.bookIndex).toBe(42);
+        expect(addressObject.language).toBe(LANGCODE.ua);
+      }
+    });
+
+    it("prefers the numbered book (1 John over John) mid-text", () => {
+      const addressObject = addressFromString("see 1 John 4:8 today");
+      expect(addressObject).not.toBe(false);
+      if (addressObject !== false) {
+        expect(addressObject.address.bookIndex).toBe(61); // 1 John
+      }
+    });
+
+    it("does not match a book abbreviation inside a longer word", () => {
+      // "Gen" inside "regenerate 1:1" must not parse as Genesis.
+      const addressObject = addressFromString("regenerate 1:1 please");
+      expect(addressObject).toBe(false);
+    });
+  });
+
+  describe("book-name aliases (8.1.5)", () => {
+    // [input, expected bookIndex, expected language]
+    const enCases: [string, number][] = [
+      ["Gn 1:1", 0], // Genesis
+      ["Mt 5:3", 39], // Matthew
+      ["Matt 5:3", 39],
+      ["Mk 1:1", 40], // Mark
+      ["Lk 2:1", 41], // Luke
+      ["Jn 3:16", 42], // John
+      ["Rm 8:1", 44], // Romans
+      ["Jas 1:1", 58], // James
+      ["Rv 22:21", 65], // Revelation
+      ["Revelations 22:21", 65]
+    ];
+    enCases.forEach(([input, bookIndex]) => {
+      it(`parses the English alias "${input}"`, () => {
+        const addressObject = addressFromString(input);
+        expect(addressObject).not.toBe(false);
+        if (addressObject !== false) {
+          expect(addressObject.address.bookIndex).toBe(bookIndex);
+          expect(addressObject.language).toBe(LANGCODE.en);
+        }
+      });
+    });
+
+    const uaCases: [string, number][] = [
+      ["Іоана 3:16", 42], // John — Івана / Іоана
+      ["Йоана 3:16", 42],
+      ["Судді 1:1", 6], // Judges — correct spelling vs the app's typo'd title
+      ["Псалми 23:1", 18] // Psalms
+    ];
+    uaCases.forEach(([input, bookIndex]) => {
+      it(`parses the Ukrainian alias "${input}"`, () => {
+        const addressObject = addressFromString(input);
+        expect(addressObject).not.toBe(false);
+        if (addressObject !== false) {
+          expect(addressObject.address.bookIndex).toBe(bookIndex);
+          expect(addressObject.language).toBe(LANGCODE.ua);
+        }
+      });
+    });
+
+    it("prefers a longer canonical title over a shorter alias of another book", () => {
+      // "Psalms" (alias, Ps=18) must not lose to any shorter prefix match.
+      const addressObject = addressFromString("Psalms 23:1");
+      expect(addressObject).not.toBe(false);
+      if (addressObject !== false) {
+        expect(addressObject.address.bookIndex).toBe(18);
+        expect(addressObject.addressString).toBe("Psalms 23:1");
+      }
+    });
   });
 });

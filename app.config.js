@@ -1,6 +1,8 @@
 import "dotenv/config"
+// single source of truth for the app version — bump it in package.json only
+const { version } = require("./package.json");
 const versionCode = parseInt(
-  new Date().toISOString().slice(2, 14).replace(/[-T:]/g, ""),
+  new Date().toISOString().slice(2, 15).replace(/[-T:]/g, ""),
   10
 );//in the format of yymmddhh. Can ont be larger than 2147483647. Must be an integer. Time is UMT+0
 
@@ -11,7 +13,7 @@ export default {
         ? "Bible by heart"
         : `BBH dev ${versionCode}`,
     slug: "bible-by-heart",
-    version: "0.1.0",
+    version,
     githubUrl: "https://github.com/CalmTed/bible-by-heart",
     orientation: "portrait",
     userInterfaceStyle: "automatic",
@@ -33,7 +35,6 @@ export default {
           color: "#ECECEC"
         }
       ],
-      ["./plugins/handlingIntents"],
       [
         "expo-share-intent",
         {
@@ -47,9 +48,11 @@ export default {
         'expo-build-properties',
         {
           android: {
-            compileSdkVersion: 35,
-            targetSdkVersion: 35,
-            buildToolsVersion: '35.0.0',
+            // Google Play requires new releases to target Android 16 (API 36).
+            // Edge-to-edge is enforced on API 36 — see android.edgeToEdgeEnabled below.
+            compileSdkVersion: 36,
+            targetSdkVersion: 36,
+            buildToolsVersion: '36.0.0',
             minSdkVersion: 24
           }
         },
@@ -70,22 +73,17 @@ export default {
       bundleIdentifier: "com.CalmTed.bibleByHeart",
       backgroundColor: "#272A27",
       supportsTablet: false,
+      buildNumber: versionCode.toString(),
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false
       }
     },
 
     android: {
+      // The SEND / text share filter is added by the expo-share-intent plugin
+      // above (androidIntentFilters: ["text/*"]); only the App-Links VIEW filter
+      // is declared manually here.
       intentFilters: [
-        {
-          autoVerify: true,
-          action: "SEND",
-          
-          data: {
-            mimeType: "text/plain"
-          },
-          category: ["BROWSABLE", "DEFAULT"]
-        },
         {
           autoVerify: true,
           action: "VIEW",

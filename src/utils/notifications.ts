@@ -251,6 +251,9 @@ export const checkSchedule = async (state: AppStateModel) => {
           //we dont care if we train today because its user defined reminder
           {
             type: SchedulableTriggerInputTypes.CALENDAR,
+            //without this the notification lands in the default "Miscellaneous"
+            //channel instead of our localized "Reminders" channel
+            channelId: "Reminders",
             seconds: getNextActivationTime(item).getTime() / 1000,
             repeats: true
           }

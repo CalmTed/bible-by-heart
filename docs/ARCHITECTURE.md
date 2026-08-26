@@ -62,7 +62,7 @@ Groups/friends/feed are optional and come later.
      are verified. Big syncs show an animated progress bar.
    - No forcible merge UI; conflicts resolve automatically (LWW), integrity by checksum.
 5. **Storage-agnostic API.** The API stays on sqlite for now, but data access goes
-   through a service layer (`base.servise.ts`) so a future Postgres migration is a
+   through a service layer (`base.service.ts`) so a future Postgres migration is a
    swap, not a rewrite.
 6. **Auth is additive and pluggable.** Email/password exists. Google Sign-In is added
    *alongside* it (never required), designed so other providers (Apple ID) plug in
@@ -120,11 +120,13 @@ Groups/friends/feed are optional and come later.
 - **Stack:** Express 4 + TypeScript, zod validation, JWT (access+refresh), bcryptjs,
   nodemailer (confirmation/reset emails), pino logging, sqlite3, Docker Compose.
 - **Layout:** `routes.ts` → middleware (`requireUser`, `validateResource`) →
-  `controller/` → `services/` (generic `base.servise.ts` + `user.service.ts`) →
+  `controller/` → `services/` (generic `base.service.ts` + `user.service.ts`) →
   sqlite. Schemas in `schema/`, types in `models.ts`.
 - **Environments:** `.staging.env` / `.production.env`; GitHub Actions workflows
   deploy staging and production containers to the VPS.
-- **Static:** privacy policy, ToS, account-deletion pages (Play Store requirements).
+- **Static:** privacy policy, ToS, account-deletion pages (Play Store requirements),
+  plus `/.well-known/assetlinks.json` — the Digital Asset Links statement that lets
+  verified `https://biblebyheart.app` links open the Android app rather than the browser.
 
 ## 7. Delivery & environments
 

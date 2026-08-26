@@ -1,11 +1,10 @@
 import React, { FC, useState } from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { SelectModal } from "./SelectModal";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 import { OptionModel } from "../models";
 
 interface SelectModel {
-  theme: ThemeAndColorsModel;
   options: OptionModel[];
   selectedIndex: number | null;
   onSelect: (value: string) => void;
@@ -13,12 +12,12 @@ interface SelectModel {
 }
 
 export const Select: FC<SelectModel> = ({
-  theme,
   options,
   selectedIndex,
   onSelect,
   disabled = false
 }) => {
+  const { theme } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
   const handleSelect = (value: string) => {
     setIsOpen(false);
@@ -55,7 +54,6 @@ export const Select: FC<SelectModel> = ({
         </Text>
       </Pressable>
       <SelectModal
-        theme={theme}
         isShown={isOpen}
         options={options}
         selectedIndex={selectedIndex}

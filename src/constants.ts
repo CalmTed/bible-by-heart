@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { PassageModel } from "./models";
+import { API_VERSION } from "bbh-shared";
 
 export const VERSION = "0.1.0";
 
@@ -13,8 +14,9 @@ export const alowedStateVersions = [
   VERSION
 ]; //make translators for imported data
 
-export const API_VERSION = "0.0.1";
-//cant sync with oudated version
+// API_VERSION is sourced from the shared contract (bbh-shared) - the single source
+// of truth shared with the server. Can't sync with an outdated version.
+export { API_VERSION };
 
 export enum LANGCODE {
   en = "en",
@@ -22,7 +24,16 @@ export enum LANGCODE {
 }
 
 export const STORAGE_NAME = "data";
+// Two separate recovery slots on purpose (8.1.8). STORAGE_BACKUP_NAME is the
+// rolling daily backup written by AppProvider - it is always at the CURRENT
+// state version and is overwritten every 24h. STORAGE_PRECONVERT_BACKUP_NAME
+// holds the raw state as it was BEFORE the very first state-version conversion
+// this install ever ran; it is written once and never overwritten, so a broken
+// converter (or a chain of them) can never destroy the last known-good data.
+// They shared one key until 8.1.8, which meant the daily backup silently ate
+// the pre-conversion snapshot within a day of an upgrade.
 export const STORAGE_BACKUP_NAME = "backup";
+export const STORAGE_PRECONVERT_BACKUP_NAME = "preConvertBackup";
 export const STORAGE_LOGGER = "logs";
 
 export const ARCHIVED_NAME = "Archived";
@@ -60,13 +71,26 @@ export const TERMS_OF_SERVICE_LINK =
 export enum SCREEN {
   home = "home",
   listPassage = "listPassage",
+  passage = "passage",
   stats = "stats",
   test = "test",
   testResults = "testResults",
   settings = "settings",
   calendar = "calendar",
   login = "login",
-  register = "register"
+  register = "register",
+  // Settings sub-menus — real stack screens (used to be MiniModals nested in the
+  // settings list; converted to screens to drop the modal slide animation).
+  settingsList = "settingsList",
+  settingsTests = "settingsTests",
+  settingsNotifications = "settingsNotifications",
+  settingsStats = "settingsStats",
+  settingsAbout = "settingsAbout",
+  settingsUser = "settingsUser",
+  // Nested lists inside the sub-menus above (were modal-in-modal).
+  settingsTranslations = "settingsTranslations",
+  settingsReminders = "settingsReminders",
+  settingsTrainModes = "settingsTrainModes"
 }
 
 export enum SORTINGOPTION {
@@ -96,17 +120,6 @@ export const VIBRATION_PATTERNS = {
   wordClick: 10,
   APSelectVerse: 10
 };
-
-//TODO will make it later
-// const colors = Platform.select({
-//     ios: {
-//         bgDark: "#E7DF0B",
-//         bgLight: "#7FDE34"
-//         },
-//     android: {
-//         bgDark: PlatformColor('@android:color/system_accent1_200'),
-//         bgLight: PlatformColor('@android:color/system_accent3_500'),
-//         }})
 
 export const COLOR_DARK = {
   bg: "#272A27",
@@ -252,7 +265,6 @@ export enum SETTINGS {
   soundsEnabled = "soundsEnabled",
   compressOldTestsData = "compressOldTestsData",
   leftSwipeTag = "leftSwipeTag",
-  //TODO not sure wheather its implemented
   autoIncreaseLevel = "autoIncreaseLevel",
 
   translations = "translations",

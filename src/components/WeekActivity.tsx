@@ -1,0 +1,110 @@
+import React, { FC, useMemo } from "react";
+import { View, Text, StyleSheet, DimensionValue } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { AppStateModel } from "../models";
+import { getWeeklyStats } from "../utils/getStats";
+import { WORD } from "../l10n";
+import { useAppContext } from "../context/AppContext";
+
+// React.memo: home re-renders on every local state change (e.g. opening the
+// train-modes picker); `t`/`theme` now come from context (stable identities,
+// 8.1.2), so this skips re-rendering while state is unchanged (8.1.1 #4/c).
+export const WeekActivity: FC<{
+  state: AppStateModel;
+}> = React.memo(({ state }) => {
+  const { t } = useAppContext();
+  // getWeeklyStats walks history; recompute only when history changes (#4/d).
+  const weekActivityData = useMemo(
+    () => getWeeklyStats(state),
+    [state.testsHistory]
+  );
+  const maxValue = Math.max(...weekActivityData.map((d) => d.number));
+  const day = new Date().getDay();
+  const weekActivityStyles = StyleSheet.create({
+    wrapper: {
+      flexDirection: "row",
+      gap: 10,
+      alignItems: "flex-end",
+      height: 100,
+      marginBottom: 20
+    }
+  });
+  return (
+    <View style={weekActivityStyles.wrapper}>
+      {weekActivityData.map((data, i) => {
+        return (
+          <DayActivityBar
+            key={data.label}
+            value={data.number}
+            maxValue={maxValue}
+            label={t(data.label as WORD)}
+            isToday={(day ? day - 1 : 6) === i} //[0-6], 6 is sunday
+          />
+        );
+      })}
+    </View>
+  );
+});
+WeekActivity.displayName = "WeekActivity";
+
+const DayActivityBar: FC<{
+  value: number;
+  maxValue: number;
+  label: string;
+  isToday: boolean;
+}> = React.memo(({ value, maxValue, label, isToday }) => {
+  const { theme } = useAppContext();
+  const barHeight = `${(80 / maxValue) * value + 20}%` as DimensionValue;
+  const gradientColors = value
+    ? [theme.colors.gradient1, theme.colors.gradient2]
+    : [theme.colors.bgSecond, theme.colors.bgSecond];
+  const DayActivityBarStyles = StyleSheet.create({
+    dayItemGroup: {
+      height: 80,
+      minHeight: 20,
+      justifyContent: "flex-end",
+      alignItems: "center"
+    },
+    itemLabel: {
+      color: theme.colors.textSecond,
+      textTransform: "uppercase",
+      marginTop: 5,
+      fontSize: 10
+    },
+    itemBar: {
+      borderRadius: 10,
+      width: 27,
+      alignContent: "center"
+    },
+    itemNumberText: {
+      fontSize: 11,
+      color: theme.colors.text,
+      textAlign: "center"
+    }
+  });
+  return (
+    <View style={DayActivityBarStyles.dayItemGroup}>
+      <LinearGradient
+        //@ts-ignore
+        colors={gradientColors}
+        start={{ x: 0.0, y: 0 }}
+        end={{ x: 0.0, y: 1.0 }}
+        locations={[0, 1]}
+        style={{ ...DayActivityBarStyles.itemBar, height: barHeight }}
+      >
+        <Text style={DayActivityBarStyles.itemNumberText}>
+          {value < 1000 ? value : `${Math.round(value / 1000)}k`}
+        </Text>
+      </LinearGradient>
+      <Text
+        style={{
+          ...DayActivityBarStyles.itemLabel,
+          ...(isToday ? { color: theme.colors.text } : {})
+        }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+});
+DayActivityBar.displayName = "DayActivityBar";

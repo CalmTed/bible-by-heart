@@ -19,7 +19,7 @@ import {
   iconSearch,
   iconSelectArrow,
   iconSort
-} from "./icondata";
+} from "./iconData";
 import React, { SvgXml } from "react-native-svg";
 
 export enum IconName {

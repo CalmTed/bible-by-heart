@@ -1,12 +1,16 @@
 import React, { FC } from "react";
 import { StyleSheet, View, Text } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
-import { StackNavigationHelpers } from "node_modules/@react-navigation/stack/lib/typescript/src/types";
+import { useAppContext } from "../context/AppContext";
+import { RootStackNavigationModel } from "../models";
 
 interface HeaderModel {
-  navigation?: StackNavigationHelpers;
+  // Only `goBack()` is used, but the real navigation type keeps a wrong object
+  // from being passed in — it replaced an import through a raw
+  // `node_modules/...` path (8.1.14).
+  navigation?: RootStackNavigationModel;
   showBackButton?: boolean;
   title?: string;
   additionalChild?: React.ReactNode;
@@ -18,11 +22,9 @@ interface HeaderModel {
     | "space-between"
     | "space-around"
     | "space-evenly";
-  theme: ThemeAndColorsModel;
 }
 
 export const Header: FC<HeaderModel> = ({
-  theme,
   navigation,
   title,
   showBackButton,
@@ -30,13 +32,19 @@ export const Header: FC<HeaderModel> = ({
   additionalChildren,
   alignChildren
 }) => {
+  const { theme } = useAppContext();
+  const insets = useSafeAreaInsets();
   const handleBack = () => {
     navigation?.goBack();
   };
 
   const headerStyle = StyleSheet.create({
     view: {
-      height: 80,
+      // Clear the device's top safe area (Android status-bar / camera cutouts,
+      // iPhone notch/Dynamic Island) with the real inset instead of a fixed
+      // guess, so the header never sits under the cutout.
+      paddingTop: insets.top,
+      height: 60 + insets.top,
       width: "100%",
       flexDirection: "row",
       justifyContent: alignChildren || "flex-end",
@@ -58,7 +66,7 @@ export const Header: FC<HeaderModel> = ({
   return (
     <View style={headerStyle.view}>
       {showBackButton && navigation && (
-        <IconButton theme={theme} onPress={handleBack} icon={IconName.back} />
+        <IconButton onPress={handleBack} icon={IconName.back} />
       )}
       {title && (
         <View style={headerStyle.textView}>

@@ -94,7 +94,7 @@ export const createAppState010: () => AppStateModel010 = () => {
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
       [SETTINGS.autoIncreaseLevel]: false,
-      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
@@ -155,7 +155,7 @@ export const createAppState009: () => AppStateModel009 = () => {
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
       [SETTINGS.autoIncreaseLevel]: false,
-      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
@@ -406,7 +406,7 @@ export const createAppState008: () => AppStateModel008 = () => {
       [SETTINGS.compressOldTestsData]: true,
       //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
-      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history
@@ -451,7 +451,7 @@ export const createAppState007: () => AppStateModel007 = () => {
       [SETTINGS.compressOldTestsData]: true,
       //@ts-ignore
       [SETTINGS.autoIncreeseLevel]: false,
-      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existring tags, archive by default  TODO check on tag removing
+      [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: true,
       [SETTINGS.remindersSmartTime]: true, // based on last month of tests history

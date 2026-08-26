@@ -1,17 +1,15 @@
-import { render, fireEvent } from "@testing-library/react-native";
-import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
-import { LANGCODE, THEMETYPE } from "../../src/constants";
+import { fireEvent } from "@testing-library/react-native";
+import { LANGCODE } from "../../src/constants";
 import { createT } from "../../src/l10n";
 import { ConfirmModal } from "../../src/components/ConfirmModal";
+import { renderWithContext } from "../../test-utils/renderWithContext";
 
 describe("testing confirm modal", () => {
-  const theme = getThemeFromScheme(THEMETYPE.dark);
   const t = createT(LANGCODE.en);
 
   it("renders correctly", async () => {
-    const tree = render(
+    const tree = renderWithContext(
       <ConfirmModal
-        theme={theme}
         shown={true}
         text={t("PassageDeleteConfirmationText")}
         confirmTitle={t("Remove")}
@@ -26,9 +24,8 @@ describe("testing confirm modal", () => {
   it("fires onConfirm and onCancel on the matching buttons", () => {
     const onConfirm = jest.fn();
     const onCancel = jest.fn();
-    const { getByText } = render(
+    const { getByText } = renderWithContext(
       <ConfirmModal
-        theme={theme}
         shown={true}
         text={t("PassageDeleteConfirmationText")}
         confirmTitle={t("Remove")}

@@ -8,6 +8,10 @@ import { logger } from "./logger";
 
 const dayInMs = DAY * 1000;
 
+// Address errors are ranked most-frequent first and shown as a short list;
+// cap it so a long history can't produce an unbounded array.
+const TOP_ADDRESS_ERRORS_LIMIT = 10;
+
 export const getStroke = (testHistory: TestModel[]) => {
   const nowD = new Date().getTime();
   const allDays = [...testHistory]
@@ -45,6 +49,41 @@ export const getStroke = (testHistory: TestModel[]) => {
     length: unbrokenSeries.length,
     today: isToday
   };
+};
+
+// Longest run of consecutive active days across the whole history (the record
+// stroke). Mirrors getStroke's day bucketing (local calendar-day string) so the
+// two agree on what "a day" and "consecutive" mean.
+export const getMaxStroke: (testHistory: TestModel[]) => number = (
+  testHistory
+) => {
+  const uniqueDayTimes = [...testHistory]
+    .map((t) => {
+      const d = new Date(t.td[t.td.length - 1][1] || 0);
+      return `${addZero(d.getFullYear(), 4)}-${addZero(
+        d.getMonth() + 1
+      )}-${addZero(d.getDate())}`;
+    })
+    .filter((v, i, arr) => !arr.slice(0, i).includes(v)) //unique days
+    .map((v) => new Date(v).getTime())
+    .sort((a, b) => a - b);
+  if (!uniqueDayTimes.length) {
+    return 0;
+  }
+  let maxStroke = 1;
+  let currentStroke = 1;
+  for (let i = 1; i < uniqueDayTimes.length; i++) {
+    const gap = uniqueDayTimes[i] - uniqueDayTimes[i - 1];
+    if (gap > 0 && gap <= dayInMs) {
+      currentStroke++;
+    } else {
+      currentStroke = 1;
+    }
+    if (currentStroke > maxStroke) {
+      maxStroke = currentStroke;
+    }
+  }
+  return maxStroke;
 };
 
 interface DayStatsModel {
@@ -149,7 +188,7 @@ interface PassageStatsModel {
   mostOftenAdressErrors: {
     address: AddressType;
     errorNumber: number;
-  }[]; //TODO limit to top ~10
+  }[]; //ranked most-frequent first, capped at TOP_ADDRESS_ERRORS_LIMIT
 }
 export const getPassageStats: (
   state: AppStateModel,
@@ -241,9 +280,9 @@ export const getPassageStats: (
     avgDurationMS,
     avgDurationByLevel,
     wordErrorsHeatMap,
-    mostOftenAdressErrors: [...mostOftenAdressErrors].sort(
-      (a, b) => b.errorNumber - a.errorNumber
-    )
+    mostOftenAdressErrors: [...mostOftenAdressErrors]
+      .sort((a, b) => b.errorNumber - a.errorNumber)
+      .slice(0, TOP_ADDRESS_ERRORS_LIMIT)
   };
 };
 
@@ -416,7 +455,7 @@ export const getAppStats: (state: AppStateModel) => AppStatsModel = (state) => {
       allDefinedWeeksDuration.length
     ),
     avgWeekDurationRelativePercent,
-    maxStroke: 0, //TODO implement it
+    maxStroke: getMaxStroke(state.testsHistory),
     totalTimeSpentMS,
     totalTestsNumber,
     avgDurationMS,

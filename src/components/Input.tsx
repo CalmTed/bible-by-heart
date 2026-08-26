@@ -2,14 +2,13 @@ import React, { FC } from "react";
 import { StyleSheet, View, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
-import { ThemeAndColorsModel } from "../utils/getThemeFromScheme";
+import { useAppContext } from "../context/AppContext";
 
 interface InputModel {
   onChange: (value: string) => void;
   onSubmit?: (value: string) => void;
   onEndEditing?: (value: string) => void;
   placeholder: string;
-  theme: ThemeAndColorsModel;
   value?: string;
   disabled?: boolean;
   type?: "main" | "outline" | "secondary" | "transparent";
@@ -99,7 +98,6 @@ interface InputModel {
 export const Input: FC<InputModel> = ({
   value,
   placeholder,
-  theme,
   wrapperStyle,
   style,
   onSubmit = () => {},
@@ -124,6 +122,7 @@ export const Input: FC<InputModel> = ({
   iconAfter,
   iconColor
 }) => {
+  const { theme } = useAppContext();
   const gradientColors =
     type === "transparent"
       ? ["transparent", "transparent"]

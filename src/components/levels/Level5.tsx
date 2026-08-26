@@ -11,6 +11,7 @@ import {
 import addressToString from "../../utils/addressToString";
 import { Button } from "../Button";
 import { LevelComponentModel } from "./Level1";
+import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getAddressDifference } from "../../utils/addressDifference";
@@ -81,11 +82,10 @@ const levelComponentStyle = StyleSheet.create({
 export const L50: FC<LevelComponentModel> = ({
   test,
   state,
-  theme,
-  t,
   submitTest,
   dispatch
 }) => {
+  const { theme, t } = useAppContext();
   const [APVisible, setAPVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
@@ -329,7 +329,6 @@ export const L50: FC<LevelComponentModel> = ({
       )}
       <View style={levelComponentStyle.passageTextView}>
         <Input
-          theme={theme}
           multiline
           disabled={levelFinished || !!wrongAddress}
           value={passageText}
@@ -361,7 +360,6 @@ export const L50: FC<LevelComponentModel> = ({
         {/* text is not entered */}
         {!isCorrect && (
           <Button
-            theme={theme}
             type="main"
             color="green"
             title={`${t("CheckText")} (${tries}/${
@@ -374,7 +372,6 @@ export const L50: FC<LevelComponentModel> = ({
         {/* text entered and no address needed */}
         {isCorrect && isAddressProvided && (
           <Button
-            theme={theme}
             type="main"
             color="green"
             title={`${t("Submit")} ${tries}/${MAX_L50_TRIES + maxTriesBonus}`}
@@ -385,7 +382,6 @@ export const L50: FC<LevelComponentModel> = ({
         {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
           new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 10) && (
           <Button
-            theme={theme}
             type="secondary"
             color="gray"
             title={`${t("DowngradeLevel")}`}
@@ -398,7 +394,6 @@ export const L50: FC<LevelComponentModel> = ({
           !isAddressProvided &&
           !wrongAddress && [
             <Button
-              theme={theme}
               key="addresPicker"
               type="outline"
               color="green"
@@ -411,7 +406,6 @@ export const L50: FC<LevelComponentModel> = ({
               disabled={levelFinished}
             />,
             <Button
-              theme={theme}
               key="submitButton"
               type="main"
               color="green"
@@ -428,7 +422,6 @@ export const L50: FC<LevelComponentModel> = ({
           selectedAddress &&
           wrongAddress && [
             <Button
-              theme={theme}
               key="rightAnswer"
               type="outline"
               color="green"
@@ -437,7 +430,6 @@ export const L50: FC<LevelComponentModel> = ({
               disabled={levelFinished}
             />,
             <Button
-              theme={theme}
               key="wrongAnswer"
               type="outline"
               color="red"
@@ -446,7 +438,6 @@ export const L50: FC<LevelComponentModel> = ({
               disabled={levelFinished}
             />,
             <Button
-              theme={theme}
               key="nextTest"
               type="main"
               color="green"
@@ -457,11 +448,9 @@ export const L50: FC<LevelComponentModel> = ({
           ]}
       </View>
       <AddressPicker
-        theme={theme}
         visible={APVisible}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddressSelect}
-        t={t}
       />
     </ScrollView>
   );

@@ -1,6 +1,7 @@
 import {
   LANGCODE,
   PASSAGELEVEL,
+  SCREEN,
   SETTINGS,
   SORTINGOPTION,
   STATSMETRICS,
@@ -8,6 +9,10 @@ import {
   THEMETYPE
 } from "./constants";
 import { WORD } from "./l10n";
+import type {
+  StackNavigationProp,
+  StackScreenProps
+} from "@react-navigation/stack";
 
 export type AppStateModel = AppStateModel010;
 
@@ -204,6 +209,72 @@ export interface AddressType {
   endChapterNum: number | null; //COULD BE NULL
   endVerseNum: number | null; //COULD BE NULL
 }
+
+// --- Navigation (8.1.14) ---------------------------------------------------
+// App state does NOT travel through route params - it lives in AppContext.
+// Params carry only small identifying args, so every entry below is either
+// `undefined` or a tiny object.
+
+/** Params of the passage add/edit screen. */
+export interface PassageScreenParamsModel {
+  /** Edit an existing passage. A deep link (`bbh://passage/12`) delivers a string. */
+  passageId?: number | string;
+  /** Add a new passage seeded with this address. */
+  address?: AddressType;
+  /** Add with pre-filled text (shared intent / parsed reference). */
+  passageText?: string;
+  /** Translation for the new passage. */
+  translationId?: number;
+}
+
+/** Params of the passage list screen. */
+export interface ListScreenParamsModel {
+  /** Text shared into the app - the list forwards it into the add flow. */
+  passageText?: string;
+}
+
+/**
+ * The one map of screen name -> its params. Everything navigation-typed keys
+ * off this: the stack, the linking config, `navigationRef` and each screen's
+ * props. Adding a screen to `SCREEN` without a line here is a type error, which
+ * is the point - it replaced `route: any` (8.1.14).
+ */
+export type RootStackParamList = {
+  [SCREEN.home]: undefined;
+  [SCREEN.listPassage]: ListScreenParamsModel | undefined;
+  [SCREEN.passage]: PassageScreenParamsModel | undefined;
+  [SCREEN.stats]: undefined;
+  [SCREEN.test]: undefined;
+  [SCREEN.testResults]: undefined;
+  [SCREEN.settings]: undefined;
+  [SCREEN.calendar]: undefined;
+  [SCREEN.login]: undefined;
+  [SCREEN.register]: undefined;
+  [SCREEN.settingsList]: undefined;
+  [SCREEN.settingsTests]: undefined;
+  [SCREEN.settingsNotifications]: undefined;
+  [SCREEN.settingsStats]: undefined;
+  [SCREEN.settingsAbout]: undefined;
+  [SCREEN.settingsUser]: undefined;
+  [SCREEN.settingsTranslations]: undefined;
+  [SCREEN.settingsReminders]: undefined;
+  [SCREEN.settingsTrainModes]: undefined;
+};
+
+/**
+ * Props of a screen registered in the root stack: `{ route, navigation }` with
+ * `route.params` typed to THAT screen's entry above. Replaces the old
+ * `ScreenModel` (which had `route: any` and a navigation type imported through
+ * a raw `node_modules/...` path).
+ */
+export type ScreenPropsModel<T extends keyof RootStackParamList> =
+  StackScreenProps<RootStackParamList, T>;
+
+/**
+ * The navigation object alone, for code that navigates but is not a screen
+ * (`services/fetch.ts`'s forced logout).
+ */
+export type RootStackNavigationModel = StackNavigationProp<RootStackParamList>;
 
 export enum ActionName {
   setLang = "setLang",
@@ -584,7 +655,7 @@ export interface AppStateModel007 {
     [SETTINGS.compressOldTestsData]: boolean;
     //@ts-ignore
     [SETTINGS.autoIncreeseLevel]: boolean;
-    [SETTINGS.leftSwipeTag]: string; // options from existring tags, archive by default  TODO check on tag removing
+    [SETTINGS.leftSwipeTag]: string; // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
     [SETTINGS.remindersEnabled]: boolean;
     [SETTINGS.remindersSmartTime]: boolean; // based on last month of tests history

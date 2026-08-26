@@ -61,7 +61,13 @@ export const en = {
   listScreenTitle: "Passages list",
   statsScreenTitle: "Statistics",
   APSelectBook: "Select book",
+  APAddVerse: "Add",
+  APExtendRange: "Extend range",
   EditPassageTitle: "Edit passage",
+  AddPassageTitle: "Add passage",
+  Save: "Save",
+  Discard: "Discard",
+  PassageDiscardConfirmText: "Discard unsaved changes to this passage?",
   titleWelldone: "Well done",
   LevelPickerHeading: "Select level",
   settingsScreenTitle: "Settings",
@@ -178,6 +184,18 @@ export const en = {
   settsExportStateSubtext: "Save state data as JSON file",
   settsImportStateHeader: "Import state",
   settsImportStateSubtext: "Open state from JSON file",
+  settsBackupExportHeader: "Save backup file",
+  settsBackupExportSubtext: "Write all app data to a .json file you keep",
+  settsBackupRestoreHeader: "Restore from backup file",
+  settsBackupRestoreSubtext: "Replace all app data with a saved backup file",
+  settsBackupRestoreConfirm: "Restore",
+  settsRestored: "Restored!",
+  BackupRestoreConfirmationText:
+    "Replace everything in the app with this backup? Current data will be lost.",
+  BackupOfferText:
+    "App data has been updated to a new format. Save a backup file of the previous data, just in case?",
+  BackupOfferConfirm: "Save backup",
+  BackupOfferLater: "Later",
   settsClearHistory: "Clear history",
   settsClearPassages: "Clear passages",
   settsClearData: "Reset all data",
@@ -312,6 +330,7 @@ export const en = {
 
   //login
   provideEmailLabel: "email",
+  provideEmailOrUsernameLabel: "email or username",
   providePasswsordLabel: "password",
   providePasswsordAgainLabel: "password again",
   legalCheckLabel: "I agree with privacy policy and terms of service",
@@ -334,7 +353,9 @@ export const en = {
   netUnableToLogOut: "Unable to log out",
   netUnableToGetUserData: "Unable to get user data",
   netUnableToSaveUserData: "Unable to save user data",
-  netUnableToCreateUser409: "Unable to create user 409",
+  netUnableToCreateUser409: "Couldn't create account",
+  netUnableToCreateUser409Sub:
+    "An account with this email or username already exists. Try logging in instead.",
   net200withNoData: "Recieved status 200 with no data",
 
   netBadRequestData400: "Bad request data 400",
@@ -342,6 +363,13 @@ export const en = {
   netForbidden403: "Forbidden 403",
   netUserNotFound406: "User not found 406",
   netServerError500: "Server error 500",
+  // readable subtitles for auth errors (shown instead of raw HTTP statusText)
+  netWrongCredentials: "Wrong email/username or password.",
+  netCheckDataAndRetry: "Please check the entered data and try again.",
+  netServerErrorSub:
+    "Something went wrong on our side. Please try again later.",
+  netSessionExpired: "Your session has expired. Please log in again.",
+  netTryAgainLater: "Something went wrong. Please try again later.",
 
   dayMO: "Mo",
   dayTU: "Tu",
