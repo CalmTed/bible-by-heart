@@ -2407,6 +2407,7 @@ install, and at the offer take **Study it** — expect three tests of that one p
 then the finish screen; repeat and take **Later** — expect the passage list with no
 session; edit an existing passage and confirm nothing is offered; and check the offer's
 two buttons read well in both languages and both themes.
+<<<<<<< HEAD
 
 
 ## 2026-08-27 — Staging build red: CMake 3.18.1 not in SDK
@@ -2432,3 +2433,5 @@ what RN 0.81 prefabs are built against.
 
 **Scope.** Config only — no `src/` change, so FILEMAP and l10n are untouched and lint/test were
 not re-run for it. Verification is the next staging build.
+=======
+>>>>>>> 34c06566d10f17652eb911ea76d2969345ab533f
