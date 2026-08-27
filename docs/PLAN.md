@@ -20,70 +20,17 @@
 - Build cadence: any session touching native config or dependencies ends with a build;
   otherwise a patch bump + staging build every ~4–6 sessions.
 
-> ⚠️ **0.2.0 is prepared in both working trees and NOTHING is committed** (2026-08-26,
-> at Fedir's instruction). Nothing below is checked off because nothing has landed yet.
-> Both repos are lint ✓ / test ✓ on disk; the release is three manual acts, and the
-> order is load-bearing — Android verifies App Links at *install time* and caches the
-> answer, so the assetlinks file must be live and correct before the 0.2.0 build is
-> installed:
->
-> 1. **bbh-api** — review + commit the working tree, push `staging` (redeploys the VPS
->    staging container only, no store involved), verify, then merge into `production`.
->    That push is what finally deploys `verifyMailer` + `ensureUsersTableColumns`, which
->    have sat in two *local-only* commits since 2026-07-11.
-> 2. ~~**Set `ANDROID_CERT_FINGERPRINTS`** on the VPS~~ — **done 2026-08-26.** Fedir
->    supplied the Play app-signing SHA-256 and it is appended to both
->    `/usr/src/bbh-api/.production.env` and `.staging.env` (600 deploy:deploy, backups in
->    `~/env-backups/`). Inert until step 1 restarts the container, which is the right
->    order. Pre-flight checked at the same time: Caddy proxies `/.well-known/` **through**
->    to the app (today's 404 body is Express's own `Cannot GET`, not Caddy's) and the
->    https URL takes **no redirect** — the two things Android would have failed on.
-> 3. **bible-by-heart** — commit (version already bumped to 0.2.0, lockfile synced) and
->    push `staging`, which fires the EAS staging build **and auto-submits** to the Play
->    internal track. Then `production` for the store release. Fedir triggers both,
->    because they submit on their own.
->
-> This also clears the older backlog: the SDK-36 bump (2026-07-22) and the 0.1.2 bump
-> from 8.1.9 have been waiting on a build since then — 0.2.0 carries both.
-
 ---
-
-## 0.2.0 — Fast & solid *(ships to Play)*
-
-- [ ] **8.1.17 [api] Deploy session** — *code prepared 2026-08-26, uncommitted*
-      Ship the committed-but-undeployed `verifyMailer` + `ensureUsersTableColumns`;
-      serve `/.well-known/assetlinks.json` with the app's signing fingerprint so https
-      App Links open the app; production container runs plain `node dist/app.js`, not
-      `nodemon`. Check `.production.env` survives untouched.
-      *Done on disk:* the assetlinks endpoint + `utils/assetLinks.ts` + 5 tests, both
-      deployed compose services off `nodemon`, the Dockerfile's dead `CMD`, and (per the
-      STRATEGY §7 standing decision, since this session touched the repo)
-      `base.servise.ts` → `base.service.ts`. `.production.env` verified safe: it has
-      never been tracked in any branch, so the deploy's `git reset --hard` cannot see it.
-      *Riding along, approved by Fedir the same session:* the test suite no longer opens
-      SMTP sockets — new `jest.setup.ts` mocks nodemailer, and `email.test.ts` injects
-      transports instead of relying on `.test.env` credentials being broken (48 → 50
-      tests). `data/test.db` was asked about and left alone: proven to be an artifact,
-      not a fixture (suite passes with it deleted), so it is diff hygiene, not a bug.
-      *Left:* the push, and the `ANDROID_CERT_FINGERPRINTS` value on the VPS.
-
-- [ ] **8.1.18 🏁 0.2.0 — minor bump, staging build, Play release** (build)
-      Version bump, staging build, then production build + Play submission (compliance:
-      target API 36). First store release in a year — expect review friction.
-      *Done on disk:* `package.json` 0.1.2 → 0.2.0, and `package-lock.json`'s two root
-      `version` fields synced with it — they still said 0.1.1, drift left by the 8.1.9
-      bump, and CI runs `npm ci` against that lockfile.
-      *Left:* everything that submits — both builds and the Play release.
 
 ## 0.3.0 — Candy UI
 
 The animation rewrite. Every wrapper step ends with a build, because feel cannot be
 judged from tests.
 
-- [ ] **8.2.1 Install `react-native-reanimated`** (build)
-      Dependency + babel plugin, one trivial animation proven to compile and run.
-      Gesture-handler still fine, no Metro/babel warnings.
-      *Watch:* native/babel config is historically the flakiest change in this repo.
+> Fedir's 2026-08-27 review of the live add-passage flow produced 8.2.1a–8.2.1c — one
+> user journey: pick an address, pick a translation, start learning it. All three are
+> done (2026-08-27); the journey holds together only on a device, so it is the first
+> thing to walk on the next build.
 
 - [ ] **8.2.2 Modal purge**
       Audit every full-screen `MiniModal`; convert sub-menu-like ones (filter/tag
@@ -200,6 +147,57 @@ error-message-design unification, and layered `t("page.title")` l10n keys (8.2.9
 
 Newest first. One line each; the full story is in `docs/robotdiary.md` under the date.
 
+- [x] **8.2.1c** "Study this one" — single-passage learning mode — 2026-08-27 · saving a
+      **new** passage that has text now offers a drill on that passage alone
+      (`ConfirmModal`, green confirm) → `SCREEN.test`; declining, or editing an existing
+      passage, goes to the list as before. **Transient session, not a stored
+      `TrainModeModel`:** a train mode is a filter over the library and cannot name a
+      passage, so storing one would have cost a state version bump for a mode aimed at a
+      passage the user will never reuse. New `generateStudyOneTests(state, passageId,
+      repeats?)` + `ActionName.generateStudyOneTests`, which writes `testsActive` and
+      nothing else — `activeTrainModeId`/`trainModesList` survive a drill untouched.
+      `STUDY_ONE_REPEATS = 3`, deliberately ≤ `PERFECT_TESTS_TO_PROCEED` so one drill
+      alone cannot hand out a level upgrade. 15 new tests (8 generator, 2 reducer, 5
+      driving the real editor's Save in a new `__tests__/screens/PassageScreen.test.tsx`);
+      3 new l10n keys (en+ua). 179 tests ✓. **The whole 8.2.1 group is closed.**
+- [x] **8.2.1b** Translation selector inside the add-passage flow — 2026-08-27 · the
+      translation is now met right after the address, **and only when the answer is
+      not already clear** (Fedir's amendment): `getTranslationChoice(translations)`
+      decides — more than one translation → a `SelectModal` between the address picker
+      and the editor; one (or none) → it is chosen silently and the step never appears.
+      In `PassageEditor` the `Select` moved from the bottom selector row to directly
+      under the address, above the verse text it decides. New util + 9 tests (6 unit,
+      3 driving the real add flow through the picker in a new
+      `__tests__/screens/ListScreen.test.tsx`); new l10n key `SelectTranslationTitle`
+      (en+ua). 164 tests ✓.
+- [x] **8.2.1a** AddressPicker ground-up fix — 2026-08-27 · three defects in one file.
+      (1) The header title now comes from `tempAddress` (NaN = unpicked) through a pure
+      `getPickerTitle`, with a complete address handed to `addressToString` — the old
+      `curPartIndex` source could never show the just-tapped start verse, because 8.1.7
+      stops there on purpose. (2) The selected verse wears the app's gradient-outline
+      idiom (`gradient1`→`gradient2` ring over `bgSecond`) instead of a flat
+      `mainColor` fill. (3) The footer is a real horizontal row in the layout flow under
+      a `flex:1` list, so the `height:"93%"` + absolute-footer combination that covered
+      the last row of verses is gone. 5 new tests (title per pick step, range title, back,
+      gradient ring, in-flow-footer snapshot); the two 8.1.7 footer tests still pass
+      untouched. No new l10n strings. 155 tests ✓.
+- [x] **8.2.1** Install `react-native-reanimated` — 2026-08-27 · reanimated `~4.1.1`
+      (4.1.7) + `react-native-worklets` 0.5.1 at the SDK-54-pinned versions, both in
+      `dependencies`. **No babel config change:** `babel-preset-expo` 54.0.11
+      auto-applies `react-native-worklets/plugin` when the package is present. The
+      trivial animation is `MiniModal`'s entrance (fade + spring rise), which upgrades
+      every dialog in the app at once — 19 call sites — and replaces RN's platform
+      `animationType="slide"`. New `ANIMATION` block in `constants.ts` is the single
+      source of motion values for the rest of 0.3.0. Verified: lint ✓, 150 tests ✓,
+      a full `expo export` Android bundle (1631 modules, no Metro/babel warnings) with
+      `__workletHash` present in the Hermes bytecode, and `npm ci` exit 0.
+      Version 0.2.0 → 0.2.1; **the build itself is Fedir's to trigger** (`build-dev`
+      auto-submits to Play), and it is required — reanimated is a native module, so the
+      animation cannot appear in an existing binary.
+- [x] **8.1.18** 🏁 0.2.0 — minor bump, staging build, Play release — shipped.
+- [x] **8.1.17** [api] Deploy session — shipped (assetlinks endpoint, `verifyMailer` +
+      `ensureUsersTableColumns` deployed, deployed services off `nodemon`,
+      `base.servise.ts` → `base.service.ts`).
 - [x] **8.1.15a** Naming tail — 2026-08-26 · the two out-of-scope findings 8.1.15
       reported, both approved by Fedir: the last near-miss exports renamed
       (`TestNavDott` → `TestNavDot`, `WeekActivityComponent` → `WeekActivity`, incl.

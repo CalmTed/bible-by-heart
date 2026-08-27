@@ -290,6 +290,14 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       alignItems: "flex-start",
       marginLeft: 5
     },
+    //translation
+    translationRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      paddingHorizontal: 20,
+      paddingBottom: 10
+    },
     //text
     bodyText: {
       marginHorizontal: 20,
@@ -431,6 +439,32 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               }
             />
           </View>
+          {/* Right under the address and above the text it decides: the
+              translation is met as part of the address step, not as a field far
+              down the editor (8.2.1b). */}
+          <View style={PEstyle.translationRow}>
+            <Text style={theme.theme.subText}>{t("TranslationLabel")}:</Text>
+            <Select
+              options={[
+                {
+                  label: t("TranslationOther"),
+                  value: CUSTOM_TRANSLATION_NAME
+                },
+                ...state.settings.translations.map((tr) => {
+                  return {
+                    label: tr.name,
+                    value: tr.id.toString()
+                  };
+                })
+              ]}
+              selectedIndex={
+                state.settings.translations
+                  .map((tr) => tr.id)
+                  .indexOf(tempPassage.verseTranslation || -1) + 1
+              }
+              onSelect={handleTranslationChange}
+            />
+          </View>
           <View style={PEstyle.bodyText}>
             <TextInput
               style={PEstyle.bodyTextInput}
@@ -487,29 +521,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             </Text>
           </View>
           <View style={PEstyle.selectorsWrapper}>
-            <View style={PEstyle.selectorSectionWrapper}>
-              <Text style={theme.theme.subText}>{t("TranslationLabel")}:</Text>
-              <Select
-                options={[
-                  {
-                    label: t("TranslationOther"),
-                    value: CUSTOM_TRANSLATION_NAME
-                  },
-                  ...state.settings.translations.map((tr) => {
-                    return {
-                      label: tr.name,
-                      value: tr.id.toString()
-                    };
-                  })
-                ]}
-                selectedIndex={
-                  state.settings.translations
-                    .map((tr) => tr.id)
-                    .indexOf(tempPassage.verseTranslation || -1) + 1
-                }
-                onSelect={handleTranslationChange}
-              />
-            </View>
             <View style={PEstyle.selectorSectionWrapper}>
               <Text style={theme.theme.subText}>{t("LevelLabel")}:</Text>
               <LevelPicker

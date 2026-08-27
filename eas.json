@@ -16,13 +16,6 @@
       "env": {
         "APP_ENV": "staging"
       },
-      "android": {
-        "ndk": "25.1.8937393",
-        "env": {
-          "ANDROID_NDK_VERSION": "25.1.8937393",
-          "CMAKE_VERSION": "3.18.1"
-        }
-      },
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.0"
       }
@@ -30,13 +23,6 @@
     "production": {
       "node": "22.17.0",
       "environment": "production",
-      "android": {
-        "ndk": "25.1.8937393",
-        "env": {
-          "ANDROID_NDK_VERSION": "25.1.8937393",
-          "CMAKE_VERSION": "3.18.1"
-        }
-      },
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.0"
       },

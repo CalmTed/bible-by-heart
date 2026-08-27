@@ -19,7 +19,7 @@
 | `index.js` | RN registry entry point |
 | `app.config.js` | Expo config (name, icons, env-driven staging/prod variants, extra secrets, Android App-Links VIEW filter) + plugins: `expo-build-properties` (compile/target SDK **36**, min 24 — the only place the Android SDK level is declared, there is no `android/` dir), `expo-share-intent` (Android only, `disableIOS`, `androidIntentFilters: ["text/*"]` — declares the SEND filter itself and sets MainActivity `launchMode=singleTask`), `expo-localization`, `expo-secure-store`, `expo-notifications` |
 | `eas.json` | EAS build profiles (staging, production) |
-| `babel.config.js` / `metro.config.js` | build toolchain config |
+| `babel.config.js` / `metro.config.js` | build toolchain config. **Deliberately bare** — `babel-preset-expo` 54 auto-applies `react-native-worklets/plugin` whenever the package is installed, so reanimated needs no entry here. Adding one by hand double-applies it (8.2.1) |
 | `eslint.config.js` / `tsconfig.json` | lint + TS config |
 | `jest.setup.js` | jest mocks/setup (preset jest-expo, config in package.json) |
 | `package.json` | scripts: dev, lint, test, build-dev/-prod (EAS) |
@@ -48,7 +48,7 @@
 |---|---|
 | `models.ts` | ALL data model types: AppState, Passage, Address, history, settings, action types — **plus the navigation types** (8.1.14): `RootStackParamList` (every `SCREEN` → its params), `PassageScreenParamsModel` / `ListScreenParamsModel`, `ScreenPropsModel<T>` (a screen's `{route, navigation}`) and `RootStackNavigationModel`. They live here, not in `navigator.tsx`, because the navigator imports every screen — a screen importing its props type from there would be a cycle |
 | `initials.ts` | initial/default values for every state version |
-| `constants.ts` | app-wide constants: `VERSION` (state model) + `alowedStateVersions`, `API_VERSION` (re-exported from `bbh-shared`) + `API_LINK` endpoint enum, storage keys (`STORAGE_NAME`/`STORAGE_BACKUP_NAME` rolling daily/`STORAGE_PRECONVERT_BACKUP_NAME` write-once pre-migration snapshot/`STORAGE_LOGGER`, token names), training tuning (`PERFECT_TESTS_TO_PROCEED`, `ERRORS_TO_DOWNGRADE`, `MAX_L50_TRIES`, sentence rules), enums (`SCREEN`, `SETTINGS`, `LANGCODE`, `THEMETYPE`, `SORTINGOPTION`, `STATSMETRICS`, `TESTLEVEL`, `PASSAGELEVEL`), vibration patterns, and the palettes `COLOR_DARK`/`COLOR_LIGHT` + `THEME_DARK`/`THEME_LIGHT` StyleSheets |
+| `constants.ts` | app-wide constants: `VERSION` (state model) + `alowedStateVersions`, `API_VERSION` (re-exported from `bbh-shared`) + `API_LINK` endpoint enum, storage keys (`STORAGE_NAME`/`STORAGE_BACKUP_NAME` rolling daily/`STORAGE_PRECONVERT_BACKUP_NAME` write-once pre-migration snapshot/`STORAGE_LOGGER`, token names), training tuning (`PERFECT_TESTS_TO_PROCEED`, `STUDY_ONE_REPEATS`, `ERRORS_TO_DOWNGRADE`, `MAX_L50_TRIES`, sentence rules), enums (`SCREEN`, `SETTINGS`, `LANGCODE`, `THEMETYPE`, `SORTINGOPTION`, `STATSMETRICS`, `TESTLEVEL`, `PASSAGELEVEL`), vibration patterns, `ANIMATION` (the 0.3.0 motion vocabulary — fade duration, spring config, rise distance/scale; every reanimated surface pulls from it so the app springs the same way), and the palettes `COLOR_DARK`/`COLOR_LIGHT` + `THEME_DARK`/`THEME_LIGHT` StyleSheets |
 | `bibleReference.ts` | Bible structure data: 66 books as `{ titleShort, longTitle }` l10n WORD keys + `chapters` (verse count per chapter, `chaptersAlternative` where translations differ) |
 | `navigator.tsx` | react-navigation stack typed with `RootStackParamList` from `models.ts` (8.1.14): all screens, `headerShown:false`, `freezeOnBlur` + `detachInactiveScreens` (render-lag fix 8.1.3), `linking` config for `bbh://` / `bible-by-heart://` / `https://biblebyheart.app` deep links, the `ReactNavigation.RootParamList` global augmentation (so `useNavigation`/`useRoute` are typed app-wide), and the background-notification TaskManager task. Exports `navigationRef` (imperative navigation from outside the tree: share intent in `App.tsx`, notification taps in `AppContext`) |
 | `storage.ts` | single `react-native-storage` instance over AsyncStorage (`defaultExpires: null`), default-exported; every persist/load goes through it |
@@ -62,13 +62,13 @@
 | File | Description |
 |---|---|
 | `HomeScreen.tsx` | main screen: stroke/streak, week activity, entry to test/list/stats |
-| `ListScreen.tsx` | passage list: search, filters, sort, swipe actions, editor entry |
+| `ListScreen.tsx` | passage list: search, filters, sort, swipe actions, editor entry. Owns the add flow: address picker → (8.2.1b) a translation `SelectModal`, shown only when `getTranslationChoice` says the answer is not already clear → `SCREEN.passage` with `{address, translationId}` |
 | `TestsScreen.tsx` | training session: renders generated tests per level, navigation dots |
 | `FinishScreen.tsx` | session results screen (feature: show dynamic session data) |
 | `StatsScreen.tsx` | global + per-passage statistics |
 | `CalendarScreen.tsx` | month/day activity calendar view |
 | `SettingsScreen.tsx` | settings hub: language/theme selects + rows that navigate to the sub-menu screens below (was: rendered each sub-list inline as a MiniModal). User row gated behind `isAutorized` |
-| `PassageScreen.tsx` | add/edit a passage (former `ListScreen` editor modal; reads AppContext, draft committed on save) |
+| `PassageScreen.tsx` | add/edit a passage (former `ListScreen` editor modal; reads AppContext, draft committed on save). Since 8.2.1c it also closes the add journey: saving a **new** passage that has text offers a "study this one" drill (a `ConfirmModal`) → `generateStudyOneTests` + `SCREEN.test`; declining, or editing an existing passage, goes to the list as before |
 | `ListSettingsScreen.tsx` | List settings sub-menu (left-swipe tag, translations link, passage import/export, **whole-state backup export + restore-from-file** — restore decodes first, then shows a `ConfirmModal` with the file's passage/test counts before the swap, 8.1.9). Was `settingsLists/listSettings` MiniModal |
 | `TranslationsSettingsScreen.tsx` | Translations editable list (nested under List settings). Was a modal-in-modal via `SettingsListWrapper` |
 | `TestsSettingsScreen.tsx` | Tests settings sub-menu (haptics, auto-increase level, train-modes link). Was `settingsLists/testsSettings` MiniModal |
@@ -157,6 +157,7 @@ in `src/screens/` and removed.
 | `addressToString.ts` / `addressFromString.ts` | Address ↔ human string; parser finds the reference ANYWHERE in the text (title + chapter:verse, word-boundary-guarded), picks the most specific book, and matches per-book aliases from `bookAliases.ts` |
 | `bookAliases.ts` | Per-language abbreviation / spelling-variant lists per book (keyed by long-title WORD), consumed by `addressFromString` in addition to the localized titles |
 | `sanitizeSharedText.ts` | Pure cleaner for share-sheet text: normalizes untypable chars (dashes, curly quotes, nbsp, ellipsis), strips URLs + wrapping quotes + dangling separators. Used by `ListScreen.handleTextFromIntent` |
+| `getTranslationChoice.ts` | 8.2.1b — `getTranslationChoice(translations)` → `{needsChoice, translationId}`: whether the add-passage flow must ask for a translation (only with more than one) and which one it uses/preselects (the default, else the first). Used by `ListScreen.handleAPSubmit` |
 | `addressDistance.ts` / `addressDifference.ts` / `addressOrder.ts` | address math for test generation/sorting |
 | `getNumberOfVerses.ts` / `getNumberOfEnglishVerses.ts` | verse counting for limits (localized vs English chapter numbering) |
 | `fileManager.ts` | `writeFile`/`readFile` — import/export files (txt/json) via document picker |
@@ -168,7 +169,7 @@ in `src/screens/` and removed.
 | `toastShow.ts` | toast notifications |
 | `logger.ts` | app logger — `logger.write`/`.error`/`.readAll`/`.clearAll`; appends to a `STORAGE_LOGGER` array capped at `LOGGER_MAX_ARRAY_SIZE`, read by the dev-mode log viewer |
 | `isTokenExpired.ts` | JWT payload decode + expiry check (used by `services/fetch.ts` auth/refresh) |
-| `generateTests/index.ts` | `getPassagesByTrainMode` (which passages are due) + `generateTests`/`generateATest` — orchestrates per-passage test generation by level |
+| `generateTests/index.ts` | `getPassagesByTrainMode` (which passages are due) + `generateTests`/`generateATest` — orchestrates per-passage test generation by level. Also `generateStudyOneTests(state, passageId, repeats?)` (8.2.1c): the "study this one" drill — one passage repeated `STUDY_ONE_REPEATS` times at its own selected level, in one session, reading no train mode at all |
 | `generateTests/createL10Test.ts` … `createL50Test.ts` | one generator per test level (10, 11, 20/21 in `createL2XTest`, 30, 40; `createL50Test` = `createL40Test` today). `createL10Test.ts` also owns the shared `CreateTestInputModel` / `CreateTestMethodModel` types |
 | `generateTests/getErrorGradedSentences.ts` | pick hardest sentences from error history |
 | `generateTests/getWordsFromErrors.ts` | pick hardest words from error history |
@@ -184,7 +185,8 @@ in `src/screens/` and removed.
 | smoke | `App.test.tsx` |
 | components | AddressPicker, Button, Checkbox, ConfirmModal, ErrorBoundary, Header, Icon, Input, MiniModal, Select, SettingsMenuItem, Text (+snapshots) — 8.1.15a renamed the eight camelCase leftovers and their `.snap` files so every test matches its subject's casing (CODING_RULES §2) |
 | levels | Level1–5 (+snapshots) |
-| utils | addressFromString, backupFile, bootBackup, createL11Tests, getNumberOfVerses, getStats, handlePassageExport, isTokenExpired, notifications, reduce, sanitizeSharedText, stateVersionConvert |
+| utils | addressFromString, backupFile, bootBackup, createL11Tests, generateStudyOneTests, getNumberOfVerses, getStats, getTranslationChoice, handlePassageExport, isTokenExpired, notifications, reduce, sanitizeSharedText, stateVersionConvert |
+| screens | `screens/ListScreen.test.tsx` — the add-passage flow (8.2.1b) driven through the real address picker: asks for the translation when several exist, skips it when one does, navigates nowhere when dismissed. `screens/PassageScreen.test.tsx` — the study-one offer (8.2.1c) driven through the real editor's Save: offered on a new passage with text, generates a one-passage session and opens training, declined goes to the list, never offered on an edit or on an empty passage |
 | e2e | `e2e/flow.test.tsx` — the release guard (8.1.16a): one test drives create state → add passage → `generateTests` → answer with errors → finish → assert stats, through the reducer + generators only (no rendering), plus an explicit assertion that no error count is exposed |
 | fixtures | `fixtures/state006.ts`, `fixtures/state007.ts` — realistic legacy states (passages, history, settings) for the 8.1.10 converter hops. **Not test suites**: `package.json`'s jest `testPathIgnorePatterns` excludes `__tests__/fixtures/`, otherwise jest's default `testMatch` picks them up and fails them as suites with no tests |
 

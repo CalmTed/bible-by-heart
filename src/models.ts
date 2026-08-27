@@ -285,6 +285,7 @@ export enum ActionName {
   removePassage = "removePassage",
   clearActiveTests = "clearActiveTests",
   generateTests = "generateTests",
+  generateStudyOneTests = "generateStudyOneTests",
   updateTest = "updateTest",
   downgradePassage = "downgradePassage",
   finishTesting = "finishTesting",
@@ -339,6 +340,17 @@ export type ActionModel =
   | {
       name: ActionName.generateTests;
       trainModeId?: number;
+    }
+  | {
+      /**
+       * "Study this one" (8.2.1c): a transient session drilling a single
+       * passage. Carries no train mode — it deliberately leaves the user's
+       * practice setup alone.
+       */
+      name: ActionName.generateStudyOneTests;
+      payload: {
+        passageId: number;
+      };
     }
   | {
       name: ActionName.updateTest;

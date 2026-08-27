@@ -42,6 +42,10 @@ export const BACKGROUND_NOTIFICATION_NAME = "backgroundNotificationName";
 export const CUSTOM_TRANSLATION_NAME = "null";
 
 export const PERFECT_TESTS_TO_PROCEED = 4;
+// How many times a "study this one" session repeats its single passage.
+// Deliberately <= PERFECT_TESTS_TO_PROCEED: a drill is practice, and one drill
+// alone must not be able to hand out a level upgrade (8.2.1c).
+export const STUDY_ONE_REPEATS = 3;
 export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
 export const ERRORS_TO_DOWNGRADE = 2;
@@ -119,6 +123,25 @@ export const VIBRATION_PATTERNS = {
   testWrong: [0, 300],
   wordClick: 10,
   APSelectVerse: 10
+};
+
+// Candy-UI motion vocabulary (0.3.0). Every reanimated surface pulls its timing
+// from here so the whole app springs the same way - inventing per-component
+// numbers is what makes an animated app feel assembled rather than designed.
+// SPRING is deliberately slightly under-damped: the ~2% overshoot is the "candy"
+// bounce. Durations stay short; anything above ~250ms reads as sluggish on the
+// old small Androids this app must stay pleasant on.
+export const ANIMATION = {
+  fadeMs: 160,
+  spring: {
+    damping: 18,
+    stiffness: 220,
+    mass: 0.6
+  },
+  // how far a surface travels while it fades in, in px
+  riseDistance: 16,
+  // scale a surface starts from before settling at 1
+  riseScale: 0.94
 };
 
 export const COLOR_DARK = {

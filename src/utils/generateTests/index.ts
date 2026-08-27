@@ -1,4 +1,10 @@
-import { TESTLEVEL, PASSAGELEVEL, SORTINGOPTION, DAY } from "../../constants";
+import {
+  TESTLEVEL,
+  PASSAGELEVEL,
+  SORTINGOPTION,
+  DAY,
+  STUDY_ONE_REPEATS
+} from "../../constants";
 import { createTest } from "../../initials";
 import {
   AppStateModel,
@@ -136,6 +142,47 @@ export const generateTests: (
     }
   );
   return tests;
+};
+
+/**
+ * "Study this one" (8.2.1c) — a session that drills ONE passage, repeated
+ * `repeats` times, instead of a slice of the library.
+ *
+ * It is a transient session, not a stored `TrainModeModel`: a train mode is a
+ * *filter* over the library (tags, translation, sort, length) and has no way to
+ * name a single passage, so storing one would mean a state-model change for a
+ * mode that targets a passage the user just created and will never reuse.
+ * Nothing here touches `trainModesList` or `activeTrainModeId` — the user's
+ * normal practice setup survives a drill untouched.
+ *
+ * Each repeat is generated separately, so the per-level randomness the library
+ * already has (l10 vs l11, l20 vs l21, which words go missing, which decoy
+ * addresses appear) makes the repeats differ from one another.
+ */
+export const generateStudyOneTests: (
+  state: AppStateModel,
+  passageId: number,
+  repeats?: number
+) => TestModel[] = (state, passageId, repeats = STUDY_ONE_REPEATS) => {
+  const targetPassage = state.passages.find((p) => p.id === passageId);
+  if (!targetPassage) {
+    logger.error(`No passage ${passageId} to study`);
+    return [];
+  }
+  // A passage with no text cannot be tested at any level.
+  if (!targetPassage.verseText.trim().length) {
+    logger.write(`Passage ${passageId} has no text to study`);
+    return [];
+  }
+  const sessionId = Math.round(Math.random() * 10000000);
+  return Array.from({ length: Math.max(repeats, 1) }, () =>
+    generateATest(
+      createTest(sessionId, targetPassage.id, targetPassage.selectedLevel),
+      state.passages,
+      null,
+      state.testsHistory
+    )
+  );
 };
 
 //generate a test

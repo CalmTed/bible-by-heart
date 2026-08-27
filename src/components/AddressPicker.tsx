@@ -8,6 +8,7 @@ import {
   Vibration,
   View
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { AddressType } from "../models";
 import { Button, IconButton } from "./Button";
 import { IconName } from "./Icon";
@@ -15,6 +16,7 @@ import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
 import { getNumberOfVerses } from "../utils/getNumberOfVerses";
+import addressToString from "../utils/addressToString";
 import { VIBRATION_PATTERNS } from "../constants";
 import { useAppContext } from "../context/AppContext";
 
@@ -26,6 +28,38 @@ interface AddressPickerModel {
 }
 
 const bookList = bibleReference.map((book) => book.titleShort);
+
+//the title describes what has been PICKED, not which part is being edited — since
+//8.1.7 the picker stops on the start verse, so a part-index-driven title could never
+//show it (8.2.1a). NaN = not picked yet; a complete address goes to addressToString.
+const getPickerTitle: (
+  address: AddressType,
+  t: (word: WORD) => string
+) => string = (address, t) => {
+  const book = bibleReference[address.bookIndex];
+  if (isNaN(address.bookIndex) || !book) {
+    return t("APSelectBook");
+  }
+  const bookTitle = t(book.longTitle);
+  if (isNaN(address.startChapterNum)) {
+    return bookTitle;
+  }
+  if (isNaN(address.startVerseNum)) {
+    return `${bookTitle} ${address.startChapterNum + 1}`;
+  }
+  const start = `${bookTitle} ${address.startChapterNum + 1}:${
+    address.startVerseNum + 1
+  }`;
+  //endChapterNum / endVerseNum are nullable in the model, and unpicked is NaN
+  const endChapter = address.endChapterNum;
+  if (endChapter === null || isNaN(endChapter)) {
+    return start;
+  }
+  if (address.endVerseNum === null || isNaN(address.endVerseNum)) {
+    return `${start}-${endChapter + 1}`;
+  }
+  return addressToString(address, t);
+};
 
 export const AddressPicker: FC<AddressPickerModel> = ({
   visible,
@@ -155,60 +189,36 @@ export const AddressPicker: FC<AddressPickerModel> = ({
   const isStartVerseSelected =
     addressPart === "startVerseNum" && !isNaN(tempAddress.startVerseNum);
 
-  const TitleLabel: (a: {
-    addressPart: string;
-    tempAddress: AddressType;
-  }) => React.JSX.Element = ({ addressPart, tempAddress }) => {
-    const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
-    const book =
-      curPartIndex < 1
-        ? t("APSelectBook")
-        : t(bibleReference[tempAddress.bookIndex]?.longTitle as WORD);
-    const startChapter =
-      curPartIndex < 2 ? "" : tempAddress?.startChapterNum + 1;
-    const startVerse = curPartIndex < 3 ? "" : tempAddress?.startVerseNum + 1;
-    const endChapter =
-      curPartIndex < 4
-        ? ""
-        : (tempAddress?.endChapterNum || tempAddress.startChapterNum) + 1;
-    const endVerse =
-      curPartIndex < 5
-        ? ""
-        : (tempAddress?.endVerseNum || tempAddress.startVerseNum) + 1;
-    return (
-      <Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
-        {book} {startChapter}:{startVerse} - {endChapter}:{endVerse}
-      </Text>
-    );
-  };
   return (
     <Modal visible={visible}>
-      {/* HEADER */}
-      <View style={{ ...theme.theme.view, ...APstyle.headerView }}>
-        <IconButton
-          style={APstyle.headerBotton}
-          icon={IconName.back}
-          onPress={handleBack}
-        />
-        <TitleLabel addressPart={addressPart} tempAddress={tempAddress} />
-        <IconButton
-          style={APstyle.headerBotton}
-          icon={IconName.done}
-          onPress={() => {
-            handleConfirm(tempAddress);
+      <View style={{ ...APstyle.root, backgroundColor: theme.colors.bg }}>
+        {/* HEADER */}
+        <View style={APstyle.headerView}>
+          <IconButton
+            style={APstyle.headerBotton}
+            icon={IconName.back}
+            onPress={handleBack}
+          />
+          <Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
+            {getPickerTitle(tempAddress, t)}
+          </Text>
+          <IconButton
+            style={APstyle.headerBotton}
+            icon={IconName.done}
+            onPress={() => {
+              handleConfirm(tempAddress);
+            }}
+            disabled={isDoneDisabled}
+          />
+        </View>
+        {/* LIST */}
+        <View
+          style={{
+            ...APstyle.listView,
+            backgroundColor: theme.colors.bgSecond
           }}
-          disabled={isDoneDisabled}
-        />
-      </View>
-      {/* LIST */}
-      <View
-        style={{
-          ...APstyle.listView,
-          backgroundColor: theme.colors.bgSecond
-        }}
-      >
-        <ScrollView>
-          <View style={APstyle.listView}>
+        >
+          <ScrollView contentContainerStyle={APstyle.listContent}>
             {addressPart === "bookIndex" &&
               bookList.map((bookItem, i) => {
                 const title = bookItem as WORD;
@@ -285,37 +295,39 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                   );
                 }
               )}
-          </View>
-        </ScrollView>
-      </View>
-      {/* SINGLE-VERSE FOOTER — one verse is enough by default (8.1.7) */}
-      {isStartVerseSelected && (
-        <View
-          style={{
-            ...APstyle.footerView,
-            backgroundColor: theme.colors.bgSecond
-          }}
-        >
-          <Button
-            type="main"
-            color="green"
-            title={t("APAddVerse")}
-            style={APstyle.footerPrimary}
-            onPress={() => handleConfirm(tempAddress)}
-          />
-          <Button
-            type="transparent"
-            title={t("APExtendRange")}
-            onPress={() =>
-              setAddressPart(
-                Object.keys(tempAddress)[
-                  Object.keys(tempAddress).indexOf("startVerseNum") + 1
-                ]
-              )
-            }
-          />
+          </ScrollView>
         </View>
-      )}
+        {/* SINGLE-VERSE FOOTER — one verse is enough by default (8.1.7).
+            A real row in the layout flow, so it can never cover the last
+            row of verses the way the absolute one did (8.2.1a). */}
+        {isStartVerseSelected && (
+          <View
+            style={{
+              ...APstyle.footerView,
+              backgroundColor: theme.colors.bgSecond
+            }}
+          >
+            <Button
+              type="transparent"
+              title={t("APExtendRange")}
+              onPress={() =>
+                setAddressPart(
+                  Object.keys(tempAddress)[
+                    Object.keys(tempAddress).indexOf("startVerseNum") + 1
+                  ]
+                )
+              }
+            />
+            <Button
+              type="main"
+              color="green"
+              title={t("APAddVerse")}
+              style={APstyle.footerPrimary}
+              onPress={() => handleConfirm(tempAddress)}
+            />
+          </View>
+        )}
+      </View>
     </Modal>
   );
 };
@@ -327,32 +339,43 @@ const ListButton: FC<{
   selected?: boolean;
 }> = ({ title, onPress, onLongPress = () => {}, selected = false }) => {
   const { theme } = useAppContext();
+  const label = (
+    <Text style={{ ...APstyle.listButtonLabel, color: theme.colors.text }}>
+      {title}
+    </Text>
+  );
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
-      <View
-        style={{
-          ...APstyle.listButton,
-          ...(selected
-            ? {
-                backgroundColor: theme.colors.mainColor,
-                borderRadius: 33
-              }
-            : {})
-        }}
-      >
-        <Text
-          style={{
-            ...APstyle.listButtonLabel,
-            color: selected ? theme.colors.bg : theme.colors.text
-          }}
+      {selected ? (
+        //the app's selected idiom is a gradient ring over bgSecond, the same one
+        //`Button type="outline"` draws — not a flat mainColor fill (8.2.1a).
+        <LinearGradient
+          colors={[theme.colors.gradient1, theme.colors.gradient2] as const}
+          start={{ x: 0.0, y: 0 }}
+          end={{ x: 0.0, y: 1.0 }}
+          locations={[0, 1]}
+          style={APstyle.listButtonSelected}
         >
-          {title}
-        </Text>
-      </View>
+          <View
+            style={{
+              ...APstyle.listButtonSelectedInner,
+              backgroundColor: theme.colors.bgSecond
+            }}
+          >
+            {label}
+          </View>
+        </LinearGradient>
+      ) : (
+        <View style={APstyle.listButton}>{label}</View>
+      )}
     </TouchableOpacity>
   );
 };
 const APstyle = StyleSheet.create({
+  root: {
+    flex: 1,
+    width: "100%"
+  },
   headerView: {
     height: 100,
     paddingTop: 50,
@@ -373,12 +396,15 @@ const APstyle = StyleSheet.create({
     aspectRatio: 1
   },
   listView: {
-    height: "93%",
-    width: "100%",
+    flex: 1,
+    width: "100%"
+  },
+  listContent: {
     flexDirection: "row",
     flexWrap: "wrap",
-    alignContent: "stretch",
-    justifyContent: "space-evenly"
+    alignContent: "flex-start",
+    justifyContent: "space-evenly",
+    paddingVertical: 8
   },
   listButton: {
     width: 66,
@@ -386,19 +412,30 @@ const APstyle = StyleSheet.create({
     alignItems: "center",
     aspectRatio: 1
   },
+  listButtonSelected: {
+    width: 66,
+    aspectRatio: 1,
+    borderRadius: 33,
+    padding: 2
+  },
+  listButtonSelectedInner: {
+    flex: 1,
+    borderRadius: 31,
+    justifyContent: "center",
+    alignItems: "center"
+  },
   listButtonLabel: {
     textTransform: "capitalize",
     fontSize: 15
   },
   footerView: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 24,
-    gap: 4
+    gap: 8
   },
   footerPrimary: {
     paddingHorizontal: 40

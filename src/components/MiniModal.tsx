@@ -1,6 +1,13 @@
-import React, { FC } from "react";
-import { Modal, StyleSheet, View } from "react-native";
+import React, { FC, useEffect } from "react";
+import { Modal, StyleSheet } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming
+} from "react-native-reanimated";
 import { useAppContext } from "../context/AppContext";
+import { ANIMATION } from "../constants";
 
 interface MiniModalModel {
   shown: boolean;
@@ -16,6 +23,34 @@ export const MiniModal: FC<MiniModalModel> = ({
   style: customStyles
 }) => {
   const { theme } = useAppContext();
+  // Two drivers on purpose: opacity rides a plain timing so it never overshoots
+  // into >1, while the card's travel rides the spring and is allowed to.
+  const fade = useSharedValue(0);
+  const rise = useSharedValue(0);
+  // MiniModal itself stays mounted while hidden (only RN's <Modal> unmounts its
+  // children), so the values have to be reset on close or the second open would
+  // start already finished.
+  useEffect(() => {
+    if (!shown) {
+      fade.value = 0;
+      rise.value = 0;
+      return;
+    }
+    fade.value = withTiming(1, { duration: ANIMATION.fadeMs });
+    rise.value = withSpring(1, ANIMATION.spring);
+  }, [shown, fade, rise]);
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: fade.value
+  }));
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: fade.value,
+    transform: [
+      { translateY: (1 - rise.value) * ANIMATION.riseDistance },
+      {
+        scale: ANIMATION.riseScale + rise.value * (1 - ANIMATION.riseScale)
+      }
+    ]
+  }));
   const styles = StyleSheet.create({
     centeredView: {
       flex: 1,
@@ -44,15 +79,18 @@ export const MiniModal: FC<MiniModalModel> = ({
   });
   return (
     <Modal
-      animationType="slide"
+      // the entrance is ours now (reanimated), not the platform slide
+      animationType="none"
       transparent={true}
       visible={shown}
       onRequestClose={handleClose}
       onDismiss={handleClose}
     >
-      <View style={styles.centeredView}>
-        <View style={{ ...styles.modalView, ...customStyles }}>{children}</View>
-      </View>
+      <Animated.View style={[styles.centeredView, backdropStyle]}>
+        <Animated.View style={[styles.modalView, customStyles, cardStyle]}>
+          {children}
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 };
