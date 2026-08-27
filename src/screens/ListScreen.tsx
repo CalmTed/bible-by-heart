@@ -36,6 +36,7 @@ import addressToString from "../utils/addressToString";
 import { Swipeable } from "react-native-gesture-handler";
 import { reduce } from "../utils/reduce";
 import { MiniModal } from "../components/MiniModal";
+import { SelectModal } from "../components/SelectModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
 import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
@@ -45,6 +46,7 @@ import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 import addressFromString from "../utils/addressFromString";
 import { sanitizeSharedText } from "../utils/sanitizeSharedText";
+import { getTranslationChoice } from "../utils/getTranslationChoice";
 
 export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   route,
@@ -53,6 +55,11 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   const { state, setState, t, theme } = useAppContext();
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);
+  // The address picked in the add flow, held while the translation is asked for
+  // (null = nothing pending). Nothing is persisted at this point.
+  const [addressAwaitingTranslation, setAddressAwaitingTranslation] =
+    useState<AddressType | null>(null);
+  const translationChoice = getTranslationChoice(state.settings.translations);
   const addingFirstPassage = state.passages.length === 0;
   const [isAPOpen, setAPOpen] = useState(addingFirstPassage);
 
@@ -80,21 +87,42 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     const newPassage = createPassage(
       address,
       "",
-      state.settings.translations.find((tr) => tr.isDefault)?.id,
+      translationChoice.translationId,
       state.userData.uuid !== null ? state.userData.uuid : undefined
     );
     const versesInEnglish = getNumberOfVersesInEnglish(
       state.settings.translations,
       [...state.passages, newPassage]
     );
-    if (versesInEnglish < 500) {
-      // Open the editor screen to add a passage at this address. Nothing is
-      // persisted until the user taps Save there (momentary/draft edit).
-      navigation.navigate(SCREEN.passage, { address });
-    } else {
+    if (versesInEnglish >= 500) {
       logger.write("English verses number limit reached");
       toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
+      return;
     }
+    // The translation is the next thing the user meets after the address
+    // (8.2.1b) — but only when it is not already clear: a single translation
+    // (or none) is chosen for them and the step is skipped entirely.
+    if (translationChoice.needsChoice) {
+      setAddressAwaitingTranslation(address);
+      return;
+    }
+    // Open the editor screen to add a passage at this address. Nothing is
+    // persisted until the user taps Save there (momentary/draft edit).
+    navigation.navigate(SCREEN.passage, {
+      address,
+      translationId: translationChoice.translationId
+    });
+  };
+  const handleTranslationSelect = (value: string) => {
+    const address = addressAwaitingTranslation;
+    setAddressAwaitingTranslation(null);
+    if (!address) {
+      return;
+    }
+    navigation.navigate(SCREEN.passage, {
+      address,
+      translationId: parseInt(value, 10)
+    });
   };
   // Row-facing handlers are wrapped in useCallback so their identities stay
   // stable across renders — this is what lets the React.memo'd ListItem skip
@@ -613,6 +641,19 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
         address={selectedAddress}
         onCancel={handleAPCancel}
         onConfirm={handleAPSubmit}
+      />
+      <SelectModal
+        isShown={addressAwaitingTranslation !== null}
+        title={t("SelectTranslationTitle")}
+        options={state.settings.translations.map((tr) => ({
+          label: tr.name,
+          value: tr.id.toString()
+        }))}
+        selectedIndex={state.settings.translations.findIndex(
+          (tr) => tr.id === translationChoice.translationId
+        )}
+        onSelect={handleTranslationSelect}
+        onCancel={() => setAddressAwaitingTranslation(null)}
       />
       <ConfirmModal
         shown={passageIdToRemove !== null}

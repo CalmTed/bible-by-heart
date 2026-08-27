@@ -59,8 +59,33 @@
   is a planned refactor).
 - **Theme:** all colors come from the theme object (`getThemeFromScheme`), never
   hex literals in components.
+- **Selected state is a gradient outline, not a flat fill.** The app's idiom for "this
+  one is chosen" is a `gradient1`→`gradient2` ring (2px `padding` on a LinearGradient)
+  over a `bgSecond` inner surface — what `Button type="outline"` draws. A solid
+  `mainColor` background is not it; 8.2.1a removed the last one (`AddressPicker`).
 - **Animations (new UI work):** react-native-reanimated + gesture-handler are the
-  standard. No `Animated` from RN core in new code.
+  standard. No `Animated` from RN core in new code. Installed in 8.2.1 (reanimated 4 +
+  `react-native-worklets`); **never add the worklets/reanimated plugin to
+  `babel.config.js`** — `babel-preset-expo` applies it automatically when the package is
+  installed, and a manual entry double-applies it.
+- **Motion values come from `ANIMATION` in `constants.ts`, never inline numbers.**
+  Duration, spring config, rise distance and start scale live there so every animated
+  surface springs identically; per-component magic numbers are what make an animated app
+  feel assembled rather than designed. Same principle as colors coming from the theme.
+- **What jest can and cannot prove about an animation.** It can prove the worklet
+  *executes* — read the host node's `jestAnimatedStyle.value` and assert the first frame
+  (see `MiniModal.test.tsx`). It cannot prove *progression*: jest-expo's mock never
+  advances frames, so `advanceAnimationByTime` is a no-op. Travel and feel are verified
+  on a device by the build the step ends with — which is why every wrapper step is
+  tagged `(build)`.
+- **A train mode is a filter, not a target.** `TrainModeModel` selects a *slice* of the
+  library (translation, tags, sort, length) and can't name a passage. So a mode that
+  trains specific passages is not a stored train mode — it is a generator plus a reducer
+  action that writes `testsActive` and nothing else. `generateStudyOneTests` (8.2.1c) is
+  the pattern: it leaves `activeTrainModeId` and `trainModesList` untouched, so a drill
+  can never quietly rewrite the user's practice setup the way
+  `ActionName.generateTests` deliberately does. Adding a mode this way costs no state
+  version bump.
 - **State model changes:** bump version + write converter in `stateVersionConvert.ts`
   + update `initials.ts` + prompt-backup flow. All four or nothing.
 - **Navigation is typed** (8.1.14). A screen's props are `ScreenPropsModel<SCREEN.x>`
@@ -130,15 +155,15 @@ Reuse these. Extend, don't duplicate.
 | Checkbox | `src/components/Checkbox.tsx` | themed checkbox row |
 | Select | `src/components/Select.tsx` | dropdown-style selector |
 | SelectModal | `src/components/SelectModal.tsx` | modal list picker |
-| MiniModal | `src/components/MiniModal.tsx` | small confirm/content modal (base for confirmations) |
+| MiniModal | `src/components/MiniModal.tsx` | small confirm/content modal (base for confirmations) — and, since 8.2.1, the app's **animated dialog surface**: backdrop fades on a timing, the card springs up from `ANIMATION.riseDistance`/`riseScale`, and RN's platform `animationType` is `"none"` because the entrance is ours. 19 call sites inherit it, so animate dialogs by going through MiniModal, not by hand-rolling one. Shared values reset on close — RN's `<Modal>` unmounts its children but MiniModal itself stays mounted, so without the reset a reopen would start already finished |
 | ConfirmModal | `src/components/ConfirmModal.tsx` | reusable destructive-action confirmation (text + cancel/confirm; `confirmColor` defaults red) — use before any delete/irreversible action |
 | ErrorBoundary | `src/components/ErrorBoundary.tsx` | the only thing that catches a render error thrown by a child (a `try/catch` around a parent's `return` never will). `renderFallback(error, reset)`; `reset()` clears the caught error, so recovery UI calls it **after** putting a usable state back. Dependency-free on purpose — no context, no themed components — so it survives a broken theme/l10n |
 | EmergencyScreen | `src/components/EmergencyScreen.tsx` | the last-resort recovery UI (restore from either backup slot, dump state, ask for help, erase). Rendered by `App.tsx` from two places: the `ErrorBoundary` fallback and a **failed** state read on boot. Renders outside `AppProvider` by design → raw RN primitives + hardcoded bilingual strings, the one place `t()`/theme do not apply. Feature-specific, not a base component |
 | BackupOfferModal | `src/components/BackupOfferModal.tsx` | the one-shot post-upgrade "save a backup file?" offer (8.1.9). Rendered by `App.tsx` inside the provider, shown only on a boot that converted a state, dismissible and never blocking. Feature-specific — not a base component to build on |
 | Header | `src/components/Header.tsx` | screen header with back/actions |
-| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker |
+| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker. Since 8.2.1a: the header title is derived from `tempAddress` (NaN = unpicked) and a complete address is handed to `addressToString` — never from which part is being *edited*; the selected verse wears the gradient-outline idiom; the single-verse footer is a real row in the layout flow, so it cannot cover the last row of verses |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |
-| PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI |
+| PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI. Since 8.2.1b the translation `Select` sits directly under the address and above the verse text it decides — not among the bottom selectors; a NEW passage usually arrives with it already answered by the add flow |
 | DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
 | TestNavDot | `src/components/TestNavDot.tsx` | per-test navigation dot in session |
 | WeekActivity | `src/components/WeekActivity.tsx` | weekly activity graph |
@@ -151,7 +176,8 @@ Key utils (check before writing a helper): `addressToString`, `addressFromString
 `addressDistance`, `addressDifference`, `addressOrder`, `formatDateTime`,
 `secondsToString`, `addZero`, `randomizers`, `getSimularity`, `getStats`,
 `getPerfectTests`, `levelsConvertion`, `toastShow`, `notifications`, `fileManager`,
-`handlePassageExport`, `bootBackup`, `backupFile`.
+`handlePassageExport`, `bootBackup`, `backupFile`, `getTranslationChoice`,
+`generateStudyOneTests`.
 
 > **Backups have exactly two owners.** `bootBackup.ts` = copies inside storage (the
 > write-once pre-conversion snapshot + the version-tolerant restore). `backupFile.ts`

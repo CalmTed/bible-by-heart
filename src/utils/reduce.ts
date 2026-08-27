@@ -18,6 +18,7 @@ import { getPerfectTestsNumber } from "./getPerfectTests";
 import { checkSchedule } from "./notifications";
 import {
   generateATest,
+  generateStudyOneTests,
   generateTests,
   getPassagesByTrainMode
 } from "./generateTests";
@@ -239,6 +240,21 @@ export const reduce: (
         };
       } else {
         logger.error("Unable to generate tests");
+      }
+      break;
+    case ActionName.generateStudyOneTests:
+      //a drill of one passage (8.2.1c): only testsActive changes, so the active
+      //train mode and the modes list survive it untouched
+      const studyOneTests = generateStudyOneTests(
+        state,
+        action.payload.passageId
+      );
+      if (studyOneTests.length) {
+        changedState = { ...state, testsActive: studyOneTests };
+      } else {
+        logger.error(
+          `Unable to generate a study session for passage ${action.payload.passageId}`
+        );
       }
       break;
     case ActionName.updateTest:

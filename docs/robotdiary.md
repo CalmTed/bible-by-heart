@@ -2104,3 +2104,306 @@ Two consequences, and the second is not an improvement:
 Re-verified after the edit: both files still parse, and every job reads back
 `node 22.17.0 | eas 22.5.0 | packager npm | token set` — the `token:` line survived the
 insert in all three steps, which was the one thing a blind sed could plausibly have eaten.
+
+
+## 2026-08-27 — 8.2.1 Install `react-native-reanimated` (0.3.0 Candy UI opens)
+
+Fedir cleared the 0.2.0 milestone (8.1.17 + 8.1.18 shipped) and pointed at 0.3.0:
+"reanimated modal, and wrapper rethink", with the standing instruction to stay humble and
+careful and to remember that **the target is UX, not passing tests**.
+
+**Versions.** `react-native-reanimated ~4.1.1` (resolved 4.1.7) + `react-native-worklets`
+0.5.1, both taken from `expo/bundledNativeModules.json` via `npx expo install` rather than
+picked by hand, and both landed in `dependencies` — an earlier diary entry records what it
+costs when a runtime dep hides in `devDependencies`. Reanimated 4 needs the New
+Architecture; `app.config.js` already has `newArchEnabled: true`, so nothing to change.
+
+**The babel config was NOT touched, and that is the finding of this session.**
+`babel-preset-expo` 54.0.11 (`build/index.js:284-291`) auto-appends
+`react-native-worklets/plugin` whenever the package resolves, falling back to
+`react-native-reanimated/plugin` for v3. So the historically flakiest change in this repo
+(STRATEGY §6 — the `react-native-fetch-api` polyfill once broke `useColorScheme()`) turned
+out to require no config edit at all. `babel.config.js` is byte-identical to HEAD. A future
+session "fixing" a missing plugin by adding it manually would double-apply it — that
+warning is now in CODING_RULES §4 and FILEMAP's toolchain row.
+
+**The trivial animation is `MiniModal`'s entrance.** Chosen over a throwaway demo because
+MiniModal is the dialog base for **19 files**: one ~15-line change and every confirm,
+picker and About dialog in the app gets the new feel at once. The backdrop fades on a
+`withTiming`; the card springs up on `withSpring`. Two drivers on purpose — opacity must
+not overshoot past 1, while the card's travel is *supposed* to overshoot (~2%, which is
+the "candy"). RN's `animationType` went `"slide"` → `"none"`: the entrance is ours now.
+
+Only the **entrance** is animated. An exit needs the modal to stay mounted past
+`shown=false`, which is a structural change and belongs to 8.2.2 (Modal purge), not here.
+
+**New `ANIMATION` block in `constants.ts`** (fade ms, spring config, rise distance/scale).
+Deliberately introduced now rather than later: if 8.2.2–8.2.5 each invent their own
+numbers, the app ends up animated but inconsistent, which reads as assembled rather than
+designed. Same discipline as colors coming from the theme.
+
+**How far verification actually got.**
+
+- `npm run lint` exit 0; `npm test` 31 suites / **150** tests / 22 snapshots green.
+- Exactly 2 snapshots changed (`MiniModal`, `ConfirmModal`) and the diff was **read before
+  being accepted**: `animationType` slide→none plus reanimated's jest metadata. Every
+  underlying color and layout value byte-identical. No other suite moved.
+- The babel transform was proved directly: `__workletHash`, `__initData` and
+  `__stackDetails` all present in `@babel/core` output for a `useAnimatedStyle` callback.
+- A full `expo export --platform android`: **1631 modules, no Metro/babel warnings**, and
+  the shipped 4.6 MB Hermes bytecode contains `__workletHash` / `WorkletsModule`. That is
+  also the real "gesture-handler still fine" evidence — its 4 import sites bundled clean.
+- `npm ci` exit 0, checked deliberately because a desynced lockfile is exactly what broke
+  CI on 2026-08-26.
+
+**What jest CANNOT show, stated plainly.** The animation does not progress under
+jest-expo's mock — `advanceAnimationByTime` is a no-op and `getAnimatedStyle` returns `{}`.
+So the new test asserts what is actually provable: the worklet *executes* and computes the
+first frame from `ANIMATION` (`opacity 0`, `translateY 16`, `scale 0.94`), read off the
+host node's `jestAnimatedStyle.value`. It is a **toolchain canary**, not a library test —
+and it was verified to fail by temporarily disabling the plugin (`babel-preset-expo` with
+`{worklets:false, reanimated:false}` → `WorkletsError: Failed to create a worklet`), after
+which the config was restored and diffed against HEAD. An alarm that never rings is worse
+than no alarm.
+
+No `testID` was added to reach the node — `src/` has zero of them today, and one proof
+test is not a reason to introduce a new convention into production components silently.
+
+**⚠️ MANUAL VERIFICATION REQUIRED — and it is not optional.**
+Reanimated is a **native** module. An existing binary does not contain it, so `npm run dev`
+against the old dev client will not merely lack the animation — it can fail outright. The
+build must happen before any of this can be seen. Two things to look at on the device:
+
+1. every dialog fades + springs in (settings confirms, level picker, About, delete
+   confirmations) — and is smooth on the oldest small Android available;
+2. **the failure mode to watch for is an invisible dialog.** The card starts at
+   `opacity: 0` by design, so if the native side were missing, dialogs would render blank
+   rather than crash. If that happens the animation is not at fault — the native build is.
+
+Version bumped 0.2.0 → **0.2.1** per the PLAN's `(build)` rule. `npm run build-dev` was
+**not** run: it carries `--auto-submit-with-profile staging`, i.e. it submits to the Play
+internal track, which is Fedir's to trigger. The lockfile bump was done by regenerating via
+`npm install` after a first hand-rolled attempt was caught rewriting four *dependency*
+entries that legitimately sit at 0.2.0 (`chromium-edge-launcher`, `eastasianwidth`,
+`sandbox-cli-detector`, `universalify`) — all four verified back at 0.2.0 afterwards.
+
+**Fedir's UX review of the add-passage flow → 8.2.1a/b/c in PLAN**, not fixed here.
+The address-selector complaint was diagnosed while scoping the session:
+`AddressPicker.tsx:158-183` builds the header title from `curPartIndex` (which part is
+being *edited*) instead of from `tempAddress` (what has been *picked*). The line is
+`startVerse = curPartIndex < 3 ? "" : ...`, and since 8.1.7 deliberately stopped
+auto-advancing after the start verse, `curPartIndex` stays at 2 forever — so the verse the
+user just tapped is structurally unable to appear. Not a styling slip: the title's data
+source is wrong. Two more in the same file — the selected verse is a flat `mainColor` fill
+where the app's idiom is a gradient ring, and the footer is a `position:absolute` column
+that covers the last row of verses.
+
+*Out-of-scope finding, reported not fixed:* `npx expo install --check` flags three
+pre-existing drifts unrelated to this work — `expo@54.0.35` (wants ~54.0.37),
+`expo-constants@18.0.13` (~18.0.14), `jest-expo@54.0.17` (~54.0.18). Confirmed
+pre-existing: the reanimated install touched only those two deps. Fedir decides whether
+that becomes a step.
+
+## 2026-08-27 — 8.2.1a AddressPicker ground-up fix
+
+Three defects, one file (`src/components/AddressPicker.tsx`), no new l10n strings.
+
+**1. The header title had the wrong data source.** It was built from `curPartIndex` —
+which part is being *edited* — with rungs like `startVerse = curPartIndex < 3 ? "" : …`.
+Since 8.1.7 deliberately stops the picker on the start verse instead of auto-advancing,
+`curPartIndex` never passes 2, so the verse the user just tapped was structurally unable
+to appear. Replaced by a module-level pure `getPickerTitle(address, t)` that reads
+`tempAddress`: NaN (or `null`, which the model allows for the two end fields) = not
+picked yet, and a fully picked address is handed to `addressToString` so the picker and
+the rest of the app spell an address the same way. The in-between range state
+("Genesis 1:1-3", end chapter picked, end verse not) is the one case `addressToString`
+cannot render — `!endChapterNum` is true for chapter index 0 — so it is formatted here.
+
+**2. Selected verse was a flat `mainColor` fill.** Now the app idiom: a
+`gradient1`→`gradient2` LinearGradient with 2px padding over a `bgSecond` inner circle —
+the same ring `Button type="outline"` draws. The label keeps `colors.text` instead of
+flipping to `colors.bg`. Written up as a rule in CODING_RULES §4 so the rest of 0.3.0
+does not reinvent a fill.
+
+**3. The footer covered the last row of verses.** It was `position:absolute; bottom:0`
+over a list styled `height:"93%"`. Now the modal has a `flex:1` root column: header,
+`flex:1` list, footer as a real row. Two related fixes fell out — `APstyle.listView` was
+being applied *twice* (once as the outer container, once as the wrap container inside the
+ScrollView, dragging `height:"93%"` in with it), so the wrap styles moved to the
+ScrollView's `contentContainerStyle`; and the footer became horizontal, secondary
+("Extend range") left, primary ("Add") right.
+
+**Testing.** 5 new tests, 155 total. The title is asserted at every rung (nothing picked →
+book → book+chapter → book+chapter+verse), plus the range title and the back button
+receding one step. Two gotchas worth remembering:
+
+- `fireEvent.press` walks **up** the tree from the node you hand it, never down. Pressing
+  the composite `IconButton` (or the `Icon` inside it) silently does nothing, because
+  neither has a press-handling *host* ancestor between it and the header. The back button
+  is reached as `UNSAFE_getAllByProps({ accessible: true })[0]` — Pressable's host View.
+- On the **composite** `LinearGradient` element `props.colors` is still the string array
+  you passed; only the host `ViewManagerAdapter_ExpoLinearGradient` below it carries the
+  `processColor`-ed ints. Assert against whichever node you actually queried.
+
+The selected ring is identified in the test as "the only 66px-wide LinearGradient" rather
+than by a `testID`, keeping the 8.2.1 decision: `src/` has zero testIDs and a single proof
+test is not a reason to start that convention without Fedir saying so.
+
+The two 8.1.7 footer tests were left byte-identical and still pass — the add /
+extend-range behaviour is unchanged, only its placement and the title above it.
+
+**Needs manual verification** (no build required — this is JS-only, it rides along on the
+8.2.1 reanimated build): on a device, walk book → chapter → verse and check the title
+updates at each tap; check the ring reads as "selected" against both themes (light theme's
+`gradient1` is yellow `#E7DF0B`, which is louder than dark's green); and scroll to the
+bottom of a long chapter (Psalm 119, 176 verses) to confirm the last row is now reachable
+above the footer.
+
+## 2026-08-27 — 8.2.1b Translation selector inside the add-passage flow
+
+**The step, plus Fedir's amendment.** PLAN asked for the translation to be the next thing
+the user meets after the address, instead of a field further down `PassageEditor`. Fedir
+added the half that matters more: *ask only if it is not clear — if there is only one
+existing translation, omit the selector.* So this is not "move a field", it is "ask a
+question, and only when there is a question".
+
+**The decision is a util, not an `if` in a screen.** `src/utils/getTranslationChoice.ts`
+takes `settings.translations` and returns `{ needsChoice, translationId }`:
+`needsChoice` is `translations.length > 1`; `translationId` is the default translation,
+falling back to the first, and is `undefined` only when the list is empty. That is the
+whole rule, and being pure it is the thing the unit tests pin (6 of them) instead of
+re-deriving it from rendered UI.
+
+**Flow.** `ListScreen.handleAPSubmit` now: verse-limit check first (unchanged, it just
+returns early now instead of nesting) → if `needsChoice`, park the picked address in
+`addressAwaitingTranslation` and show a `SelectModal` titled `SelectTranslationTitle`,
+preselected on the default translation → on pick, `navigate(SCREEN.passage, { address,
+translationId })`. With one translation (or none) nothing is shown and the navigate
+happens immediately with the resolved id. Dismissing the modal drops the pending address
+and goes nowhere — nothing had been persisted (the flow stays momentary/draft until Save,
+as it was).
+
+Reuse, not new machinery: `SelectModal` is the existing modal list picker, so the step
+inherits MiniModal's 8.2.1 spring entrance for free, and `translationId` was already a
+`PassageScreenParamsModel` field (8.1.14) — no param-list change.
+
+**PassageEditor.** The `Select` moved out of the bottom `selectorsWrapper` (LevelPicker
+stays there alone) into its own row directly under the address and above the verse text —
+the text is what the translation decides, so it now reads top-to-bottom. Fetch-on-change
+(`TRANSLATIONS_TO_FETCH`, the two effects) is untouched, and it keeps working through the
+new flow: a new passage arrives with `translationId` already set, so the mount effect
+fetches exactly as before.
+
+**One judgment call, flagged for Fedir.** The editor's `Select` is NOT hidden when only
+one translation exists, unlike the flow step. Its option list also carries "Other" (=
+custom translation, `verseTranslation: null`), so hiding it would leave a user who has
+deleted all but one translation with no way to mark a passage as custom-text. The
+"omit when clear" rule is applied where the ambiguity actually is — the add flow. Say
+the word and the editor row can hide too.
+
+**Also out of scope, reported not fixed:** the share-intent path
+(`handleTextFromIntent`) picks a translation by matching the parsed address language and
+silently falls back to `undefined` when nothing matches — that is the same "unclear"
+situation the new step exists for, but it is a different entry point and 8.2.1b did not
+touch it.
+
+**Testing.** 9 new tests, 164 total. The 3 flow tests live in a new
+`__tests__/screens/ListScreen.test.tsx` (first screen test in the repo) and drive the
+**real** address picker — Genesis → 1 → 1 → "Add" — rather than calling the handler, so
+they break if the picker's contract changes. Gotchas: an empty passage list opens the
+picker on mount (`addingFirstPassage`), which is what gives the test its entry point for
+free; and dismissing the translation modal is fired as `requestClose` on the one `Modal`
+with `visible === true` (the picker's is already false by then), since `src/` still has
+no testIDs and 8.2.1a's decision not to start that convention holds.
+
+**Needs manual verification** (JS-only, rides the 8.2.1 reanimated build): add a passage
+on a fresh install and confirm the translation modal appears right after the last verse
+tap and that picking one lands in the editor with the text fetched; delete one
+translation in settings and confirm the modal no longer appears at all; and check the
+editor's new translation row reads well above the text field in both themes.
+
+## 2026-08-27 — 8.2.1c "Study this one" (the 8.2.1 group closes)
+
+**The question the step actually asked.** PLAN did not ask for a button, it asked for a
+decision: is a single-passage drill a stored `TrainModeModel` or a transient session?
+The answer is in the shape of `TrainModeModel` itself — every field on it is a *filter*
+(translation, includeTags, excludeTags, sort, length, testAsLevel). There is no way to
+name a passage. Storing one would have meant adding a field to the state model, which
+means version bump + converter + `initials.ts` + prompt-backup flow (all four or
+nothing), and all of that for a mode aimed at one passage the user just created and will
+never open again. So: **a train mode is a filter, not a target** — that sentence is now a
+rule in CODING_RULES §4, because it is what will decide the next such question too.
+
+**What that made it.** A generator plus one reducer action.
+`generateStudyOneTests(state, passageId, repeats?)` sits next to `generateTests` and
+reuses the whole chain under it — `createTest` picks the test level from the passage's
+own `selectedLevel`, `generateATest` fills it. Nothing new was written about levels: the
+repeats differ from one another for free, because the library already randomizes inside
+a level (l10 vs l11, l20 vs l21, which words go missing, which decoy addresses appear).
+`ActionName.generateStudyOneTests` writes `testsActive` and nothing else — where
+`ActionName.generateTests` deliberately rewrites `activeTrainModeId` and can rewrite the
+default mode's translation, a drill leaves the practice setup exactly as it found it.
+That is the assertion the reducer test spends most of its lines on.
+
+**`STUDY_ONE_REPEATS = 3`, and why not 5.** `finishTesting` upgrades a passage when its
+perfect stroke exceeds `PERFECT_TESTS_TO_PROCEED` (4). In a normal session a passage
+appears once, so four perfect answers cost four sessions across days. A drill of five
+would hand out a level upgrade in one sitting, which quietly turns "practice this" into
+"skip a week of spaced repetition". Three is several times, and is ≤ the threshold, so a
+drill contributes to the stroke like anything else but can never complete one alone. The
+constant carries that reasoning in a comment so nobody bumps it to 5 for feel.
+
+**Where the offer lives.** `PassageScreen.handleSave` — the moment the passage is
+committed. It is held as `studyOfferPassageId` (the id, not a boolean) so the session is
+generated for the passage that was actually saved, and it is gated twice: only when
+`isNew`, and only when the passage has text. Editing an existing passage still leaves
+straight for the list — the drill is for a passage you have just met, and an edit is not
+that moment. A passage saved with no text cannot be tested at any level, so offering
+would promise a session that `TestsScreen` would immediately bounce out of; the
+generator refuses that case too, independently, since it is a library function.
+
+Reuse, not new machinery: the offer is a `ConfirmModal` with `confirmColor="green"`,
+which is the existing non-destructive form of the app's dialog, so it inherits MiniModal's
+8.2.1 spring entrance. No new component, no new l10n pattern, no param-list change —
+`SCREEN.test` already takes no params, because the session travels in state, not in
+navigation.
+
+**Gotchas worth keeping.**
+- The two `setState` calls in the accept path (commit the passage, then generate) are
+  both functional updaters, so the second runs on the state the first produced. This
+  only works because it is `setState(prev => …)`; a `reduce(state, …)` closing over the
+  render's `state` would have generated the session from a library that did not contain
+  the new passage yet.
+- `reduce` JSON round-trips its result, so `NaN` address fields come back as `null`. A
+  test asserting "the drill changed no passage" cannot `toEqual` the raw fixture — it has
+  to compare against the same round-trip. Cost one red run.
+- The screen test needed a **real stateful** context, not `renderWithContext`'s no-op
+  `setState`, because the thing under test is precisely that the passage is saved before
+  the session is generated. It builds a tiny `AppContext.Provider` over `useState`; the
+  rest (dispatch, theme, t) stays inert. Seeding `passageText` in the route params is what
+  keeps `PassageEditor`'s mount effect from firing a network fetch.
+
+**Testing.** 15 new tests, 179 total (35 suites). 8 unit on the generator
+(`__tests__/utils/generateStudyOneTests.test.ts` — named after the export, following
+`createL11Tests.test.ts`, since the module's file is `generateTests/index.ts`), 2 on the
+reducer, and 5 in a new `__tests__/screens/PassageScreen.test.tsx` that press the real
+editor's Save button rather than calling the handler, so they break if the offer stops
+being reachable from where the user is.
+
+**Reported, not fixed (Fedir decides).**
+1. `TestsScreen.handleReset` — the dev-mode Reset button and `LevelPicker`'s restart —
+   regenerates through `ActionName.generateTests`, i.e. from the active train mode. Reset
+   during a drill therefore silently turns it into a normal session. Nothing stores
+   "this session was a drill" for it to restart from; giving sessions an origin is a
+   real (small) design decision, not a fix to slip in here.
+2. A drill is offered only from the add flow. The same session would make sense from a
+   row in `ListScreen` ("study this one") for a passage added weeks ago — deliberately
+   out of scope, PLAN said "after a passage is added". The generator already takes any
+   `passageId`, so that entry point is one `ConfirmModal` away whenever it is wanted.
+
+**Needs manual verification** (JS-only, rides the 8.2.1 reanimated build, and this is the
+last third of the add journey — walk all of 8.2.1a→c in one go): add a passage on a fresh
+install, and at the offer take **Study it** — expect three tests of that one passage and
+then the finish screen; repeat and take **Later** — expect the passage list with no
+session; edit an existing passage and confirm nothing is offered; and check the offer's
+two buttons read well in both languages and both themes.

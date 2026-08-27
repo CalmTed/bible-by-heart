@@ -2,6 +2,7 @@ import {
   ARCHIVED_NAME,
   LANGCODE,
   PASSAGELEVEL,
+  STUDY_ONE_REPEATS,
   SETTINGS
 } from "../../src/constants";
 import {
@@ -193,5 +194,40 @@ describe("reducer must return valid state for every call", () => {
         payload: { ...taggedPassage, tags: [] }
       });
     expect(afterUntag?.settings.leftSwipeTag).toBe(ARCHIVED_NAME);
+  });
+
+  // 8.2.1c — a drill fills testsActive and touches nothing else. The point of
+  // the assertions on settings is that a study session must not hijack the
+  // active train mode the way ActionName.generateTests deliberately does.
+  it("generates a study-one session without disturbing the train modes", () => {
+    const studied = verseList[0];
+    const before = { ...testState, passages: verseList };
+    const after = reduce(before, {
+      name: ActionName.generateStudyOneTests,
+      payload: { passageId: studied.id }
+    });
+    expect(after?.testsActive.length).toBe(STUDY_ONE_REPEATS);
+    expect(after?.testsActive.every((t) => t.pi === studied.id)).toBe(true);
+    expect(after?.settings.activeTrainModeId).toBe(
+      before.settings.activeTrainModeId
+    );
+    expect(after?.settings.trainModesList).toEqual(
+      before.settings.trainModesList
+    );
+    // the reducer JSON round-trips its result (NaN -> null), so compare the
+    // passages against the same round-trip rather than the raw fixture
+    expect(after?.passages).toEqual(
+      JSON.parse(JSON.stringify(before.passages))
+    );
+  });
+
+  it("is a no-op when the passage to study is gone", () => {
+    const before = { ...testState, passages: verseList };
+    expect(
+      reduce(before, {
+        name: ActionName.generateStudyOneTests,
+        payload: { passageId: -1 }
+      })
+    ).toBe(null);
   });
 });
