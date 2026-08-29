@@ -72,7 +72,7 @@ export const L30: FC<LevelComponentModel> = ({
   const [selectedWords, setSelectedWords] = useState(defaultSelectedWords);
   // The index of the word the user tapped by mistake. `null` is "no error" -
   // NEVER a falsy check, because word 0 is a word the user can get wrong and
-  // `!errorIndex` silently swallowed that whole case (8.2.26).
+  // `!errorIndex` silently swallowed that whole case.
   const [errorIndex, setErrorIndex] = useState(null as number | null);
   const [wrongAddress, setWrongAddress] = useState(null as AddressType | null);
 
@@ -84,11 +84,11 @@ export const L30: FC<LevelComponentModel> = ({
 
   // A generated l30 test with no missing words has nothing to fill in, so the
   // user would sit on a screen with no way forward; passing it is the safety
-  // valve. It used to run DURING RENDER (8.2.5 moved it here) — a render that
-  // submits is a render that can navigate, which is exactly the class of bug
-  // that made the finish screen get skipped in 2026-07. Note the guard also had
-  // to be fixed to mean what it said: `missingWords` is `test.d.missingWords ||
-  // []`, so `!missingWords` was never true and the valve had never once opened.
+  // valve. It used to run DURING RENDER — a render that submits
+  // is a render that can navigate, which is exactly the class of bug that made
+  // the finish screen get skipped once. Note the guard also had to be
+  // fixed to mean what it said: `missingWords` is `test.d.missingWords || []`,
+  // so `!missingWords` was never true and the valve had never once opened.
   useEffect(() => {
     if (targetPassage && !missingWords.length) {
       submitTest({ isRight: true, modifiedTest: test });

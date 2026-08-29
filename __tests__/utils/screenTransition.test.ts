@@ -1,5 +1,5 @@
 /**
- * 8.2.28 — a direction per destination.
+ * A direction per destination.
  *
  * Every screen used to arrive from the right, so four different places felt
  * like one place reached four times. Settings lives beyond the left edge, the
@@ -76,7 +76,7 @@ const restingOffset = (edge: ScreenEdge, width?: number, height?: number) => {
   return { offset: valueOf(node), moved: axis };
 };
 
-describe("candyTransitions (8.2.28)", () => {
+describe("candyTransitions", () => {
   it("gives each destination the edge it lives beyond", () => {
     expect(candyTransitions.right.gestureDirection).toBe("horizontal");
     expect(candyTransitions.left.gestureDirection).toBe("horizontal-inverted");
@@ -143,7 +143,7 @@ describe("candyTransitions (8.2.28)", () => {
       expect(preset.cardOverlayEnabled).toBe(true);
       expect(preset.transitionSpec.open).toBe(preset.transitionSpec.close);
       expect(preset.transitionSpec.open.config).toMatchObject(ANIMATION.spring);
-      // a full-screen card that overshoots uncovers what is behind it (8.2.3)
+      // a full-screen card that overshoots uncovers what is behind it
       expect(preset.transitionSpec.open.config).toMatchObject({
         overshootClamping: true
       });

@@ -35,10 +35,10 @@ describe("testing level 30 rendering", () => {
 });
 
 /**
- * 8.2.5 — L30 was the one level that answered a test from inside its render
- * body. Two things were wrong with it and both are pinned here.
+ * L30 was the one level that answered a test from inside its render body. Two
+ * things were wrong with it and both are pinned here.
  */
-describe("Level 3 answering outside the render body (8.2.5)", () => {
+describe("Level 3 answering outside the render body", () => {
   const passage = (): PassageModel => ({
     ...makeLevelPassage(),
     verseText: "All things work together for good."
@@ -112,13 +112,13 @@ describe("Level 3 answering outside the render body (8.2.5)", () => {
 });
 
 /**
- * 8.2.26 - the test level 3 has never had: a missing word is not readable.
+ * The test level 3 has never had: a missing word is not readable.
  *
  * L3's whole question is which words are gone, so a missing word rendered in a
  * readable colour is the answer printed above the options. Nothing asserted
  * this, which is why the report could only ever come from a screenshot.
  */
-describe("Level 3 hiding the words it took out (8.2.26)", () => {
+describe("Level 3 hiding the words it took out", () => {
   // The word's own Text node, found by the word itself. queryAllByText also
   // matches the option Button below the verse - the verse is rendered first, so
   // the first hit is the one in the passage.
@@ -254,10 +254,10 @@ describe("Level 3 hiding the words it took out (8.2.26)", () => {
 });
 
 /**
- * 8.2.26 — the word bank answers by letters (Fedir's call on the repeated-word
- * question: don't hide every occurrence, accept every occurrence).
+ * The word bank answers by letters (Fedir's call on the repeated-word question:
+ * don't hide every occurrence, accept every occurrence).
  */
-describe("Level 3 accepting a word by its letters (8.2.26)", () => {
+describe("Level 3 accepting a word by its letters", () => {
   // "good." is the word at index 5; "good" appears at index 1 as well, so the
   // bank offers two chips whose letters are the same and only one of which is
   // the exact string the verse wants next.

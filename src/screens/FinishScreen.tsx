@@ -10,19 +10,19 @@ import { ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 
 /**
- * The end of a training session (8.2.5 — the shell).
+ * The end of a training session (the shell).
  *
- * What it says today is only "well done", but the shape is the one 8.5.2 needs:
- * a scrolling body between the device's top margin and a Continue button that
- * stays put. The screen used to be `justifyContent: center` with a `flex: 4`
- * hero over a `flex: 1` button, which could not host a summary at all — a list
- * of what was trained would have fought the cup for the same fixed share of the
- * screen. With nothing in the body yet, `flexGrow` + centring puts the cup
- * exactly where it was.
+ * What it says today is only "well done", but the shape is the one a session
+ * summary needs: a scrolling body between the device's top margin and a Continue
+ * button that stays put. The screen used to be `justifyContent: center` with a
+ * `flex: 4` hero over a `flex: 1` button, which could not host a summary at all
+ * — a list of what was trained would have fought the cup for the same fixed
+ * share of the screen. With nothing in the body yet, `flexGrow` + centring puts
+ * the cup exactly where it was.
  *
- * What goes in the body is what the session actually did (8.5.2): which
- * passages, how long, what levelled up, what to repeat next — and NEVER an
- * error count, which is a product rule, not an oversight (ARCHITECTURE §2.2).
+ * What goes in the body is what the session actually did: which passages, how
+ * long, what levelled up, what to repeat next — and NEVER an error count, which
+ * is a product rule, not an oversight.
  */
 export const FinishScreen: FC<ScreenPropsModel<SCREEN.testResults>> = ({
   navigation

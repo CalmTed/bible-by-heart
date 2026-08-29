@@ -24,10 +24,10 @@ jest.mock("../../src/navigator", () => ({
 
 const save = storage.save as jest.Mock;
 
-// 8.2.20 — the state persist is coalesced instead of running on every action.
-// What has to stay true: one write per window however many actions land in it,
-// and nothing pending when the app stops being the foreground app.
-describe("AppProvider state persist (8.2.20)", () => {
+// The state persist is coalesced instead of running on every action. What has
+// to stay true: one write per window however many actions land in it, and
+// nothing pending when the app stops being the foreground app.
+describe("AppProvider state persist", () => {
   type AppStateHandler = (status: AppStateStatus) => void;
   let appStateHandlers: AppStateHandler[] = [];
   const dispatchRef: { current: ((a: ActionModel) => void) | null } = {

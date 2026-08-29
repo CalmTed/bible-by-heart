@@ -13,7 +13,7 @@ import { SCREEN } from "../constants";
 // screen: state lives in AppContext, and the editor keeps a local draft that is
 // only committed on Save (with a discard-confirm on back). Route params carry
 // only what identifies/seeds the passage — never app state; their shape is
-// `PassageScreenParamsModel` in the root param list (models.ts, 8.1.14).
+// `PassageScreenParamsModel` in the root param list (models.ts).
 export const PassageScreen: FC<ScreenPropsModel<SCREEN.passage>> = ({
   route,
   navigation
@@ -54,9 +54,9 @@ export const PassageScreen: FC<ScreenPropsModel<SCREEN.passage>> = ({
     };
   });
 
-  // "Study this one" (8.2.1c). The offer is held as the id of the passage it
-  // targets rather than a boolean, so the session is generated for the passage
-  // that was actually just saved.
+  // "Study this one". The offer is held as the id of the passage it targets
+  // rather than a boolean, so the session is generated for the passage that was
+  // actually just saved.
   const [studyOfferPassageId, setStudyOfferPassageId] = useState<number | null>(
     null
   );

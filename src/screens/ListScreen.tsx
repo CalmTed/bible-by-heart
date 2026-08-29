@@ -47,14 +47,13 @@ import { timeToString } from "../utils/formatDateTime";
 import { useAppContext } from "../context/AppContext";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
-import { sanitizeSharedText } from "../utils/sanitizeSharedText";
+import { parseSharedPassage } from "../utils/parseSharedPassage";
 import { getTranslationChoice } from "../utils/getTranslationChoice";
 import { feedback } from "../utils/feedback";
 
 // The add-passage flow is a sequence of steps, not a pair of independent
-// modals: translation -> address -> editor (8.2.1d). One value says where the
-// user is, so no two steps can be open at once and "back" always has somewhere
-// to go.
+// modals: translation -> address -> editor. One value says where the user is,
+// so no two steps can be open at once and "back" always has somewhere to go.
 type AddFlowStep = "closed" | "translation" | "address";
 
 export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
@@ -67,10 +66,10 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   const translationChoice = getTranslationChoice(state.settings.translations);
   const addingFirstPassage = state.passages.length === 0;
   // Where the add-passage flow stands. Translation comes BEFORE the address
-  // (8.2.1d): translations disagree on verse numbering, so which numbering the
+  //: translations disagree on verse numbering, so which numbering the
   // picker shows has to be decided before a single chapter or verse number is
   // on screen. The step is still skipped silently when the answer is not in
-  // doubt — one translation, or none, is chosen for the user (8.2.1b).
+  // doubt — one translation, or none, is chosen for the user.
   const firstAddStep: AddFlowStep = translationChoice.needsChoice
     ? "translation"
     : "address";
@@ -136,7 +135,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   };
   // Row-facing handlers are wrapped in useCallback so their identities stay
   // stable across renders — this is what lets the React.memo'd ListItem skip
-  // re-rendering rows whose data didn't change (8.1.1 finding #4/c). setState /
+  // re-rendering rows whose data didn't change. setState /
   // navigation / setPassageIdToRemove are all referentially stable.
   const handlePESubmit = useCallback(
     (passage: PassageModel) => {
@@ -211,40 +210,20 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     });
   };
   const handleTextFromIntent: (rawText: string) => void = (rawText) => {
-    // Shared text comes from arbitrary apps (YouVersion etc.): normalize
-    // untypable chars, strip URLs and wrapping quotes/punctuation before parsing
-    // the address — the typing test later demands the exact character (8.1.4).
-    const text = sanitizeSharedText(rawText);
-    const parsedAddressResult = Address.parse(text);
-    const passageAddress =
-      parsedAddressResult !== false
-        ? parsedAddressResult.address
-        : createAddress();
-    const passageTranslation =
-      parsedAddressResult !== false
-        ? parsedAddressResult.language !== null
-          ? typeof state.settings.translations.find(
-              (tr) => tr.addressLanguage === parsedAddressResult.language
-            ) !== "undefined"
-            ? state.settings.translations.find(
-                (tr) => tr.addressLanguage === parsedAddressResult.language
-              )?.id
-            : undefined
-          : undefined
-        : undefined;
-    const passageText =
-      parsedAddressResult !== false
-        ? text.replace(parsedAddressResult.addressString, "").trim()
-        : text.trim();
+    // Shared text comes from arbitrary apps (YouVersion, MyBible…): reference,
+    // translation stamp, link and verse in one blob, in untypable characters.
+    // `parseSharedPassage` takes it apart — the typing test later demands the
+    // exact character.
+    const shared = parseSharedPassage(rawText, state.settings.translations);
     // Open the editor screen with the parsed address + verse text (the "confirm
     // before add" step). Nothing is persisted until Save. Passing the parsed
     // fields as small route params — not app state — is the deep-link-friendly
     // path (also reused by the address picker's plain add).
     setAddFlowStep("closed");
     navigation.navigate(SCREEN.passage, {
-      address: passageAddress,
-      passageText,
-      translationId: passageTranslation
+      address: shared.address,
+      passageText: shared.passageText,
+      translationId: shared.translationId
     });
   };
   // Run once when shared/intent text arrives (route param), NOT on every render —
@@ -264,9 +243,9 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       state.passages.filter((p) => {
         // A hide-list, exactly like the three below it: a passage is hidden
         // because it carries a tag the user chose to hide, and for no other
-        // reason (8.2.25). It used to be the inverse - shown only if it carried
-        // at least one NON-hidden tag - so an untagged passage vanished the
-        // moment any tag existed anywhere in the library.
+        // reason. It used to be the inverse - shown only if it carried at least
+        // one NON-hidden tag - so an untagged passage vanished the moment any
+        // tag existed anywhere in the library.
         const isTagFilteringShown = p.tags.length
           ? !p.tags.some((tag) => state.filters.tags.includes(tag))
           : !state.filters.tags.includes(NO_TAGS_NAME);
@@ -298,7 +277,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     [state.passages, state.filters, searchLower, t]
   );
   // The FlatList's `data`: a fresh array on every render defeats every
-  // memoization below it, so it moves with the filter (8.2.21).
+  // memoization below it, so it moves with the filter.
   const sortedPassages = useMemo(
     () =>
       [...filteredPassages].sort((a, b) => {
@@ -319,9 +298,9 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       }),
     [filteredPassages, state.sort]
   );
-  // What is actually narrowing the list, named (8.2.25). A list shorter than
-  // the library has to say why, and "Archived" is a reason like any other -
-  // hiding it is only the default, not an absence of filtering.
+  // What is actually narrowing the list, named. A list shorter than the library
+  // has to say why, and "Archived" is a reason like any other - hiding it is
+  // only the default, not an absence of filtering.
   const activeFilterNames = useMemo(() => {
     const names: string[] = [];
     if (state.filters.tags.includes(ARCHIVED_NAME)) {
@@ -376,7 +355,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       width: "100%",
       flex: 1,
       // Search field and rows are one column, so they stop growing together
-      // (8.2.4). Unfolded, a row otherwise runs a verse across the whole panel
+      //. Unfolded, a row otherwise runs a verse across the whole panel
       // and the sort/filter icons end up a hand's width from the search field.
       // The Header stays full-width on purpose - a bar spans, a column does not.
       maxWidth: LAYOUT.maxContentWidth
@@ -387,8 +366,8 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     passagesListContent: {
       // The last row scrolls clear of the screen edge instead of ending flush
       // against it, which is what made the list feel like it was cut off rather
-      // than finished (8.2.3). The number moved to LAYOUT in 8.2.27, where every
-      // other scrolling surface now reads it too.
+      // than finished. The number moved to LAYOUT, where every other scrolling
+      // surface now reads it too.
       paddingBottom: LAYOUT.scrollBottomGap
     },
     hiddenLabel: {
@@ -474,7 +453,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           windowSize={11}
           removeClippedSubviews
           contentContainerStyle={listStyle.passagesListContent}
-          // Scroll feel (8.2.3). The list sits directly under a search field, so
+          // Scroll feel. The list sits directly under a search field, so
           // dragging it is the natural way to put the keyboard away - and a tap
           // on a row while the keyboard is up should open that row instead of
           // being spent dismissing it, which is what `handled` buys.
@@ -558,7 +537,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           </View>
         )} */}
       </View>
-      {/* 8.2.37: sorting used to hang off the search row in an AnchoredPopup.
+      {/* Sorting used to hang off the search row in an anchored popup.
           It read as broken - five options each centred at their own width, no
           dim behind it, and nothing on screen it visibly came from. It is the
           same list of choices SelectModal already draws for every other picker
@@ -574,7 +553,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
         onSelect={(value) => handleSortChange(value as SORTINGOPTION)}
         onCancel={() => setOpenSorting(false)}
       />
-      {/* the add-passage flow, in the order the user walks it (8.2.1d) */}
+      {/* the add-passage flow, in the order the user walks it */}
       <SelectModal
         isShown={addFlowStep === "translation"}
         title={t("SelectTranslationTitle")}
@@ -611,12 +590,12 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   );
 };
 
-// The action revealed behind a swiped row (8.2.4). It is a real component, not
-// an element returned from the render callback, because it holds a hook —
+// The action revealed behind a swiped row. It is a real component, not an
+// element returned from the render callback, because it holds a hook —
 // ReanimatedSwipeable CALLS renderLeftActions/renderRightActions rather than
 // rendering them as a component, so a useAnimatedStyle written inline there
 // would be a hook in a plain function. Module level, so it is one type for the
-// whole list rather than a fresh one per render (8.1.1 finding #4/e).
+// whole list rather than a fresh one per render.
 //
 // `progress` is 0 closed, 1 open, and above 1 while overshooting. Clamping it is
 // what keeps the button from growing past its own size when the row is dragged
@@ -657,12 +636,12 @@ const swipeActionStyle = StyleSheet.create({
 });
 
 // React.memo: the passage list re-renders on every dispatch AND on every search
-// keystroke (local state). With stable `t`/`theme` from context (8.1.2), stable
+// keystroke (local state). With stable `t`/`theme` from context, stable
 // callbacks, and primitive props (sort/leftSwipeTag/addressLanguage) instead of
 // the whole `state` object, a row only re-renders when its OWN passage data
-// changes — search typing and unrelated edits now skip untouched rows (8.1.1
-// finding #4/c). Callbacks receive the passage so the parent can keep one stable
-// reference instead of a fresh closure per row.
+// changes — search typing and unrelated edits skip untouched rows. Callbacks
+// receive the passage so the parent can keep one stable reference instead of a
+// fresh closure per row.
 const ListItemBase: FC<{
   data: PassageModel;
   sort: SORTINGOPTION;
@@ -733,10 +712,10 @@ const ListItemBase: FC<{
       : data.tags.includes(leftSwipeTag)
         ? limitLegth(`${t("Remove")}  ${leftSwipeTag}`)
         : limitLegth(`${t("Add")} ${leftSwipeTag}`);
-  // An action closes the panel it was tapped in (8.2.4). Every one of them
-  // rewrites the row's own label - "Archive" becomes "Unarchive", the tag button
-  // flips to "Remove <tag>" - so leaving the panel open would leave the user
-  // staring at a button that has silently become its own opposite.
+  // An action closes the panel it was tapped in. Every one of them rewrites the
+  // row's own label - "Archive" becomes "Unarchive", the tag button flips to
+  // "Remove <tag>" - so leaving the panel open would leave the user staring at
+  // a button that has silently become its own opposite.
   const renderLeftActions = (
     progress: SharedValue<number>,
     _translation: SharedValue<number>,
@@ -796,9 +775,9 @@ const ListItemBase: FC<{
   };
   const customT = createT(addressLanguage);
   // The Pressable sits INSIDE the swipeable, wrapping the row and nothing else.
-  // The other way round (8.2.4 found it wrapping the whole thing) put the action
-  // panels inside the row's press area, so a tap on the empty part of a revealed
-  // panel opened the editor instead of doing nothing.
+  // The other way round, wrapping the whole `Swipeable`, puts the action
+  // panels inside the row's press area, so a tap on the empty part of a
+  // revealed panel opened the editor instead of doing nothing.
   return (
     <ReanimatedSwipeable
       friction={2}

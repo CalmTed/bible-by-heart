@@ -22,10 +22,10 @@ export const createL11Test: CreateTestMethodModel = ({
   // Not enough verses in the target's own translation to offer four of them, so
   // this becomes the OTHER half of level 1 - read the verse, pick the address.
   // The count is the third one guarding this: `generateATest` checks the whole
-  // library twice before getting here, and one passage on another translation (or
-  // on `null`, which a custom-text passage carries) is enough to fail this one
-  // while both of those passed. createL10Test stamps the level it hands back, so
-  // the test that comes out of here is honestly an l10 (8.2.38).
+  // library twice before getting here, and one passage on another translation
+  // (or on `null`, which a custom-text passage carries) is enough to fail this
+  // one while both of those passed. createL10Test stamps the level it hands
+  // back, so the test that comes out of here is honestly an l10.
   if (languageFilteredPassages.length < optionsLength) {
     return createL10Test({ initialTest, passages, history });
   }

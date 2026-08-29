@@ -25,7 +25,7 @@ describe("testing level 10 rendering", () => {
   });
 });
 
-describe("L10 with no passage to show (8.2.6)", () => {
+describe("L10 with no passage to show", () => {
   it("renders nothing rather than reading the missing passage's text", () => {
     const submitTest = jest.fn();
     // L10 read `.verseText` straight off the result of a `.find()` — a test
@@ -45,7 +45,7 @@ describe("L10 with no passage to show (8.2.6)", () => {
   });
 });
 
-describe("L10 with no options to offer (8.2.38)", () => {
+describe("L10 with no options to offer", () => {
   it("says the test cannot be built instead of drawing half a screen", () => {
     const t = createT(LANGCODE.en);
     const screen = renderWithContext(

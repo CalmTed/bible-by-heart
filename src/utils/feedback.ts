@@ -1,7 +1,7 @@
 import { Vibration } from "react-native";
 import { VIBRATION_PATTERNS } from "../constants";
 
-// 8.2.8 - the one place that decides whether the phone is allowed to buzz.
+// The one place that decides whether the phone is allowed to buzz.
 //
 // Before this, eleven call sites across five level screens each wrote
 // `if (state.settings.hapticsEnabled) { Vibration.vibrate(PATTERN) }` by hand,

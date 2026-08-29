@@ -34,8 +34,8 @@ export const getPerfectTestsNumber: (
 
 // The same answer for every passage at once. finishTesting used to call the
 // single-passage form per passage, and each call filtered AND sorted the whole
-// history — O(P × H log H) on the action that already writes the most (8.2.21).
-// One pass buckets the history by passage; each bucket is then sorted once.
+// history — O(P × H log H) on the action that already writes the most. One pass
+// buckets the history by passage; each bucket is then sorted once.
 export const getPerfectTestsNumbers: (
   history: TestModel[],
   passages: PassageModel[]

@@ -121,10 +121,10 @@ export const L50: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    // 8.2.7: the comparison forgives characters the keyboard cannot make - the
-    // curly apostrophe, the em dash, the Cyrillic "i" - because a passage stored
-    // with one of those is otherwise unlearnable at this level, and rewriting
-    // the user's own text to fix that is not ours to do. The tolerance is
+    // The comparison forgives characters the keyboard cannot make - the curly
+    // apostrophe, the em dash, the Cyrillic "i" - because a passage stored with
+    // one of those is otherwise unlearnable at this level, and rewriting the
+    // user's own text to fix that is not ours to do. The tolerance is
     // `Passage`'s, not this file's: the old private `simplifyString` here knew
     // about eight ASCII marks and nothing else.
     if (Passage.typedEquals(passageText, targetText)) {

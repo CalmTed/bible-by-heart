@@ -111,7 +111,7 @@ describe("sanitizeSharedText", () => {
     expect(sanitizeSharedText("https://bible.com/x")).toBe("");
   });
 
-  // --- 8.2.33: bracketed verse numbers -----------------------------------
+  // --- bracketed verse numbers -----------------------------------
 
   it("drops a leading bracketed verse number", () => {
     expect(sanitizeSharedText("[1] In the beginning God created")).toBe(
@@ -136,13 +136,13 @@ describe("sanitizeSharedText", () => {
     expect(sanitizeSharedText("[ 12 ] and he said")).toBe("and he said");
   });
 
-  it("keeps brackets around words - they are editorial apparatus (8.2.11)", () => {
+  it("keeps brackets around words - they are editorial apparatus", () => {
     expect(sanitizeSharedText("and [the] LORD said")).toBe("and [the] LORD said");
     expect(sanitizeSharedText("[a] note")).toBe("[a] note");
     expect(sanitizeSharedText("the [2nd] time")).toBe("the [2nd] time");
   });
 
-  // --- 8.2.33: leading translation code -----------------------------------
+  // --- leading translation code -----------------------------------
 
   it("drops a leading code standing in front of a verse number", () => {
     expect(sanitizeSharedText("ESV [1] In the beginning")).toBe(

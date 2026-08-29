@@ -134,9 +134,9 @@ describe("Passage.countEnglishVerses", () => {
 });
 
 /**
- * 8.2.26 — L3's word bank answers by the letters of a word, not by its exact
- * characters: "good." and "good" are the same word to read and to type, so
- * tapping either has to answer either.
+ * L3's word bank answers by the letters of a word, not by its exact characters:
+ * "good." and "good" are the same word to read and to type, so tapping either
+ * has to answer either.
  */
 describe("Passage.sameWord", () => {
   it("ignores the punctuation hanging off a word", () => {
@@ -173,7 +173,7 @@ describe("Passage.sameWord", () => {
 // Cyrillic "a" can never be mistaken for a Latin one while reading it.
 const chr = (code: number) => String.fromCharCode(code);
 
-describe("Passage.typedEquals — the L5 tolerance (8.2.7)", () => {
+describe("Passage.typedEquals — the L5 tolerance", () => {
   // [what the stored passage may carry, what the phone keyboard produces].
   // One test per pair: a passage holding the left character must be answerable
   // by typing the right one, or that passage is unlearnable at level 5.
@@ -276,7 +276,7 @@ describe("Passage.typedEquals — the L5 tolerance (8.2.7)", () => {
   });
 });
 
-describe("Passage.foldTypeable / typedPrefixLength (8.2.7)", () => {
+describe("Passage.foldTypeable / typedPrefixLength", () => {
   it("keeps the string the same length, which the prefix repair depends on", () => {
     const source = `a${chr(0x2014)}b${chr(0x2019)}c${chr(0x00a0)}d${chr(0x0430)}`;
     expect(Passage.foldTypeable(source)).toHaveLength(source.length);

@@ -6,7 +6,7 @@ import { ParsedBackupModel, readBackupFromUri } from "../utils/backupFile";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 
-// A backup file opened from outside the app (8.2.34). The intent filter in
+// A backup file opened from outside the app. The intent filter in
 // `app.config.js` puts Bible by Heart in the chooser for the app's own MIME
 // type; Android then starts (or resumes) the app with a `content://` URI, which
 // reaches JS as an ordinary Linking url.
@@ -66,7 +66,7 @@ export const BackupFileOpener: FC = () => {
       onCancel={() => setPending(null)}
       onConfirm={(parsed) => {
         // A whole-snapshot write on purpose, like the settings restore: this
-        // state came from a file, not from a closure over the old one (8.2.24).
+        // state came from a file, not from a closure over the old one.
         setState(parsed.state);
         logger.write(
           `State restored from an opened backup file (${parsed.state.passages.length} passages)`

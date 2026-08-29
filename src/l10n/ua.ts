@@ -163,6 +163,7 @@ export const ua: typeof en = {
   fetchPropositionText: "Підтягнути текст автоматично?",
   Loading: "Заванатження...",
   NotAFetchableTranslation: "Введи текст вірша тут",
+  TextSourceUnavailable: "Тексту зараз немає — введи вірш вручну",
   NoDataForThisDay: "Для цього дня немає даних",
   TestExitConfirmationText: "Пройдені завдання не будуть збережені",
   TestNoOptionsText:

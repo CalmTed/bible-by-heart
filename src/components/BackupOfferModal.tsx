@@ -17,11 +17,11 @@ interface BackupOfferModalModel {
 }
 
 /**
- * The post-upgrade backup offer (8.1.9). The pre-conversion snapshot is already
- * saved silently into storage by the boot path; this merely OFFERS to put the
- * same data in a file the user keeps. It is never blocking: "Later" and the
- * Android back button both dismiss it, and it does not come back - the next boot
- * finds a matching version and converts nothing.
+ * The post-upgrade backup offer. The pre-conversion snapshot is already saved
+ * silently into storage by the boot path; this merely OFFERS to put the same
+ * data in a file the user keeps. It is never blocking: "Later" and the Android
+ * back button both dismiss it, and it does not come back - the next boot finds
+ * a matching version and converts nothing.
  */
 export const BackupOfferModal: FC<BackupOfferModalModel> = ({
   offer,

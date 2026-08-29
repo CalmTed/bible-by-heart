@@ -10,7 +10,7 @@ import { ANIMATION } from "../../src/constants";
 
 // SafeAreaProvider renders nothing until it knows the insets — the old version
 // of this file wrapped the Header in a bare provider, so it snapshotted an
-// empty tree and asserted nothing about the Header at all (found in 8.2.3).
+// empty tree and asserted nothing about the Header at all.
 const TOP_INSET = 47;
 const safeAreaMetrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
@@ -56,11 +56,10 @@ const pressIcon = (screen: Screen, icon: IconName) => {
 };
 
 /**
- * The app's one header (8.2.3). What matters is that every screen gets the same
- * bar in the same place — so these test the contract screens rely on, not the
- * markup.
+ * The app's one header. What matters is that every screen gets the same bar in
+ * the same place — so these test the contract screens rely on, not the markup.
  */
-describe("Header (8.2.3)", () => {
+describe("Header", () => {
   it("renders its title", () => {
     const screen = renderHeader(<Header title="Passages" />);
 
@@ -170,7 +169,7 @@ describe("Header (8.2.3)", () => {
     expect(HEADER_HEIGHT).toBeGreaterThan(0);
   });
 
-  // 8.2.29. The bar used to rise from below over the same distance as the
+  // The bar used to rise from below over the same distance as the
   // content it caps, at nearly the same moment, and read as scrambled. It falls
   // from the top edge now, over less ground. jest-expo never advances frames, so
   // what is checkable here is the frame the entrance STARTS from - which is the

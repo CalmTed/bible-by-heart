@@ -15,10 +15,10 @@ import { reduce } from "../utils/reduce";
 
 // Passage-list filters - was a MiniModal rendered inline in ListScreen with a
 // ScrollView and four sections inside it, i.e. a sub-menu wearing a dialog's
-// clothes (8.2.2). Now a stack screen reached from the list's filter button, so
-// backing out is the ordinary gesture and the sections get the whole height.
-// The filters themselves live in app state, so nothing has to be handed back:
-// the list re-filters the moment this screen dispatches.
+// clothes. Now a stack screen reached from the list's filter button, so backing
+// out is the ordinary gesture and the sections get the whole height. The
+// filters themselves live in app state, so nothing has to be handed back: the
+// list re-filters the moment this screen dispatches.
 
 const LEVELS = [
   PASSAGELEVEL.l1,
@@ -36,7 +36,7 @@ export const FiltersScreen: FC<ScreenPropsModel<SCREEN.listFilters>> = ({
   // Every tag any passage carries, ARCHIVED_NAME included (it is stored as an
   // ordinary tag), first-seen order, no duplicates. NO_TAGS_NAME is not a tag
   // any passage carries - it is the name the hide-list gives to "carries no
-  // tags at all" (8.2.25), offered only while some passage actually has none.
+  // tags at all", offered only while some passage actually has none.
   const allTags = state.passages
     .map((p) => p.tags)
     .flat()

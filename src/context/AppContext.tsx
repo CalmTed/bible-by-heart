@@ -72,7 +72,7 @@ export const AppProvider: FC<AppProviderModel> = ({
 
   // Stable identity: the reducer + setState are constant, so dispatch never
   // needs to change. A fresh dispatch each render used to break React.memo on
-  // every child that received it (render lag P0 — STRATEGY §2/§8.1.2).
+  // every child that received it, which was a top render-lag cause.
   const dispatch = useCallback((action: ActionModel) => {
     setState((prev) => {
       const next = reduce(prev, action);
@@ -84,10 +84,10 @@ export const AppProvider: FC<AppProviderModel> = ({
   // there is exactly one writer instead of one per mounted screen). Keyed on the
   // `state` reference — the reducer returns a new object only on a real change,
   // so this fires exactly when it should WITHOUT the per-render
-  // `JSON.stringify(state)` that ran on every render regardless (O(history) —
-  // a primary render-lag suspect, STRATEGY §8.1.1).
+  // `JSON.stringify(state)` that ran on every render regardless (O(history), and
+  // a primary render-lag suspect).
   //
-  // The write is coalesced to at most one per STATE_PERSIST_DEBOUNCE (8.2.20):
+  // The write is coalesced to at most one per STATE_PERSIST_DEBOUNCE:
   // serializing the whole state is O(history) and answering a single test can
   // dispatch more than once. Whatever is pending is flushed the moment the app
   // leaves the foreground and on unmount, so a kill mid-window cannot lose an
@@ -105,8 +105,8 @@ export const AppProvider: FC<AppProviderModel> = ({
       return;
     }
     pendingStateRef.current = null;
-    // This is also where a non-serializable state is now caught. The reducer used
-    // to end every action in a JSON round-trip for exactly that (8.2.20); the same
+    // This is also where a non-serializable state is now caught. The reducer
+    // used to end every action in a JSON round-trip for exactly that; the same
     // failure surfaces here, because storage.save() stringifies synchronously.
     try {
       storage
@@ -140,7 +140,7 @@ export const AppProvider: FC<AppProviderModel> = ({
       // The pre-conversion snapshot lives in its own write-once key
       // (STORAGE_PRECONVERT_BACKUP_NAME, written by the boot path in App.tsx),
       // so this write can no longer bury the last known-good pre-upgrade state
-      // 24h after an upgrade (8.1.8).
+      // 24h after an upgrade.
       storage
         .save({
           key: STORAGE_BACKUP_NAME,
@@ -201,7 +201,7 @@ export const AppProvider: FC<AppProviderModel> = ({
             ];
           if (typeof intentText !== "undefined" && navigationRef.isReady()) {
             // The notification payload is untyped data; the param list wants a
-            // string (8.1.14).
+            // string.
             navigationRef.navigate(SCREEN.listPassage, {
               passageText: String(intentText)
             });
@@ -248,8 +248,7 @@ export const AppProvider: FC<AppProviderModel> = ({
   // Stabilize theme/t so their identities only change when their real inputs do
   // (theme setting / OS scheme; language). Previously both were rebuilt every
   // render, defeating any React.memo downstream and re-styling the whole tree on
-  // every dispatch. Stable now → row/component memoization becomes possible
-  // (the memoization deferred on 2026-07-10; STRATEGY §8.1.2).
+  // every dispatch. Stable now → row/component memoization becomes possible.
   const theme = useMemo(
     () => getThemeFromScheme(state.settings.theme, colorScheme),
     [state.settings.theme, colorScheme]

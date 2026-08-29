@@ -32,17 +32,17 @@ interface HeaderModel {
 }
 
 /**
- * The app's one header (8.2.3). Every screen AND every full-screen modal goes
- * through it, so a title sits in the same place, in the same typography, at the
- * same height, everywhere.
+ * The app's one header. Every screen AND every full-screen modal goes through
+ * it, so a title sits in the same place, in the same typography, at the same
+ * height, everywhere.
  *
  * **The top margin is the device's, never a number.** `insets.top` is the real
  * status-bar / cutout height on this phone; the app is `edgeToEdgeEnabled`, so
  * it draws *under* the system bars and a fixed guess is a header that hides
  * behind the camera on one phone and floats on another. This component is the
  * only place that inset is applied — screens must not add their own, and
- * `theme.screen` must not carry a fixed `paddingTop` for it either (8.2.3
- * removed one, which every header screen was silently sitting on top of).
+ * `theme.screen` must not carry a fixed `paddingTop` for it either (it used to,
+ * and every header screen was silently sitting on top of it).
  *
  * A screen with no bar still renders a bare `<Header />` for the margin, so
  * "every screen goes through the Header" has no exceptions to remember.
@@ -52,7 +52,7 @@ interface HeaderModel {
  * itself is clamped (`utils/screenTransition.ts`), because a full-screen card
  * that overshoots uncovers the screen behind it, while a header has room. It
  * falls from the top edge rather than rising with the content underneath it,
- * and over half the distance - see `entranceStyle` below (8.2.29).
+ * and over half the distance - see `entranceStyle` below.
  */
 export const Header: FC<HeaderModel> = ({
   title,
@@ -84,7 +84,7 @@ export const Header: FC<HeaderModel> = ({
       withSpring(1, ANIMATION.spring)
     );
   }, [fade, rise]);
-  // Negative: the bar starts ABOVE its seat and falls into it (8.2.29). Rising
+  // Negative: the bar starts ABOVE its seat and falls into it. Rising
   // from below meant the header and the screen it caps travelled the same way at
   // the same moment, over the same 16px, which read as scrambled rather than as
   // one thing arriving after another. It also travels half as far as the content

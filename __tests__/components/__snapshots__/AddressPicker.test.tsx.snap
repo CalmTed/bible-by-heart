@@ -4319,7 +4319,7 @@ exports[`testing address picker renders correctly 1`] = `
 </RNCSafeAreaProvider>
 `;
 
-exports[`testing address picker renders the single-verse state with an in-flow footer (8.2.1a) 1`] = `
+exports[`testing address picker renders the single-verse state with an in-flow footer 1`] = `
 <RNCSafeAreaProvider
   onInsetsChange={[Function]}
   style={

@@ -93,7 +93,7 @@ describe("Address.parse", () => {
     });
   });
 
-  describe("book-name aliases (8.1.5)", () => {
+  describe("book-name aliases", () => {
     // [input, expected bookIndex, expected language]
     const enCases: [string, number][] = [
       ["Gn 1:1", 0], // Genesis
@@ -173,7 +173,7 @@ describe("Address.versesCount", () => {
   });
 });
 
-describe("Address.equals (8.2.6)", () => {
+describe("Address.equals", () => {
   const john316 = {
     bookIndex: 42,
     startChapterNum: 2,

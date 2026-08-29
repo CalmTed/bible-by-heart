@@ -1,7 +1,7 @@
 /**
- * 8.2.1c — the end of the add-passage journey: having just met a passage, the
- * user is offered a session on that one alone. These drive the real editor's
- * Save button rather than calling the handler, so they break if the offer stops
+ * The end of the add-passage journey: having just met a passage, the user is
+ * offered a session on that one alone. These drive the real editor's Save
+ * button rather than calling the handler, so they break if the offer stops
  * being reachable from where the user actually is.
  */
 import { useState } from "react";
@@ -87,7 +87,7 @@ const newPassageParams = {
   translationId: 1
 };
 
-describe("PassageScreen study-one offer (8.2.1c)", () => {
+describe("PassageScreen study-one offer", () => {
   it("offers a session on the passage just added", () => {
     const { screen } = renderPassageScreen(createAppState(), newPassageParams);
     expect(screen.queryByText(t("StudyOneOfferText"))).toBeNull();

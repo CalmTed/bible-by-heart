@@ -1,9 +1,16 @@
-import { PASSAGELEVEL, SETTINGS, VERSION } from "../../src/constants";
+import {
+  BUNDLED_TRANSLATION_SOURCES,
+  PASSAGELEVEL,
+  SETTINGS,
+  VERSION
+} from "../../src/constants";
 import {
   createAppState007,
   createAppState008,
-  createPassage009
+  createPassage009,
+  SHIPPED_TRANSLATION_IDS
 } from "../../src/initials";
+import { mergeCatalogueIntoTranslations } from "./translation";
 import {
   AppStateModel,
   AppStateModel006,
@@ -15,11 +22,46 @@ import {
   PassageModel009,
   TestModel006,
   TestModel007,
-  TestModel009
+  TestModel009,
+  TranslationModel
 } from "../../src/models";
 import { testLevelToPassageLevel } from "./levelsConvertion";
 
 type ConverterType = (stateFrom: any) => any;
+
+// 0.1.1 changed one thing: a translation now names the text source it comes from
+// (`sourceId`), instead of the app carrying a hardcoded list of fetchable ids
+//. The state shape around it is untouched, so this converter rewrites
+// the translation list and copies the rest.
+const to011: ConverterType = (stateFrom) => {
+  const from = stateFrom as AppStateModel010;
+  // Before 0.1.1 exactly one translation had text behind it: ESV, always id 1.
+  // Every other entry was a name the user typed verses under.
+  const withSources: TranslationModel[] = from.settings.translations.map(
+    (translation) => ({
+      ...translation,
+      sourceId:
+        translation.id === SHIPPED_TRANSLATION_IDS.esv && !translation.editable
+          ? "esv"
+          : null
+    })
+  );
+  // The bundled Ukrainian translations are new in 0.1.1, so an existing install
+  // has to be given them - by the same merge the app runs when the live
+  // catalogue answers, so an upgrade and a new server translation arrive the
+  // same way: appended, never default, never on an id the list already uses.
+  return {
+    ...from,
+    version: "0.1.1",
+    settings: {
+      ...from.settings,
+      translations: mergeCatalogueIntoTranslations(
+        withSources,
+        BUNDLED_TRANSLATION_SOURCES
+      )
+    }
+  } as AppStateModel010;
+};
 
 const to010: ConverterType = (stateFrom) => {
   const from = stateFrom as AppStateModel009;
@@ -335,6 +377,11 @@ export const versionsConvertionTable: {
     from: ["0.0.9"],
     to: "0.1.0",
     method: to010
+  },
+  {
+    from: ["0.1.0"],
+    to: "0.1.1",
+    method: to011
   }
 ];
 

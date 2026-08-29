@@ -38,9 +38,9 @@ export const writeFile: (
 };
 
 /**
- * Read a file the app was HANDED rather than one the user picked (8.2.34): an
- * Android VIEW intent arrives as a `content://` (or `file://`) URI that is
- * already readable, with no picker in between.
+ * Read a file the app was HANDED rather than one the user picked: an Android
+ * VIEW intent arrives as a `content://` (or `file://`) URI that is already
+ * readable, with no picker in between.
  *
  * @returns the text, or false when the URI is unreadable - which is the normal
  * outcome for every VIEW intent that is not a file at all.
@@ -77,9 +77,9 @@ export const readFile: (
 
     return {
       content: text,
-      // A missing mimeType is no longer a refusal (8.2.34): a provider that does
-      // not recognise the app's own .bbhbackup extension reports none, and the
-      // file it just handed over is perfectly readable. What is IN it decides.
+      // A missing mimeType is no longer a refusal: a provider that does not
+      // recognise the app's own .bbhbackup extension reports none, and the file
+      // it just handed over is perfectly readable. What is IN it decides.
       mimeType: file.assets[0].mimeType ?? ""
     };
   } catch (error) {

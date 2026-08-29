@@ -2,14 +2,14 @@ import { FIRST_FEW_WORDS, LANGCODE } from "../constants";
 import { AddressType, PassageModel, TranslationModel } from "../models";
 import { Address } from "./address";
 
-// Everything the app knows about the TEXT of a passage (8.2.6). Splitting a
-// verse into sentences used to be written inline in nine places — five level
-// components and four test generators — with four different filters
-// (`s.length`, `> 0`, `> 1`, `> 2`) and three different joins. That is worse
-// than duplication: the generator counted the sentences one way and stored a
-// `sentenceRange` that the level component then resolved another way, so the
-// two could disagree about which sentence index 2 is. There is one definition
-// here now, and both sides call it.
+// Everything the app knows about the TEXT of a passage. Splitting a verse into
+// sentences used to be written inline in nine places — five level components
+// and four test generators — with four different filters (`s.length`, `> 0`, `>
+// 1`, `> 2`) and three different joins. That is worse than duplication: the
+// generator counted the sentences one way and stored a `sentenceRange` that the
+// level component then resolved another way, so the two could disagree about
+// which sentence index 2 is. There is one definition here now, and both sides
+// call it.
 //
 // Like `Address`, this is a namespace and not a class — app state is plain JSON
 // in AsyncStorage, so a passage never carries methods of its own.
@@ -118,12 +118,12 @@ const getWords: (text: string) => string[] = (text) => {
   return normalized.length ? normalized.split(" ") : [];
 };
 
-// Two words the user may treat as the same one (8.2.26). L3 hands back words
-// from a bank, and "good." at the end of a sentence and "good" in the middle of
-// it are the same word to read and the same word to type - so tapping either
-// must answer either. Only the letters and digits count; punctuation and case
-// do not. Deliberately NOT a similarity score: this is equality of the letters,
-// so a misspelling is still wrong (that tolerance is L5's, 8.2.7).
+// Two words the user may treat as the same one. L3 hands back words from a
+// bank, and "good." at the end of a sentence and "good" in the middle of it are
+// the same word to read and the same word to type - so tapping either must
+// answer either. Only the letters and digits count; punctuation and case do
+// not. Deliberately NOT a similarity score: this is equality of the letters, so
+// a misspelling is still wrong (that tolerance is L5's).
 const LETTERS_PATTERN = /[^\p{L}\p{N}]/gu;
 
 const sameWord: (a: string, b: string) => boolean = (a, b) => {
@@ -134,15 +134,16 @@ const sameWord: (a: string, b: string) => boolean = (a, b) => {
 };
 
 // ---------------------------------------------------------------------------
-// Typing tolerance (8.2.7)
+// Typing tolerance
 //
 // Level 5 grades the passage CHARACTER BY CHARACTER, so a character the phone
 // keyboard cannot produce makes a passage unlearnable: the user types the only
-// thing they can type and is told they are wrong, forever. 8.1.4 folds these on
-// the way IN (shared text) and 8.2.11 folds them at the API, but neither reaches
-// a passage already sitting in somebody's state, and nothing may rewrite their
-// text behind their back. So the tolerance lives on the COMPARISON - both sides
-// are folded to what a keyboard can reach before they are compared.
+// thing they can type and is told they are wrong, forever. `sanitizeSharedText`
+// folds these on the way IN (shared text) and the API folds them at the source,
+// but neither reaches a passage already sitting in somebody's state, and nothing
+// may rewrite their text behind their back. So the tolerance lives on the
+// COMPARISON - both sides are folded to what a keyboard can reach before they
+// are compared.
 //
 // Every entry is [what the keyboard produces, the characters that look exactly
 // like it]. Written as \uXXXX escapes, like the table in
@@ -313,7 +314,7 @@ export const Passage = {
   getWords,
   /** Whether two words read as the same one: letters only, case-blind. */
   sameWord,
-  /** Untypeable characters folded to the ones a keyboard has (8.2.7). 1:1. */
+  /** Untypeable characters folded to the ones a keyboard has. 1:1. */
   foldTypeable,
   /** Whether what was typed IS the passage, lookalikes and case forgiven. */
   typedEquals,

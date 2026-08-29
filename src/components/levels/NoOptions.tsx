@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useAppContext } from "../../context/AppContext";
 
 /**
- * What a level renders when its generator handed it no options (8.2.38).
+ * What a level renders when its generator handed it no options.
  *
  * A test whose `l` disagreed with the payload in its `d` used to draw the
  * question and then nothing at all - a level-1 test showed an address with an
@@ -12,9 +12,9 @@ import { useAppContext } from "../../context/AppContext";
  * user can SEE is one they can leave: the session's nav dots and the exit cross
  * are both still on screen above this.
  *
- * Deliberately no skip button. What a skipped test does to the level-up maths is
- * 8.2.36's decision, and a "passed" test nobody answered is exactly the quiet
- * corruption that step exists to settle.
+ * Deliberately no skip button. A test that offers too few options is already
+ * substituted for at generation time, and a "passed" test nobody answered is
+ * exactly the quiet corruption that rule exists to prevent.
  */
 export const NoOptions: FC = () => {
   const { theme, t } = useAppContext();

@@ -222,7 +222,9 @@ const makeHistory007: () => TestModel007[] = () => [
   }
 ];
 
-const makeTranslations007: () => TranslationModel[] = () => [
+// No `sourceId` on purpose: a 0.0.7 translation had none - the field arrives
+// with 0.1.1, and giving the fixture one would hide what `to011` has to do.
+const makeTranslations007: () => Omit<TranslationModel, "sourceId">[] = () => [
   {
     id: 1,
     editable: false,

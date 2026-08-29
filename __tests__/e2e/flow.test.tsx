@@ -1,15 +1,15 @@
 /**
- * 8.1.16a — end-to-end flow guard, the release guard before the first store push
- * in a year: create state -> add passages -> generate tests -> answer with errors
+ * End-to-end flow guard, the release guard before the first store push in a
+ * year: create state -> add passages -> generate tests -> answer with errors
  * -> finish -> stats correct -> error counts never rendered.
  *
  * The loop itself is driven PURELY (reducer + test generators + getStats, no
- * screens): the whole UI is rewritten in 0.3.0, so a screen-driven e2e would
- * break constantly, while the reducer/generator/stats contract is what actually
- * has to survive the release.
+ * screens): the whole UI is being rewritten, so a screen-driven e2e would break
+ * constantly, while the reducer/generator/stats contract is what actually has
+ * to survive the release.
  *
- * The philosophy rule it guards (ARCHITECTURE §2.2 — errors are recorded in full
- * but their COUNT is never shown) gets its own targeted assertion at the bottom:
+ * The philosophy rule it guards (errors are recorded in full but their COUNT is
+ * never shown) gets its own targeted assertion at the bottom:
  * the surfaces that are fed error counts are rendered against the state the pure
  * loop produced, and every error-derived number is asserted absent from the
  * rendered text.
@@ -314,7 +314,7 @@ const collectRenderedText = (node: unknown): string[] => {
 
 // Inert `{ route, navigation }` for a screen rendered outside a navigator. The
 // cast is the only honest option — a real StackNavigationProp has ~20 methods
-// none of these surfaces call (8.1.14 made the shape typed, not fakeable).
+// none of these surfaces call, and the typed shape is not fakeable.
 const makeScreenProps = <T extends keyof RootStackParamList>(name: T) =>
   ({
     navigation: {
@@ -332,7 +332,7 @@ const safeAreaMetrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 }
 };
 
-describe("end-to-end learning flow (8.1.16a)", () => {
+describe("end-to-end learning flow", () => {
   it("creates a state, adds passages, generates and answers tests with errors, finishes and reports correct stats", () => {
     const flow = runFlow();
 
@@ -425,9 +425,9 @@ describe("end-to-end learning flow (8.1.16a)", () => {
       expect(passage.maxLevel).toBe(PASSAGELEVEL.l2);
       expect(passage.isNewLevelAwalible).toBe(true);
       expect(passage.upgradeDates[PASSAGELEVEL.l2]).toBeGreaterThan(0);
-      // autoIncreaseLevel is ON for new installs since 8.2.32, and this flow
-      // starts from createAppState - so reaching a new maxLevel also moves the
-      // selected one. An existing user converting from 0.0.9 keeps their own
+      // autoIncreaseLevel is ON for new installs, and this flow starts from
+      // createAppState - so reaching a new maxLevel also moves the selected
+      // one. An existing user converting from an older state keeps their own
       // setting, so both outcomes are live in the wild.
       expect(passage.selectedLevel).toBe(PASSAGELEVEL.l2);
     });
@@ -539,7 +539,7 @@ describe("end-to-end learning flow (8.1.16a)", () => {
     expect(surfaces.stats).toContain(String(final.passages.length));
     expect(surfaces.weekActivity).toContain(t("dayMO"));
 
-    // ...and none of them says how many errors were made (ARCHITECTURE §2.2)
+    //...and none of them says how many errors were made
     Object.entries(surfaces).forEach(([name, text]) => {
       errorCounts.forEach((value) => {
         expect(`${name}: ${text}`).not.toContain(String(value));

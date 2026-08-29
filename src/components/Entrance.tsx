@@ -26,7 +26,7 @@ interface EntranceModel {
 }
 
 /**
- * The app's shared entrance, as a wrapper (8.2.5).
+ * The app's shared entrance, as a wrapper.
  *
  * `MiniModal` owns the entrance of a dialog and `Button` owns the press, by the
  * same argument: the motion is written once and reaches every call site. This is

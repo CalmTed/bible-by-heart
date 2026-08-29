@@ -30,7 +30,7 @@ export const fetchAPI: (a: {
   link: API_LINK;
   method: "POST" | "GET" | "DELETE";
   // Mandatory, in case of an invalid refresh token. It carries NO `state`
-  // (8.2.24): a request is awaited, so any snapshot handed in here is one or
+  //: a request is awaited, so any snapshot handed in here is one or
   // more state changes old by the time the logout runs, and writing it back
   // rolled the whole app one step backwards - which is how picking a language
   // silently undid itself.
@@ -54,9 +54,9 @@ export const fetchAPI: (a: {
       navigation: RootStackNavigationModel,
       screen: SCREEN
     ) => Promise<void> = async (setState, navigation, screen) => {
-      // Functional updater, never a captured snapshot (8.2.24). React hands the
-      // reducer whatever the state IS at the moment this runs, which is the only
-      // thing that can be true after an awaited request.
+      // Functional updater, never a captured snapshot. React hands the reducer
+      // whatever the state IS at the moment this runs, which is the only thing
+      // that can be true after an awaited request.
       setState(
         (prev) => reduce(prev, { name: ActionName.resetUserData }) ?? prev
       );
@@ -65,7 +65,7 @@ export const fetchAPI: (a: {
       // State lives in AppContext now (setState above already reset it); just
       // navigate — no state travels through route params. `screen` is the whole
       // SCREEN union rather than one literal, which typed `navigate()` can't
-      // resolve; the equivalent dispatch takes a plain name (8.1.14).
+      // resolve; the equivalent dispatch takes a plain name.
       navigation.dispatch(CommonActions.navigate(screen));
       logger.write(`Logging out b.c. of invalid token`);
     };

@@ -57,8 +57,8 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
     if (!/^[A-Za-z0-9\s ]{0,50}$/.test(newValue)) {
       return;
     }
-    // dispatch rather than reduce(state) + setState, here and below (8.2.24):
-    // a whole-snapshot write is a rollback of everything that changed since the
+    // dispatch rather than reduce(state) + setState, here and below: a
+    // whole-snapshot write is a rollback of everything that changed since the
     // snapshot was read.
     dispatch({
       name: ActionName.setUserData,
@@ -97,7 +97,7 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         // A functional updater rather than a dispatch, because the payload reads
         // the state too: `applang` compares the server's language against the
         // one the app is CURRENTLY in, and this runs after an awaited request
-        // (8.2.24). Reading it off a captured `state` compares against whatever
+        //. Reading it off a captured `state` compares against whatever
         // the language was before the call.
         setState(
           (prev) =>
@@ -435,9 +435,9 @@ const userSettingsStyle = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20
   },
-  // 8.2.2: this is a confirmation, so it stays a dialog - but it used to be
-  // sized width/height 100%, which made it a screen wearing a modal's clothes.
-  // A dialog is as tall as what it says.
+  // This is a confirmation, so it stays a dialog - but it used to be sized
+  // width/height 100%, which made it a screen wearing a modal's clothes. A
+  // dialog is as tall as what it says.
   deletionMiniModal: {
     width: "90%"
   },

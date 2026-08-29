@@ -1,10 +1,10 @@
 /**
- * 8.2.5 — the finish screen as a shell.
+ * The finish screen as a shell.
  *
- * The screen says one thing today, so what is worth pinning is the SHAPE 8.5.2
- * will fill: the device's top margin through a bare Header, a body that can
- * scroll (the old `flex: 4` hero over a `flex: 1` button could not host a
- * session summary at all), and a Continue button that leaves for home.
+ * The screen says one thing today, so what is worth pinning is the SHAPE a
+ * session summary will fill: the device's top margin through a bare Header, a
+ * body that can scroll (the old `flex: 4` hero over a `flex: 1` button could not
+ * host a session summary at all), and a Continue button that leaves for home.
  *
  * The rule that a finish screen must never show an error count already has its
  * own guard, against real finished sessions, in `e2e/flow.test.tsx`.
@@ -52,7 +52,7 @@ const renderFinish = () => {
   return { screen, navigate };
 };
 
-describe("FinishScreen (8.2.5)", () => {
+describe("FinishScreen", () => {
   it("congratulates and offers the way out", () => {
     const { screen, navigate } = renderFinish();
 
@@ -70,7 +70,7 @@ describe("FinishScreen (8.2.5)", () => {
     expect(header[0].props).toEqual({});
   });
 
-  it("gives the session summary (8.5.2) a body that can scroll", () => {
+  it("gives the session summary a body that can scroll", () => {
     const { screen } = renderFinish();
 
     const body = screen.UNSAFE_getAllByType(ScrollView);

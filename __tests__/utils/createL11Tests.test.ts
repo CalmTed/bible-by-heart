@@ -4,7 +4,7 @@ import { PassageModel } from "../../src/models";
 import { createL11Test } from "../../src/utils/generateTests/createL11Tests";
 import { createL10Test } from "../../src/utils/generateTests/createL10Test";
 
-// Regression test for the level-11 translation bug (STRATEGY §2 P0): the wrong
+// Regression test for the level-11 translation bug: the wrong
 // answer options must always share the target passage's translation, never mix
 // in passages from a different translation/language.
 describe("createL11Test", () => {
@@ -53,7 +53,7 @@ describe("createL11Test", () => {
     );
   });
 
-  // 8.2.38. Four passages is exactly the size where the old fallback bit: the two
+  // Four passages is exactly the size where the old fallback bit: the two
   // "L11 needs four passages" guards in generateATest count the WHOLE library and
   // pass, then this generator counts again inside the target's translation and
   // fails - so the work went to createL10Test while the test kept saying l11.
@@ -82,9 +82,9 @@ describe("createL11Test", () => {
     expect(result.d.passagesOptions).toBeUndefined();
   });
 
-  // The rule the fix is really made of: whatever a generator hands back, its `l`
-  // describes the payload in its `d`. TestsScreen's Record<TESTLEVEL, ...>
-  // dispatch (8.2.5) can only ever be as honest as `l` is.
+  // The rule the fix is really made of: whatever a generator hands back, its
+  // `l` describes the payload in its `d`. TestsScreen's Record<TESTLEVEL, ...>
+  // dispatch can only ever be as honest as `l` is.
   it("keeps l11 and its own payload when the translation CAN fill the options", () => {
     const target = makePassage(1, 0, "First one. Second two. Third three.");
     const passages = [

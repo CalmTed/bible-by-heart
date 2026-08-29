@@ -1,6 +1,6 @@
 /**
- * 8.2.1b — the add flow asks for a translation only when the answer is not
- * already clear. This util is that decision.
+ * The add flow asks for a translation only when the answer is not already
+ * clear. This util is that decision.
  */
 import { LANGCODE } from "../../src/constants";
 import { getDefaultTranslations } from "../../src/initials";
@@ -53,10 +53,13 @@ describe("getTranslationChoice", () => {
     expect(choice.translationId).toBe(5);
   });
 
-  it("asks on a fresh install, where two translations ship by default", () => {
-    const choice = getTranslationChoice(getDefaultTranslations(LANGCODE.ua));
+  it("asks on a fresh install, where every bundled translation ships", () => {
+    const defaults = getDefaultTranslations(LANGCODE.ua);
+    const choice = getTranslationChoice(defaults);
     expect(choice.needsChoice).toBe(true);
-    //UCVNTR is the default for a Ukrainian install
-    expect(choice.translationId).toBe(2);
+    //a Ukrainian install marks no translation default (only an English one
+    //does, ESV), so the preselection falls back to the first in the list
+    expect(defaults.some((tr) => tr.isDefault)).toBe(false);
+    expect(choice.translationId).toBe(defaults[0].id);
   });
 });

@@ -46,9 +46,9 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
   const [selectedDay, setSelectedDay] = useState(null as null | number);
 
   const calendarStyle = StyleSheet.create({
-    // 8.2.27: `height: "100%"` under a Header pushed the whole day view down by
-    // the header's height and off the bottom of the screen by the same amount,
-    // so the last tests of a day could not be scrolled to.
+    // `height: "100%"` under a Header pushed the whole day view down by the
+    // header's height and off the bottom of the screen by the same amount, so
+    // the last tests of a day could not be scrolled to.
     listView: {
       width: "100%",
       flex: 1
@@ -131,7 +131,7 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
       flexDirection: "row",
       width: "100%",
       // was marginBottom: 100 - a guess standing in for the room the broken
-      // `height: "100%"` above was eating (8.2.27)
+      // `height: "100%"` above was eating
       paddingBottom: LAYOUT.scrollBottomGap
     },
     testsListItemWrapperFullWidth: {
@@ -164,7 +164,7 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
   });
   // getAppStats is O(history); this screen re-renders on every day/month
   // selection (local state) — memoize so the walk only reruns when state
-  // changes, not per interaction (8.1.1 finding #4/d).
+  // changes, not per interaction.
   const daysStats = useMemo(() => getAppStats(state), [state]).allDaysStats;
   const monthDaysArr = new Array(
     new Date(

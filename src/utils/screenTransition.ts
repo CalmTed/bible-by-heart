@@ -11,15 +11,14 @@ import { ANIMATION, LAYOUT } from "../constants";
  * `TransitionSpec` and `GestureDirection` are declared by
  * `@react-navigation/stack` but not re-exported from its index in v7, so they
  * are derived from the preset that carries them. The alternative - importing
- * through a raw `node_modules/...` path - is the thing 8.1.14 removed from this
- * codebase.
+ * through a raw `node_modules/...` path - is exactly what typed navigation took
+ * out of this codebase.
  */
 type TransitionSpec = TransitionPreset["transitionSpec"]["open"];
 type GestureDirection = TransitionPreset["gestureDirection"];
 
 /**
- * The app's screen transitions (8.2.3, given a direction per destination in
- * 8.2.28).
+ * The app's screen transitions, one direction per destination.
  *
  * Without this the stack picks a preset from `Platform.Version`
  * (`@react-navigation/stack` `DefaultTransition`), so the same app slides on an
@@ -27,7 +26,7 @@ type GestureDirection = TransitionPreset["gestureDirection"];
  * Pie one — four different apps depending on whose phone it is. These are the
  * explicit ones, identical on every device.
  *
- * **The edge is the destination's, not the navigator's (8.2.28).** Every screen
+ * **The edge is the destination's, not the navigator's.** Every screen
  * used to arrive from the right, so four different places felt like one place
  * reached four times. Settings lives to the left of home, the list to the right,
  * practice above and stats below — and `HomeSwipe` moves the finger the same way

@@ -116,7 +116,7 @@ export const StatsScreen: FC<ScreenPropsModel<SCREEN.stats>> = ({
     }
   });
   // getAppStats is O(history); recompute only when state changes, not on every
-  // re-render (e.g. opening the hint modal) — 8.1.1 finding #4/d.
+  // re-render (e.g. opening the hint modal).
   const statsData = useMemo(() => getAppStats(state), [state]);
   const relativeScoreColor =
     statsData.relativeScore === 0

@@ -1,9 +1,9 @@
 /**
- * 8.2.35 — one arrangement for all five levels. The five level screens each
- * solved the same layout privately: the verse box was a third of the screen tall
- * whether it held one line or ten, level 2 sat its SUBMIT at ~75% of the height
- * with an empty band above it, level 5 fitted everything into the top 45%, and
- * the action button was centred on one level and left-aligned on the next.
+ * One arrangement for all five levels. The five level screens each solved the
+ * same layout privately: the verse box was a third of the screen tall whether
+ * it held one line or ten, level 2 sat its SUBMIT at ~75% of the height with an
+ * empty band above it, level 5 fitted everything into the top 45%, and the
+ * action button was centred on one level and left-aligned on the next.
  *
  * What jest can hold is the arrangement itself: every level is the same three
  * blocks, out of the same stylesheet, in the same order. Whether it *feels*
@@ -68,7 +68,7 @@ const renderLevel = (Level: FC<LevelComponentModel>, testLevel: TESTLEVEL) => {
   ).toJSON() as RenderedNode;
 };
 
-describe("the shared level arrangement (8.2.35)", () => {
+describe("the shared level arrangement", () => {
   LEVELS.forEach(([name, Level, testLevel]) => {
     it(`${name} is the shared three blocks, not its own layout`, () => {
       const tree = renderLevel(Level, testLevel);

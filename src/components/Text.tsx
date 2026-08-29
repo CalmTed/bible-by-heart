@@ -16,10 +16,10 @@ export interface AppTextModel extends TextProps {
   color?: TextColorName;
 }
 
-// Themed <Text> (STRATEGY §4.3). Pulls the theme from AppContext so callers no
-// longer hand-thread `color: theme.colors.text` onto every RN <Text>. Any style
-// passed in still wins (it is merged after the color), and all standard
-// TextProps pass through untouched.
+// Themed <Text>. Pulls the theme from AppContext so callers no longer
+// hand-thread `color: theme.colors.text` onto every RN <Text>. Any style passed
+// in still wins (it is merged after the color), and all standard TextProps pass
+// through untouched.
 export const Text: FC<AppTextModel> = ({ color = "text", style, ...rest }) => {
   const { theme } = useAppContext();
   return <RNText style={[{ color: theme.colors[color] }, style]} {...rest} />;

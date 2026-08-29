@@ -18,12 +18,12 @@ interface InputModel {
   style?: StyleSheet.NamedStyles<object>;
   textStyle?: StyleSheet.NamedStyles<object>;
   multiline?: boolean;
-  // 8.2.35: fill the height the parent gives instead of the text's own. The two
-  // outer views are the input's own layout, so only the component can put a
-  // `flex` on them - a wrapperStyle reaches the gradient inside them and grows
-  // nothing. Every level that asks the user to TYPE the passage needs this, and
-  // without it the input is a 100px band with the bottom half of the screen
-  // empty under it.
+  // Fill the height the parent gives instead of the text's own. The two outer
+  // views are the input's own layout, so only the component can put a `flex` on
+  // them - a wrapperStyle reaches the gradient inside them and grows nothing.
+  // Every level that asks the user to TYPE the passage needs this, and without
+  // it the input is a 100px band with the bottom half of the screen empty under
+  // it.
   grow?: boolean;
   numberOfLines?: number;
   selectTextOnFocus?: boolean;

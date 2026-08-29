@@ -37,7 +37,7 @@ import toastShow from "./utils/toastShow";
 
 // `RootStackParamList` lives in models.ts next to the rest of the data model,
 // so screens can type their props without importing this file — which imports
-// every screen, so that would be a cycle (8.1.14).
+// every screen, so that would be a cycle.
 const Stack = createStackNavigator<RootStackParamList>();
 
 // Makes the untyped hooks (`useNavigation`, `useRoute`) resolve to the real
@@ -75,8 +75,8 @@ const linking: LinkingOptions<RootStackParamList> = {
 };
 
 /**
- * The four screens home reaches directly (8.2.28). Each one arrives from the
- * edge it lives beyond, and `HomeSwipe` moves the finger the same way.
+ * The four screens home reaches directly. Each one arrives from the edge it
+ * lives beyond, and `HomeSwipe` moves the finger the same way.
  *
  * `detachPreviousScreen: false` is the other half of "back must be fast". The
  * stack detaches the screen underneath the top one, and a detached screen is
@@ -85,8 +85,8 @@ const linking: LinkingOptions<RootStackParamList> = {
  * render inside the pop animation, which is precisely when the JS thread has no
  * time to spare. Kept attached, home is already drawn when the card comes off
  * it. It costs home re-rendering on state changes while a session is running,
- * which is cheap since 8.2.20/8.2.21: `getStroke` and the week row are memoized
- * on `state.testsHistory`, and that only changes when a session finishes.
+ * which is cheap: `getStroke` and the week row are memoized on
+ * `state.testsHistory`, and that only changes when a session finishes.
  */
 const listDestination = {
   ...candyTransitions.right,
@@ -134,13 +134,13 @@ export const Navigator: FC = () => {
           headerShown: false,
           gestureEnabled: true,
           presentation: "card",
-          // The app's one transition (8.2.3), instead of whatever preset the
-          // library picks from `Platform.Version`. Spread here so it covers
-          // every screen - a screen that opts out is a bug, not a feature.
+          // The app's one transition, instead of whatever preset the library
+          // picks from `Platform.Version`. Spread here so it covers every
+          // screen - a screen that opts out is a bug, not a feature.
           ...candyTransition,
           // Blurred screens stay mounted (react-navigation keeps the stack), so
           // without this a single dispatch re-renders EVERY mounted screen and
-          // re-runs its O(history) stat work (8.1.1 finding #4). freezeOnBlur
+          // re-runs its O(history) stat work. freezeOnBlur
           // suspends off-screen screens so only the focused one re-renders.
           freezeOnBlur: true
         }}

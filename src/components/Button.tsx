@@ -44,13 +44,13 @@ export const Button: FC<ButtonModel> = ({
   // `outline` ring. Gray and transparent buttons are flat fills wearing the same
   // component.
   const hasGradient = type !== "transparent" && color !== "gray";
-  // Press feedback lives here rather than in any screen, because every button in
-  // the app is this component (8.2.4) - the home screen is nothing but these,
-  // and so are the passage list's swipe actions. One spring, ~277 call sites.
-  // 0 = at rest, 1 = held. The spring is the shared ANIMATION one, so a button
-  // settles with the same bounce as a dialog arriving.
+  // Press feedback lives here rather than in any screen, because every button
+  // in the app is this component - the home screen is nothing but these, and so
+  // are the passage list's swipe actions. One spring, ~277 call sites. 0 = at
+  // rest, 1 = held. The spring is the shared ANIMATION one, so a button settles
+  // with the same bounce as a dialog arriving.
   //
-  // ...except on a gradient (8.2.30). expo-linear-gradient bakes its ramp at the
+  // ...except on a gradient. expo-linear-gradient bakes its ramp at the
   // view's layout size, so scaling the view does not scale the gradient with it:
   // the ramp stretches and, at the sizes a press uses, visibly drops out. Fedir
   // saw the filled and outlined buttons disappear mid-press. A gradient is
@@ -71,7 +71,7 @@ export const Button: FC<ButtonModel> = ({
   // dead is still transparent. Ordering it the other way gave every disabled
   // icon button a bg->bgSecond plate under it, which is the "shadow" on the
   // calendar's month arrows - they are disabled at the ends of the range, and
-  // the plate reads as a drop shadow rather than as nothing (8.2.32).
+  // the plate reads as a drop shadow rather than as nothing.
   const gradientColors =
     type === "transparent"
       ? ["transparent", "transparent"]
@@ -97,8 +97,8 @@ export const Button: FC<ButtonModel> = ({
         style={buttonStyles.touch}
         // style={{ ...buttonStyles.touch, opacity: disabled ? 0.5 : 1 }}
         onPress={onPress}
-        // Not attached at all on a gradient (8.2.30) rather than attached and
-        // guarded, so "does this button animate" is answerable from the tree.
+        // Not attached at all on a gradient rather than attached and guarded,
+        // so "does this button animate" is answerable from the tree.
         onPressIn={hasGradient ? undefined : handlePressIn}
         onPressOut={hasGradient ? undefined : handlePressOut}
         disabled={disabled}

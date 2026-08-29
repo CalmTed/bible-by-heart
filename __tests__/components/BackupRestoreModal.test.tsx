@@ -7,9 +7,9 @@ import { dateToString } from "../../src/utils/formatDateTime";
 import { AppStateModel } from "../../src/models";
 
 /**
- * 8.2.34 — a restore replaces EVERYTHING, so the question has to say what would
- * change, not only what the file holds. "12 passages" alone never told the user
- * that they currently have 40.
+ * A restore replaces EVERYTHING, so the question has to say what would change,
+ * not only what the file holds. "12 passages" alone never told the user that
+ * they currently have 40.
  */
 const t = createT(LANGCODE.en);
 const EXPORTED_AT = new Date("2026-08-24T10:20:30Z").getTime();
@@ -35,7 +35,7 @@ const renderModal = (
     { state: current }
   );
 
-describe("BackupRestoreModal (8.2.34)", () => {
+describe("BackupRestoreModal", () => {
   it("shows the date the backup was written", () => {
     const screen = renderModal(stateWith(1), stateWith(2));
     expect(

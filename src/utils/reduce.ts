@@ -242,8 +242,8 @@ export const reduce: (
       }
       break;
     case ActionName.generateStudyOneTests:
-      //a drill of one passage (8.2.1c): only testsActive changes, so the active
-      //train mode and the modes list survive it untouched
+      //a drill of one passage: only testsActive changes, so the active train
+      //mode and the modes list survive it untouched
       const studyOneTests = generateStudyOneTests(
         state,
         action.payload.passageId
@@ -378,8 +378,8 @@ export const reduce: (
       });
       //updating history
       const newHistory = [...state.testsHistory, ...testsWithUpdatedLastTest];
-      // One pass over the history for ALL passages: the single-passage form used
-      // to filter and sort the whole history once per passage (8.2.21).
+      // One pass over the history for ALL passages: the single-passage form
+      // used to filter and sort the whole history once per passage.
       const perfectTests = getPerfectTestsNumbers(newHistory, state.passages);
       const newPassages = state.passages.map((p) => {
         //updating passages max level
@@ -604,8 +604,8 @@ export const reduce: (
     // Copy-on-write from here down. Every branch above builds a NEW top-level
     // object, but most of them keep the previous state's `settings` object, so
     // assigning into `changedState.settings` writes into the state React has
-    // already rendered. That was invisible while the reducer ended in a full deep
-    // clone; without it (8.2.20) it is a live shared reference. Build a new
+    // already rendered. That was invisible while the reducer ended in a full
+    // deep clone; without it it is a live shared reference. Build a new
     // settings object only when a heal actually fires.
     let settings = changedState.settings;
     if (
@@ -621,10 +621,10 @@ export const reduce: (
     // Heal a dangling left-swipe tag. Tags have no registry — they exist only
     // as long as some passage carries them — so removing a tag from every
     // passage can leave settings.leftSwipeTag pointing at a tag that no longer
-    // exists. ARCHIVED_NAME is always available, so fall back to it. Centralized
-    // here so it covers every passage-mutating action (STRATEGY §3).
-    // The scan is O(passages), so run it only when something could have stranded
-    // the tag: the passages changed, or settings did (setLeftSwipeTag).
+    // exists. ARCHIVED_NAME is always available, so fall back to it.
+    // Centralized here so it covers every passage-mutating action. The scan is
+    // O(passages), so run it only when something could have stranded the tag:
+    // the passages changed, or settings did (setLeftSwipeTag).
     const swipeTag = settings.leftSwipeTag;
     if (
       (changedState.passages !== state.passages ||
@@ -638,10 +638,10 @@ export const reduce: (
     changedState.settings = settings;
     changedState.lastChange = timeOfChange;
   }
-  // No deep clone here (8.2.20). It cost a full JSON round-trip of passages +
-  // history on EVERY action, which is what made the app feel slow. The only
-  // failure it caught — a state that cannot be serialized — is caught by the
-  // persist path in AppContext, which stringifies the very same object and
-  // already logs and toasts.
+  // No deep clone here. It cost a full JSON round-trip of passages + history on
+  // EVERY action, which is what made the app feel slow. The only failure it
+  // caught — a state that cannot be serialized — is caught by the persist path
+  // in AppContext, which stringifies the very same object and already logs and
+  // toasts.
   return changedState;
 };

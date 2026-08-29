@@ -2,9 +2,9 @@ import { Vibration } from "react-native";
 import { VIBRATION_PATTERNS } from "../../src/constants";
 import { feedback } from "../../src/utils/feedback";
 
-// 8.2.8 - the setting now holds in ONE place, so this is where it is proven.
-// Two call sites (the passages list's long press, the address picker's verse
-// long press) used to buzz regardless of what the user had chosen.
+// The setting now holds in ONE place, so this is where it is proven. Two call
+// sites (the passages list's long press, the address picker's verse long press)
+// used to buzz regardless of what the user had chosen.
 
 const settings = (hapticsEnabled: boolean) => ({
   hapticsEnabled,

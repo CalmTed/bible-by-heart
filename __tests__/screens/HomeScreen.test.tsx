@@ -1,9 +1,9 @@
 /**
- * 8.2.31 — the home column. The screen used to hold its logo in a `flex: 1`
- * box that centred it, so every pixel of slack collected in two equal voids —
- * one above the mark, one under "Days stroke" — while the week row sat pinned
- * above the buttons. The mark is a share of the screen now and the blocks are
- * spaced on purpose.
+ * The home column. The screen used to hold its logo in a `flex: 1` box that
+ * centred it, so every pixel of slack collected in two equal voids — one above
+ * the mark, one under "Days stroke" — while the week row sat pinned above the
+ * buttons. The mark is a share of the screen now and the blocks are spaced on
+ * purpose.
  */
 import { render } from "@testing-library/react-native";
 import { StyleSheet, View, useWindowDimensions } from "react-native";
@@ -74,7 +74,7 @@ const logoSize = (screen: ReturnType<typeof renderHome>) => {
   };
 };
 
-describe("HomeScreen layout (8.2.31)", () => {
+describe("HomeScreen layout", () => {
   it("grows the mark with the screen instead of drawing 160px everywhere", () => {
     setWindow(390, 844);
     const tall = logoSize(renderHome());
@@ -111,7 +111,7 @@ describe("HomeScreen layout (8.2.31)", () => {
   });
 });
 
-describe("HomeScreen swipes (8.2.28)", () => {
+describe("HomeScreen swipes", () => {
   // The finger runs the way the card travels: settings lives beyond the LEFT
   // edge, so a swipe to the RIGHT is what pulls it in.
   it.each([

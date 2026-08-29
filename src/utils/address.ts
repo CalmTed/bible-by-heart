@@ -6,12 +6,12 @@ import { AddressType } from "../models";
 import { bookAliases } from "./bookAliases";
 import { logger } from "./logger";
 
-// Everything an address can do, in one place (8.2.6). Before this the same six
+// Everything an address can do, in one place. Before this the same six
 // operations lived in six files named after their verbs (`addressToString`,
-// `addressDifference`, `addressOrder`…), which is why a new caller kept adding a
-// seventh instead of finding the one it needed. `Address` is a namespace, not a
-// class: app state is plain JSON in AsyncStorage and must stay that way, so an
-// address never carries methods of its own.
+// `addressDifference`, `addressOrder`…), which is why a new caller kept adding
+// a seventh instead of finding the one it needed. `Address` is a namespace, not
+// a class: app state is plain JSON in AsyncStorage and must stay that way, so
+// an address never carries methods of its own.
 
 export interface ParsedAddressModel {
   address: AddressType;
@@ -35,7 +35,7 @@ const isWordChar = (ch: string | undefined): boolean =>
 // An open end ("John 3:16") means the end is the start. Two spellings of "open"
 // reach here: `null`, which is what a persisted address carries because JSON has
 // no NaN, and `NaN`, which is what AddressPicker hands around before the end is
-// picked. Until 8.2.20 the reducer deep-cloned its result through JSON on every
+// picked. The reducer used to deep-clone its result through JSON on every
 // action, so every NaN quietly became null before anything compared it; without
 // that clone a just-added single verse would no longer equal its own stored copy.
 // Fold both spellings here instead. `Object.is` below rather than `===`, so two
@@ -94,6 +94,43 @@ const format: (address: AddressType, t: (w: WORD) => string) => string = (
   }`;
 };
 
+// Every spelling the parser will try, with its regex built once. There are
+// several hundred of them in the alias table, and they are the same on
+// every call - rebuilding them per parse made importing a CSV pay for the whole
+// table once per row. Built on the first parse rather than at import, so a boot
+// that never parses an address never pays for it at all.
+interface BookTitleModel {
+  bookIndex: number;
+  language: LANGCODE;
+  title: string;
+  // the title immediately followed by the chapter:verse pattern, anywhere in
+  // the text: shared verses usually put the reference after the quote
+  matcher: RegExp;
+}
+let bookTitles: BookTitleModel[] | null = null;
+const getBookTitles: () => BookTitleModel[] = () => {
+  if (bookTitles === null) {
+    bookTitles = Object.values(LANGCODE).flatMap((language) => {
+      const t = createT(language);
+      return bibleReference.flatMap((book, bookIndex) =>
+        // the localized long + short titles PLUS any per-language aliases
+        // (abbreviations / spelling variants) for this book
+        [
+          t(book.longTitle),
+          t(book.titleShort),
+          ...(bookAliases[book.longTitle]?.[language] ?? [])
+        ].map((title) => ({
+          bookIndex,
+          language,
+          title,
+          matcher: new RegExp(escapeRegExp(title) + NUMBER_PATTERN, "gi")
+        }))
+      );
+    });
+  }
+  return bookTitles;
+};
+
 const parse: (string: string) => ParsedAddressModel | false = (string) => {
   const defaultAddress = createAddress();
   // find needed book
@@ -105,38 +142,24 @@ const parse: (string: string) => ParsedAddressModel | false = (string) => {
     fullAddressString: string;
   }
   const matches: BookMatch[] = [];
-  Object.values(LANGCODE).forEach((langcode) => {
-    const t = createT(langcode);
-    bibleReference.forEach((book, i) => {
-      // Candidates: the localized long + short titles PLUS any per-language
-      // aliases (abbreviations / spelling variants) for this book (8.1.5).
-      const candidateTitles = [
-        t(book.longTitle),
-        t(book.titleShort),
-        ...(bookAliases[book.longTitle]?.[langcode] ?? [])
-      ];
-      candidateTitles.forEach((title) => {
-        // Find the address ANYWHERE in the text (shared verses usually put the
-        // reference after the quote): a title immediately followed by the
-        // chapter:verse pattern. Case-insensitive; the title must sit on a word
-        // boundary so book abbreviations don't match inside a longer word.
-        const re = new RegExp(escapeRegExp(title) + NUMBER_PATTERN, "gi");
-        for (const m of string.matchAll(re)) {
-          const idx = m.index ?? 0;
-          if (isWordChar(string[idx - 1])) {
-            continue;
-          }
-          matches.push({
-            bookIndex: i,
-            language: langcode,
-            matchedTitleLength: title.length,
-            justNumbers: m[1],
-            fullAddressString: m[0]
-          });
-          break; // first boundary-valid occurrence is enough
-        }
+  getBookTitles().forEach(({ bookIndex, language, title, matcher }) => {
+    // Case-insensitive; the title must sit on a word boundary so book
+    // abbreviations don't match inside a longer word. `matchAll` works off a
+    // copy of the regex, so a shared one carries no state between calls.
+    for (const m of string.matchAll(matcher)) {
+      const idx = m.index ?? 0;
+      if (isWordChar(string[idx - 1])) {
+        continue;
+      }
+      matches.push({
+        bookIndex,
+        language,
+        matchedTitleLength: title.length,
+        justNumbers: m[1],
+        fullAddressString: m[0]
       });
-    });
+      break; // first boundary-valid occurrence is enough
+    }
   });
   // Several books can be prefixes of the input (e.g. "Jud"/Jude is a prefix of
   // "Judges"). Pick the most specific match — the one that consumed the longest

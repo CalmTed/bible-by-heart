@@ -7,13 +7,13 @@ import { WORD } from "../l10n";
 import { useAppContext } from "../context/AppContext";
 
 // React.memo: home re-renders on every local state change (e.g. opening the
-// train-modes picker); `t`/`theme` now come from context (stable identities,
-// 8.1.2), so this skips re-rendering while state is unchanged (8.1.1 #4/c).
+// train-modes picker); `t`/`theme` come from context (stable identities), so
+// this skips re-rendering while state is unchanged.
 export const WeekActivity: FC<{
   state: AppStateModel;
 }> = React.memo(({ state }) => {
   const { t } = useAppContext();
-  // getWeeklyStats walks history; recompute only when history changes (#4/d).
+  // getWeeklyStats walks history; recompute only when history changes.
   const weekActivityData = useMemo(
     () => getWeeklyStats(state),
     [state.testsHistory]

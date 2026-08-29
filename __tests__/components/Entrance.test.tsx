@@ -1,5 +1,5 @@
 /**
- * 8.2.5 — the shared entrance wrapper.
+ * The shared entrance wrapper.
  *
  * Same canary argument as MiniModal.test.tsx: this asserts the reanimated
  * TOOLCHAIN, not the library. If babel-preset-expo ever stops applying
@@ -22,7 +22,7 @@ const animatedNodes = (screen: ReturnType<typeof renderWithContext>) =>
     (node) => node.props.jestAnimatedStyle !== undefined
   );
 
-describe("Entrance (8.2.5)", () => {
+describe("Entrance", () => {
   it("renders its children and keeps the style it was given", () => {
     const screen = renderWithContext(
       <Entrance style={{ flex: 1 }}>

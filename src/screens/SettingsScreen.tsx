@@ -63,10 +63,10 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
         logger.write(`Logged out manualy from ${state.userData.userName}`);
         await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
-        // dispatch, not reduce(state) + setState (8.2.24). `state` here was read
-        // before the request was awaited, so writing the whole object back put
-        // every change made in between - a language, a passage, an answer - back
-        // the way it was.
+        // dispatch, not reduce(state) + setState. `state` here was read before
+        // the request was awaited, so writing the whole object back put every
+        // change made in between - a language, a passage, an answer - back the
+        // way it was.
         dispatch({ name: ActionName.resetUserData });
         break;
       case 401:

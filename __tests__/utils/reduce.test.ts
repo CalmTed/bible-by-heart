@@ -198,9 +198,9 @@ describe("reducer must return valid state for every call", () => {
     expect(afterUntag?.settings.leftSwipeTag).toBe(ARCHIVED_NAME);
   });
 
-  // 8.2.1c — a drill fills testsActive and touches nothing else. The point of
-  // the assertions on settings is that a study session must not hijack the
-  // active train mode the way ActionName.generateTests deliberately does.
+  // A drill fills testsActive and touches nothing else. The point of the
+  // assertions on settings is that a study session must not hijack the active
+  // train mode the way ActionName.generateTests deliberately does.
   it("generates a study-one session without disturbing the train modes", () => {
     const studied = verseList[0];
     const before = { ...testState, passages: verseList };
@@ -216,8 +216,8 @@ describe("reducer must return valid state for every call", () => {
     expect(after?.settings.trainModesList).toEqual(
       before.settings.trainModesList
     );
-    // 8.2.20 — the reducer no longer deep-clones its result, so the parts an
-    // action did not touch come back by identity, not by value.
+    // The reducer no longer deep-clones its result, so the parts an action did
+    // not touch come back by identity, not by value.
     expect(after?.passages).toBe(before.passages);
   });
 
@@ -231,10 +231,10 @@ describe("reducer must return valid state for every call", () => {
     ).toBe(null);
   });
 
-  // 8.2.20 — the reducer used to end every action in
-  // JSON.parse(JSON.stringify(state)). These two tests are what prove it is gone
-  // and that removing it did not leave the shared-reference bug the clone hid.
-  describe("no deep clone of the whole state (8.2.20)", () => {
+  // The reducer used to end every action in JSON.parse(JSON.stringify(state)).
+  // These two tests are what prove it is gone and that removing it did not
+  // leave the shared-reference bug the clone hid.
+  describe("no deep clone of the whole state", () => {
     it("hands back the untouched parts of the state by identity", () => {
       const before = {
         ...testState,

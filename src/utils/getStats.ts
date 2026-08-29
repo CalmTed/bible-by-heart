@@ -22,7 +22,7 @@ const testDayKey = (t: TestModel): string => {
 
 // Unique days, first occurrence first — a Set instead of the
 // `arr.slice(0, i).includes(v)` this used to do per element, which allocated an
-// array per record and compared O(n²) times (8.2.21: 42 ms at 5 000 records on a
+// array per record and compared O(n²) times (42 ms at 5 000 records on a
 // desktop, and this runs on the home screen on every state change).
 const uniqueInOrder = (values: string[]): string[] => {
   const seen = new Set<string>();

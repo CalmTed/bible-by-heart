@@ -12,11 +12,11 @@ import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 
 // Dev-mode log viewer - was a MiniModal styled to fill the screen inside the
-// About sub-menu, with its own hand-rolled back button in it (8.2.2). A
-// full-height scrolling list is a screen; now it is one, reached from About.
-// The read effect runs on mount and after a clear, NOT on every render: the old
-// version listed `loggerText` among its own dependencies, so each read
-// re-triggered itself for as long as the modal stayed open.
+// About sub-menu, with its own hand-rolled back button in it. A full-height
+// scrolling list is a screen; now it is one, reached from About. The read
+// effect runs on mount and after a clear, NOT on every render: the old version
+// listed `loggerText` among its own dependencies, so each read re-triggered
+// itself for as long as the modal stayed open.
 export const LogSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsLog>> = ({
   navigation
 }) => {

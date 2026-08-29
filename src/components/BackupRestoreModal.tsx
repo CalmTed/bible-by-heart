@@ -12,7 +12,7 @@ interface BackupRestoreModalModel {
 }
 
 /**
- * "Restore this backup?" — the one place the question is asked (8.2.34).
+ * "Restore this backup?" — the one place the question is asked.
  *
  * Restoring replaces everything, so the dialog says what would CHANGE rather
  * than only what the file holds: when it was written, and each count as

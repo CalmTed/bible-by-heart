@@ -1,5 +1,5 @@
 /**
- * The passage every level-component test renders (8.2.6).
+ * The passage every level-component test renders.
  *
  * The seven level tests used to carry their own copy of this object — four
  * copies inside the level 1 test alone — so a change to `PassageModel` meant

@@ -1,5 +1,5 @@
 /**
- * 8.2.5 — the training session's wrapper.
+ * The training session's wrapper.
  *
  * The session is the core product, so what is pinned here is the wrapper's
  * behaviour rather than its looks: which test is on screen, the dot row that
@@ -162,7 +162,7 @@ const pressIcon = (screen: Screen, icon: IconName) => {
   );
 };
 
-describe("TestsScreen (8.2.5)", () => {
+describe("TestsScreen", () => {
   it("shows the first unfinished test and one dot per test", () => {
     const { screen } = renderSession(makeSession());
 

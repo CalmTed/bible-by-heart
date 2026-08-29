@@ -21,7 +21,7 @@ jest.mock("expo-secure-store", () => ({
 }));
 
 /**
- * 8.2.24 - the class of bug behind "picking a language undoes itself".
+ * The class of bug behind "picking a language undoes itself".
  *
  * fetchAPI is awaited. Anything it captured before the await is a snapshot of a
  * state that has since moved on, so writing that snapshot back rolls the whole
@@ -29,7 +29,7 @@ jest.mock("expo-secure-store", () => ({
  * `setState(reduce(thatSnapshot, resetUserData))`; the language the user picked
  * WHILE the request was in flight went with it.
  */
-describe("fetchAPI logging out (8.2.24)", () => {
+describe("fetchAPI logging out", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (SecureStore.getItem as jest.Mock).mockReturnValue(expiredToken());

@@ -24,17 +24,17 @@ interface AddressPickerModel {
   onCancel: () => void;
   onConfirm: (address: AddressType) => void;
   address?: AddressType;
-  // What the primary footer button says. It defaults to "Add", which is true when
-  // the picker is adding a passage - but a level screen opens the same picker to
-  // ANSWER a test, and "Add" is a lie there (8.2.32).
+  // What the primary footer button says. It defaults to "Add", which is true
+  // when the picker is adding a passage - but a level screen opens the same
+  // picker to ANSWER a test, and "Add" is a lie there.
   confirmTitle?: WORD;
 }
 
 const bookList = bibleReference.map((book) => book.titleShort);
 
-//the title describes what has been PICKED, not which part is being edited — since
-//8.1.7 the picker stops on the start verse, so a part-index-driven title could never
-//show it (8.2.1a). NaN = not picked yet; a complete address goes to Address.format.
+//the title describes what has been PICKED, not which part is being edited — the
+//picker stops on the start verse, so a part-index-driven title could never show
+//it. NaN = not picked yet; a complete address goes to Address.format.
 const getPickerTitle: (
   address: AddressType,
   t: (word: WORD) => string
@@ -131,7 +131,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
       return { ...prv, [addressPart]: index };
     });
     //after the start verse is picked, stop and let the footer offer a primary
-    //"add one verse" action with a secondary "extend range" affordance (8.1.7).
+    //"add one verse" action with a secondary "extend range" affordance.
     if (addressPart === "startVerseNum") {
       return;
     }
@@ -189,13 +189,13 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
       Address.versesCount(tempAddress) >
         Address.versesCount(allBookAddress) / 2);
-  //once a start verse is chosen, a single verse is already a valid passage — show
-  //the primary "add" / secondary "extend range" footer (8.1.7).
+  //once a start verse is chosen, a single verse is already a valid passage —
+  //show the primary "add" / secondary "extend range" footer.
   const isStartVerseSelected =
     addressPart === "startVerseNum" && !isNaN(tempAddress.startVerseNum);
 
   return (
-    // `statusBarTranslucent` for the same reason AnchoredPopup needs it (8.2.2):
+    // `statusBarTranslucent` for the same reason AnchoredPopup needs it:
     // without it Android lays the modal out *below* the status bar, and the
     // Header's inset would then be counted a second time.
     <Modal visible={visible} statusBarTranslucent>
@@ -299,9 +299,9 @@ export const AddressPicker: FC<AddressPickerModel> = ({
               )}
           </ScrollView>
         </View>
-        {/* SINGLE-VERSE FOOTER — one verse is enough by default (8.1.7).
+        {/* SINGLE-VERSE FOOTER — one verse is enough by default.
             A real row in the layout flow, so it can never cover the last
-            row of verses the way the absolute one did (8.2.1a). */}
+            row of verses the way the absolute one did. */}
         {isStartVerseSelected && (
           <View
             style={{
@@ -349,8 +349,8 @@ const ListButton: FC<{
   return (
     <TouchableOpacity onPress={onPress} onLongPress={onLongPress}>
       {selected ? (
-        //the app's selected idiom is a gradient ring over bgSecond, the same one
-        //`Button type="outline"` draws — not a flat mainColor fill (8.2.1a).
+        //the app's selected idiom is a gradient ring over bgSecond, the same
+        //one `Button type="outline"` draws — not a flat mainColor fill.
         <LinearGradient
           colors={[theme.colors.gradient1, theme.colors.gradient2] as const}
           start={{ x: 0.0, y: 0 }}

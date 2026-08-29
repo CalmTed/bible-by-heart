@@ -182,6 +182,10 @@ export interface TranslationModel {
   isDefault: boolean;
   name: string;
   addressLanguage: LANGCODE;
+  // Which text source the API knows this translation as (>=0.1.1). `null` is a
+  // translation the user made up: its text is typed, never fetched. `id` stays
+  // the app's own numbering because every passage stores it.
+  sourceId: string | null;
 }
 export interface TrainModeModel {
   //>=0.0.7
@@ -210,7 +214,7 @@ export interface AddressType {
   endVerseNum: number | null; //COULD BE NULL
 }
 
-// --- Navigation (8.1.14) ---------------------------------------------------
+// --- Navigation ---------------------------------------------------
 // App state does NOT travel through route params - it lives in AppContext.
 // Params carry only small identifying args, so every entry below is either
 // `undefined` or a tiny object.
@@ -237,7 +241,7 @@ export interface ListScreenParamsModel {
  * The one map of screen name -> its params. Everything navigation-typed keys
  * off this: the stack, the linking config, `navigationRef` and each screen's
  * props. Adding a screen to `SCREEN` without a line here is a type error, which
- * is the point - it replaced `route: any` (8.1.14).
+ * is the point - it replaced `route: any`.
  */
 export type RootStackParamList = {
   [SCREEN.home]: undefined;
@@ -282,8 +286,8 @@ export type RootStackNavigationModel = StackNavigationProp<RootStackParamList>;
  * Props of a level component (`src/components/levels/L10..L50.tsx`) — the same
  * four for every level, which is what lets `TestsScreen` dispatch to them
  * through one `Record<TESTLEVEL, FC<LevelComponentModel>>`. It lived inside
- * `Level1.tsx` until 8.2.6, so every other level imported its own props type
- * from the file of an unrelated level.
+ * `Level1.tsx`, so every other level imported its own props type from the file
+ * of an unrelated level.
  */
 export interface LevelComponentModel {
   test: TestModel;
@@ -359,9 +363,9 @@ export type ActionModel =
     }
   | {
       /**
-       * "Study this one" (8.2.1c): a transient session drilling a single
-       * passage. Carries no train mode — it deliberately leaves the user's
-       * practice setup alone.
+       * "Study this one": a transient session drilling a single passage.
+       * Carries no train mode — it deliberately leaves the user's practice
+       * setup alone.
        */
       name: ActionName.generateStudyOneTests;
       payload: {

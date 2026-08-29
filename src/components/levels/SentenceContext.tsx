@@ -5,8 +5,8 @@ import { Passage } from "../../utils/passage";
 import { CONTEXT_SENTENCES } from "../../constants";
 
 // The sentences on either side of the part the user is typing (L40, L50). Both
-// levels drew this block inline and identically, down to the "..." rules —
-// 8.2.6 made it one component over `Passage.getContext*`.
+// levels drew this block inline and identically, down to the "..." rules, so it
+// is one component over `Passage.getContext*` instead.
 
 const sentenceContextStyle = StyleSheet.create({
   otherSentencesTextView: {

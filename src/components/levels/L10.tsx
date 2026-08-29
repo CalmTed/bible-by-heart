@@ -55,9 +55,9 @@ export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
     }
   };
   // A test pointing at a deleted passage renders nothing and says nothing about
-  // the answer — TestsScreen's focus-gated effect is what leaves the session
-  // (8.2.5). This level used to read `.verseText` off the missing passage and
-  // crash into the ErrorBoundary instead (found in 8.2.6).
+  // the answer — TestsScreen's focus-gated effect is what leaves the session.
+  // This level used to read `.verseText` off the missing passage and crash into
+  // the ErrorBoundary instead.
   if (!rightPassage) {
     return <View />;
   }

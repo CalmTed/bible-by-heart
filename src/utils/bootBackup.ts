@@ -9,10 +9,9 @@ import { logger } from "./logger";
 import { convertState } from "./stateVersionConvert";
 
 // The boot path's two safety-net operations, kept out of App.tsx so they can be
-// unit-tested without mounting the app (8.1.8). Both are deliberately
-// total: they log and resolve instead of throwing, because every caller sits on
-// the cold-start path where an unhandled rejection means the app never becomes
-// ready at all.
+// unit-tested without mounting the app. Both are deliberately total: they log
+// and resolve instead of throwing, because every caller sits on the cold-start
+// path where an unhandled rejection means the app never becomes ready at all.
 
 // The slice of `src/storage.ts` (react-native-storage) these helpers use.
 // Injected so tests can drive the empty/present/failing cases directly.
@@ -25,7 +24,7 @@ export interface BackupStorageModel {
  * What a read of the persisted state slot turned out to be. The distinction is
  * the whole point: "empty" is a fresh install and may be overwritten with a
  * blank state, "failed" must NEVER be, because the key is probably still there
- * and simply unreadable right now (8.1.9a).
+ * and simply unreadable right now.
  */
 export type StoredStateModel =
   | { status: "found"; raw: unknown }

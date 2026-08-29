@@ -7,23 +7,23 @@ import { dateToString } from "./formatDateTime";
 import { logger } from "./logger";
 import toastShow from "./toastShow";
 
-// The user-facing half of the safety net (8.1.9). `bootBackup.ts` keeps copies
-// INSIDE the app (two storage slots); this module puts one OUTSIDE it, in a file
-// the user owns - the only copy that survives an uninstall or a wiped device.
+// The user-facing half of the safety net. `bootBackup.ts` keeps copies INSIDE
+// the app (two storage slots); this module puts one OUTSIDE it, in a file the
+// user owns - the only copy that survives an uninstall or a wiped device.
 //
 // The top half is pure (serialize / parse / name) and unit-tested; the bottom
 // half is the thin IO wrapper the three call sites share (the post-upgrade
 // offer, the settings rows, the dev-mode rows).
 
-// A backup is the app's OWN kind of file since 8.2.34: its own extension and
-// its own MIME type, declared in `app.config.js` so Android offers Bible by
-// Heart when one is opened from a file manager or a chat.
+// A backup is the app's OWN kind of file: its own extension and its own MIME
+// type, declared in `app.config.js` so Android offers Bible by Heart when one
+// is opened from a file manager or a chat.
 export const BACKUP_FILE_MIME = "application/vnd.biblebyheart.backup+json";
 export const BACKUP_FILE_EXTENSION = "bbhbackup";
-// Backups written before 8.2.34 are plain .json and must stay openable forever -
-// a safety net that rejects the copies it made last year is not one. The picker
-// offers these too, and the CONTENT decides validity, not the label: some
-// Android providers hand any file over as text/plain or octet-stream.
+// Backups written are plain.json and must stay openable forever - a safety net
+// that rejects the copies it made last year is not one. The picker offers these
+// too, and the CONTENT decides validity, not the label: some Android providers
+// hand any file over as text/plain or octet-stream.
 export const BACKUP_LEGACY_MIMES = [
   "application/json",
   "text/plain",
@@ -107,11 +107,11 @@ export interface ParsedBackupModel {
 /**
  * Turn file content back into a state this build can run.
  *
- * Accepts both shapes on purpose: the envelope written by `serializeBackup`, and
- * a bare state object - which is what the dev-mode export produced before 8.1.9
- * and what the emergency screen's "show state" text dump gives you. Version
- * tolerance is delegated to `restoreStateFromBackup`, so an older backup is
- * converted forward through the normal chain instead of being rejected.
+ * Accepts both shapes on purpose: the envelope written by `serializeBackup`,
+ * and a bare state object - which is what the dev-mode export produced and what
+ * the emergency screen's "show state" text dump gives you. Version tolerance is
+ * delegated to `restoreStateFromBackup`, so an older backup is converted
+ * forward through the normal chain instead of being rejected.
  *
  * @returns a runnable state, or null if the content is not a convertible state.
  */
@@ -216,9 +216,9 @@ export const importBackupFile: (
 };
 
 /**
- * The other way in (8.2.34): a backup file OPENED from outside the app, which
- * arrives as a `content://` or `file://` URI rather than through the picker.
- * Nothing is applied here either - the caller shows the confirmation.
+ * The other way in: a backup file OPENED from outside the app, which arrives as
+ * a `content://` or `file://` URI rather than through the picker. Nothing is
+ * applied here either - the caller shows the confirmation.
  *
  * @returns the parsed backup, or null if the URI held anything else. Silent on
  * purpose: every VIEW intent the app receives lands here, and a link that is

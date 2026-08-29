@@ -50,9 +50,9 @@ const xmlData2 = `
 </g>
 </svg>`;
 
-// 8.2.31: the home logo is sized by the screen it is on, not by a number
-// baked in here. `height` drives it and the width follows the artwork's own
-// ratio, so the mark never distorts; unset, it draws at its natural size.
+// The home logo is sized by the screen it is on, not by a number baked in here.
+// `height` drives it and the width follows the artwork's own ratio, so the mark
+// never distorts; unset, it draws at its natural size.
 export const DaggerLogoSVG: FC<{
   isOutline?: boolean;
   color: string;

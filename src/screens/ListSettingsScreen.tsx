@@ -31,7 +31,7 @@ export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
   const { state, setState, t, theme } = useAppContext();
   // Decoded and already converted forward, but NOT applied: the state swap
   // waits behind the confirmation, so the counts shown in it describe the file
-  // the user actually picked (8.1.9).
+  // the user actually picked.
   const [pendingRestore, setPendingRestore] =
     useState<ParsedBackupModel | null>(null);
 
@@ -202,9 +202,9 @@ export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
         onCancel={() => setPendingRestore(null)}
         onConfirm={(parsed) => {
           // AppProvider's persist effect writes the new state to storage; no
-          // component touches storage directly (CODING_RULES §4). A whole
-          // snapshot on purpose - a restore replaces the state, and this one
-          // came from a file, not from a closure (8.2.24).
+          // component touches storage directly. A whole snapshot on purpose - a
+          // restore replaces the state, and this one came from a file, not from
+          // a closure.
           setState(parsed.state);
           logger.write(
             `State restored from backup file (${parsed.state.passages.length} passages)`

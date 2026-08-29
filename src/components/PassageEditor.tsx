@@ -4,11 +4,17 @@ import {
   PASSAGELEVEL,
   ARCHIVED_NAME,
   CUSTOM_TRANSLATION_NAME,
-  TRANSLATIONS_TO_FETCH,
+  BUNDLED_TRANSLATION_SOURCES,
   DAY,
-  LAYOUT
+  LAYOUT,
+  TranslationSourceModel
 } from "../constants";
-import { AddressType, AppStateModel, PassageModel } from "../models";
+import {
+  ActionName,
+  AddressType,
+  AppStateModel,
+  PassageModel
+} from "../models";
 import { Button, IconButton } from "./Button";
 import { Header } from "./Header";
 import { IconName } from "./Icon";
@@ -24,7 +30,15 @@ import {
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
 import { Select } from "./Select";
-import { fetchESV } from "../services/fetchESV";
+import {
+  fetchPassageText,
+  fetchTranslationCatalogue
+} from "../services/fetchPassageText";
+import {
+  isFetchableTranslation,
+  mergeCatalogueIntoTranslations
+} from "../utils/translation";
+import { reduce } from "../utils/reduce";
 import { MiniModal } from "./MiniModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { Input } from "./Input";
@@ -53,9 +67,15 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   onBack,
   state
 }) => {
-  const { theme, t } = useAppContext();
+  const { theme, t, setState } = useAppContext();
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
+  // Offline-first: the editor opens on the shipped catalogue, so a translation
+  // is selectable and fetchable with no network at all. The live one replaces
+  // it if the server answers.
+  const [catalogue, setCatalogue] = useState<TranslationSourceModel[]>(
+    BUNDLED_TRANSLATION_SOURCES
+  );
   const [tempPassage, setPassage] = useState(passage);
   const [newTagTempValue, setTempTagText] = useState("");
   const [fetchingInProgress, setFetchingInProgress] = useState(false);
@@ -78,24 +98,28 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     }
   };
 
+  // Which of the user's translations this id names, and whether the API has text
+  // for it. A translation the user invented has no source and is typed by hand.
+  const getTranslation = (translationId: number | null) =>
+    state.settings.translations.find((tr) => tr.id === translationId);
+  const canFetchTranslation = (translationId: number | null) =>
+    isFetchableTranslation(getTranslation(translationId), catalogue);
+
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
+    const sourceId = getTranslation(translationId)?.sourceId;
     const validAdress =
       tempPassage.address.bookIndex !== null &&
       tempPassage.address.startChapterNum !== null &&
       tempPassage.address.startVerseNum !== null;
-    if (
-      translationId &&
-      validAdress &&
-      TRANSLATIONS_TO_FETCH.includes(translationId)
-    ) {
+    if (sourceId && validAdress && canFetchTranslation(translationId)) {
       if (state.settings.devModeEnabled) {
         logger.write(
-          `Fetching passage: ${JSON.stringify(tempPassage.address)}`
+          `Fetching passage: ${sourceId} ${JSON.stringify(tempPassage.address)}`
         );
       }
       setFetchingInProgress(true);
-      fetchESV(tempPassage.address)
+      fetchPassageText(tempPassage.address, sourceId)
         .then((data) => {
           setPassage((prevPassage) => {
             return { ...prevPassage, verseText: data };
@@ -103,15 +127,45 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         })
         .catch((e) => {
           logger.error(
-            `Error while fetching ESV text Address:${JSON.stringify(tempPassage.address)}`
+            `Error while fetching ${sourceId} text Address:${JSON.stringify(tempPassage.address)}: ${e}`
           );
-          toastShow(e, 10000);
+          // No text source means no text, never a broken app: the user is told
+          // once and the field stays theirs to type in.
+          toastShow(t("TextSourceUnavailable"), 10000);
         })
         .finally(() => {
           setFetchingInProgress(false);
         });
     }
   };
+
+  useEffect(() => {
+    // Translations come from the catalogue: whatever the API serves and the app
+    // has never seen becomes one more entry in the user's list. Appends only -
+    // nothing already there is renamed, renumbered or un-defaulted.
+    let dropped = false;
+    fetchTranslationCatalogue().then((liveCatalogue) => {
+      if (dropped) {
+        return;
+      }
+      setCatalogue(liveCatalogue);
+      setState((prev) => {
+        const merged = mergeCatalogueIntoTranslations(
+          prev.settings.translations,
+          liveCatalogue
+        );
+        return merged === prev.settings.translations
+          ? prev
+          : (reduce(prev, {
+              name: ActionName.setTranslationsList,
+              payload: merged
+            }) ?? prev);
+      });
+    });
+    return () => {
+      dropped = true;
+    };
+  }, []);
 
   useEffect(() => {
     // On mount: if we already have a valid address but no text yet (e.g. adding
@@ -128,9 +182,9 @@ export const PassageEditor: FC<PassageEditorModel> = ({
 
   useEffect(() => {
     //checknig if data changed after first PE rendering
-    const fetchableTranslation =
-      tempPassage.verseTranslation &&
-      TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation);
+    const fetchableTranslation = canFetchTranslation(
+      tempPassage.verseTranslation
+    );
     const addressORTranslationChanged =
       passage.verseTranslation !== tempPassage.verseTranslation ||
       JSON.stringify(passage.address) !== JSON.stringify(tempPassage.address);
@@ -242,11 +296,11 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       flex: 1,
       backgroundColor: theme.colors.bg
     },
-    // 8.2.27: this used to be `height: "93%"` — 93% of the WHOLE screen, laid
-    // out BELOW the Header, so the scroll area's bottom hung off the screen by
-    // the header's height less 7% of it. On a level-5 passage "Level 5" and one
-    // row under it were the last things reachable. flex takes the room the
-    // header leaves, and no more.
+    // This used to be `height: "93%"` — 93% of the WHOLE screen, laid out BELOW
+    // the Header, so the scroll area's bottom hung off the screen by the
+    // header's height less 7% of it. On a level-5 passage "Level 5" and one row
+    // under it were the last things reachable. flex takes the room the header
+    // leaves, and no more.
     listView: {
       backgroundColor: theme.colors.bg,
       flex: 1,
@@ -258,7 +312,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     },
     listContent: {
       // the last row scrolls clear of the screen edge instead of ending flush
-      // against it (8.2.27)
+      // against it
       paddingBottom: LAYOUT.scrollBottomGap
     },
     bodyTop: {
@@ -426,7 +480,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           </View>
           {/* Right under the address and above the text it decides: the
               translation is met as part of the address step, not as a field far
-              down the editor (8.2.1b). */}
+              down the editor. */}
           <View style={PEstyle.translationRow}>
             <Text style={theme.theme.subText}>{t("TranslationLabel")}:</Text>
             <Select
@@ -457,10 +511,9 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               numberOfLines={8}
               onChangeText={handleTextChange}
               placeholder={
-                !tempPassage.verseTranslation ||
-                !TRANSLATIONS_TO_FETCH.includes(tempPassage.verseTranslation)
-                  ? t("NotAFetchableTranslation")
-                  : ""
+                canFetchTranslation(tempPassage.verseTranslation)
+                  ? ""
+                  : t("NotAFetchableTranslation")
               }
               placeholderTextColor={theme.colors.textSecond}
             >

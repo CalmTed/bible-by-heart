@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 
 /**
- * 8.2.35 — the one arrangement every level fills.
+ * The one arrangement every level fills.
  *
  * The five level screens each solved the same layout privately and disagreed
  * about all of it: level 2 sat its verse box in the top third and its SUBMIT at
@@ -24,8 +24,8 @@ import { StyleSheet } from "react-native";
  *   button is in the same place on every level, so it can be pressed without
  *   being looked for.
  *
- * This is a stylesheet and not a wrapper component on purpose: the 8.2.6 split
- * made the level files small enough to each hold their own arrangement, and a
+ * This is a stylesheet and not a wrapper component on purpose: one file per
+ * level keeps them small enough to each hold their own arrangement, and a
  * wrapper would have to take the three blocks as props (or children in a fixed
  * order) to do the same job.
  */

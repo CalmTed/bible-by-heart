@@ -15,7 +15,7 @@ interface ErrorBoundaryStateModel {
 }
 
 /**
- * The only way to catch a render error thrown by a child (8.1.9a).
+ * The only way to catch a render error thrown by a child.
  *
  * App.tsx used to wrap its `return (...)` in a plain `try/catch` and render the
  * emergency screen from the `catch` - which never runs, because React does not

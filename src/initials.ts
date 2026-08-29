@@ -11,7 +11,8 @@ import {
   THEMETYPE,
   VERSION,
   ARCHIVED_NAME,
-  DEFAULT_TRAINMODE_ID
+  DEFAULT_TRAINMODE_ID,
+  BUNDLED_TRANSLATION_SOURCES
 } from "./constants";
 import {
   AddressType,
@@ -31,7 +32,7 @@ import {
 import { createT } from "./l10n";
 import { Address } from "./utils/address";
 
-const genId: () => number = () => {
+export const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
 };
 
@@ -93,8 +94,8 @@ export const createAppState010: () => AppStateModel010 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
-      // On for new installs only (8.2.32, Fedir): a converted state keeps whatever
-      // the user had - stateVersionConvert carries this field across untouched.
+      // On for new installs only (Fedir): a converted state keeps whatever the
+      // user had - stateVersionConvert carries this field across untouched.
       [SETTINGS.autoIncreaseLevel]: true,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
@@ -180,24 +181,41 @@ export const createAppState: () => AppStateModel = () => {
   }
 };
 
+// A shipped translation's local id is stored on every passage that uses it
+// (`verseTranslation`), so these numbers are a promise: 1 and 2 are what every
+// install made before 0.1.1 already carries and can never be renumbered, and a
+// new source takes the next free number. Ids the user's own translations get
+// come from `genId`, which cannot reach down here.
+export const SHIPPED_TRANSLATION_IDS: Record<string, number> = {
+  esv: 1,
+  "ukr-hom": 3,
+  "ukr-kul": 4,
+  "ukr-ogi": 5,
+  "ukr-turk": 6
+};
+
+// The translation list a fresh install starts with: every bundled source, in
+// English-first order. Only an English install marks a default (ESV); a
+// Ukrainian one leaves the choice open, because the add-passage flow asks which
+// translation to use anyway and four Ukrainian texts have no obvious winner.
 export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
   lang
-) => [
-  {
-    id: 1,
-    editable: false,
-    name: "ESV®",
-    addressLanguage: LANGCODE.en,
-    isDefault: lang === LANGCODE.en
-  },
-  {
-    id: 2,
-    editable: false,
-    name: "UCVNTR",
-    addressLanguage: LANGCODE.ua,
-    isDefault: lang === LANGCODE.ua
-  }
-];
+) => {
+  const fromCatalogue: TranslationModel[] = BUNDLED_TRANSLATION_SOURCES.map(
+    (source) => ({
+      id: SHIPPED_TRANSLATION_IDS[source.sourceId],
+      editable: false,
+      name: source.title,
+      sourceId: source.sourceId,
+      addressLanguage: source.language,
+      isDefault: source.sourceId === "esv" && lang === LANGCODE.en
+    })
+  );
+  return [
+    ...fromCatalogue.filter((tr) => tr.addressLanguage === LANGCODE.en),
+    ...fromCatalogue.filter((tr) => tr.addressLanguage !== LANGCODE.en)
+  ];
+};
 
 export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
   lang
@@ -309,7 +327,9 @@ export const createTranslation: (lang?: LANGCODE) => TranslationModel = (
     addressLanguage: lang,
     name: createT(lang)("NewTranslationName"),
     editable: true,
-    isDefault: false
+    isDefault: false,
+    //a translation the user names has no text source: its verses are typed
+    sourceId: null
   };
 };
 

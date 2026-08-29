@@ -17,7 +17,7 @@ describe("testing button", () => {
     expect(tree).toMatchSnapshot();
   });
 
-  // 8.2.4. Same canary argument as MiniModal's: if babel-preset-expo ever stops
+  // Same canary argument as MiniModal's: if babel-preset-expo ever stops
   // applying react-native-worklets/plugin, useAnimatedStyle produces no style at
   // all — and because this one wraps EVERY button in the app, that failure would
   // be the whole UI, silently, at build time.
@@ -38,9 +38,9 @@ describe("testing button", () => {
     expect(ANIMATION.pressScale).toBeLessThan(1);
   });
 
-  // The animated wrapper replaced the plain View around the Pressable (8.2.4),
-  // so the press itself is worth a guard: a button that sinks but does nothing
-  // is worse than one that does nothing at all.
+  // The animated wrapper replaced the plain View around the Pressable, so the
+  // press itself is worth a guard: a button that sinks but does nothing is
+  // worse than one that does nothing at all.
   it("still presses, and a disabled one still does not", () => {
     const onPress = jest.fn();
     const screen = renderWithContext(<Button title="tap" onPress={onPress} />);
@@ -57,7 +57,7 @@ describe("testing button", () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
-  // 8.2.30. expo-linear-gradient bakes its ramp at layout size, so a scaled
+  // expo-linear-gradient bakes its ramp at layout size, so a scaled
   // gradient stretches instead of scaling and visibly drops out mid-press. The
   // press handlers are therefore not attached at all on a gradient button, which
   // is what this asserts - jest-expo never advances frames, so the shared value
@@ -94,7 +94,7 @@ describe("testing button", () => {
     });
   });
 
-  // 8.2.32. `disabled` used to win over `transparent`, so a dead icon button drew
+  // `disabled` used to win over `transparent`, so a dead icon button drew
   // a bg->bgSecond plate under itself - the "shadow" on the calendar's month
   // arrows, which are disabled at the ends of the available range.
   it("keeps a transparent button transparent when it is disabled", () => {

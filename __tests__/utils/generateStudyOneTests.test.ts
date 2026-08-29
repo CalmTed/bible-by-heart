@@ -1,8 +1,8 @@
 /**
- * 8.2.1c — "study this one": a transient session that drills ONE passage a few
- * times. What these pin is the contract the mode rests on: only that passage is
- * in the session, it is there several times, and nothing in the train-mode
- * setup is consulted or changed.
+ * "study this one": a transient session that drills ONE passage a few times.
+ * What these pin is the contract the mode rests on: only that passage is in the
+ * session, it is there several times, and nothing in the train-mode setup is
+ * consulted or changed.
  */
 import { PASSAGELEVEL, STUDY_ONE_REPEATS } from "../../src/constants";
 import {

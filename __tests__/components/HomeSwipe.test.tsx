@@ -1,13 +1,12 @@
 /**
- * 8.2.28 — home's four swipes. The finger runs the way the card travels:
- * settings lives beyond the LEFT edge, so a rightward swipe pulls it in; the
- * list beyond the right; stats below; practice above, and that one is a
- * pull-to-reload with an arrow because it starts a session rather than opening
- * a screen.
+ * Home's four swipes. The finger runs the way the card travels: settings lives
+ * beyond the LEFT edge, so a rightward swipe pulls it in; the list beyond the
+ * right; stats below; practice above, and that one is a pull-to-reload with an
+ * arrow because it starts a session rather than opening a screen.
  *
  * What jest can prove here is the mapping, the thresholds and the affordance.
  * Whether the pull FEELS like a pull is what the build at the end of the step is
- * for — the same split the animation rules describe (`docs/CODING_RULES.md` §4).
+ * for — the same split the animation rules describe.
  */
 import { Text } from "react-native";
 import {
@@ -51,7 +50,7 @@ const drag = async (x: number, y: number) => {
   await new Promise((resolve) => setTimeout(resolve, 0));
 };
 
-describe("HomeSwipe (8.2.28)", () => {
+describe("HomeSwipe", () => {
   const far = ANIMATION.swipeThreshold + 20;
 
   it.each<[direction: SwipeDirection, x: number, y: number]>([

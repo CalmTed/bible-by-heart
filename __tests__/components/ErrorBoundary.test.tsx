@@ -4,7 +4,7 @@ import { fireEvent, render } from "@testing-library/react-native";
 import { ErrorBoundary } from "../../src/components/ErrorBoundary";
 
 // A child that throws while rendering - the exact shape of failure the old
-// render-time try/catch in App.tsx could not catch (8.1.9a).
+// render-time try/catch in App.tsx could not catch.
 const Boom: FC<{ shouldThrow: boolean }> = ({ shouldThrow }) => {
   if (shouldThrow) {
     throw new Error("render exploded");

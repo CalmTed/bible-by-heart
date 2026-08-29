@@ -1,5 +1,5 @@
 /**
- * 8.2.2 — the passage-list filters, now a screen instead of a MiniModal with a
+ * The passage-list filters, now a screen instead of a MiniModal with a
  * ScrollView in it. The filters live in app state, so what has to hold is that
  * this screen still dispatches the same toggles the modal did.
  */
@@ -90,7 +90,7 @@ const stateWithTags = (tags: string[]): AppStateModel => {
   return state;
 };
 
-describe("FiltersScreen (8.2.2)", () => {
+describe("FiltersScreen", () => {
   it("shows every filter section the modal used to, in a screen", () => {
     const { screen } = renderFilters(stateWithTags(["memorized"]));
 
@@ -110,8 +110,8 @@ describe("FiltersScreen (8.2.2)", () => {
     expect(screen.queryByText(t("Tags"))).toBeNull();
   });
 
-  // 8.2.25 — "has no tags" is a value the hide-list can name, so it is offered
-  // as a tag option, but only in a library where it separates something.
+  // "has no tags" is a value the hide-list can name, so it is offered as a tag
+  // option, but only in a library where it separates something.
   it("offers 'no tags' as a tag option once tagged and untagged both exist", () => {
     const state = stateWithTags(["memorized"]);
     state.passages.push({

@@ -24,11 +24,11 @@ export const TestNavDot: FC<TestNavDotModel> = ({
           ? [theme.colors.text, theme.colors.textSecond]
           : [theme.colors.gradient1, theme.colors.gradient2];
   const testNavDottStyles = StyleSheet.create({
-    // 8.2.35: the Pressable IS the dot. It used to sit between the wrapper and
-    // the gradient with no size of its own, so the gradient's height: "100%"
-    // resolved against a view sized by its 13px child - a 13px dot parked in the
-    // top-left corner of an 18px wrapper (off-centre), and a CURRENT dot, which
-    // has no child at all, sized to nothing.
+    // The Pressable IS the dot. It used to sit between the wrapper and the
+    // gradient with no size of its own, so the gradient's height: "100%"
+    // resolved against a view sized by its 13px child - a 13px dot parked in
+    // the top-left corner of an 18px wrapper (off-centre), and a CURRENT dot,
+    // which has no child at all, sized to nothing.
     wrapper: {
       width: 18,
       aspectRatio: 1,

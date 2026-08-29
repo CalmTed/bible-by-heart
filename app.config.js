@@ -96,11 +96,11 @@ export default {
             "DEFAULT"
           ]
         },
-        // 8.2.34: opening a backup file offers Bible by Heart. The app's own
-        // MIME type (see src/utils/backupFile.ts) is what makes the offer
-        // specific - matching application/json would put the app in the chooser
-        // for every JSON file on the phone. No BROWSABLE here: this is a file
-        // being opened, not a link being followed.
+        // Opening a backup file offers Bible by Heart. The app's own MIME type
+        // (see src/utils/backupFile.ts) is what makes the offer specific -
+        // matching application/json would put the app in the chooser for every
+        // JSON file on the phone. No BROWSABLE here: this is a file being
+        // opened, not a link being followed.
         {
           action: "VIEW",
           data: [
@@ -140,7 +140,8 @@ export default {
       eas: {
         projectId: "c76e832f-dde7-42aa-b303-7c97507b9ac9"
       },
-      ESVTOKEN: process.env.ESVTOKEN,
+      // No text-source key lives here: every translation, ESV included, is
+      // fetched through the API, which holds the key server-side.
       HOST: process.env.HOST
     },
 

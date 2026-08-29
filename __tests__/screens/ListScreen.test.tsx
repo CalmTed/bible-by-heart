@@ -1,8 +1,8 @@
 /**
- * 8.2.1d — the add-passage flow, in order: translation -> address -> editor.
- * The translation is the FIRST thing the user meets (translations disagree on
- * verse numbering, so it must be settled before a verse number is shown), and
- * it is still skipped silently when the answer is not in doubt (8.2.1b).
+ * The add-passage flow, in order: translation -> address -> editor. The
+ * translation is the FIRST thing the user meets (translations disagree on verse
+ * numbering, so it must be settled before a verse number is shown), and it is
+ * still skipped silently when the answer is not in doubt.
  */
 import { useState } from "react";
 import { fireEvent, render, within } from "@testing-library/react-native";
@@ -86,7 +86,7 @@ const pickerModal = (screen: Screen) =>
     );
 
 // Its back action is the first pressable host node inside it (header, left) —
-// the same node the AddressPicker suite presses for the 8.2.1a back behaviour.
+// the same node the AddressPicker suite presses for the back behaviour.
 const pressPickerBack = (screen: Screen) => {
   const modal = pickerModal(screen);
   expect(modal).toBeTruthy();
@@ -109,7 +109,7 @@ const GENESIS_1_1 = {
   endVerseNum: 0
 };
 
-describe("ListScreen add-passage flow (8.2.1d)", () => {
+describe("ListScreen add-passage flow", () => {
   it("asks for the translation before any verse number is on screen", () => {
     const state = createAppState();
     // fresh install ships ESV + UCVNTR — the choice is not clear
@@ -209,10 +209,10 @@ describe("ListScreen add-passage flow (8.2.1d)", () => {
 });
 
 /**
- * 8.2.2 — the list's own toolbar after the modal purge: filters left for a
- * screen, sorting became a popup hanging off the button that opens it.
+ * The list's own toolbar after the modal purge: filters left for a screen,
+ * sorting became a popup hanging off the button that opens it.
  */
-describe("ListScreen toolbar (8.2.2)", () => {
+describe("ListScreen toolbar", () => {
   // A list with something in it, so the add flow does not open on mount.
   const stateWithAPassage = () => {
     const state = createAppState();
@@ -243,10 +243,10 @@ describe("ListScreen toolbar (8.2.2)", () => {
   });
 
   /**
-   * 8.2.37 — sorting used to be an AnchoredPopup: five options each centred at
-   * their own width, no dim behind them, and nothing on screen the popup
-   * visibly hung from. It is the app's ordinary dialog now, which is what makes
-   * it a titled, dimmed, centred list with one left edge.
+   * Sorting used to be an AnchoredPopup: five options each centred at their own
+   * width, no dim behind them, and nothing on screen the popup visibly hung
+   * from. It is the app's ordinary dialog now, which is what makes it a titled,
+   * dimmed, centred list with one left edge.
    */
   it("draws sorting as the app's shared dialog, with the current sort marked", () => {
     const state = stateWithAPassage();
@@ -298,13 +298,13 @@ describe("ListScreen toolbar (8.2.2)", () => {
 });
 
 /**
- * 8.2.4 — the row itself: swipe actions moved onto ReanimatedSwipeable and the
- * row's Pressable moved INSIDE it. jest cannot perform a swipe (the pan handler
- * needs a real gesture), but both action panels are in the tree at rest —
+ * The row itself: swipe actions moved onto ReanimatedSwipeable and the row's
+ * Pressable moved INSIDE it. jest cannot perform a swipe (the pan handler needs
+ * a real gesture), but both action panels are in the tree at rest —
  * ReanimatedSwipeable renders them behind an opacity of 0 — so what each action
  * says and what it does is testable here. The drag itself is device work.
  */
-describe("ListScreen row interactions (8.2.4)", () => {
+describe("ListScreen row interactions", () => {
   // A real stateful context, as in FiltersScreen.test: a swipe action only
   // proves anything if the state it writes comes back into the list.
   const renderList = (initialState: AppStateModel) => {
@@ -382,7 +382,7 @@ describe("ListScreen row interactions (8.2.4)", () => {
     expect(screen.queryByText(t("PassageDeleteConfirmationText"))).toBeNull();
     fireEvent.press(screen.getByText(t("Remove")));
 
-    // a destructive action is still a question, not a swipe (CODING_RULES §4)
+    // a destructive action is still a question, not a swipe
     expect(screen.getByText(t("PassageDeleteConfirmationText"))).toBeTruthy();
     expect(seen.state.passages).toHaveLength(1);
 
@@ -405,11 +405,11 @@ describe("ListScreen row interactions (8.2.4)", () => {
 });
 
 /**
- * 8.2.25 — the tag filter is a hide-list, and it hides only what it names.
- * The repro: one tagged passage plus one untagged one, no filter ever set, and
- * the untagged one was invisible.
+ * The tag filter is a hide-list, and it hides only what it names. The repro:
+ * one tagged passage plus one untagged one, no filter ever set, and the
+ * untagged one was invisible.
  */
-describe("ListScreen tag filtering (8.2.25)", () => {
+describe("ListScreen tag filtering", () => {
   const renderList = (state: AppStateModel) =>
     renderWithContext(
       <SafeAreaProvider initialMetrics={safeAreaMetrics}>

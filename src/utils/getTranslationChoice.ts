@@ -9,9 +9,9 @@ export interface TranslationChoiceModel {
   translationId?: number;
 }
 
-// Which translation a NEW passage gets, and whether the user has to be asked
-// at all (8.2.1b). The default translation wins the preselection; without one
-// the first in the list does.
+// Which translation a NEW passage gets, and whether the user has to be asked at
+// all. The default translation wins the preselection; without one the first in
+// the list does.
 export const getTranslationChoice: (
   translations: TranslationModel[]
 ) => TranslationChoiceModel = (translations) => {

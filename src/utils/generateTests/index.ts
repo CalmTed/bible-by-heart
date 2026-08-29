@@ -24,9 +24,9 @@ import { createL50Test } from "./createL50Test";
 
 // When each passage was last tested, in ONE pass over the history. Reading this
 // used to mean filtering AND sorting the whole history once per passage, to
-// recover a single number — the delay before a session starts (8.2.21). A
-// maximum needs no sort. Exported so the agreement test can hold it against the
-// naive form it replaced.
+// recover a single number — the delay before a session starts. A maximum needs
+// no sort. Exported so the agreement test can hold it against the naive form it
+// replaced.
 export const getLastTestedByPassage: (
   history: TestModel[]
 ) => Map<number, number> = (history) => {
@@ -72,7 +72,7 @@ export const getPassagesByTrainMode: (
   });
 
   // Membership, not a scan: `isDueTo` was called from inside the sort
-  // comparator, so a linear `find` there was O(P² log P) (8.2.21).
+  // comparator, so a linear `find` there was O(P² log P).
   const passagesDueToIds = new Set(passagesDueTo.map((p) => p.id));
   const isDueTo = (p: PassageModel) => passagesDueToIds.has(p.id);
 
@@ -162,8 +162,8 @@ export const generateTests: (
 };
 
 /**
- * "Study this one" (8.2.1c) — a session that drills ONE passage, repeated
- * `repeats` times, instead of a slice of the library.
+ * "Study this one" — a session that drills ONE passage, repeated `repeats`
+ * times, instead of a slice of the library.
  *
  * It is a transient session, not a stored `TrainModeModel`: a train mode is a
  * *filter* over the library (tags, translation, sort, length) and has no way to
@@ -204,7 +204,7 @@ export const generateStudyOneTests: (
 
 /**
  * The rule for every level that asks the user to PICK a passage out of a list
- * (l11 and l21), decided once (8.2.36).
+ * (l11 and l21), decided once.
  *
  * Their options are other passages, so the library is the only place a decoy
  * can come from: a library that cannot supply `MIN_TEST_OPTIONS - 1` of them
@@ -252,10 +252,10 @@ export const generateATest: (
     errorType: null
   } as TestModel;
   // An option-picking level the library cannot fill becomes the other half of
-  // its own level (8.2.36). It used to be one line for l11 only, counting the
-  // whole library rather than the translation the options come from - so l21
-  // was never guarded at all and a one-passage library got a "pick the verse"
-  // test whose only option was the answer.
+  // its own level. It used to be one line for l11 only, counting the whole
+  // library rather than the translation the options come from - so l21 was
+  // never guarded at all and a one-passage library got a "pick the verse" test
+  // whose only option was the answer.
   const canPickFromOptions = canOfferPassageOptions(
     passages,
     littleClearerInitialTest.pi

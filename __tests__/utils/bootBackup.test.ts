@@ -57,7 +57,7 @@ describe("bootBackup - isKeyMissingError", () => {
 
   it("does not mistake a read failure for an absent key", () => {
     // Everything below leaves the stored state intact and unread. Treating any
-    // of them as "no state yet" is what erased working installs (8.1.9a).
+    // of them as "no state yet" is what erased working installs.
     expect(
       isKeyMissingError(new SyntaxError("Unexpected end of JSON input"))
     ).toBe(false);
@@ -189,8 +189,8 @@ describe("bootBackup - savePreConvertSnapshot", () => {
 
     await savePreConvertSnapshot(createLegacyState(), storage);
 
-    // The two slots were ONE key before 8.1.8, which is how the daily backup
-    // silently ate the pre-conversion snapshot within a day of an upgrade.
+    // The two slots were ONE key, which is how the daily backup silently ate
+    // the pre-conversion snapshot within a day of an upgrade.
     expect(STORAGE_BACKUP_NAME).not.toBe(STORAGE_PRECONVERT_BACKUP_NAME);
     expect(store[STORAGE_BACKUP_NAME]).toBe(dailyBackup);
   });
@@ -219,7 +219,7 @@ describe("bootBackup - restoreStateFromBackup", () => {
     const restored = restoreStateFromBackup(legacy);
 
     // The old emergency restore compared version === VERSION and bailed, so it
-    // refused the very pre-conversion snapshot the app had just saved (8.1.8).
+    // refused the very pre-conversion snapshot the app had just saved.
     expect(restored).not.toBeNull();
     expect(restored?.version).toBe(VERSION);
   });

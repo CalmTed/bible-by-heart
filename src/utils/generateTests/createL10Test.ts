@@ -184,7 +184,7 @@ export const createL10Test: CreateTestMethodModel = ({
   }
   return {
     ...initialTest,
-    // The level is stamped, never inherited (8.2.38). This generator is also
+    // The level is stamped, never inherited. This generator is also
     // L11's fallback for a library too small to offer four verses, and it used to
     // hand back a test still labelled `l11` while carrying an L10 payload -
     // `addressOptions`, never `passagesOptions`. TestsScreen dispatches on `l`,

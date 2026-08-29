@@ -40,8 +40,8 @@ describe("backupFile - readStateVersion", () => {
 });
 
 describe("backupFile - createBackupFileName", () => {
-  // 8.2.34: a backup is the app's own kind of file now, so it wears the app's
-  // own extension - which is what the intent filter in app.config.js matches.
+  // A backup is the app's own kind of file now, so it wears the app's own
+  // extension - which is what the intent filter in app.config.js matches.
   it("names the file after the state version and the export date", () => {
     expect(createBackupFileName(EXPORT_TIME, "0.0.9")).toMatch(
       /^BibleByHeartBackup_0\.0\.9_\d{4}-\d{2}-\d{2}\.bbhbackup$/
@@ -121,7 +121,7 @@ describe("backupFile - parseBackup", () => {
   });
 
   it("accepts a bare state object, not just an envelope", () => {
-    // What the pre-8.1.9 dev-mode export wrote, and what the emergency screen's
+    // What the pre-backup-file dev-mode export wrote, and what the emergency screen's
     // state dump gives you if it is pasted into a file.
     const restored = parseBackup(JSON.stringify(createAppState()));
 
@@ -155,8 +155,8 @@ describe("backupFile - parseBackup", () => {
 });
 
 /**
- * 8.2.34 — restoring replaces everything, so the confirmation has to say what
- * would change. That needs the file's date, which `parseBackup` threw away.
+ * Restoring replaces everything, so the confirmation has to say what would
+ * change. That needs the file's date, which `parseBackup` threw away.
  */
 describe("backupFile - parseBackupEnvelope", () => {
   it("hands back the state AND when the backup was written", () => {
@@ -169,7 +169,7 @@ describe("backupFile - parseBackupEnvelope", () => {
   });
 
   it("says so when the content is a bare state with no envelope", () => {
-    // the pre-8.1.9 dev export and the emergency screen's text dump: still
+    // the pre-backup-file dev export and the emergency screen's text dump: still
     // restorable, but there is no date to show
     const parsed = parseBackupEnvelope(JSON.stringify(createAppState()));
     expect(parsed?.state.version).toBe(VERSION);

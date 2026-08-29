@@ -29,9 +29,9 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
 
-  // 8.2.31 - the logo is a share of the screen, not 160px on every device. The
-  // width cap is what stops it on an unfolded foldable, where a fifth of the
-  // height would be wider than the column the buttons live in.
+  // The logo is a share of the screen, not 160px on every device. The width cap
+  // is what stops it on an unfolded foldable, where a fifth of the height would
+  // be wider than the column the buttons live in.
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const logoHeight = Math.max(
     MIN_LOGO_HEIGHT,
@@ -43,7 +43,7 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   );
 
   // getStroke walks the whole history (O(history)); recompute only when the
-  // history actually changes, not on every re-render (8.1.1 finding #4/d).
+  // history actually changes, not on every re-render.
   const strokeData = useMemo(
     () => getStroke(state.testsHistory),
     [state.testsHistory]
@@ -54,8 +54,8 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   const hasPassages = state.passages.length > 0;
 
   // One definition of "start practising", so the button and the pull-down
-  // gesture cannot drift apart (8.2.28). More than one train mode still asks
-  // which one - a swipe may not silently pick for the user.
+  // gesture cannot drift apart. More than one train mode still asks which one -
+  // a swipe may not silently pick for the user.
   const startPractice = () => {
     if (activeTrainModes.length > 1) {
       setShowTrainModesList(true);
@@ -90,8 +90,8 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
     ? ["left", "right", "up", "down"]
     : ["left", "right"];
 
-  // Was firing on EVERY render (async work, no effect guard — 8.1.1 finding #4);
-  // it only needs to read the launch URL once on mount.
+  // Was firing on EVERY render (async work, no effect guard); it only needs to
+  // read the launch URL once on mount.
   useEffect(() => {
     Linking.getInitialURL()
       .then((url) => {
@@ -145,11 +145,10 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   //     );
   //     return () => {};
   //   }
-  // }, []);
-  // Elements, NOT nested component functions. Declaring `const LogoBlock = () =>`
-  // and rendering `<LogoBlock/>` mints a NEW component type every render, so React
-  // unmounts + remounts the whole subtree each time (8.1.1 finding #4/e). Plain
-  // elements just reconcile.
+  // }, []); Elements, NOT nested component functions. Declaring `const
+  // LogoBlock = () =>` and rendering `<LogoBlock/>` mints a NEW component type
+  // every render, so React unmounts + remounts the whole subtree each time.
+  // Plain elements just reconcile.
   const logoBlock = (
     <View style={homeStyle.logoView}>
       {new Date().getMonth() !== 11 && (
@@ -251,13 +250,13 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
       />
       {/* No bar of its own - but the top margin still comes from the device */}
       <Header />
-      {/* 8.2.31: the four blocks are spaced on purpose. The logo used to sit in
+      {/* The four blocks are spaced on purpose. The logo used to sit in
           a `flex: 1` box that centred it, so ALL the slack collected in two
           equal voids - one above the logo, one under "Days stroke" - and the
           week row was left pinned above the buttons. space-between spends the
           same slack as two ordinary gaps: mark at the top, the week in the
           middle, the buttons where the thumb is. */}
-      {/* 8.2.28: the same four destinations the buttons below reach, reachable
+      {/* The same four destinations the buttons below reach, reachable
           with the finger and from the edge each of them arrives from. */}
       <HomeSwipe onSwipe={handleSwipe} available={swipeDirections}>
         <View style={homeStyle.column}>
@@ -287,8 +286,8 @@ const homeStyle = StyleSheet.create({
   },
   // The one block that gives when the screen is short: it holds the logo and
   // two lines of text, and losing some of its breathing room is survivable in a
-  // way an unreachable Settings button is not (8.2.4). Content-sized since
-  // 8.2.31 - as `flex: 1` it was the thing manufacturing the dead zones.
+  // way an unreachable Settings button is not. Content-sized, because as
+  // `flex: 1` it was the thing manufacturing the dead zones.
   logoView: {
     alignItems: "center",
     justifyContent: "center",
@@ -298,11 +297,11 @@ const homeStyle = StyleSheet.create({
     fontSize: 35,
     fontWeight: "700"
   },
-  // Sized by its contents, NOT flex: 1 (8.2.4). It used to be flex: 1 twice
-  // over - the same style on a wrapper and on the column inside it - so on a
-  // short phone the buttons got exactly half the space left over and the last
-  // one was cut off by the screen edge. Content-sized, they are all there and
-  // the logo above absorbs the squeeze instead.
+  // Sized by its contents, NOT flex: 1. It used to be flex: 1 twice over - the
+  // same style on a wrapper and on the column inside it - so on a short phone
+  // the buttons got exactly half the space left over and the last one was cut
+  // off by the screen edge. Content-sized, they are all there and the logo
+  // above absorbs the squeeze instead.
   buttonView: {
     alignItems: "center",
     justifyContent: "center",

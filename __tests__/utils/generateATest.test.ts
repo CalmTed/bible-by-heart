@@ -1,7 +1,7 @@
 /**
- * 8.2.36 — a test with one option is not a test. The levels that ask the user to
- * PICK a passage out of a list (l11, l21) draw every option from the library, so
- * at the library sizes a new user actually has (1, 2, 3) they can only offer the
+ * A test with one option is not a test. The levels that ask the user to PICK a
+ * passage out of a list (l11, l21) draw every option from the library, so at
+ * the library sizes a new user actually has (1, 2, 3) they can only offer the
  * answer itself. Each of them falls back to the half of its own level that asks
  * about the ADDRESS, which needs no library to draw decoys from.
  */
@@ -53,7 +53,7 @@ const levelsOver = (
     )
   ).map((test) => test.l);
 
-describe("generateATest option-count rule (8.2.36)", () => {
+describe("generateATest option-count rule", () => {
   [1, 2, 3].forEach((size) => {
     it(`never asks to pick a verse out of ${size} passage(s)`, () => {
       const passages = library(size);
@@ -98,7 +98,7 @@ describe("generateATest option-count rule (8.2.36)", () => {
   });
 });
 
-describe("canOfferPassageOptions (8.2.36)", () => {
+describe("canOfferPassageOptions", () => {
   it("counts inside the target's own translation", () => {
     const target = passageAt(0, "First one. Second two.", 1);
     const sameTranslation = [

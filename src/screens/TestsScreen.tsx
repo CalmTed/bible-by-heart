@@ -57,9 +57,9 @@ const testsStyle = StyleSheet.create({
     overflow: "scroll"
   },
   // The session's one column. The Header above it still spans - a bar spans, a
-  // column does not (8.2.4) - but a verse must not run the full width of an
-  // unfolded foldable, and the answer buttons must not drift a hand's width
-  // apart from each other.
+  // column does not - but a verse must not run the full width of an unfolded
+  // foldable, and the answer buttons must not drift a hand's width apart from
+  // each other.
   testColumn: {
     flex: 1,
     width: "100%",
@@ -85,7 +85,7 @@ interface TestNavBarModel {
  * render. A component defined during render is a NEW component type on every
  * render, so React unmounts and remounts the whole row - every dot and every
  * gradient in it - each time anything in the session changes. Same rule
- * `SwipeActionPanel` follows in `ListScreen` (8.2.4), for the same reason.
+ * `SwipeActionPanel` follows in `ListScreen`, for the same reason.
  */
 const TestNavBar: FC<TestNavBarModel> = ({ tests, activeIndex, onSelect }) => {
   if (tests.length >= MAX_DOTS) {
@@ -147,7 +147,7 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   // `beforeRemove` is only in the STACK navigation type — with the old loose
-  // `StackNavigationHelpers` prop it needed a @ts-ignore (8.1.14).
+  // `StackNavigationHelpers` prop it needed a @ts-ignore.
   useEffect(
     () =>
       navigation.addListener("beforeRemove", (e) => {
@@ -174,7 +174,7 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
   // screen; this used to run as a side effect DURING render (the guards below),
   // so on that same re-render the now-background TestsScreen shoved Home on top
   // of the finish screen — finish "skipped", reachable only via back
-  // (device feedback 2026-07-11). Focus-gating fixes it: while results/finish is
+  // (reported from a device). Focus-gating fixes it: while results/finish is
   // focused this no-ops; pressing back onto an empty session still redirects home.
   useEffect(() => {
     if (!isFocused) {

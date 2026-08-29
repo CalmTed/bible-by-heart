@@ -27,7 +27,7 @@ import toastShow from "../utils/toastShow";
 // About / dev settings — was a MiniModal rendered inline in the settings list.
 // Now a stack screen reached from settingsScreen. The small info / dev-password
 // popups inside stay MiniModals (they are dialogs, not sub-menus); the log
-// viewer, which filled the screen, became its own screen in 8.2.2.
+// viewer, which filled the screen, became its own screen.
 export const AboutSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsAbout>
 > = ({ navigation }) => {
@@ -249,8 +249,8 @@ export const AboutSettingsScreen: FC<
               subtext={t("settsExportStateSubtext")}
               header={t("settsExportStateHeader")}
               // Same file format as the user-facing backup rows in List
-              // settings (8.1.9) - one writer, so a dev export can be restored
-              // by an ordinary user and vice versa.
+              // settings - one writer, so a dev export can be restored by an
+              // ordinary user and vice versa.
               actionCallBack={() => {
                 exportBackupFile(state, t);
               }}
@@ -272,10 +272,10 @@ export const AboutSettingsScreen: FC<
                   }
                   logger.write(`State imported`);
                   toastShow(`${t("settsImported")}`, 1000);
-                  // The one whole-snapshot write that is meant (8.2.24): a
-                  // restore REPLACES the state on purpose, and `restored` came
-                  // out of a file rather than off a stale closure. Everything
-                  // else in this app writes through dispatch or an updater.
+                  // The one whole-snapshot write that is meant: a restore
+                  // REPLACES the state on purpose, and `restored` came out of a
+                  // file rather than off a stale closure. Everything else in
+                  // this app writes through dispatch or an updater.
                   setState(restored.state);
                 });
               }}
@@ -286,7 +286,7 @@ export const AboutSettingsScreen: FC<
               header={t("settsResetLocalUserData")}
               actionCallBack={async () => {
                 logger.write("[DEV] cleared local user data");
-                // dispatch, not a captured snapshot (8.2.24)
+                // dispatch, not a captured snapshot
                 dispatch({ name: ActionName.resetUserData });
                 await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
                 await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);

@@ -31,8 +31,8 @@ export const LevelPicker: FC<LevelPickerModel> = ({
 }) => {
   const { theme, t } = useAppContext();
   const [levelPickerShown, setLevelPickerShown] = useState(false);
-  // One call per render, not one per branch that might render (8.2.21): it
-  // walks the whole history for this passage.
+  // One call per render, not one per branch that might render: it walks the
+  // whole history for this passage.
   const perfectTestsNumber = useMemo(
     () => getPerfectTestsNumber(state.testsHistory, targetPassage),
     [state.testsHistory, targetPassage]

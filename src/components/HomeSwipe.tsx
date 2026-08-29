@@ -44,7 +44,7 @@ const ARROW_REST_OFFSET = -ARROW_SIZE;
 const ARROW_FOLLOW = 0.5;
 
 /**
- * Home's four swipes (8.2.28).
+ * Home's four swipes.
  *
  * Every screen used to arrive from the same edge, and the only way in was a
  * button. Now each destination lives beyond an edge — settings to the left, the
@@ -165,7 +165,7 @@ const ACTIVATION = ANIMATION.swipeThreshold / 3;
 
 const homeSwipeStyle = StyleSheet.create({
   // Takes exactly the room its child asked for. The wrapper must not change
-  // home's layout - the column inside is what spaces the screen (8.2.31).
+  // home's layout - the column inside is what spaces the screen.
   root: {
     flex: 1,
     width: "100%",

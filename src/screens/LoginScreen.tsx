@@ -89,10 +89,10 @@ export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
                     any
                   >;
                   logger.write(`Authinicated as ${userData?.data?.userName}`);
-                  // Functional updater, not reduce(state) + setState (8.2.24):
-                  // this runs two awaited requests after `state` was read, and
-                  // `applang` has to compare against the language the app is in
-                  // NOW rather than the one it was in when the login started.
+                  // Functional updater, not reduce(state) + setState: this runs
+                  // two awaited requests after `state` was read, and `applang`
+                  // has to compare against the language the app is in NOW
+                  // rather than the one it was in when the login started.
                   setState(
                     (prev) =>
                       reduce(prev, {

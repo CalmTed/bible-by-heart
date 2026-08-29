@@ -12,6 +12,7 @@ import {
 } from "../../src/models";
 import {
   alowedStateVersions,
+  BUNDLED_TRANSLATION_SOURCES,
   DEFAULT_TRAINMODE_ID,
   LANGCODE,
   PASSAGELEVEL,
@@ -53,12 +54,12 @@ import {
   makeState007
 } from "../fixtures/state007";
 
-// STRATEGY §3: the state-converter chain is high-blast-radius — a wrong converter
-// silently destroys years of user stats — yet it had zero tests. This locks the
-// current-era chain (0.0.8 → 0.0.9 → 0.1.0), which exercises the recursive
-// convertState engine (partialMatch → goodMatch → finalMatch) plus the two most
-// recent converters, and (step 8.1.10) the two legacy hops 0.0.6 → 0.0.7 → 0.0.8
-// with realistic fixtures, so every hop from the oldest allowed version is covered.
+// The state-converter chain is the highest-blast-radius code in the repo — a
+// wrong converter silently destroys years of user stats — yet it had zero tests.
+// This locks the current-era chain (→ 0.0.9 → 0.1.0), which exercises the
+// recursive convertState engine (partialMatch → goodMatch → finalMatch) plus the
+// two most recent converters, and the two legacy hops 0.0.6 → 0.0.7 → 0.0.8 with
+// realistic fixtures, so every hop from the oldest allowed version is covered.
 
 /**
  * Runs a single hop of the table. `convertState` always types its result as the
@@ -121,7 +122,8 @@ describe("convertState (state version migration chain)", () => {
   it("migrates a 0.0.8 state all the way to the current version", () => {
     const result = convertState(makeState008()) as AppStateModel010 | null;
     expect(result).not.toBeNull();
-    expect(result?.version).toBe("0.1.0");
+    //VERSION, not a literal: "all the way" has to keep meaning all the way
+    expect(result?.version).toBe(VERSION);
   });
 
   it("preserves passages and keeps only finished history across the chain", () => {
@@ -199,7 +201,9 @@ describe("legacy hop 0.0.6 → 0.0.7 (to007)", () => {
     expect(to.filters.selectedLevels).toEqual(from.filters.selectedLevels);
     expect(to.filters.maxLevels).toEqual(from.filters.maxLevels);
     expect(to.filters.translations).toEqual([]); //new in 0.0.7
-    expect(to.settings.translations).toHaveLength(2); //defaults appear here
+    //defaults appear here: ESV plus the four bundled Ukrainian translations
+    //put in front of every install
+    expect(to.settings.translations).toHaveLength(5);
     //by design (see the converter comment): 0.0.6 reminder times were not
     //user-editable, so they are dropped rather than migrated
     expect(from.reminderTimes).toEqual([28800, 72000]);
@@ -387,15 +391,27 @@ describe("full legacy chain from 0.0.7", () => {
     expect(result?.settings.remindersEnabled).toBe(true);
     expect(result?.settings.remindersSmartTime).toBe(false);
     expect(result?.settings.remindersList).toEqual(from.settings.remindersList);
-    expect(result?.settings.translations).toEqual(from.settings.translations);
+    //every 0.0.7 translation survives, in order and by name, with the source it
+    //turned out to have; the bundled ones follow
+    expect(
+      result?.settings.translations
+        .slice(0, from.settings.translations.length)
+        .map(({ id, name, editable }) => ({ id, name, editable }))
+    ).toEqual(
+      from.settings.translations.map(({ id, name, editable }) => ({
+        id,
+        name,
+        editable
+      }))
+    );
     expect(result?.settings.homeScreenWeeklyMetric).toBe(STATSMETRICS.minutes);
     expect(result?.filters.translations).toEqual([1, 3]);
     expect(result?.userData.uuid).toBeNull();
   });
 
   //CHARACTERIZATION, NOT A SPEC: the assertions below pin down data loss found
-  //while writing step 8.1.10. It was reported instead of fixed (the step forbids
-  //touching converter code) — flip these once `to009` is corrected.
+  //while covering the legacy hops. It was reported instead of fixed (that work
+  //forbade touching converter code) — flip these once `to009` is corrected.
   it("(known data loss) loses settings `to009` never reads from the source", () => {
     const from = makeState007();
     //a real ≤0.0.8 device stores the pre-rename key `autoIncreeseLevel`
@@ -411,5 +427,101 @@ describe("full legacy chain from 0.0.7", () => {
     expect(result?.settings.homeScreenStatsType).toBe("auto");
     expect(from.settings.compressOldTestsData).toBe(false);
     expect(result?.settings.compressOldTestsData).toBe(true);
+  });
+});
+
+describe("hop 0.1.0 → 0.1.1 (to011)", () => {
+  // A translation now names the text source behind it. Before
+  // 0.1.1 the app carried that knowledge as a hardcoded list of one id, so the
+  // hop has to say out loud which of the user's translations ESV was - and hand
+  // over the bundled translations the version added.
+  const state010 = () => {
+    const state = convertState(makeState007()) as AppStateModel010;
+    return {
+      ...state,
+      version: "0.1.0",
+      settings: {
+        ...state.settings,
+        translations: [
+          {
+            id: 1,
+            editable: false,
+            isDefault: false,
+            name: "ESV®",
+            addressLanguage: LANGCODE.en
+          },
+          {
+            id: 2,
+            editable: false,
+            isDefault: true,
+            name: "UCVNTR",
+            addressLanguage: LANGCODE.ua
+          },
+          {
+            id: 3,
+            editable: true,
+            isDefault: false,
+            name: "Огієнко",
+            addressLanguage: LANGCODE.ua
+          }
+        ]
+      }
+    };
+  };
+
+  it("gives the one fetchable translation there was its source", () => {
+    const to = runHop<AppStateModel010>("0.1.1", state010());
+    expect(to.version).toBe("0.1.1");
+    expect(to.settings.translations[0]).toEqual({
+      id: 1,
+      editable: false,
+      isDefault: false,
+      name: "ESV®",
+      addressLanguage: LANGCODE.en,
+      sourceId: "esv"
+    });
+  });
+
+  it("leaves every hand-typed translation without one", () => {
+    const to = runHop<AppStateModel010>("0.1.1", state010());
+    expect(to.settings.translations[1].sourceId).toBeNull();
+    expect(to.settings.translations[2].sourceId).toBeNull();
+    //the user's own "Огієнко" is a name, not the bundled Огієнко translation
+    expect(to.settings.translations[2].name).toBe("Огієнко");
+    expect(to.settings.translations[2].editable).toBe(true);
+  });
+
+  it("hands over the bundled translations without touching the old ones", () => {
+    const from = state010();
+    const to = runHop<AppStateModel010>("0.1.1", from);
+    expect(to.settings.translations).toHaveLength(
+      from.settings.translations.length + BUNDLED_TRANSLATION_SOURCES.length - 1
+    );
+    BUNDLED_TRANSLATION_SOURCES.forEach((source) => {
+      expect(
+        to.settings.translations.filter((tr) => tr.sourceId === source.sourceId)
+      ).toHaveLength(1);
+    });
+    //the user's default survives, and nothing appended competes with it
+    expect(to.settings.translations.filter((tr) => tr.isDefault)).toHaveLength(
+      1
+    );
+    expect(to.settings.translations[1].isDefault).toBe(true);
+  });
+
+  it("gives every translation an id of its own", () => {
+    const to = runHop<AppStateModel010>("0.1.1", state010());
+    const ids = to.settings.translations.map((tr) => tr.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("carries the rest of the state through untouched", () => {
+    const from = state010();
+    const to = runHop<AppStateModel010>("0.1.1", from);
+    expect(to.passages).toEqual(from.passages);
+    expect(to.testsHistory).toEqual(from.testsHistory);
+    expect(to.filters).toEqual(from.filters);
+    expect(to.settings.remindersList).toEqual(from.settings.remindersList);
+    expect(to.settings.trainModesList).toEqual(from.settings.trainModesList);
   });
 });

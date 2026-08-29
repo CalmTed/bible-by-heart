@@ -10,9 +10,9 @@ import { LANGCODE, THEMETYPE } from "../../src/constants";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { createT } from "../../src/l10n";
 
-// The picker draws the app's `Header` since 8.2.3, and the Header takes its top
-// margin from the device — so it needs a provider that knows the insets.
-// SafeAreaProvider renders nothing until it does.
+// The picker draws the app's `Header`, and the Header takes its top margin from
+// the device — so it needs a provider that knows the insets. SafeAreaProvider
+// renders nothing until it does.
 const safeAreaMetrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { top: 47, left: 0, right: 0, bottom: 34 }
@@ -38,7 +38,7 @@ describe("testing address picker", () => {
     expect(tree).toMatchSnapshot();
   });
 
-  it("offers a primary 'add' action after a single start verse is picked (8.1.7)", () => {
+  it("offers a primary 'add' action after a single start verse is picked", () => {
     const onConfirm = jest.fn();
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={onConfirm} />
@@ -63,7 +63,7 @@ describe("testing address picker", () => {
     });
   });
 
-  it("lets the user extend the range instead of adding one verse (8.1.7)", () => {
+  it("lets the user extend the range instead of adding one verse", () => {
     const onConfirm = jest.fn();
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={onConfirm} />
@@ -79,7 +79,7 @@ describe("testing address picker", () => {
     expect(onConfirm).not.toHaveBeenCalled();
   });
 
-  it("titles the header from what is picked, not from the part being edited (8.2.1a)", () => {
+  it("titles the header from what is picked, not from the part being edited", () => {
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
@@ -92,13 +92,13 @@ describe("testing address picker", () => {
     fireEvent.press(screen.getByText("1")); // chapter 1
     expect(screen.getByText(`${t("bGenLong")} 1`)).toBeTruthy();
 
-    // the start verse used to stay invisible: the picker stops here (8.1.7), so a
+    // the start verse used to stay invisible: the picker stops here, so a
     // curPartIndex-driven title could never reach it
     fireEvent.press(screen.getByText("1")); // start verse 1
     expect(screen.getByText(`${t("bGenLong")} 1:1`)).toBeTruthy();
   });
 
-  it("shows the range being built in the header title (8.2.1a)", () => {
+  it("shows the range being built in the header title", () => {
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
@@ -111,7 +111,7 @@ describe("testing address picker", () => {
     expect(screen.getByText(`${t("bGenLong")} 1:1-3`)).toBeTruthy();
   });
 
-  it("drops the un-picked part from the title when going back (8.2.1a)", () => {
+  it("drops the un-picked part from the title when going back", () => {
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
@@ -126,7 +126,7 @@ describe("testing address picker", () => {
     expect(screen.getByText(t("bGenLong"))).toBeTruthy();
   });
 
-  it("marks the selected start verse with a gradient outline, not a flat fill (8.2.1a)", () => {
+  it("marks the selected start verse with a gradient outline, not a flat fill", () => {
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
@@ -150,7 +150,7 @@ describe("testing address picker", () => {
     ]);
   });
 
-  it("renders the single-verse state with an in-flow footer (8.2.1a)", () => {
+  it("renders the single-verse state with an in-flow footer", () => {
     const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
@@ -163,7 +163,7 @@ describe("testing address picker", () => {
   // Last on purpose: the two snapshots above carry react-test-renderer `nativeID`
   // counters, so a test inserted ahead of them renumbers the snapshot instead of
   // testing anything.
-  it("says what the confirm actually does, not always 'Add' (8.2.32)", () => {
+  it("says what the confirm actually does, not always 'Add'", () => {
     const screen = renderPicker(
       <AddressPicker
         confirmTitle="Submit"

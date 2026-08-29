@@ -15,8 +15,8 @@ export interface RenderWithContextOptions {
 
 // Builds an AppContext value WITHOUT mounting the full AppProvider (which fires
 // storage + notification side effects on mount). Base components migrated off
-// prop-drilled `theme`/`t` onto useAppContext() (STRATEGY §4.3) can only render
-// under a provider, so their isolated tests use this instead of a bare render().
+// Every component reads `theme`/`t` from useAppContext(), so nothing can render
+// without a provider and every isolated test uses this instead of a bare render().
 // A context Provider emits no host node, so wrapping an existing snapshot test in
 // it leaves the rendered tree (and the snapshot) unchanged.
 export const makeContextValue = (

@@ -30,9 +30,9 @@ const chr = (code: number) => String.fromCharCode(code);
 
 // The characters a phone keyboard cannot make, inside a stored passage: a curly
 // apostrophe and an em dash. Both are in the four bundled Ukrainian
-// translations, both are what a share-sheet paste leaves behind, and neither can
-// be typed - so before 8.2.7 this passage could not be answered at level 5 at
-// all, no matter what the user did.
+// translations, both are what a share-sheet paste leaves behind, and neither
+// can be typed - so this passage could not be answered at level 5 at all, no
+// matter what the user did.
 const UNTYPEABLE_TEXT = `God${chr(0x2019)}s word ${chr(0x2014)} it stands.`;
 const TYPEABLE_ANSWER = "God's word - it stands.";
 
@@ -57,7 +57,7 @@ const typeAnswer = (input: ReactTestInstance, answer: string) => {
   });
 };
 
-describe("L50 typing tolerance (8.2.7)", () => {
+describe("L50 typing tolerance", () => {
   it("accepts the answer a keyboard can actually produce", () => {
     const screen = renderWithContext(
       <L50

@@ -53,7 +53,7 @@ const CODE = "[A-Z][A-Z0-9]{1,7}[\u00ae\u2122]?";
 // Only these three shapes are stripped, and the reason is "LORD is my shepherd".
 // A bare capitalized token followed by ordinary text is not evidence of anything
 // - Scripture is full of all-caps words - so the code has to stand APART from the
-// verse before it can be called a code (8.2.33).
+// verse before it can be called a code.
 const LEADING_CODE_SHAPES = [
   // "ESV [1] In the beginning" - a bracketed verse number right behind it
   new RegExp(`^${CODE}[ \\t]+(?=\\[[ \\t]*\\d)`),
@@ -75,7 +75,7 @@ const stripLeadingTranslationCode = (input: string): string => {
 // A verse number as other apps mark it: "[1]", "[ 12 ]", "[3:16]". DIGITS ONLY -
 // square brackets around words are real editorial apparatus in the translations
 // the app bundles ("and [the] LORD said"), and stripping those would rewrite the
-// text the user is going to be tested on character by character (8.2.11).
+// text the user is going to be tested on character by character.
 const BRACKETED_VERSE_NUMBER = /\[[ \t]*\d+(?:[ \t]*[:.][ \t]*\d+)?[ \t]*\]/g;
 
 export const sanitizeSharedText = (input: string): string => {

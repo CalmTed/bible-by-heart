@@ -11,7 +11,7 @@
 **Bible by Heart** is a mobile app for memorizing Bible passages, built and maintained
 as a **hobby project** by one person (Fedir), developed in small one-task-at-a-time
 sessions with AI assistance. It is live on Google Play (~5 real active users:
-Ukrainian friends + one American believer). iOS is prepared via EAS but not yet published.
+Ukrainian friends + one American believer). iOS is published on the App Store as well.
 
 There is **no deadline**. Quality and joy of working on it matter more than speed.
 
@@ -80,25 +80,26 @@ Groups/friends/feed are optional and come later.
         │                                        │
         │ EAS build (GitHub Actions CI)          │ GitHub Actions → Docker deploy
         ▼                                        ▼
-  Google Play (live) / App Store (ready)   VPS staging + production
+  Google Play (live) / App Store (live)    VPS staging + production
 ```
 
-- **Planned third package:** a shared types/contract package used by both repos
-  (client↔server request/response types, API version constants, checksum logic).
-  NOT a monorepo merge — a third repo/package both depend on.
+- **Third package (`bbh-shared`):** the shared types/contract package both repos depend
+  on (client↔server request/response types, API version constants, and the checksum logic
+  sync will need). NOT a monorepo merge — a third repo, consumed as a git dependency.
 - **Web version (someday, low priority):** the Expo web build served as a static
   client from the API server itself.
 
 ## 5. Mobile app architecture (bible-by-heart)
 
-- **Stack:** Expo SDK 53, React Native 0.79, React 19, TypeScript (strict, no `any`).
+- **Stack:** Expo SDK 54, React Native 0.81, React 19, the New Architecture, and
+  react-native-reanimated 4 + gesture-handler. TypeScript strict, no `any`.
 - **State:** single global `AppState` + one reducer (`src/utils/reduce.ts`), persisted
-  to AsyncStorage (`src/storage.ts`), accessed via `useApp` hook. This pattern STAYS —
-  it works and is tested. Don't introduce Redux/Zustand/etc.
-- **Navigation:** currently a custom navigator (`src/navigator.tsx` +
-  `screeenManagement.ts`). **Direction: replace with standard react-navigation**
-  (already in devDeps) during the navigator refactor. New code shouldn't deepen
-  the custom navigator.
+  to AsyncStorage (`src/storage.ts`), handed out by one `AppProvider`
+  (`src/context/AppContext.tsx`). This pattern STAYS — it works, it is tested, and it was
+  measured: the reducer is not what costs time. Don't introduce Redux/Zustand/etc.
+- **Navigation:** one `createStackNavigator` (`src/navigator.tsx`), typed by
+  `RootStackParamList` in `models.ts`, with the app's own transitions
+  (`utils/screenTransition.ts`). No app state travels in route params.
 - **Data model:** `src/models.ts` (AppState, Passage, Address, History, Settings…),
   initial values in `src/initials.ts`, versioned migrations in
   `src/utils/stateVersionConvert.ts`.
@@ -108,12 +109,11 @@ Groups/friends/feed are optional and come later.
   history and stats (`src/utils/getStats.ts`).
 - **i18n:** `src/l10n/` (en + ua). UI strings are ALWAYS translated in both.
   Code, comments, docs — English only.
-- **Theme:** dark/light via `getThemeFromScheme`; direction: centralize theme and
-  l10n into React contexts (planned refactor).
-- **UI direction:** current visual style is the baseline. The planned ground-up UI
-  wrapper refactor aims for a "candy" feel — react-native-reanimated, rich gesture
-  interactions, modern but unique look — working on ALL screens: old small Androids,
-  tablets, foldables.
+- **Theme and l10n:** dark/light via `getThemeFromScheme`, both handed out by
+  `AppContext` — never as props.
+- **UI direction:** a "candy" feel — reanimated motion out of one `ANIMATION`
+  vocabulary, rich gesture interactions, modern but unique — working on ALL screens:
+  old small Androids, tablets, foldables.
 
 ## 6. API architecture (bbh-api)
 
@@ -130,9 +130,9 @@ Groups/friends/feed are optional and come later.
 
 ## 7. Delivery & environments
 
-- **CI/CD exists for both** (GitHub Actions; EAS builds with staging/production
-  profiles for the app; Docker deploys for the API). It was set up before the
-  year-long pause — treat as "should work, needs verification".
+- **CI/CD for both** (GitHub Actions; EAS builds with staging/production profiles for
+  the app; Docker deploys for the API). The EAS action installs its CLI without a
+  lockfile, so its Node and eas-cli versions are pinned deliberately.
 - **Release rhythm:** small tasks merge continuously; **version milestones** (defined
   in STRATEGY.md) are where big manual testing happens — real phone + staging build —
   until 1.0.0.
@@ -144,16 +144,20 @@ Goal: premium subscription paid as comfortably as possible. Note for planning:
 digital subscriptions inside a Play Store / App Store app **must** go through
 Google Play Billing / Apple In-App Purchase (Google Pay / Apple Pay as standalone
 buttons are only allowed for physical goods). The comfort of "pay with the
-platform sheet" is exactly what IAP subscriptions provide. Research task lives
-in STRATEGY.md §6.
+platform sheet" is exactly what IAP subscriptions provide. The research step is
+scheduled in `PLAN.md`.
 
 ## 9. The documents of this project
+
+**History lives in exactly one of them.** `robotdiary.md` carries what happened and when;
+every other doc describes the present, and code comments cite none of them.
 
 | File | Purpose | Who writes it |
 |---|---|---|
 | `docs/ARCHITECTURE.md` | this file — vision, philosophy, core decisions | AI, rarely, on decision changes |
-| `docs/CODING_RULES.md` | style rules + reusable component library | AI, when rules/components change |
-| `docs/FILEMAP.md` | map of every file in both repos | AI, **every time a file is added/removed/repurposed** (win condition of each task) |
-| `docs/STRATEGY.md` | the master plan: workflow, bugs, risks, refactors, testing, features | AI, as tasks complete |
-| `docs/robotdiary.md` | AI session log — what was done, decisions, gotchas | AI, append every session |
+| `docs/CODING_RULES.md` | style rules + the reusable component library | AI, when rules/components change |
+| `docs/FILEMAP.md` | map of every file in all three repos | AI, **every time a file is added/removed/repurposed** (win condition of each task) |
+| `docs/PLAN.md` | the roadmap — one checkbox per session. The only file where work is marked done, and a finished step is deleted from it | AI, as steps are taken; Fedir decides what is in it |
+| `docs/STRATEGY.md` | the destination: what "finished" means, the milestone ladder, feature and technical direction, quality bar, risks, locked decisions | AI, when the destination changes |
+| `docs/robotdiary.md` | the AI session log — two blocks per session, ≤300 characters each: what was done, and the friction (AI errors, misreadings, redos). The only file that carries history | AI, every session |
 | `projectdiary.md` | **Fedir's personal diary — NEVER edit it** | Fedir only |

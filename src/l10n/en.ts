@@ -156,6 +156,7 @@ export const en = {
   fetchPropositionText: "Do you want to fetch passage text?",
   Loading: "Loading...",
   NotAFetchableTranslation: "Enter passage text here",
+  TextSourceUnavailable: "No text right now — type the passage in yourself",
   NoDataForThisDay: "No data for this day",
   TestExitConfirmationText: "Are you sure? Passed tests will not be saved",
   TestNoOptionsText:

@@ -10,7 +10,7 @@ import {
 } from "../../src/utils/getPerfectTests";
 import { getLastTestedByPassage } from "../../src/utils/generateTests";
 
-// 8.2.21 turned four history scans from O(n²) / O(P × H) into single passes.
+// Four history scans were turned from O(n²) / O(P × H) into single passes.
 // The outputs must not have moved, so this suite keeps the implementations they
 // replaced and holds the shipped ones against them — on a history far larger
 // than any other fixture in the repo (5 000 records, the size at which getStroke
@@ -85,7 +85,7 @@ const dayKey = (t: TestModel) => {
   )}-${addZero(d.getDate())}`;
 };
 
-// ---- the implementations 8.2.21 replaced, verbatim in behaviour ----
+// ---- the implementations they replaced, verbatim in behaviour ----
 
 const naiveGetStroke = (testHistory: TestModel[]) => {
   const nowD = new Date().getTime();
@@ -160,7 +160,7 @@ const naiveLastTested = (testHistory: TestModel[], passage: PassageModel) =>
 
 // ---- the agreement ----
 
-describe("history scans agree with the implementations they replaced (8.2.21)", () => {
+describe("history scans agree with the implementations they replaced", () => {
   it("has a fixture worth measuring against", () => {
     expect(history.length).toBe(HISTORY_SIZE);
     // the fixture must actually exercise a broken streak, or the stroke tests

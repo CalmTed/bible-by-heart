@@ -24,7 +24,7 @@ interface EmergencyScreenModel {
 }
 
 /**
- * The last-resort recovery UI (extracted from App.tsx in 8.1.9a).
+ * The last-resort recovery UI (extracted from App.tsx).
  *
  * Reached from two places, both of which mean the normal app cannot be trusted:
  * a render error caught by `ErrorBoundary`, and a state read that FAILED (as
@@ -33,7 +33,7 @@ interface EmergencyScreenModel {
  * It renders OUTSIDE `AppProvider` by design - that is the whole point, it has
  * to work when the state, theme or l10n code is what is broken. So, uniquely in
  * this repo, it uses raw react-native primitives and hardcoded bilingual
- * strings instead of themed components and `t(...)` (CODING_RULES §7).
+ * strings instead of themed components and `t(...)`.
  */
 export const EmergencyScreen: FC<EmergencyScreenModel> = ({
   onRestore,
