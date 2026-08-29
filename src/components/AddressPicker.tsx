@@ -11,12 +11,12 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { AddressType } from "../models";
 import { Button, IconButton } from "./Button";
+import { Header } from "./Header";
 import { IconName } from "./Icon";
 import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
-import { getNumberOfVerses } from "../utils/getNumberOfVerses";
-import addressToString from "../utils/addressToString";
+import { Address } from "../utils/address";
 import { VIBRATION_PATTERNS } from "../constants";
 import { useAppContext } from "../context/AppContext";
 
@@ -31,7 +31,7 @@ const bookList = bibleReference.map((book) => book.titleShort);
 
 //the title describes what has been PICKED, not which part is being edited — since
 //8.1.7 the picker stops on the start verse, so a part-index-driven title could never
-//show it (8.2.1a). NaN = not picked yet; a complete address goes to addressToString.
+//show it (8.2.1a). NaN = not picked yet; a complete address goes to Address.format.
 const getPickerTitle: (
   address: AddressType,
   t: (word: WORD) => string
@@ -58,7 +58,7 @@ const getPickerTitle: (
   if (address.endVerseNum === null || isNaN(address.endVerseNum)) {
     return `${start}-${endChapter + 1}`;
   }
-  return addressToString(address, t);
+  return Address.format(address, t);
 };
 
 export const AddressPicker: FC<AddressPickerModel> = ({
@@ -180,37 +180,35 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     isNaN(tempAddress.startChapterNum) ||
     isNaN(tempAddress.startVerseNum) ||
     // (!tempAddress.endChapterNum || !tempAddress.endVerseNum) ||
-    getNumberOfVerses(tempAddress) > 500 ||
+    Address.versesCount(tempAddress) > 500 ||
     //if more then one chapter and more then half of the book
     (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
-      getNumberOfVerses(tempAddress) > getNumberOfVerses(allBookAddress) / 2);
+      Address.versesCount(tempAddress) >
+        Address.versesCount(allBookAddress) / 2);
   //once a start verse is chosen, a single verse is already a valid passage — show
   //the primary "add" / secondary "extend range" footer (8.1.7).
   const isStartVerseSelected =
     addressPart === "startVerseNum" && !isNaN(tempAddress.startVerseNum);
 
   return (
-    <Modal visible={visible}>
+    // `statusBarTranslucent` for the same reason AnchoredPopup needs it (8.2.2):
+    // without it Android lays the modal out *below* the status bar, and the
+    // Header's inset would then be counted a second time.
+    <Modal visible={visible} statusBarTranslucent>
       <View style={{ ...APstyle.root, backgroundColor: theme.colors.bg }}>
-        {/* HEADER */}
-        <View style={APstyle.headerView}>
-          <IconButton
-            style={APstyle.headerBotton}
-            icon={IconName.back}
-            onPress={handleBack}
-          />
-          <Text style={{ ...APstyle.headerTitle, color: theme.colors.text }}>
-            {getPickerTitle(tempAddress, t)}
-          </Text>
-          <IconButton
-            style={APstyle.headerBotton}
-            icon={IconName.done}
-            onPress={() => {
-              handleConfirm(tempAddress);
-            }}
-            disabled={isDoneDisabled}
-          />
-        </View>
+        <Header
+          title={getPickerTitle(tempAddress, t)}
+          onBack={handleBack}
+          right={
+            <IconButton
+              icon={IconName.done}
+              onPress={() => {
+                handleConfirm(tempAddress);
+              }}
+              disabled={isDoneDisabled}
+            />
+          }
+        />
         {/* LIST */}
         <View
           style={{
@@ -375,25 +373,6 @@ const APstyle = StyleSheet.create({
   root: {
     flex: 1,
     width: "100%"
-  },
-  headerView: {
-    height: 100,
-    paddingTop: 50,
-    alignContent: "center",
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between"
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 18,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    paddingHorizontal: 10
-  },
-  headerBotton: {
-    height: "100%",
-    aspectRatio: 1
   },
   listView: {
     flex: 1,

@@ -51,28 +51,3 @@ jobs:
 
       - name: Call eas build
         run: eas build --profile staging --platform android --auto-submit-with-profile staging --non-interactive
-  submitApple:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22.17.0"
-          cache: "npm"
-
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: 22.5.0
-          packager: npm
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Call eas build
-        run: eas build --profile production --platform ios --auto-submit-with-profile staging --non-interactive

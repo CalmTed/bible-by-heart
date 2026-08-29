@@ -17,7 +17,7 @@ import { useAppContext } from "../context/AppContext";
 import { getAppStats, getTimeBoundStats } from "../utils/getStats";
 import { dateToString, timeStringFromMS } from "../utils/formatDateTime";
 import { WORD, createT } from "../l10n";
-import addressToString from "../utils/addressToString";
+import { Address } from "../utils/address";
 import { testLevelToPassageLevel } from "../utils/levelsConvertion";
 import { LinearGradient } from "expo-linear-gradient";
 import { PanGestureHandler } from "react-native-gesture-handler";
@@ -326,36 +326,14 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       {!selectedDay && (
         <Header
-          navigation={navigation}
-          showBackButton={false}
-          alignChildren="flex-start"
-          additionalChildren={[
-            <IconButton
-              key="back"
-              icon={IconName.back}
-              onPress={() => navigation.navigate(SCREEN.stats)}
-            />,
-            <Text key="title" style={theme.theme.headerText}>
-              {t("calendarScreenTitle")}
-            </Text>
-          ]}
+          title={t("calendarScreenTitle")}
+          onBack={() => navigation.navigate(SCREEN.stats)}
         />
       )}
       {selectedDay && (
         <Header
-          navigation={navigation}
-          showBackButton={false}
-          alignChildren="flex-start"
-          additionalChildren={[
-            <IconButton
-              key="back"
-              icon={IconName.back}
-              onPress={() => setSelectedDay(null)}
-            />,
-            <Text key="title" style={theme.theme.headerText}>
-              {t("dayStatsTitle")}
-            </Text>
-          ]}
+          title={t("dayStatsTitle")}
+          onBack={() => setSelectedDay(null)}
         />
       )}
 
@@ -616,7 +594,7 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
                           }}
                         >
                           <Text style={calendarStyle.testsListItemContentTitle}>
-                            {addressToString(targetPassage.address, tempT)}
+                            {Address.format(targetPassage.address, tempT)}
                           </Text>
                           <Text
                             style={{
@@ -658,11 +636,11 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
                                   }}
                                 >
                                   {test.wa
-                                    .map((wa) => addressToString(wa, tempT))
+                                    .map((wa) => Address.format(wa, tempT))
                                     .join(", ")}
                                   {test.wp
                                     .map((wp) =>
-                                      addressToString(
+                                      Address.format(
                                         state.passages.filter(
                                           (p) => p.id === wp
                                         )[0].address,

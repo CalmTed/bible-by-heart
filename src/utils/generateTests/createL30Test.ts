@@ -1,24 +1,14 @@
 import {
   MINIMUM_SENTENCE_LENGTH,
-  PERFECT_TESTS_TO_PROCEED,
-  SENTENCE_SEPARATOR
+  PERFECT_TESTS_TO_PROCEED
 } from "../../constants";
+import { Passage } from "../passage";
 import { getPerfectTestsNumber } from "../getPerfectTests";
 import { CreateTestMethodModel } from "./createL10Test";
 import { getWordsFromErrors } from "./getWordsFromErrors";
 import { randomRange } from "../randomizers";
 import { getSimularity } from "../getSimularity";
 import { getRandomSentencesRange } from "./createL40Test";
-
-const getWordsFromPassage = (text: string) => {
-  return text
-    .replace(/ {2,3}/g, " ")
-    .trim()
-    .split(" ");
-};
-const getSentencesFromPassage = (text: string) => {
-  return text.split(SENTENCE_SEPARATOR).filter((s) => s.length > 1);
-};
 
 export const createL30Test: CreateTestMethodModel = ({
   initialTest,
@@ -30,13 +20,13 @@ export const createL30Test: CreateTestMethodModel = ({
     return initialTest;
   }
 
-  const words = getWordsFromPassage(targetPassage.verseText);
+  const words = Passage.getWords(targetPassage.verseText);
 
   if (!words.length) {
     return initialTest;
   }
   const successStroke = getPerfectTestsNumber(history, targetPassage);
-  const sentences = getSentencesFromPassage(targetPassage.verseText);
+  const sentences = Passage.getSentences(targetPassage.verseText);
   const wordsFromErrors = getWordsFromErrors(history, initialTest.pi);
   let missingWords: number[] = [];
   if (successStroke === PERFECT_TESTS_TO_PROCEED) {
@@ -47,7 +37,7 @@ export const createL30Test: CreateTestMethodModel = ({
     if (
       sentences.length > 2 &&
       successStroke !== 0 &&
-      sentences.join().length > MINIMUM_SENTENCE_LENGTH &&
+      Passage.joinSentences(sentences).length > MINIMUM_SENTENCE_LENGTH &&
       Math.random() > 0.3
     ) {
       //IF there are several sentences THEN add one or two to missing
@@ -59,11 +49,13 @@ export const createL30Test: CreateTestMethodModel = ({
         const firstWordIndexOffset =
           startingSentanseIndex === 0
             ? 0
-            : getWordsFromPassage(
-                sentences.slice(0, startingSentanseIndex).join("")
+            : Passage.getWords(
+                Passage.joinSentences(sentences.slice(0, startingSentanseIndex))
               ).length;
-        missingWords = getWordsFromPassage(
-          sentences.slice(startingSentanseIndex, endingSentenceIndex).join("")
+        missingWords = Passage.getWords(
+          Passage.joinSentences(
+            sentences.slice(startingSentanseIndex, endingSentenceIndex)
+          )
         )
           //getting indexes of all the words, considering posible offset
           .map((v, i) => i + firstWordIndexOffset);
@@ -77,10 +69,11 @@ export const createL30Test: CreateTestMethodModel = ({
         const startingWordIndexStart =
           randomIndexToAdd === 0
             ? 0
-            : getWordsFromPassage(sentences.slice(0, randomIndexToAdd).join(""))
-                .length;
+            : Passage.getWords(
+                Passage.joinSentences(sentences.slice(0, randomIndexToAdd))
+              ).length;
         const wordsNumber =
-          getWordsFromPassage(sentences[randomIndexToAdd]).length || 1; //+ (sentences[randomIndexToAdd + numberOfNiegbors]?.trim()?.split(" ")?.length || 0)
+          Passage.getWords(sentences[randomIndexToAdd]).length || 1; //+ (sentences[randomIndexToAdd + numberOfNiegbors]?.trim()?.split(" ")?.length || 0)
         missingWords = Array(wordsNumber)
           .fill(0)
           .map((v, i) => i + startingWordIndexStart);

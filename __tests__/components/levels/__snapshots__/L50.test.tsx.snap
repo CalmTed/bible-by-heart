@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
+exports[`testing level 50 rendering L50 renders correctly 1`] = `
 <RCTScrollView
   style={
     {
@@ -155,10 +155,44 @@ exports[`testing level 5 rendering Level 5 renders correctly 1`] = `
       }
     >
       <View
-        style={
+        collapsable={false}
+        jestAnimatedProps={
           {
-            "flexDirection": "row",
+            "value": {},
           }
+        }
+        jestAnimatedStyle={
+          {
+            "value": {
+              "transform": [
+                {
+                  "scale": 1,
+                },
+              ],
+            },
+          }
+        }
+        jestInlineStyle={
+          [
+            {
+              "flexDirection": "row",
+            },
+          ]
+        }
+        nativeID="0"
+        style={
+          [
+            {
+              "flexDirection": "row",
+            },
+            {
+              "transform": [
+                {
+                  "scale": 1,
+                },
+              ],
+            },
+          ]
         }
       >
         <View

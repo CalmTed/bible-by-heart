@@ -2407,8 +2407,8 @@ install, and at the offer take **Study it** — expect three tests of that one p
 then the finish screen; repeat and take **Later** — expect the passage list with no
 session; edit an existing passage and confirm nothing is offered; and check the offer's
 two buttons read well in both languages and both themes.
-<<<<<<< HEAD
 
+---
 
 ## 2026-08-27 — Staging build red: CMake 3.18.1 not in SDK
 
@@ -2433,5 +2433,873 @@ what RN 0.81 prefabs are built against.
 
 **Scope.** Config only — no `src/` change, so FILEMAP and l10n are untouched and lint/test were
 not re-run for it. Verification is the next staging build.
-=======
->>>>>>> 34c06566d10f17652eb911ea76d2969345ab533f
+
+---
+
+## 2026-08-27 — iOS build moved from staging to production
+
+The iOS build was firing on every push to `staging`: `submitStagingToPlayMarket.yml` had a
+`submitApple` job running `eas build --profile production --platform ios
+--auto-submit-with-profile staging`. Two things wrong with that — it burned an iOS build (and a
+TestFlight/App Store submission of a *production* profile) on every staging push, and the submit
+profile it named (`staging`) has no `ios` block in `eas.json`, only `android`.
+
+**Change.** Deleted the `submitApple` job from the staging workflow (staging is Android-only
+now). Added the same job to `submitProductionToPlayMarket.yml`, this time with
+`--auto-submit-with-profile production`, which does have the App Store Connect credentials.
+Renamed that workflow's existing `submit` job to `submitAndroid` for symmetry and the workflow
+name to "Submit production to stores" since it is no longer Play-Store-only. Both production
+jobs still gate on `build-and-test`.
+
+**Scope.** CI config only — no `src/` change, so FILEMAP and l10n untouched. The `staging`
+build profile in `eas.json` keeps its `ios.image` so a manual staging iOS build is still
+possible; only the automatic one is gone.
+
+---
+
+## 2026-08-28 — Planning session: five new tasks into the roadmap
+
+Fedir handed over five tasks and asked for them to be scheduled. No code changed — this
+session only moved boxes around in `PLAN.md` and re-aligned `STRATEGY.md` behind them.
+
+**What the repos already had.** `bbh-api/src/translations/` holds four Ukrainian
+translations (`ukr-hom`, `ukr-kul`, `ukr-ogi`, `ukr-turk`) as JSON with `meta`, a `books`
+name map and `verses` — the **full text**, ~31k verses each, not just metadata. That is
+the fact that reshaped the plan: STRATEGY §3.3 had the Ukrainian translation waiting on
+permission being secured and scheduled the *capability* alone as 8.5.1 in 0.6.0. The
+content is already here, so capability and content can ship together.
+
+**Placement — Fedir's calls.** The API text-source work goes into **0.3.0**, right after
+Candy UI, rather than staying in 0.6.0; the landing page rides along as an `[api]` step
+next to it, in `bbh-api/static/` beside the existing privacy/terms/account-deletion
+pages, with the App Store button dark until 8.7.5.
+
+**The six new steps.** `8.2.1d` translation step before the address picker (numbering
+differs per translation, so it cannot be chosen after a verse number has been shown —
+amends 8.2.1b and keeps its silent-skip rule); `8.2.11` [api] catalogue + passage
+endpoint over the bundled JSONs; `8.2.12` [api] ESV as one more id on that endpoint —
+key from the env file at request time, **pure proxy, no passage text persisted**, with a
+supertest that asserts it so a future cache cannot land quietly; `8.2.13` client
+`fetchPassageText` and `ESVTOKEN` out of the app entirely; `8.2.14` the on-device
+book-name variant table (a shipped constant, never a lookup — shared-text recognition
+must work offline); `8.2.15` the landing page. `8.5.1` was retired as superseded, its ID
+never to be reused, with the reason recorded under "Not scheduled".
+
+**Key hygiene, checked not assumed.** `bbh-api/.gitignore` ignores `.agent` (line 183)
+and `.env` (line 103), and `git ls-files` shows neither is tracked. The key was not read,
+copied, or written anywhere; `PLAN.md` and `STRATEGY.md` describe *where* it must live
+(the API env file) and never its value.
+
+**Scope.** Docs only — no `src/` change in either repo, so FILEMAP and l10n are untouched
+and lint/test were not re-run.
+
+**Found, not fixed:** `robotdiary.md` carries unresolved merge conflict markers at lines
+2410/2436/2437 from the 49d1f14 merge — the HEAD side holds the "Staging build red"
+entry, the other side is empty, so the fix is deleting three lines. Reported to Fedir,
+left alone.
+
+---
+
+## 2026-08-28 — Typeable-text rule added to the translation steps
+
+Fedir's addition to the same planning session: the served text must be stripped of strange
+characters, because one half of learning is **writing the verse by hand** and special
+characters are hard to type on a phone.
+
+Rather than write "remove strange characters", I scanned all four translation JSONs and
+counted every non-alphanumeric code point — 19 distinct, and the painful ones are not
+rare: `—` em dash 10 283 occurrences, `’` 3 267, `«`/`»` 3 267/3 188, `…` 1 955,
+`“`/`”` 1 914/1 908, `–` 190, `„` 11. That is the difference between a vague warning and
+a step someone can execute.
+
+The rule went into `8.2.11` (normalize **once at the API**, so no client can serve
+untypeable text, with a test that walks a whole translation and asserts a closed output
+character set) and into `8.2.12` (the ESV response gets the same normalizer on the way
+through — transforming a response in flight is not storing it, so the proxy rule holds).
+The folding table is the one `sanitizeSharedText.ts` already uses for shared text (8.1.4)
+— one definition of "typeable", not two that drift apart.
+
+Two things deliberately left open for Fedir: `[` `]` (872) and `*` (92) are editorial
+apparatus, not punctuation — brackets mark words absent from the source, asterisks flag
+footnotes. Stripping the markers and keeping the words is the likely answer, but it
+changes what the user memorizes, so it is not mine to decide.
+
+Also noted in `8.2.7`: normalizing at the API does **not** make the L5 similar-chars
+tolerance redundant. Passages already saved in a user's state keep the characters they
+were stored with, and nothing may rewrite them behind his back — so tolerance on
+comparison stays the answer for those. Recorded in `STRATEGY.md` §7 as a locked decision.
+
+**Scope.** Docs only — no `src/` change, so FILEMAP and l10n untouched; lint and tests
+re-run green anyway (179 ✓).
+
+---
+
+## 2026-08-28 — Whitelist over blacklist, and the OCR defects it found
+
+Fedir approved stripping `[` `]` and `*`, and changed the approach: **whitelist only the
+necessary characters** rather than blacklisting the bad ones. Rewrote the 8.2.11 note
+around that, and the switch immediately paid for itself.
+
+Building a whitelist forced a full character inventory instead of a punctuation scan, and
+the letters turned out to be the real problem. Beside 66 distinct Cyrillic letters the
+four files contain **~45 stray Latin letters and a Russian `э`** — not stylistic, OCR
+damage in the middle of Ukrainian words: `госпzдї` (ukr-kul Gen 24:23, should be
+`господї`), `заповmт` (Gen 17:14), `Райдугr` (Gen 9:13), `крапаcте` (Gen 30:32, Latin
+`c` for Cyrillic `с` — visually identical), `IIIеванія` (ukr-hom Neh 9:5, three Latin `I`
+standing in for `Ш`), `Iсус` (Luk 24:15), `Хіэл` (1Kin 16:34). Every one is untypeable by
+construction *and* simply wrong text. A blacklist of "strange punctuation" would have
+shipped all of them forever; a whitelist cannot miss them.
+
+So the step now specifies a **per-language** whitelist — `uk` gets the 33 Ukrainian
+letters and nothing else Cyrillic, `en` gets `A–Z a–z`, both get digits, space and
+`. , : ; ! ? - ' "` — with an explicit order of operations: **fold, drop apparatus, then
+validate**, and a leftover is **reported with book/chapter/verse as a data defect, never
+silently stripped**. Fixing those ~45 spots in the source JSONs is part of 8.2.11; a
+homoglyph cannot be mapped mechanically, since only context says whether a Latin `c` was
+meant to be `с` or `є`.
+
+`(` `)` (1 694) joined the dropped apparatus — same class as the brackets Fedir approved,
+same rule, and not "necessary punctuation" under his own criterion. Marks go, words stay.
+Recorded in `STRATEGY.md` §7 alongside the typeable-text decision.
+
+**Scope.** Docs only — no `src/` change, so FILEMAP and l10n untouched; lint ✓, 179 tests ✓.
+
+
+---
+
+## 2026-08-28 — 8.2.1d: the translation is asked first, and the flow grew a back stack
+
+The add-passage flow was address → translation → editor. It is now **translation →
+address → editor**, because translations disagree on verse numbering: asking after the
+address means the user picks "chapter 3, verse 16" under one numbering and then chooses
+the translation that renumbers it. The per-translation numbering tables that make this
+visible arrive with 8.2.13; the reorder had to come first, and stands on its own.
+
+The interesting part was not moving the modal. The two steps were two independent
+booleans — `isAPOpen` plus an `addressAwaitingTranslation` address held between them —
+which only worked because one step could not follow the other backwards. Reversing the
+order made that state shape wrong, so it became one value: `AddFlowStep` =
+`"closed" | "translation" | "address"`. Two steps can no longer be open at once, and the
+translation the flow carries lives in `flowTranslationId`, preselected by
+`getTranslationChoice` and replaced by the user's pick.
+
+**Back now goes back.** The picker's own back walks verse → chapter → book untouched
+(8.2.1a), but at the book list — where it used to just close everything — it lands on the
+translation step, and a second dismissal leaves the flow. With one translation there is
+nothing in front of the picker, so back closes it as before. Worth a look on the phone:
+this is the one place where the reorder changes what a press does rather than what is on
+screen.
+
+`getTranslationChoice` is unchanged: `needsChoice` now decides which step the flow
+*opens on* instead of whether a second one appears, and the silent skip for one
+translation (or none) works the same. `AddressPicker.tsx` was not touched at all — the
+reorder happens entirely in its caller, which is the pleasant kind of surprise.
+
+**Scope.** `ListScreen.tsx` only in `src/`. No new files, no new l10n strings (the
+existing `SelectTranslationTitle` moved, it did not change). The three 8.2.1b flow tests
+were rewritten for the new order plus two new ones for the back stack — 5 in
+`__tests__/screens/ListScreen.test.tsx`, and the picker suite's own 8.1.7/8.2.1a tests
+pass untouched, which is the proof the picker survived. lint ✓, 181 tests ✓.
+
+---
+
+## 2026-08-28 — 8.2.2: modal purge — the audit, and the three surfaces it produced
+
+The app had 18 modal surfaces and no rule saying what a modal *is*. This step wrote the
+rule down and moved everything that failed it.
+
+**The rule (now CODING_RULES §4).** Three surfaces, and a thing is exactly one of them:
+a **screen** for anything list-like, scrolling or multi-section — anything the user
+navigates *into*; an **anchored popup** for a short one-tap choice made from a toolbar
+button; a **dialog** for a question, a confirmation, or a short piece of text. The
+tell-tales are mechanical: a modal with a `ScrollView` in it, or one styled
+`width/height: 100%`, is a screen someone has not written yet.
+
+### The verdict list (all 18)
+
+| # | Surface | What it is | Verdict |
+|---|---|---|---|
+| 1 | `ListScreen` filters | ScrollView, 4 sections, 20+ controls | **→ screen** (`FiltersScreen`) |
+| 2 | `ListScreen` sort | 5 options from a toolbar button | **→ anchored popup** |
+| 3 | About settings log viewer | full-height scrolling list, own back button | **→ screen** (`LogSettingsScreen`) |
+| 4 | User settings delete-account | a confirm, but sized `width/height: 100%` | **stays a dialog, resized** |
+| 5 | `ListScreen` delete-passage | `ConfirmModal` | stays |
+| 6 | `ListScreen` translation step | one step of the add flow, transient | stays |
+| 7 | `AddressPicker` | full-screen raw `<Modal>` | stays — see below |
+| 8 | `PassageEditor` fetch proposition | confirm | stays *(hand-rolled — reported)* |
+| 9 | `PassageEditor` reminder interval | one number, one field | stays |
+| 10 | `LevelPicker` | 5 levels + why they are locked | stays — the explanation is the point |
+| 11 | About: about text | text | stays (named in the step) |
+| 12 | About: legal text | text | stays |
+| 13 | About: dev password | one field | stays |
+| 14 | `StatsScreen` score hint | text | stays |
+| 15 | `TestsScreen` exit confirm | confirm | stays *(hand-rolled — reported)* |
+| 16 | `HomeScreen` train-mode `SelectModal` | picker | stays |
+| 17 | `SettingsMenuItem` `SelectModal` ×2 | picker | stays |
+| 18 | `BackupOfferModal` | `ConfirmModal` | stays |
+
+**`AddressPicker` (#7) is the deliberate exception.** By the rule it is a screen: a
+full-screen `<Modal>` with a scrolling book list. But it is the middle step of the
+add-passage flow, it was rebuilt twice in the last two days (8.2.1a, 8.2.1d), and the
+flow's back stack currently lives in its caller. Turning it into a stack screen means
+moving that back stack into the navigator — a step of its own, not a rider on this one.
+Left alone on purpose; the verdict is recorded, not acted on.
+
+### What moved
+
+**`FiltersScreen`** — the filters modal, verbatim, as a stack screen (`SCREEN.listFilters`)
+behind the list's filter button. Nothing had to be handed back: the filters live in app
+state, so the list re-filters the moment the screen dispatches. `handleFilterChange` left
+`ListScreen` with them, and the `Close` button died — a screen is backed out of.
+
+**`AnchoredPopup`** — the new base component, and the reason this step is more than a
+move. Sorting is one tap from a toolbar icon; taking over the screen for it was always
+too much. The popup hangs off the button, lines its right edge up with it, and does
+**not** dim what is behind it — that omission is the whole visual difference from
+`MiniModal`, whose dim says "answer me first". Motion comes from the same `ANIMATION`
+block, so it springs like every other surface. Picking a sort now closes it; in the modal
+it did not.
+
+Two gotchas worth remembering. The anchor is measured with `measureInWindow` **on press**
+rather than on layout, so it survives a rotation or a font-scale change without a
+listener — and the wrapper around the button needs `collapsable={false}` or Android
+optimizes the view away and there is nothing left to measure. Window coordinates include
+the status bar, so the popup's `<Modal>` is `statusBarTranslucent`; without it every
+anchor is off by the status bar's height on Android. And because RN's jest mock never
+calls the measure callback back, `anchor` stays `null` under test — which is exactly why
+the component has a corner fallback: a missed measurement is a slightly misplaced popup,
+never an invisible one or one drawn at `NaN`.
+
+**`LogSettingsScreen`** — the dev log viewer, out of its full-screen MiniModal. Moving it
+fixed a bug that had nowhere else to be found: the read effect listed `loggerText`, its
+own result, among its dependencies, so every read scheduled the next one for as long as
+the viewer was open. On its own screen it runs on mount and after a clear.
+
+**The delete-account dialog** kept its verdict — it is a confirmation — but lost the
+`width: 100%; height: 100%` that made it a screen in disguise, and its back arrow became
+a close cross, because a dialog is dismissed, not navigated out of.
+
+### Found outside the scope — for Fedir to place
+
+1. **Two hand-rolled confirms.** `PassageEditor`'s fetch proposition (#8) and
+   `TestsScreen`'s exit confirm (#15) each rebuild `ConfirmModal` by hand: text, then a
+   secondary Cancel next to a green main. Both are correct dialogs, so the purge left
+   them alone, but they are two more copies of a component that already exists. A small
+   reuse step, not a bug.
+2. **`AddressPicker` → screen** (#7 above), if the flow's back stack is worth moving into
+   the navigator. Natural neighbour of 8.2.3, which touches transitions anyway.
+
+**Scope.** New: `src/components/AnchoredPopup.tsx`, `src/screens/FiltersScreen.tsx`,
+`src/screens/LogSettingsScreen.tsx` (+ two `SCREEN` members, two `RootStackParamList`
+lines, two `Stack.Screen`s). Changed: `ListScreen.tsx`, `AboutSettingsScreen.tsx`,
+`UserSettingsScreen.tsx`, `constants.ts`, `models.ts`, `navigator.tsx`. **No new l10n
+strings** — every string on the two new screens already existed, they only changed
+address. 13 new tests (5 popup, 6 filters screen, 2 list toolbar); lint ✓, 194 tests ✓.
+
+**Needs verifying on a device:** the sort popup's position under the sort icon — the
+anchor maths is the one thing jest cannot see (see above), and this step is not tagged
+`(build)`, so it rides on the next one. Also worth a look: the filters screen's back
+gesture, and that the delete-account dialog still fits its text now that it is 90% wide
+instead of the whole screen.
+
+## 2026-08-28 — 8.2.3: the wrapper rewrite — one transition, one header, one top margin
+
+This step was picked up mid-flight: a previous session had run out of budget partway
+through, leaving the working tree red. Worth recording what "partway" meant, because the
+shape recurs — it had done the *design* and none of the *wiring*.
+
+**What was already there.** `utils/screenTransition.ts`, complete and well-argued, but
+imported by nothing — the navigator still used the platform default. `Header.tsx`,
+rewritten to a new API (`title`/`onBack`/`backIcon`/`right`/`children`), but referencing
+an `ANIMATION.staggerMs` that was never added to `constants.ts`, and with none of its
+eight call sites migrated. 13 type errors, 9 prettier errors, and — the part that
+mattered — 2 failing tests belonging to 8.2.2, because `SettingsSubScreen` still passed
+`showBackButton`/`additionalChild` to a Header that no longer knew those props and
+silently ignored them. Every settings sub-screen was rendering an empty bar.
+
+**Wiring it up.** `staggerMs: 90` — long enough that the card visibly lands before its
+header arrives, short enough that the two still read as one gesture. `TransitionSpec`
+turned out not to be re-exported from `@react-navigation/stack` v7's index even though
+it is declared in its types, so it is derived as
+`TransitionPreset["transitionSpec"]["open"]` rather than reached for down a raw
+`node_modules` path — which is the thing 8.1.14 removed from this codebase.
+
+Two things about the navigator worth knowing before touching it again. v7 resolves
+`animation` into a *named* preset and then destructures the explicit options over it, so
+`cardStyleInterpolator` / `transitionSpec` / `gestureDirection` given in `screenOptions`
+win — spreading `candyTransition` is enough, nothing else has to opt in. But
+`cardOverlayEnabled` defaults to `Platform.OS !== "ios"`, so the overlay dim would simply
+not have rendered on iOS; the preset sets it explicitly, or "the one transition" would
+have been two.
+
+### The header sweep — what an audit for consistency actually found
+
+Fedir asked mid-step for every screen *and modal* to have the same header with a
+device-defined top margin. Auditing for that turned up more than unmigrated call sites:
+
+1. **`theme.screen` carried a flat `paddingTop: 30`.** Every screen wore it — so a screen
+   with a Header sat 30px lower than it should, *on top of* its real inset, and a screen
+   without one had 30 standing in for a status bar that is 47px on some phones and 24 on
+   others. This is the single fix that explains most of the visible inconsistency.
+2. **`PassageEditor` hand-rolled its own header**, with its own `useSafeAreaInsets` and a
+   magic `60 + insets.top` — a literal copy of the Header it did not use.
+3. **`AddressPicker` hand-rolled another**, with `height: 100, paddingTop: 50` — a fixed
+   guess at the status bar, in the one full-screen modal in the app.
+4. Both of those also redefined the title as `fontSize: 18` uppercase weight 500, while
+   `Header` uses `theme.headerText` (21/700). Three bars, two typographies.
+
+All three now draw `Header`. `useSafeAreaInsets` appears in exactly one file. The
+`AddressPicker` modal gained `statusBarTranslucent` for the same reason `AnchoredPopup`
+needed it in 8.2.2 — without it Android lays the modal out *below* the status bar and the
+inset gets counted twice.
+
+**The bare Header.** Home and the finish screen have no bar, but they still need the
+device's margin, and the rule is that only `Header` may ask for it. So a `Header` with no
+title, no children, no back and no right reserves the inset and *no* bar height — an
+empty 60px band would have been dead space. `<Header />` on those two screens, and
+"every screen goes through the Header" now has no exceptions to remember. All 21 screens
+reach it: 8 directly, 10 via `SettingsSubScreen`, 3 via `SettingsListWrapper`, and
+`PassageScreen` through `PassageEditor`. `MiniModal` dialogs are centred and correctly
+have no header at all — that is 8.2.2's verdict, unchanged.
+
+### The test that was testing nothing
+
+`Header.test.tsx` passed before and after the rewrite, which was suspicious, and the
+reason is worth remembering: it wrapped the Header in a bare `<SafeAreaProvider>`, and
+that renders **nothing** until it knows the insets. The committed snapshot was a lone
+`RNCSafeAreaProvider` with no children. The component had never been rendered by its own
+test, so no API change could ever have failed it. The rest of the suite already knew the
+fix — `initialMetrics` — and only this file had missed it.
+
+It is now 11 behavioural tests instead of one empty snapshot: the title, the device inset
+(`paddingTop` = the inset, height = `HEADER_HEIGHT` + inset), the bare-header margin, the
+absent button until `onBack` is given, the default arrow vs. the training session's cross,
+trailing actions, children in the centre, title winning over children, and the one-line
+clip. Finding the bar by the one style property only it carries, rather than by walking a
+fixed number of parents, so the next wrapper does not break it.
+
+`AddressPicker.test.tsx` needed the same `initialMetrics` treatment once the picker drew a
+real Header, and its two snapshots were retaken — the diff is the provider, the
+`statusBarTranslucent` flag and the animated bar replacing the hand-rolled one.
+
+**FlatList scroll feel.** The list sits directly under a search field, which decides most
+of it: `keyboardDismissMode="on-drag"` (dragging the list is how you put the keyboard
+away) and `keyboardShouldPersistTaps="handled"` (a tap on a row while the keyboard is up
+opens that row instead of being spent dismissing it). Plus 24px of bottom content padding
+so the last row scrolls clear of the edge rather than ending flush against it, and no
+vertical scroll indicator — one less thing moving over rows that already swipe.
+
+**Scope.** New: `src/utils/screenTransition.ts` (from the previous session, now finished
+and wired). Changed: `Header.tsx`, `navigator.tsx`, `constants.ts` (`ANIMATION.staggerMs`,
+`theme.screen`), `SettingsSubScreen.tsx`, `PassageEditor.tsx`, `AddressPicker.tsx`,
+`HomeScreen`, `FinishScreen`, `ListScreen`, `CalendarScreen`, `StatsScreen`,
+`SettingsScreen`, `LoginScreen`, `RegisterScreen`, `TestsScreen`. Tests:
+`Header.test.tsx` rewritten (1 → 11), `AddressPicker.test.tsx` re-wrapped. **No new l10n
+strings** — nothing gained or lost a word, only a bar. Version 0.2.1 → 0.2.2; lint ✓,
+204 tests ✓.
+
+**Needs verifying on a device** — this is a `(build)` step and feel is the whole point:
+the push/pop spring and its parallax on a real phone; that the header's staggered entrance
+reads as deliberate rather than late; the top margin on a cutout phone, especially inside
+the `AddressPicker` modal, which is the one surface where the inset could still be counted
+twice; and the home screen, whose logo block moved slightly when the flat 30px went away.
+Still carried over from 8.2.2: the sort popup's anchor position under its icon.
+
+### Found outside the scope — for Fedir to place
+
+1. **`__tests__` is not typechecked.** `tsconfig.json`'s `include` covers `*`, `src/**`
+   and `plugins/*` — not `__tests__`, and `npm run lint` only eslints `./src/`. So test
+   files get neither tsc nor eslint. That is why the old `Header.test.tsx` could keep
+   passing props the component had stopped accepting without anything complaining. A
+   one-line `include` change, but it will surface a batch of existing errors at once, so
+   it is a step of its own.
+2. **Two hand-rolled confirms** (`PassageEditor` fetch proposition, `TestsScreen` exit) —
+   still open from 8.2.2, unchanged by this step.
+
+## 2026-08-28 — 8.2.4: home + passage-list interactions
+
+The step asks for "gestures, swipe actions, springy feedback; layout holds from small
+phone to foldable" across two screens. That could be a very long list. It was kept to
+three changes, each chosen because it is written in one place and lands in many — the
+same reasoning that made 8.2.1 put the dialog entrance in `MiniModal` rather than in
+nineteen call sites.
+
+**1. Press feedback belongs to `Button`.** The home screen is nothing but buttons; so
+are the passage list's swipe actions, the toolbar's icons, and every dialog's confirm.
+Putting the spring in the one component they all are means one `useSharedValue` reaches
+~277 call sites, and no screen ever has to remember to be springy. New
+`ANIMATION.pressScale: 0.96` — deliberately smaller than `riseScale`: an entrance
+happens once and may be theatrical, a press happens dozens of times a session and
+anything bigger reads as the button wobbling. A disabled `Pressable` never fires
+`onPressIn`, so a dead button doesn't move without needing a guard.
+
+The cost was 9 snapshots, and they are worth a sentence: every one of them is the same
+change, the Button's outer `View` becoming an `Animated.View` with `scale: 1` at rest.
+That was checked before running `-u` rather than after — a snapshot update is only
+mechanical if you have read one of the diffs.
+
+**2. The rows moved to `ReanimatedSwipeable`.** The old `Swipeable` wrapped its actions
+in RN-core `Animated.View`s that animated nothing at all — they were `Animated` in name,
+holding a static style. The new panels are driven by the swipe's own `progress`, so an
+action trails the row out from under it instead of already being there in full the
+instant the finger moves. `progress` runs past 1 while overshooting, which is why it is
+clamped: unclamped, the button grows past its own size when the row is dragged further
+than the panel is wide.
+
+`SwipeActionPanel` is a real component at module level, and that is not a style
+preference. `ReanimatedSwipeable` **calls** `renderLeftActions`/`renderRightActions`
+rather than rendering them as components, so a `useAnimatedStyle` written inline in one
+of those callbacks is a hook inside a plain function.
+
+**Two interaction defects fell out of the rewrite**, both older than this step:
+
+- *An action left its panel open.* Every action rewrites its own label — "Archive"
+  becomes "Unarchive", the tag action flips between "Add <tag>" and "Remove <tag>" — so
+  the panel sat there having silently become its own opposite. `swipeableMethods.close()`
+  on each.
+- *The row's `Pressable` wrapped the whole `Swipeable`*, which put the action panels
+  inside the row's press area. A tap on the empty part of a revealed panel opened the
+  editor. The `Pressable` now sits inside, wrapping the row content and nothing else.
+
+Both are now rules in CODING_RULES §4, because neither is obvious from reading the code
+that has them.
+
+**3. Layout, small phone to foldable.** New `LAYOUT.maxContentWidth` next to `ANIMATION`,
+same principle: one number, so wide-screen surfaces stop at the same place instead of
+each choosing. Applied to the list column (search field *and* rows together — the
+`Header` still spans, because a bar is not a column) and to the home button column.
+
+The small-phone half was a genuine bug. Home's buttons carried `flex: 1` **twice over** —
+the same style object on a wrapper and on the column inside it — so the button block got
+exactly half of whatever the logo block left, and on a short screen the last button
+(Settings) fell off the edge with nothing to scroll. Content-sized now; the logo block
+holds the `flex: 1` alone and is the thing that gives, which is the right trade — losing
+some breathing room around a logo is survivable in a way an unreachable Settings button
+is not.
+
+### Testing a swipe you cannot swipe
+
+jest cannot perform the drag: the pan handler needs a real gesture. But
+`ReanimatedSwipeable` renders both action panels at rest behind an `opacity: 0`, so
+their labels and their handlers are reachable — what each action *says* and *does* is
+fully testable, and only the travel is device work.
+
+Two things had to be learned to write those four tests, both about the list's existing
+filter rather than about swiping:
+
+- **A passage with no tags is hidden as soon as any other passage has one.**
+  `invertedTags` is non-empty, and the untagged passage matches none of them. So the
+  two-passage fixture gives both rows a tag.
+- **`filters.tags` defaults to `[ARCHIVED_NAME]`**, i.e. archived is filtered out by
+  default. Archiving a row therefore makes it *leave the list* — which is what the test
+  asserts, and it is better behaviour to pin than the label flip it was written for. To
+  see an archived row's Remove action at all, the fixture has to clear that filter.
+
+The distinct left-swipe tag in the fixtures is not decoration either: with the default
+(`leftSwipeTag === ARCHIVED_NAME`) both sides of a row read "Archive" and neither panel
+can be found by its text.
+
+The `Button` tests take the MiniModal canary argument one step further. That one guards
+the reanimated toolchain for dialogs; this one guards it for *every button in the app*,
+so if `babel-preset-expo` ever stops applying `react-native-worklets/plugin` the failure
+is a test rather than a shipped UI stuck mid-frame. The third test exists because the
+wrapper swap could have cost the press itself — a button that sinks but does nothing is
+worse than one that does nothing at all.
+
+**Scope.** Changed: `constants.ts` (`ANIMATION.pressScale`, new `LAYOUT`),
+`components/Button.tsx`, `screens/ListScreen.tsx`, `screens/HomeScreen.tsx`. Tests:
+`Button.test.tsx` (1 → 3), `ListScreen.test.tsx` (+4). No new files, **no new l10n
+strings** — nothing gained or lost a word. Row props stayed primitive, so the 8.1.3
+`React.memo` on `ListItem` still holds. Version 0.2.2 → 0.2.3; lint ✓, 210 tests ✓.
+
+**Needs verifying on a device** — this is a `(build)` step and feel is the whole point:
+the press spring under a finger (0.96 is a judgement call and is the one number here
+most likely to want changing); the swipe panels trailing the row rather than snapping;
+that closing a panel on action doesn't fight the state update that follows it; the home
+screen on the shortest phone available, which is the layout claim; and the list column's
+560px cap on a wide screen, which nothing in CI can show. Still open from 8.2.3: the
+push/pop spring and the header's staggered entrance. Still open from 8.2.2: the sort
+popup's anchor position under its icon.
+
+### Left deliberately undone
+
+**The collapse/expand of a row's verse text is still a hard snap** (`height: 22` ↔
+`overflow: visible` on long-press). A `LinearTransition` would smooth it, but a layout
+animation on a `FlatList` row reflows its neighbours too, and that is a different risk
+class from anything else in this step — worth its own look rather than a bonus at the
+end of this one. Reporting it rather than doing it.
+
+### Found outside the scope — for Fedir to place
+
+1. **`ListItem`'s long-press vibrates without checking `hapticsEnabled`**
+   (`ListScreen.tsx`, `Vibration.vibrate(30)`). Left alone on purpose — 8.2.8 is the
+   haptics/sound util that owns exactly this, and pre-fixing one call site would leave
+   the app with two ways to vibrate.
+2. **A passage with no tags disappears from the list** as soon as any other passage
+   carries a tag (the `invertedTags` branch of `ListScreen`'s filter). Found while
+   writing the row tests. It may well be intended — "show me the tagged ones" — but it
+   is surprising enough that it took a debugging round to believe, and an untagged
+   passage vanishing without the filter dot changing is hard to explain to a user.
+3. Still open from earlier steps: `__tests__` is typechecked by neither tsc nor eslint
+   (8.2.3), and the two hand-rolled confirms in `PassageEditor` / `TestsScreen` (8.2.2).
+
+## 2026-08-28 — 8.2.5: the wrapper rewrite — the training loop + the finish shell
+
+The step's own warning is the right frame for it: *the training loop is the core product —
+regressions here are the worst.* So this is not a redesign of how a test is answered. It
+is the same treatment the other screens got, applied to the two surfaces that had been
+skipped, plus the three real defects that an honest read of `TestsScreen` and the level
+components turned up.
+
+### 1. The dot row was a component being reborn on every render
+
+`TestsScreen` built its header content like this:
+
+```tsx
+const DottList = state.testsActive.length < 13 ? () => (...) : () => (...)
+...
+<Header ...><DottList /></Header>
+```
+
+A component *declared during render* is a new component type every time the parent
+renders. React compares types, not source, so it cannot know that this `DottList` is the
+previous `DottList` — it unmounts the old subtree and mounts a fresh one. Every answer,
+every error marked, every level changed threw away the whole dot row and rebuilt it,
+gradients and all. Nothing looked broken, which is exactly why it survived this long: the
+cost is invisible until a dot has state or an animation, and 8.2.5 is the step that gives
+the surface around it both.
+
+It is `TestNavBar` at module level now, taking `tests` / `activeIndex` / `onSelect`. The
+ternary between the dots and the "3x green, 1x red, 9x grey" tally moved inside it as an
+early return, which is what it always was.
+
+CODING_RULES §4 gained the general rule; the `SwipeActionPanel` rule from 8.2.4 is now
+written as the special case of it that it always was.
+
+### 2. Seven near-identical blocks became a Record
+
+The screen chose a level component with seven copies of
+`{activeTestObj?.l === TESTLEVEL.lXX && <LXX test={...} state={...} submitTest={...}
+dispatch={...} />}` — 56 lines in which the only varying token was the level. Now:
+
+```ts
+const LEVEL_COMPONENTS: Record<TESTLEVEL, FC<LevelComponentModel>> = { ... }
+```
+
+`Record` over the whole enum on purpose: adding a level is a type error here until it is
+answered, which seven `&&` lines could never enforce. The lookup is nevertheless read
+into a variable typed `FC<LevelComponentModel> | undefined` — widening what TS knows, not
+casting it away. A stored state carrying a level this build does not know must render an
+empty session the user can leave by the cross, not throw into the `ErrorBoundary`; the
+old code rendered nothing in that case and the new one has to keep that promise.
+
+### 3. `Level3` answered a test from inside its render body
+
+```tsx
+if (!targetPassage || !missingWords) {
+  submitTest({ isRight: true, modifiedTest: test });
+  return <View />;
+}
+```
+
+Three separate things wrong, and they are worth naming individually because only one of
+them is the one the step asked for.
+
+- **It ran during render.** That is the class of bug that made the finish screen get
+  skipped in July 2026 (a redirect during render pushed Home on top of the results), and
+  the reason `TestsScreen` carries the long comment it does.
+- **The guard never fired.** `missingWords` is `test.d.missingWords || []`, so
+  `!missingWords` is `![]`, which is `false`, always. The safety valve had never once
+  opened in production. Only the `!targetPassage` half was live.
+- **A deleted passage was answered as CORRECT.** That is the live half, and it is the
+  worst of the three: a test pointing at a passage the user deleted got submitted with
+  `isRight: true`, which is a scheduling input and a history record. Every *other* level
+  component renders an empty `View` in that situation and lets `TestsScreen`'s
+  focus-gated effect leave the session. L30 now does the same.
+
+The valve itself is kept — a generated l30 test with no missing words has nothing to fill
+in, so passing it beats trapping the user on a screen with no way forward — but it moved
+into an effect and its condition now says what it meant (`!missingWords.length`).
+
+Its dependency array is the interesting part. `[test.i, targetPassage, missingWords.length]`
+is wrong, and the test caught it: `state.passages.find(...)` returns a *new object
+identity* every time the app state is replaced, so the effect would re-fire — and submit
+the same test again — on any unrelated state change. Keyed on `targetPassage?.id` it
+fires when the passage actually changed. That is now a rule in CODING_RULES §4, because
+nothing in the code makes it visible.
+
+### 4. `Entrance` — the arrival, written once
+
+The training loop's candy is that moving to the next test should *arrive* rather than
+blink into place. That could have been a `useSharedValue` pair in `TestsScreen`. It is
+`src/components/Entrance.tsx` instead, for the same reason `MiniModal` owns the dialog
+entrance and `Button` owns the press: written once, it reaches everything.
+
+Fade on a timing (so opacity can never overshoot past 1), travel on the shared
+`ANIMATION.spring` (where the overshoot is the point) — and deliberately **no** scale.
+MiniModal's card grows out of nothing in the middle of a dimmed screen and can afford to;
+a full-width block of verse text scaling up reads as the whole page zooming rather than
+as content arriving. Opacity and travel only, exactly like the Header.
+
+Two props beyond the children. `replayKey` re-runs the entrance when the wrapped content
+changes without unmounting — the session body is keyed on the test id, so answering a
+test and jumping between dots both replay it, while a re-render caused by anything else
+(an error marked, a level picked) does not. `delayMs` staggers it behind something
+already moving, which is `ANIMATION.staggerMs` and the same argument the Header's
+entrance makes.
+
+The shared values are reset to 0 before every run. `withTiming(1)` from a value that is
+already 1 is not an animation at all, so a replay without the reset would silently do
+nothing — the exact trap MiniModal hit on reopen in 8.2.1.
+
+`Header` keeps its own copy on purpose and that is written down rather than left to be
+rediscovered: the animated view there *is* the bar, with the device inset and the bar's
+own layout on it, so wrapping it would add a node under all eleven of its tests in
+exchange for no motion that differs.
+
+### 5. The finish screen is a shell now, not a poster
+
+`FinishScreen` was `justifyContent: "center"` with a `flex: 4` hero over a `flex: 1`
+button. 8.5.2 has to put a session summary on it — what was trained, how long, what
+levelled up, what needs repeating — and there was nowhere for that to go: a list would
+have fought the cup for a fixed share of a non-scrolling screen.
+
+It is now the shape that has: bare `Header` (the device's top margin and no bar) → a
+`ScrollView` body → a Continue button that stays put. The body's content container uses
+`flexGrow: 1` with centring rather than `flex: 1`, which is what makes the shell honest:
+with nothing in it the cup sits exactly where it always sat, and with a summary longer
+than the screen it scrolls instead of squeezing the hero. Hero and button both enter
+through `Entrance`, the button staggered behind the cup — the reward lands, then the way
+out.
+
+No session data was added. That is 8.5.2's step and inventing half of it here would have
+been the worse kind of head start.
+
+### Smaller things in the same sweep
+
+- **The exit dialog is a `ConfirmModal`.** One of the two hand-rolled confirms flagged
+  back in 8.2.2; this is the step that owns the screen it lived on. Same colours as
+  before (green confirm, not the default red) — preserving the look, not redesigning it.
+  The `PassageEditor` one is still open, and still not this step's screen.
+- **`LAYOUT.maxContentWidth` on both surfaces.** The session body and the finish column
+  stop growing on a foldable; the `Header` still spans, because a bar is not a column
+  (8.2.4).
+- **Dead style removed.** `testsStyle.centeredView` and `testsStyle.subText` were
+  referenced by nothing, and they were the only reason the whole stylesheet was rebuilt
+  inside the render (they read `theme.colors`). Gone, and the stylesheet moved to module
+  level with them.
+- The commented-out dev-mode "Pass" button went too — it was one of the two dead
+  `theme={theme}` call sites FILEMAP tracks. One left.
+
+### Tests
+
++19, 210 → 229. `TestsScreen` had none at all before this, which for the core product is
+the thing about this step most worth keeping.
+
+`screens/TestsScreen.test.tsx` drives the session over a *real stateful context* — the
+FiltersScreen/ListScreen harness — because every assertion is about what the session
+looks like after the reducer answered, and `renderWithContext`'s no-op `setState` would
+prove nothing. It drives **L10** specifically: it is the one level whose right answer is
+a single button press, so the wrapper can be tested without also testing a level. Ten
+tests: which test opens (the first *unfinished* one, not the first), the dot bar's
+current dot moving with it, jumping back to a finished test, a dot the user has not
+reached ignoring the press, answering advancing to the next test without navigating
+anywhere, the last answer committing two records to history and opening the finish
+screen, the cross asking before it leaves, cancelling keeping the session, confirming
+throwing it away with *nothing* reaching history, an empty session leaving instead of
+rendering, and a session whose passage was deleted leaving without answering it.
+
+Two things had to be learned to write it:
+
+- **`createTest` is a coin flip for level-1 and level-2 passages** (`Math.random() > 0.5`
+  picks l10 or l11). A coin flip is not a fixture, so the tests are built by hand with a
+  fixed `l` and a fixed `d.addressOptions`.
+- **`jest.mock("@react-navigation/native")` cannot be a bare object.** `useIsFocused`
+  needs a real navigator to answer and the screen is rendered outside one — but
+  `AppContext` pulls in `navigator.tsx`, which needs `createScreenFactory` from the same
+  module. `...jest.requireActual(...)` first, then override the one hook.
+
+`components/Entrance.test.tsx` is the same canary `MiniModal.test.tsx` and
+`Button.test.tsx` are: it asserts the reanimated *toolchain*, not the library. If
+`babel-preset-expo` ever stops applying `react-native-worklets/plugin`, the
+`useAnimatedStyle` callback is never turned into a worklet, no style is produced, and
+every surface wrapped in this ships stuck at `opacity: 0` — silent at build time. Three
+tests: the first frame from `ANIMATION`, the caller's layout style surviving the merge,
+and exactly one animated view however many children it wraps. What it *cannot* show is
+the replay: jest-expo's mock never advances frames, so a replayed entrance and a fresh
+one are the same first frame.
+
+`components/levels/Level3.test.tsx` gained the three render-purity guards. The middle one
+is the one that carries weight: an unplayable test is passed **once across re-renders**.
+That is precisely the observable difference between an effect and a render body — a
+render body fires again every render — and it is the assertion that caught the
+object-identity dependency described above.
+
+`screens/FinishScreen.test.tsx` pins the shell rather than the picture: the
+congratulation and its way out, the `Header` being bare (asserted by having no props at
+all, which is the whole claim), and the body's `flexGrow: 1` + centring. The "never show
+an error count" rule already has its guard against real finished sessions in
+`e2e/flow.test.tsx`, and that one still passes untouched.
+
+**Scope.** New: `src/components/Entrance.tsx`. Changed: `screens/TestsScreen.tsx`
+(rewritten), `screens/FinishScreen.tsx` (rewritten), `components/levels/Level3.tsx`
+(two guards). Tests: `screens/TestsScreen.test.tsx` (new, 10), `screens/FinishScreen.test.tsx`
+(new, 3), `components/Entrance.test.tsx` (new, 3), `components/levels/Level3.test.tsx`
+(+3). **No new l10n strings** — nothing gained or lost a word; `TestExitConfirmationText`,
+`Cancel`, `ExitTesting`, `titleWelldone` and `Continue` all already existed. **No
+snapshots retaken** — the two screens have none, and nothing else changed shape. Version
+0.2.3 → 0.2.4; lint ✓, 229 tests ✓.
+
+**Needs verifying on a device** — this is a `(build)` step and feel is the whole point:
+the test-to-test arrival under a finger (does answering read as the next test arriving,
+or as a flicker? the `replayKey` firing on a dot jump as well as on an answer is a
+judgement call and is the thing here most likely to want changing); the finish screen's
+cup-then-button stagger; the training column's 560px cap on a foldable, and — the one
+that matters most — a **full session played start to finish on the phone**, because the
+level dispatch, the dot bar and the exit path were all rewritten in one step. Still open
+from 8.2.4: the press spring's 0.96, the swipe panels trailing, the home screen on the
+shortest phone. Still open from 8.2.3: the push/pop spring and the header's staggered
+entrance. Still open from 8.2.2: the sort popup's anchor position.
+
+### Found outside the scope — for Fedir to place
+
+1. **`TestsScreen` recomputes `new Date().getTime()` during render.** The active test's
+   `td` (try durations) is rebuilt on every render: an open try gets closed with "now",
+   or a new one is opened with "now". So the recorded duration of a try is really "time
+   between the last render before submitting and the render before that", and a test
+   answered correctly first time is stored with an *open* try that is never closed.
+   Left alone deliberately: it is the shape `e2e/flow.test.tsx` mirrors in its `openTry`
+   helper and what `getStats` consumes, so changing it changes recorded history, not just
+   a render. It wants its own step next to 8.5.3 (the stats correctness pass).
+2. **`TestNavDot` carries a `//@ts-ignore`** on `LinearGradient`'s `colors` prop (it
+   wants a tuple, it is handed a `string[]`). CODING_RULES §1 bans those, but its intro also
+   says old code is fixed by refactor steps rather than opportunistically, so it stayed.
+   It is a two-line fix (`as const` on each branch, or a tuple-typed local) whenever a
+   step legitimately opens that file.
+3. **`LevelPicker.handleLabelPress` opens with a dead `if`**:
+   `if (!isNaN(passageLevelFromTestLevel)) { // return; }` — an empty block whose only
+   statement is commented out, i.e. a decision someone started making and abandoned.
+   Harmless today; it means the level picker opens during a session even when the level
+   is fixed by the test. Worth an answer in 8.2.6, which owns the level components.
+4. **`docs/robotdiary.md` has an unresolved merge conflict in the working tree**
+   (lines ~2410-2437: `<<<<<<< HEAD` / `=======` / `>>>>>>>` around the 2026-08-27 CMake
+   entry, left by the merge in 49d1f14 and never committed). The HEAD side holds the
+   whole entry and the other side is empty, so resolving it is deleting three marker
+   lines and losing nothing — but it is Fedir's diary file to decide about, and every
+   session reads this file, so it is reported rather than fixed here.
+5. Still open from earlier steps: `__tests__` is typechecked by neither tsc nor eslint
+   (8.2.3); the `PassageEditor` hand-rolled confirm (8.2.2); the passage-list row's
+   collapse/expand hard snap and the untagged-passage filter surprise (8.2.4).
+
+---
+
+## 2026-08-29 — 8.2.6: seven level files, and one home each for Address and Passage
+
+The step warned about itself — *"two refactors in one step — if it grows, split it and
+tell Fedir"* — so the honest report first: it did not need splitting, because the two
+halves are the same refactor seen from two ends. Splitting the level files is what
+made the duplicated text logic impossible to keep ignoring, and `Passage` is what let
+the seven files come out shorter than the five they replaced.
+
+**Part 1 — one file per level.** `Level1.tsx` exported `L10` *and* `L11`,
+`Level2.tsx` exported `L20` *and* `L21`, and CODING_RULES §2 has said "one component
+per file; the file is named after its export, exactly" since 8.1.15. So:
+`L10.tsx` `L11.tsx` `L20.tsx` `L21.tsx` `L30.tsx` `L40.tsx` `L50.tsx`, each with only
+the styles its own component uses. Two things moved out with them:
+
+- `LevelComponentModel` now lives in `models.ts`. It was declared inside `Level1.tsx`,
+  so `Level2`, `Level3`, `Level4` and `Level5` each imported their props type *from the
+  file of an unrelated level* — a dependency with no meaning behind it.
+- `SentenceContext.tsx` is the "…the sentences before / after the bit you are typing"
+  block that L40 and L50 each drew inline, identically, ellipsis rules and all.
+
+**Part 2 — `utils/address.ts` and `utils/passage.ts`.** Both are namespaces of pure
+functions over plain data, deliberately **not** classes: app state is JSON in
+AsyncStorage, so a passage that carried methods would not survive a save/load, and
+`stateVersionConvert` would have a new kind of object to worry about at every version
+hop. Seven util files were deleted (`addressToString`, `addressFromString`,
+`addressDistance`, `addressDifference`, `addressOrder`, `getNumberOfVerses`,
+`getNumberOfEnglishVerses`) and about 25 call sites moved over.
+
+`Address.format` `.parse` `.equals` `.distance` `.order` `.versesCount`;
+`Passage.getSentences` `.joinSentences` `.getRangeText` `.getRangeDisplayText`
+`.getContextBefore` `.getContextAfter` `.getWords` `.getFirstWords` `.getVersesCount`
+`.countEnglishVerses`.
+
+**What the duplication was hiding.** This is the part worth remembering. None of these
+were tidiness problems:
+
+1. **The sentence split had four different filters** (`s.length`, `> 0`, `> 1`, `> 2`)
+   across nine copies. The generator counted a passage's sentences one way and stored a
+   `sentenceRange`; the level component resolved that range another way. On a passage
+   where the filters disagree, the range the user was asked to recall was **not the
+   range the generator picked** — silently, and only for passages with short or oddly
+   punctuated sentences.
+2. **Three different joins.** `join()` — with no argument, i.e. commas — was used in
+   L10, L11 and L20, and the split had thrown the punctuation away, so a sliced passage
+   was displayed as `sentence one,sentence two`. L40 rejoined with `"."`. L50 did
+   something else entirely: it used *sentence counts* as *character indexes* into the
+   verse text (`verseText.slice(sentences.slice(...).join(".").length, …)`), which is
+   only ever accidentally right. `Passage.getSentences` keeps each sentence's closing
+   punctuation, so the pieces join back into the text they came from and none of the
+   three tricks is needed.
+3. **Word indexes were counted twice, differently.** `createL30Test` collapsed runs of
+   spaces before numbering words; `Level3` rendered `verseText.split(" ")` raw. A verse
+   with a double space anywhere put the two out of step, so the *wrong* words went
+   missing. `Passage.getWords` collapses, and both sides call it.
+4. **`getAddressDifference` mutated its arguments.** It filled an open-ended address by
+   *assigning* `a.endChapterNum = a.startChapterNum` — on objects that come straight out
+   of `state.passages`. Every comparison quietly edited the user's passages in memory.
+   `Address.equals` is pure; there is a test that asserts exactly that.
+5. **Address equality was also hand-rolled in JSON**, three times in L10 and L20
+   (`JSON.stringify(a) === JSON.stringify(b)`), which compares key *order* as well as
+   values. Those are `Address.equals` now.
+
+**Regex note.** `Passage.getSentences` is `text.match(/[^.!?;]+[.!?;]*/g)` rather than a
+lookbehind split, because Hermes has no lookbehind assertions and a rule that only
+breaks on device is the worst kind.
+
+**Found on the way, and fixed here because I was rewriting the file:** `L10` read
+`.verseText` off the result of a `.find()` without checking it — a test pointing at a
+deleted passage crashed it into the `ErrorBoundary`. Every other level renders an empty
+`View` and lets `TestsScreen`'s focus-gated effect leave the session (the 8.2.5 rule);
+now L10 does too, with a test pinning it.
+
+**Tests.** The five level suites became seven, over a new
+`__tests__/fixtures/levelPassages.ts` — the same 30-line passage object had been copied
+into all five, four times over inside the level 1 one. `addressFromString.test.ts` +
+`getNumberOfVerses.test.ts` became `address.test.ts` (subject renamed, so the test
+renames), and `passage.test.ts` is new: 20 cases over sentences, ranges, context, words
+and the English-verse count. 254 tests ✓, `npm run lint` ✓. Snapshots were regenerated;
+the fixture passage is a single sentence with no `sentenceRange`, so the visible diff is
+nil — which is exactly why the behaviour changes above need a device.
+
+**Needs manual verification** (JS-only, rides the next build). Everything here is
+invisible until a test carries a `sentenceRange`, and that only happens after a passage
+has a success stroke — so: take a multi-sentence passage through levels 1→5 until the
+tests start slicing it, and check that (a) a sliced verse in L1/L2 now reads as
+sentences with their punctuation instead of comma-joined fragments, (b) the stretch L4
+and L5 ask you to type matches the sentences shown either side of it, and (c) L5's try
+counter still matches the length of what it is asking for.
+
+**Reported, not done** (out of this step's scope, Fedir decides):
+
+1. **`LevelPicker.handleLabelPress` still opens with the dead `if`** flagged in the
+   8.2.5 entry — `if (!isNaN(passageLevelFromTestLevel)) { // return; }`. That entry
+   suggested 8.2.6 answer it, but the answer is a product decision, not a cleanup: with
+   the `return` restored, the level picker would refuse to open during a session whose
+   test level is fixed; as it stands it opens and lets the passage's selected level be
+   changed mid-session. Which of those is wanted is not something the refactor can
+   settle, so the dead `if` is untouched.
+2. **`docs/robotdiary.md`'s merge conflict is resolved** (reported in the 8.2.5 entry as
+   item 4). The `<<<<<<< HEAD` / `=======` / `>>>>>>>` lines around the 2026-08-27 CMake
+   entry were deleted and the entry kept, plus the `---` separator it was missing. It is
+   a working-tree edit like every other change in this session — nothing was committed.
+3. **A staging build is due.** No native config or dependency changed here, but 8.2.2
+   through 8.2.6 are five JS-only sessions on top of the 0.3.0 wrapper work, and the
+   milestone's own rule is that feel cannot be judged from tests. All of 8.2.1a→8.2.6
+   is waiting on one device walk.
+4. Still open from earlier steps: `__tests__` is typechecked by neither tsc nor eslint
+   (8.2.3); the `PassageEditor` hand-rolled confirm (8.2.2); the passage-list row's
+   collapse/expand hard snap and the untagged-passage filter surprise (8.2.4);
+   `TestNavDot`'s `//@ts-ignore` (8.2.5).

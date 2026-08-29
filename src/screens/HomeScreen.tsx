@@ -1,7 +1,8 @@
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Linking } from "react-native";
-import { SCREEN, THEMETYPE } from "../constants";
+import { LAYOUT, SCREEN, THEMETYPE } from "../constants";
 import { Button } from "../components/Button";
+import { Header } from "../components/Header";
 import { DaggerLogoSVG } from "../svg/daggetLogo";
 import { getStroke } from "../utils/getStats";
 import { WeekActivity } from "../components/WeekActivity";
@@ -115,52 +116,48 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   );
   const mainButtons = (
     <View style={homeStyle.buttonView}>
-      <View style={homeStyle.buttonView}>
-        {state.passages.length === 0 && (
-          <Button
-            key={"addFirstPassageButton"}
-            type="main"
-            color="green"
-            title={t("AddPassages")}
-            onPress={() => navigation.navigate(SCREEN.listPassage)}
-          />
-        )}
-        {state.passages.length > 0 && [
-          <Button
-            key={"practiceButton"}
-            type="main"
-            color="green"
-            title={t("homePractice")}
-            onPress={() => {
-              if (activeTrainModes.length > 1) {
-                setShowTrainModesList(true);
-              } else {
-                dispatch({ name: ActionName.generateTests });
-                navigation.navigate(SCREEN.test);
-              }
-            }}
-            icon={
-              activeTrainModes.length > 1 ? IconName.selectArrow : undefined
-            }
-            iconAlign="right"
-            disabled={state.passages.length === 0}
-          />,
-          <Button
-            key={"listButton"}
-            title={t("homeList")}
-            onPress={() => navigation.navigate(SCREEN.listPassage)}
-          />,
-          <Button
-            key={"statsButton"}
-            title={t("homeStats")}
-            onPress={() => navigation.navigate(SCREEN.stats)}
-          />
-        ]}
+      {state.passages.length === 0 && (
         <Button
-          title={t("homeSettings")}
-          onPress={() => navigation.navigate(SCREEN.settings)}
+          key={"addFirstPassageButton"}
+          type="main"
+          color="green"
+          title={t("AddPassages")}
+          onPress={() => navigation.navigate(SCREEN.listPassage)}
         />
-      </View>
+      )}
+      {state.passages.length > 0 && [
+        <Button
+          key={"practiceButton"}
+          type="main"
+          color="green"
+          title={t("homePractice")}
+          onPress={() => {
+            if (activeTrainModes.length > 1) {
+              setShowTrainModesList(true);
+            } else {
+              dispatch({ name: ActionName.generateTests });
+              navigation.navigate(SCREEN.test);
+            }
+          }}
+          icon={activeTrainModes.length > 1 ? IconName.selectArrow : undefined}
+          iconAlign="right"
+          disabled={state.passages.length === 0}
+        />,
+        <Button
+          key={"listButton"}
+          title={t("homeList")}
+          onPress={() => navigation.navigate(SCREEN.listPassage)}
+        />,
+        <Button
+          key={"statsButton"}
+          title={t("homeStats")}
+          onPress={() => navigation.navigate(SCREEN.stats)}
+        />
+      ]}
+      <Button
+        title={t("homeSettings")}
+        onPress={() => navigation.navigate(SCREEN.settings)}
+      />
       <SelectModal
         isShown={showTrainModesList}
         options={activeTrainModes.map((m) => ({
@@ -194,6 +191,8 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
       <StatusBar
         style={state.settings.theme === THEMETYPE.light ? "dark" : "light"}
       />
+      {/* No bar of its own - but the top margin still comes from the device */}
+      <Header />
       {logoBlock}
       <WeekActivity state={state} />
       {mainButtons}
@@ -202,6 +201,9 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
 };
 
 const homeStyle = StyleSheet.create({
+  // The one block that gives when the screen is short: it holds a fixed-size
+  // logo and two lines of text, and losing some of its breathing room is
+  // survivable in a way an unreachable Settings button is not (8.2.4).
   logoView: {
     alignItems: "center",
     justifyContent: "center",
@@ -211,9 +213,18 @@ const homeStyle = StyleSheet.create({
     fontSize: 35,
     fontWeight: "700"
   },
+  // Sized by its contents, NOT flex: 1 (8.2.4). It used to be flex: 1 twice
+  // over - the same style on a wrapper and on the column inside it - so on a
+  // short phone the buttons got exactly half the space left over and the last
+  // one was cut off by the screen edge. Content-sized, they are all there and
+  // the logo above absorbs the squeeze instead.
   buttonView: {
-    flex: 1,
     alignItems: "center",
-    gap: 10
+    justifyContent: "center",
+    gap: 10,
+    paddingBottom: 20,
+    width: "100%",
+    // and unfolded, the column stops rather than the buttons drifting apart
+    maxWidth: LAYOUT.maxContentWidth
   }
 });

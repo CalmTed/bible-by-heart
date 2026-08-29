@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   PASSAGELEVEL,
   ARCHIVED_NAME,
@@ -10,9 +9,11 @@ import {
 } from "../constants";
 import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
+import { Header } from "./Header";
 import { IconName } from "./Icon";
 import { WORD, createT } from "../l10n";
-import addressToString from "../utils/addressToString";
+import { Address } from "../utils/address";
+import { Passage } from "../utils/passage";
 import { TextInput } from "react-native-gesture-handler";
 import {
   dateToString,
@@ -22,14 +23,12 @@ import {
 import { AddressPicker } from "./AddressPicker";
 import { LevelPicker } from "./LevelPicker";
 import { Select } from "./Select";
-import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { fetchESV } from "../services/fetchESV";
 import { MiniModal } from "./MiniModal";
 import { ConfirmModal } from "./ConfirmModal";
 import { Input } from "./Input";
 import { getPassageStats } from "../utils/getStats";
 
-import { getNumberOfVerses } from "../utils/getNumberOfVerses";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 import { useAppContext } from "../context/AppContext";
@@ -54,7 +53,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   state
 }) => {
   const { theme, t } = useAppContext();
-  const insets = useSafeAreaInsets();
   const [isAPVisible, setAPVisible] = useState(false);
   const [isFetchPropositionOpen, setFetchPropositionOpen] = useState(false);
   const [tempPassage, setPassage] = useState(passage);
@@ -177,7 +175,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     });
   };
   const handleAddresChange = (newAdress: AddressType) => {
-    const versesInEnglish = getNumberOfVersesInEnglish(
+    const versesInEnglish = Passage.countEnglishVerses(
       state.settings.translations,
       state.passages.map((p) => (p.id === tempPassage.id ? tempPassage : p))
     );
@@ -186,7 +184,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         return {
           ...prv,
           address: newAdress,
-          versesNumber: getNumberOfVerses(newAdress)
+          versesNumber: Address.versesCount(newAdress)
         };
       });
     }
@@ -242,26 +240,6 @@ export const PassageEditor: FC<PassageEditorModel> = ({
     screen: {
       flex: 1,
       backgroundColor: theme.colors.bg
-    },
-    headerView: {
-      paddingTop: insets.top,
-      height: 60 + insets.top,
-      alignItems: "center",
-      width: "100%",
-      flexDirection: "row",
-      justifyContent: "space-between"
-    },
-    headerTitle: {
-      flex: 1,
-      color: theme.colors.text,
-      fontSize: 18,
-      textTransform: "uppercase",
-      fontWeight: "500",
-      paddingHorizontal: 10
-    },
-    headerBotton: {
-      height: "100%",
-      aspectRatio: 1
     },
     listView: {
       backgroundColor: theme.colors.bg,
@@ -404,30 +382,26 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const passageStats = getPassageStats(state, passage);
   return (
     <View style={PEstyle.screen}>
-      <View style={PEstyle.headerView}>
-        <IconButton
-          style={PEstyle.headerBotton}
-          icon={IconName.back}
-          onPress={handleBackPress}
-        />
-        <Text style={PEstyle.headerTitle}>
-          {isNew ? t("AddPassageTitle") : t("EditPassageTitle")}
-        </Text>
-        <Button
-          title={t("Save")}
-          type="transparent"
-          color="green"
-          onPress={handleSave}
-        />
-      </View>
+      <Header
+        title={isNew ? t("AddPassageTitle") : t("EditPassageTitle")}
+        onBack={handleBackPress}
+        right={
+          <Button
+            title={t("Save")}
+            type="transparent"
+            color="green"
+            onPress={handleSave}
+          />
+        }
+      />
 
       <View style={PEstyle.listView}>
         <ScrollView>
           <View style={PEstyle.bodyTop}>
             <Pressable onPress={() => setAPVisible(true)}>
               <Text style={PEstyle.bodyTopAddress}>
-                {addressToString(tempPassage.address, tempT)}
-                {`(${getNumberOfVerses(tempPassage.address)})`}
+                {Address.format(tempPassage.address, tempT)}
+                {`(${Address.versesCount(tempPassage.address)})`}
               </Text>
             </Pressable>
             <IconButton
@@ -629,7 +603,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
               style={{ marginHorizontal: 20, marginBottom: 10 }}
             >
               {passageStats.mostOftenAdressErrors.slice(0, 10).map((w, i) => {
-                const addressString = addressToString(w.address, tempT);
+                const addressString = Address.format(w.address, tempT);
                 return (
                   <Text
                     key={addressString.replace(/( |:|-)/g, "") + "address"}

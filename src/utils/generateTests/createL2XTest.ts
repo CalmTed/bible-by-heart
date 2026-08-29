@@ -1,6 +1,7 @@
 import { CreateTestMethodModel } from "./createL10Test";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { MINIMUM_SENTENCE_LENGTH, SENTENCE_SEPARATOR } from "../../constants";
+import { MINIMUM_SENTENCE_LENGTH } from "../../constants";
+import { Passage } from "../passage";
 import { randomRange } from "../randomizers";
 
 export const createL20Test: CreateTestMethodModel = ({
@@ -11,9 +12,7 @@ export const createL20Test: CreateTestMethodModel = ({
   const targetPassage = passages.filter((p) => p.id === initialTest.pi)[0];
   const successStroke = getPerfectTestsNumber(history, targetPassage);
 
-  const sentaces = targetPassage.verseText
-    .split(SENTENCE_SEPARATOR)
-    .filter((s) => s.length);
+  const sentaces = Passage.getSentences(targetPassage.verseText);
   const sentenceRangeStart =
     sentaces.length > 1 ? randomRange(0, sentaces.length - 1) : 0;
   const sentenceRangeEnd =
@@ -23,8 +22,8 @@ export const createL20Test: CreateTestMethodModel = ({
 
   const sentenceRange =
     successStroke &&
-    sentaces.slice(sentenceRangeStart, sentenceRangeEnd).join().length >=
-      MINIMUM_SENTENCE_LENGTH
+    Passage.joinSentences(sentaces.slice(sentenceRangeStart, sentenceRangeEnd))
+      .length >= MINIMUM_SENTENCE_LENGTH
       ? [sentenceRangeStart, sentenceRangeEnd]
       : [];
   return {

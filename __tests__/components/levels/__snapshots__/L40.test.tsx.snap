@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`testing level 4 rendering Level 4 renders correctly 1`] = `
+exports[`testing level 40 rendering L40 renders correctly 1`] = `
 <RCTScrollView
   style={
     {

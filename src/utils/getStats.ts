@@ -1,9 +1,8 @@
 import { AddressType, AppStateModel, PassageModel, TestModel } from "../models";
 import addZero from "./addZero";
 import { DAY, PASSAGELEVEL, SETTINGS, STATSMETRICS } from "../constants";
-import { addressDistance } from "./addressDistance";
+import { Address } from "./address";
 import { testLevelToPassageLevel } from "./levelsConvertion";
-import { getNumberOfVerses } from "./getNumberOfVerses";
 import { logger } from "./logger";
 
 const dayInMs = DAY * 1000;
@@ -134,7 +133,7 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
       }
       return (
         partialSum +
-        (passage.versesNumber || getNumberOfVerses(passage.address))
+        (passage.versesNumber || Address.versesCount(passage.address))
       );
     }, 0);
     const minutesNumber = Math.ceil(
@@ -236,7 +235,7 @@ export const getPassageStats: (
       if (th.wa.length) {
         th.wa.forEach((a) => {
           const match = mostOftenAdressErrors.find(
-            ({ address }) => addressDistance(a, address) === 0
+            ({ address }) => Address.distance(a, address) === 0
           );
           if (match) {
             const indexMatch = mostOftenAdressErrors.indexOf(match);
@@ -254,7 +253,7 @@ export const getPassageStats: (
           const a = state.passages.find((passage) => passage.id === p)?.address;
           const match = a
             ? mostOftenAdressErrors.find(
-                ({ address }) => addressDistance(a, address) === 0
+                ({ address }) => Address.distance(a, address) === 0
               )
             : false;
           if (match) {

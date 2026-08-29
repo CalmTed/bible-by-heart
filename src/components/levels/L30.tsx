@@ -1,13 +1,15 @@
 import React, { FC, useEffect, useState } from "react";
-import { ActionName, AddressType } from "../../models";
+import { ActionName, AddressType, LevelComponentModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
-import addressToString from "../../utils/addressToString";
+import { Address } from "../../utils/address";
+import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./Level1";
 import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
-import { getAddressDifference } from "../../utils/addressDifference";
+
+// Level 3: the verse with words missing — put them back in order, then name
+// the address.
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -82,7 +84,7 @@ export const L30: FC<LevelComponentModel> = ({
   const targetPassage = state.passages.find((p) => p.id === test.pi);
   const missingWords = test.d.missingWords || [];
 
-  const words = targetPassage?.verseText.split(" ") || [];
+  const words = targetPassage ? Passage.getWords(targetPassage.verseText) : [];
   const defaultSelectedWords: number[] = lastErrorIsWrongAddress
     ? words.map((w, i) => i)
     : alreadyEnteredUntill
@@ -97,6 +99,23 @@ export const L30: FC<LevelComponentModel> = ({
     resetForm();
     setSelectedWords(defaultSelectedWords);
   }, [test.i]);
+
+  // A generated l30 test with no missing words has nothing to fill in, so the
+  // user would sit on a screen with no way forward; passing it is the safety
+  // valve. It used to run DURING RENDER (8.2.5 moved it here) — a render that
+  // submits is a render that can navigate, which is exactly the class of bug
+  // that made the finish screen get skipped in 2026-07. Note the guard also had
+  // to be fixed to mean what it said: `missingWords` is `test.d.missingWords ||
+  // []`, so `!missingWords` was never true and the valve had never once opened.
+  useEffect(() => {
+    if (targetPassage && !missingWords.length) {
+      submitTest({ isRight: true, modifiedTest: test });
+    }
+    // Keyed by the passage's ID, never the object: `state.passages.find(...)`
+    // hands back a new object identity every time the app state is replaced, and
+    // an identity dep would submit the same unplayable test again on every
+    // unrelated state change.
+  }, [test.i, targetPassage?.id, missingWords.length]);
 
   const resetForm = () => {
     setAPVisible(false);
@@ -122,7 +141,7 @@ export const L30: FC<LevelComponentModel> = ({
       return;
     }
 
-    if (getAddressDifference(targetPassage.address, value)) {
+    if (Address.equals(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }
@@ -195,8 +214,10 @@ export const L30: FC<LevelComponentModel> = ({
     (mwi) => !selectedWords.includes(mwi)
   );
 
-  if (!targetPassage || !missingWords) {
-    submitTest({ isRight: true, modifiedTest: test });
+  // A test pointing at a deleted passage renders nothing and says nothing about
+  // the answer — TestsScreen's focus-gated effect is what leaves the session.
+  // Every other level does exactly this; this one used to submit it as CORRECT.
+  if (!targetPassage) {
     return <View />;
   }
 
@@ -328,7 +349,7 @@ export const L30: FC<LevelComponentModel> = ({
             color="green"
             title={
               selectedAddress
-                ? addressToString(selectedAddress, t)
+                ? Address.format(selectedAddress, t)
                 : t("LevelSelectAddress")
             }
             onPress={() => setAPVisible(true)}
@@ -356,14 +377,14 @@ export const L30: FC<LevelComponentModel> = ({
           <Button
             type="outline"
             color="green"
-            title={addressToString(targetPassage.address, t)}
+            title={Address.format(targetPassage.address, t)}
             onPress={() => {}}
             disabled={levelFinished}
           />
           <Button
             type="outline"
             color="red"
-            title={selectedAddress ? addressToString(selectedAddress, t) : ""}
+            title={selectedAddress ? Address.format(selectedAddress, t) : ""}
             onPress={() => {}}
             disabled={levelFinished}
           />

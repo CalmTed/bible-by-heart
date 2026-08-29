@@ -1,21 +1,31 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   FlatList,
   Pressable,
   TextInput,
   StyleProp,
   TextStyle,
-  Animated,
   Vibration
 } from "react-native";
+import Animated, {
+  SharedValue,
+  useAnimatedStyle
+} from "react-native-reanimated";
 import {
+  ANIMATION,
   ARCHIVED_NAME,
   LANGCODE,
-  PASSAGELEVEL,
+  LAYOUT,
   SORTINGOPTION,
   SCREEN
 } from "../constants";
@@ -32,21 +42,27 @@ import { Icon, IconName } from "../components/Icon";
 import { createAddress, createPassage } from "../initials";
 import { AddressPicker } from "../components/AddressPicker";
 import { createT } from "../l10n";
-import addressToString from "../utils/addressToString";
-import { Swipeable } from "react-native-gesture-handler";
+import { Address } from "../utils/address";
+import { Passage } from "../utils/passage";
+import ReanimatedSwipeable, {
+  SwipeableMethods
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import { reduce } from "../utils/reduce";
-import { MiniModal } from "../components/MiniModal";
+import { AnchoredPopup, PopupAnchorModel } from "../components/AnchoredPopup";
 import { SelectModal } from "../components/SelectModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
-import { getNumberOfVersesInEnglish } from "../utils/getNumberOfEnglishVerses";
 import { useAppContext } from "../context/AppContext";
-import { getAddresOrder } from "../utils/addressOrder";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
-import addressFromString from "../utils/addressFromString";
 import { sanitizeSharedText } from "../utils/sanitizeSharedText";
 import { getTranslationChoice } from "../utils/getTranslationChoice";
+
+// The add-passage flow is a sequence of steps, not a pair of independent
+// modals: translation -> address -> editor (8.2.1d). One value says where the
+// user is, so no two steps can be open at once and "back" always has somewhere
+// to go.
+type AddFlowStep = "closed" | "translation" | "address";
 
 export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   route,
@@ -55,17 +71,33 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   const { state, setState, t, theme } = useAppContext();
 
   const [selectedAddress, setSelectedAddress] = useState(createAddress);
-  // The address picked in the add flow, held while the translation is asked for
-  // (null = nothing pending). Nothing is persisted at this point.
-  const [addressAwaitingTranslation, setAddressAwaitingTranslation] =
-    useState<AddressType | null>(null);
   const translationChoice = getTranslationChoice(state.settings.translations);
   const addingFirstPassage = state.passages.length === 0;
-  const [isAPOpen, setAPOpen] = useState(addingFirstPassage);
+  // Where the add-passage flow stands. Translation comes BEFORE the address
+  // (8.2.1d): translations disagree on verse numbering, so which numbering the
+  // picker shows has to be decided before a single chapter or verse number is
+  // on screen. The step is still skipped silently when the answer is not in
+  // doubt — one translation, or none, is chosen for the user (8.2.1b).
+  const firstAddStep: AddFlowStep = translationChoice.needsChoice
+    ? "translation"
+    : "address";
+  const [addFlowStep, setAddFlowStep] = useState<AddFlowStep>(
+    addingFirstPassage ? firstAddStep : "closed"
+  );
+  // The translation the flow carries to the editor: preselected by
+  // getTranslationChoice, replaced by the user's pick when the step is shown.
+  const [flowTranslationId, setFlowTranslationId] = useState<
+    number | undefined
+  >(translationChoice.translationId);
 
   const [searchText, setSearch] = useState("");
-  const [isFiltersOpen, setOpenFilters] = useState(false);
   const [isSortingOpen, setOpenSorting] = useState(false);
+  // The sort menu hangs off the toolbar button that opens it (8.2.2), so the
+  // button has to be measured before the popup can be placed. Measuring on
+  // press rather than on layout keeps it right after a rotation or a
+  // font-scale change without a listener.
+  const sortAnchorRef = useRef<View>(null);
+  const [sortAnchor, setSortAnchor] = useState<PopupAnchorModel | null>(null);
   const [passageIdToRemove, setPassageIdToRemove] = useState<number | null>(
     null
   );
@@ -75,22 +107,30 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   // Destructuring it directly crashes the screen — guard with a default.
   const { passageText } = route.params ?? {};
 
-  const handleAPOpen = () => {
-    setAPOpen(true);
+  const handleAddFlowStart = () => {
+    setFlowTranslationId(translationChoice.translationId);
+    setAddFlowStep(firstAddStep);
   };
+  const handleTranslationSelect = (value: string) => {
+    setFlowTranslationId(parseInt(value, 10));
+    setAddFlowStep("address");
+  };
+  // Backing out of the picker returns to the step in front of it, so the flow
+  // has a real back stack; with the translation step skipped there is nothing
+  // behind the picker and the flow simply closes.
   const handleAPCancel = () => {
-    setAPOpen(false);
+    setAddFlowStep(translationChoice.needsChoice ? "translation" : "closed");
     setSelectedAddress(createAddress);
   };
   const handleAPSubmit = (address: AddressType) => {
-    setAPOpen(false);
+    setAddFlowStep("closed");
     const newPassage = createPassage(
       address,
       "",
-      translationChoice.translationId,
+      flowTranslationId,
       state.userData.uuid !== null ? state.userData.uuid : undefined
     );
-    const versesInEnglish = getNumberOfVersesInEnglish(
+    const versesInEnglish = Passage.countEnglishVerses(
       state.settings.translations,
       [...state.passages, newPassage]
     );
@@ -99,29 +139,12 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       toastShow(t("ErrorCantAddMoreEngVerses"), 10000);
       return;
     }
-    // The translation is the next thing the user meets after the address
-    // (8.2.1b) — but only when it is not already clear: a single translation
-    // (or none) is chosen for them and the step is skipped entirely.
-    if (translationChoice.needsChoice) {
-      setAddressAwaitingTranslation(address);
-      return;
-    }
-    // Open the editor screen to add a passage at this address. Nothing is
-    // persisted until the user taps Save there (momentary/draft edit).
+    // Open the editor screen to add a passage at this address, with the
+    // translation the flow has already settled. Nothing is persisted until the
+    // user taps Save there (momentary/draft edit).
     navigation.navigate(SCREEN.passage, {
       address,
-      translationId: translationChoice.translationId
-    });
-  };
-  const handleTranslationSelect = (value: string) => {
-    const address = addressAwaitingTranslation;
-    setAddressAwaitingTranslation(null);
-    if (!address) {
-      return;
-    }
-    navigation.navigate(SCREEN.passage, {
-      address,
-      translationId: parseInt(value, 10)
+      translationId: flowTranslationId
     });
   };
   // Row-facing handlers are wrapped in useCallback so their identities stay
@@ -190,30 +213,24 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     (passage: PassageModel) => setPassageIdToRemove(passage.id),
     []
   );
+  const handleSortOpen = () => {
+    // measureInWindow never calls back under jest (and can report NaN before a
+    // first layout), so the popup keeps its null anchor and falls back to the
+    // corner instead of being placed at NaN.
+    sortAnchorRef.current?.measureInWindow((x, y, width, height) => {
+      if (![x, y, width, height].every((n) => Number.isFinite(n))) {
+        return;
+      }
+      setSortAnchor({ x: x + width, y: y + height });
+    });
+    setOpenSorting(true);
+  };
   const handleSortChange = (option: SORTINGOPTION) => {
+    setOpenSorting(false);
     setState((prv) => {
       const newState = reduce(prv, {
         name: ActionName.setSorting,
         payload: option
-      });
-      return newState ? newState : prv;
-    });
-  };
-  const handleFilterChange: (arg: {
-    tag?: string;
-    selectedLevel?: PASSAGELEVEL;
-    maxLevel?: PASSAGELEVEL;
-    translation?: number;
-  }) => void = ({ tag, selectedLevel, maxLevel, translation }) => {
-    setState((prv) => {
-      const newState = reduce(prv, {
-        name: ActionName.toggleFilter,
-        payload: {
-          tag: tag,
-          selectedLevel: selectedLevel,
-          maxLevel: maxLevel,
-          translationId: translation
-        }
       });
       return newState ? newState : prv;
     });
@@ -223,7 +240,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     // untypable chars, strip URLs and wrapping quotes/punctuation before parsing
     // the address — the typing test later demands the exact character (8.1.4).
     const text = sanitizeSharedText(rawText);
-    const parsedAddressResult = addressFromString(text);
+    const parsedAddressResult = Address.parse(text);
     const passageAddress =
       parsedAddressResult !== false
         ? parsedAddressResult.address
@@ -248,7 +265,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     // before add" step). Nothing is persisted until Save. Passing the parsed
     // fields as small route params — not app state — is the deep-link-friendly
     // path (also reused by the address picker's plain add).
-    setAPOpen(false);
+    setAddFlowStep("closed");
     navigation.navigate(SCREEN.passage, {
       address: passageAddress,
       passageText,
@@ -298,7 +315,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     const isSearchMetFilteringNeeded = !!searchText.length;
     const isSearchFilteringShown = isSearchMetFilteringNeeded
       ? p.verseText.toLowerCase().includes(searchText.toLowerCase()) ||
-        addressToString(p.address, t)
+        Address.format(p.address, t)
           .toLowerCase()
           .includes(searchText.toLowerCase()) ||
         p.tags.join("").toLowerCase().includes(searchText.toLowerCase())
@@ -314,7 +331,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   const sortedPassages = [...filteredPassages].sort((a, b) => {
     switch (state.sort) {
       case SORTINGOPTION.address:
-        return getAddresOrder(b.address) - getAddresOrder(a.address);
+        return Address.order(b.address) - Address.order(a.address);
       case SORTINGOPTION.maxLevel:
         return b.maxLevel - a.maxLevel;
       case SORTINGOPTION.selectedLevel:
@@ -345,10 +362,21 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     },
     listView: {
       width: "100%",
-      flex: 1
+      flex: 1,
+      // Search field and rows are one column, so they stop growing together
+      // (8.2.4). Unfolded, a row otherwise runs a verse across the whole panel
+      // and the sort/filter icons end up a hand's width from the search field.
+      // The Header stays full-width on purpose - a bar spans, a column does not.
+      maxWidth: LAYOUT.maxContentWidth
     },
     passagesList: {
       flex: 1
+    },
+    passagesListContent: {
+      // The last row scrolls clear of the screen edge instead of ending flush
+      // against it, which is what made the list feel like it was cut off rather
+      // than finished (8.2.3).
+      paddingBottom: 24
     },
     hiddenLabel: {
       ...theme.theme.subText,
@@ -358,35 +386,17 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     devStatsView: {
       margin: 20
     },
-    listHeader: {
-      ...theme.theme.text,
-      marginTop: 20,
-      marginBottom: 10
-    },
-    optionsView: {
-      ...theme.theme.rowView,
-      flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 10
+    sortPopupHeader: {
+      ...theme.theme.subText,
+      marginBottom: 4
     }
   });
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        navigation={navigation}
-        showBackButton={false}
-        alignChildren="space-between"
-        additionalChildren={[
-          <IconButton
-            key="back"
-            icon={IconName.back}
-            onPress={() => navigation.navigate(SCREEN.home)}
-          />,
-          <Text key="title" style={theme.theme.headerText}>
-            {t("listScreenTitle")}
-          </Text>,
-          <IconButton key="add" icon={IconName.add} onPress={handleAPOpen} />
-        ]}
+        title={t("listScreenTitle")}
+        onBack={() => navigation.navigate(SCREEN.home)}
+        right={<IconButton icon={IconName.add} onPress={handleAddFlowStart} />}
       />
       <View style={listStyle.listView}>
         <View style={listStyle.searchView}>
@@ -399,14 +409,18 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           {!!searchText.length && (
             <IconButton icon={IconName.cross} onPress={() => setSearch("")} />
           )}
-          <IconButton
-            icon={IconName.sort}
-            onPress={() => setOpenSorting(true)}
-            color={theme.colors.textSecond}
-          />
+          {/* collapsable={false} keeps the wrapper a real native view on
+              Android, which is what makes it measurable */}
+          <View ref={sortAnchorRef} collapsable={false}>
+            <IconButton
+              icon={IconName.sort}
+              onPress={handleSortOpen}
+              color={theme.colors.textSecond}
+            />
+          </View>
           <IconButton
             icon={IconName.filter}
-            onPress={() => setOpenFilters(true)}
+            onPress={() => navigation.navigate(SCREEN.listFilters)}
             color={theme.colors.textSecond}
             dot={
               state.passages.length - filteredPassages.length >
@@ -445,6 +459,15 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           initialNumToRender={10}
           windowSize={11}
           removeClippedSubviews
+          contentContainerStyle={listStyle.passagesListContent}
+          // Scroll feel (8.2.3). The list sits directly under a search field, so
+          // dragging it is the natural way to put the keyboard away - and a tap
+          // on a row while the keyboard is up should open that row instead of
+          // being spent dismissing it, which is what `handled` buys.
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+          // One less thing moving over a list whose rows already swipe.
+          showsVerticalScrollIndicator={false}
         />
         {/* {state.settings.devModeEnabled && (
           <View style={listStyle.devStatsView}>
@@ -521,11 +544,15 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           </View>
         )} */}
       </View>
-      <MiniModal
+      {/* Sorting is a short, one-tap choice made from the toolbar, so it hangs
+          off the button that opens it instead of taking over the screen
+          (8.2.2). Picking closes it - there is nothing else to do in there. */}
+      <AnchoredPopup
         shown={isSortingOpen}
+        anchor={sortAnchor}
         handleClose={() => setOpenSorting(false)}
       >
-        <Text style={theme.theme.headerText}>{t("TitleSort")}</Text>
+        <Text style={listStyle.sortPopupHeader}>{t("TitleSort")}</Text>
         {Object.values(SORTINGOPTION).map((option) => (
           <Button
             key={option}
@@ -535,125 +562,26 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
             onPress={() => handleSortChange(option)}
           />
         ))}
-        <Button title={t("Close")} onPress={() => setOpenSorting(false)} />
-      </MiniModal>
-      <MiniModal
-        shown={isFiltersOpen}
-        handleClose={() => setOpenFilters(false)}
-      >
-        <Text style={theme.theme.headerText}>{t("TitleFilters")}</Text>
-        <ScrollView style={{}}>
-          <Text style={listStyle.listHeader}>{t("SelectedLevel")}</Text>
-          <View style={listStyle.optionsView}>
-            {[
-              PASSAGELEVEL.l1,
-              PASSAGELEVEL.l2,
-              PASSAGELEVEL.l3,
-              PASSAGELEVEL.l4,
-              PASSAGELEVEL.l5
-            ].map((sl) => (
-              <Button
-                key={sl}
-                type="outline"
-                color={
-                  state.filters.selectedLevels.includes(sl) ? "gray" : "green"
-                }
-                title={sl.toString()}
-                onPress={() => handleFilterChange({ selectedLevel: sl })}
-              />
-            ))}
-          </View>
-          <Text style={listStyle.listHeader}>{t("MaxLevel")}</Text>
-          <View style={listStyle.optionsView}>
-            {[
-              PASSAGELEVEL.l1,
-              PASSAGELEVEL.l2,
-              PASSAGELEVEL.l3,
-              PASSAGELEVEL.l4,
-              PASSAGELEVEL.l5
-            ].map((ml) => (
-              <Button
-                key={ml}
-                type="outline"
-                color={state.filters.maxLevels.includes(ml) ? "gray" : "green"}
-                title={ml.toString()}
-                onPress={() => handleFilterChange({ maxLevel: ml })}
-              />
-            ))}
-          </View>
-          {!!allTags.length && (
-            <View>
-              <Text style={listStyle.listHeader}>{t("Tags")}</Text>
-              <View style={listStyle.optionsView}>
-                {allTags.map((option) => (
-                  <Button
-                    key={option}
-                    type="outline"
-                    color={
-                      option === ARCHIVED_NAME &&
-                      state.filters.tags.length === allTags.length
-                        ? "red"
-                        : state.filters.tags.includes(option)
-                          ? "gray"
-                          : "green"
-                    }
-                    title={
-                      option === ARCHIVED_NAME
-                        ? t("Archived")
-                        : option.slice(0, 20)
-                    }
-                    onPress={() => handleFilterChange({ tag: option })}
-                  />
-                ))}
-              </View>
-            </View>
-          )}
-          {!allTags.length && (
-            <Text style={listStyle.listHeader}>{t("NoTagsFound")}</Text>
-          )}
-          <View>
-            <Text style={listStyle.listHeader}>{t("Translations")}</Text>
-            <View style={listStyle.optionsView}>
-              {state.settings.translations.map((option) => (
-                <Button
-                  key={option.id}
-                  type="outline"
-                  color={
-                    state.filters.translations.includes(option.id)
-                      ? "gray"
-                      : "green"
-                  }
-                  title={option.name.slice(0, 20)}
-                  onPress={() =>
-                    handleFilterChange({
-                      translation: option.id
-                    })
-                  }
-                />
-              ))}
-            </View>
-          </View>
-        </ScrollView>
-        <Button title={t("Close")} onPress={() => setOpenFilters(false)} />
-      </MiniModal>
-      <AddressPicker
-        visible={isAPOpen}
-        address={selectedAddress}
-        onCancel={handleAPCancel}
-        onConfirm={handleAPSubmit}
-      />
+      </AnchoredPopup>
+      {/* the add-passage flow, in the order the user walks it (8.2.1d) */}
       <SelectModal
-        isShown={addressAwaitingTranslation !== null}
+        isShown={addFlowStep === "translation"}
         title={t("SelectTranslationTitle")}
         options={state.settings.translations.map((tr) => ({
           label: tr.name,
           value: tr.id.toString()
         }))}
         selectedIndex={state.settings.translations.findIndex(
-          (tr) => tr.id === translationChoice.translationId
+          (tr) => tr.id === flowTranslationId
         )}
         onSelect={handleTranslationSelect}
-        onCancel={() => setAddressAwaitingTranslation(null)}
+        onCancel={() => setAddFlowStep("closed")}
+      />
+      <AddressPicker
+        visible={addFlowStep === "address"}
+        address={selectedAddress}
+        onCancel={handleAPCancel}
+        onConfirm={handleAPSubmit}
       />
       <ConfirmModal
         shown={passageIdToRemove !== null}
@@ -671,6 +599,51 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     </View>
   );
 };
+
+// The action revealed behind a swiped row (8.2.4). It is a real component, not
+// an element returned from the render callback, because it holds a hook —
+// ReanimatedSwipeable CALLS renderLeftActions/renderRightActions rather than
+// rendering them as a component, so a useAnimatedStyle written inline there
+// would be a hook in a plain function. Module level, so it is one type for the
+// whole list rather than a fresh one per render (8.1.1 finding #4/e).
+//
+// `progress` is 0 closed, 1 open, and above 1 while overshooting. Clamping it is
+// what keeps the button from growing past its own size when the row is dragged
+// further than the panel is wide.
+const SwipeActionPanel: FC<{
+  progress: SharedValue<number>;
+  side: "left" | "right";
+  children: React.ReactNode;
+}> = ({ progress, side, children }) => {
+  const revealStyle = useAnimatedStyle(() => {
+    const shown = Math.min(1, progress.value);
+    return {
+      opacity: shown,
+      transform: [
+        // it trails the row it is coming out from under, instead of already
+        // being there in full the instant the finger moves
+        {
+          translateX:
+            (1 - shown) *
+            (side === "left" ? -ANIMATION.riseDistance : ANIMATION.riseDistance)
+        },
+        { scale: ANIMATION.riseScale + shown * (1 - ANIMATION.riseScale) }
+      ]
+    };
+  });
+  return (
+    <Animated.View style={[swipeActionStyle.panel, revealStyle]}>
+      {children}
+    </Animated.View>
+  );
+};
+
+const swipeActionStyle = StyleSheet.create({
+  panel: {
+    justifyContent: "center",
+    height: "100%"
+  }
+});
 
 // React.memo: the passage list re-renders on every dispatch AND on every search
 // keystroke (local state). With stable `t`/`theme` from context (8.1.2), stable
@@ -719,10 +692,6 @@ const ListItemBase: FC<{
       color: theme.colors.textSecond,
       fontSize: 16
     },
-    swipeableAnimatedView: {
-      justifyContent: "center",
-      height: "100%"
-    },
     listItemView: {
       backgroundColor: theme.colors.bgSecond,
       paddingVertical: 15,
@@ -753,53 +722,52 @@ const ListItemBase: FC<{
       : data.tags.includes(leftSwipeTag)
         ? limitLegth(`${t("Remove")}  ${leftSwipeTag}`)
         : limitLegth(`${t("Add")} ${leftSwipeTag}`);
-  const renderLeftActions = () => {
-    return (
-      <Animated.View
-        style={[
-          {
-            ...listItemStyle.swipeableAnimatedView
-          }
-        ]}
-      >
-        <Button title={tagName} onPress={() => onToggleTag(data)} />
-      </Animated.View>
-    );
-  };
-  const renderRightActions = () => {
-    if (data.tags.includes(ARCHIVED_NAME)) {
-      return (
-        <Animated.View
-          style={[
-            {
-              ...listItemStyle.swipeableAnimatedView
-            }
-          ]}
-        >
-          <Button
-            title={t("Remove")}
-            onPress={() => onRemove(data)}
-            color="red"
-          />
-        </Animated.View>
-      );
-    }
-    return (
-      <Animated.View
-        style={[
-          {
-            ...listItemStyle.swipeableAnimatedView
-          }
-        ]}
-      >
+  // An action closes the panel it was tapped in (8.2.4). Every one of them
+  // rewrites the row's own label - "Archive" becomes "Unarchive", the tag button
+  // flips to "Remove <tag>" - so leaving the panel open would leave the user
+  // staring at a button that has silently become its own opposite.
+  const renderLeftActions = (
+    progress: SharedValue<number>,
+    _translation: SharedValue<number>,
+    swipeable: SwipeableMethods
+  ) => (
+    <SwipeActionPanel progress={progress} side="left">
+      <Button
+        title={tagName}
+        onPress={() => {
+          swipeable.close();
+          onToggleTag(data);
+        }}
+      />
+    </SwipeActionPanel>
+  );
+  const renderRightActions = (
+    progress: SharedValue<number>,
+    _translation: SharedValue<number>,
+    swipeable: SwipeableMethods
+  ) => (
+    <SwipeActionPanel progress={progress} side="right">
+      {data.tags.includes(ARCHIVED_NAME) ? (
+        <Button
+          title={t("Remove")}
+          onPress={() => {
+            swipeable.close();
+            onRemove(data);
+          }}
+          color="red"
+        />
+      ) : (
         <Button
           title={t("Archive")}
-          onPress={() => onArchive(data)}
+          onPress={() => {
+            swipeable.close();
+            onArchive(data);
+          }}
           color="green"
         />
-      </Animated.View>
-    );
-  };
+      )}
+    </SwipeActionPanel>
+  );
   const getSecondaryOptions = (
     sortType: SORTINGOPTION,
     passage: PassageModel
@@ -816,21 +784,25 @@ const ListItemBase: FC<{
     }
   };
   const customT = createT(addressLanguage);
+  // The Pressable sits INSIDE the swipeable, wrapping the row and nothing else.
+  // The other way round (8.2.4 found it wrapping the whole thing) put the action
+  // panels inside the row's press area, so a tap on the empty part of a revealed
+  // panel opened the editor instead of doing nothing.
   return (
-    <Pressable
-      onPress={() => onPress(data)}
-      onLongPress={() => onLongPress(data)}
+    <ReanimatedSwipeable
+      friction={2}
+      overshootFriction={10}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
     >
-      <Swipeable
-        friction={2}
-        overshootFriction={10}
-        renderLeftActions={renderLeftActions}
-        renderRightActions={renderRightActions}
+      <Pressable
+        onPress={() => onPress(data)}
+        onLongPress={() => onLongPress(data)}
       >
         <View style={listItemStyle.listItemView}>
           <View style={listItemStyle.headerGroup}>
             <Text style={listItemStyle.listItemAddress}>
-              {addressToString(data.address, customT)}
+              {Address.format(data.address, customT)}
             </Text>
             <Text style={listItemStyle.secondaryHeader}>
               {getSecondaryOptions(sort, data)}
@@ -847,8 +819,8 @@ const ListItemBase: FC<{
             {data.verseText}
           </Text>
         </View>
-      </Swipeable>
-    </Pressable>
+      </Pressable>
+    </ReanimatedSwipeable>
   );
 };
 const ListItem = React.memo(ListItemBase);

@@ -36,10 +36,10 @@ release, not an internal checkpoint.
 |---|---|
 | 0.1.1 — Revival ✓ | CI/CD alive again, P0/P1 bugs dead, login verified against the new VPS |
 | **0.2.0 — Fast & solid** | render lag gone, intent receiver polished, backup/restore safety net, boot path that cannot eat a state, typed navigation, files renamed — **and the first store release in a year** |
-| **0.3.0 — Candy UI** | reanimated rewrite of transitions, gestures and list feel; modals purged where a screen belongs; level components split |
+| **0.3.0 — Candy UI + text sources** | reanimated rewrite of transitions, gestures and list feel; modals purged where a screen belongs; level components split — **and** bbh-api becomes the one text source: four bundled Ukrainian translations, ESV proxied behind the same call |
 | **0.4.0 — Accounts+** | Expo SDK current, dead deps gone, Google auth behind a pluggable provider interface |
 | **0.5.0 — Sync** | state split into parts, LWW + checksums, incremental history, sync UI |
-| **0.6.0 — Content & finish** | pluggable text sources (Ukrainian translation when permission lands), real finish-screen session data, stats correctness |
+| **0.6.0 — Content & finish** | real finish-screen session data, stats correctness (text sources moved up to 0.3.0) |
 | **0.7.0 — Premium** | subscription via Play Billing, entitlement in state + API |
 | **0.8.0 — iOS** | App Store account, Apple ID login, iOS share extension, publish |
 | **1.0.0 — Finished** | both stores, sync + payment live, no major bugs |
@@ -57,9 +57,12 @@ already overdue and a year without an update is worse than an un-animated app.
    progress bar. **No forcible merge.** Design in `ARCHITECTURE.md` §3.4. Depends on the
    shared contract package and an API version compatibility gate: sync being off must
    never mean the app is broken.
-3. **Ukrainian translation text** — the deliverable is the *capability*: a pluggable
-   text-source interface generalized out of `fetchESV.ts`, so that when permission for a
-   Ukrainian translation is secured, adding it is config plus one fetcher file.
+3. **Ukrainian translation text** — no longer hypothetical: four Ukrainian translations
+   sit in `bbh-api/src/translations/` as full-text JSON, so the capability and the
+   content arrive together in **0.3.0**. The pluggable source *is* bbh-api — the client
+   makes one call for any translation, and ESV becomes one id among them instead of a
+   direct third-party call from the phone. Two rules govern it: the ESV key lives only
+   in the API's env file, and the API is a **proxy that stores no passage text**.
 4. **Finish-screen session data** — what was trained, how long, level-ups, what needs
    repeating. **Never error counts** (`ARCHITECTURE.md` §2.2).
 5. **Premium subscription** — in-app digital subscriptions must go through Google Play
@@ -161,3 +164,8 @@ From the 2026-07-07 and 2026-07-22 planning interviews, plus 2026-08-24.
 | Layered l10n keys | Post-1.0. Mechanical, large, and worth nothing to a user. |
 | Fresh-install defaults | Dropped — an empty tag/train-mode list on first run is acceptable. |
 | Error-message design unification | Dropped as a scheduled item; fix messages where a step already touches them. |
+| Text sources (2026-08-28) | **bbh-api serves every translation**, ESV included, through one call. The app never holds the ESV key again; the API is a proxy and **stores no passage text**. Pulled into **0.3.0**, superseding 8.5.1. |
+| Translation before address (2026-08-28) | The translation is picked *before* the address picker — numbering differs between translations, so it must be settled before a verse number is shown. Amends 8.2.1b, keeps its silent-skip rule. |
+| Book-name variants | A shipped on-device table, never a lookup — address recognition from shared text must work offline. |
+| Typeable text (2026-08-28) | **Every text source normalizes to characters a phone keyboard can produce**, at the API, with the same folding table as `sanitizeSharedText.ts`. Learning ends in typing by hand and L5 demands the exact character, so an em dash or a curly quote makes a passage unlearnable. Already-saved passages are never rewritten — 8.2.7 tolerates those on comparison instead. |
+| Whitelist, not blacklist (2026-08-28) | The typeable set is defined by **what is allowed** — per language (Ukrainian letters *or* Latin, never both), digits, space, `.` `,` `:` `;` `!` `?` `-` `'` `"`. Fold variants first, then validate; a character outside the list is **reported as a data defect, never silently stripped**. This is what surfaced the OCR homoglyphs (`госпzдї`, `Iсус`) that a blacklist would have shipped forever. |

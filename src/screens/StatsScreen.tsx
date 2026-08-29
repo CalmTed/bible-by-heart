@@ -127,24 +127,14 @@ export const StatsScreen: FC<ScreenPropsModel<SCREEN.stats>> = ({
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        navigation={navigation}
-        showBackButton={false}
-        alignChildren="flex-start"
-        additionalChildren={[
+        title={t("statsScreenTitle")}
+        onBack={() => navigation.navigate(SCREEN.home)}
+        right={
           <IconButton
-            key="back"
-            icon={IconName.back}
-            onPress={() => navigation.navigate(SCREEN.home)}
-          />,
-          <Text key="title" style={theme.theme.headerText}>
-            {t("statsScreenTitle")}
-          </Text>,
-          <IconButton
-            key="calendar"
             icon={IconName.clock}
             onPress={() => navigation.navigate(SCREEN.calendar)}
           />
-        ]}
+        }
       />
       <ScrollView style={statsStyle.listView}>
         <View style={statsStyle.mainScoreView}>

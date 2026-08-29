@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
-import { Button, IconButton } from "../components/Button";
+import { Button } from "../components/Button";
 import { IconName } from "../components/Icon";
 import {
   API_LINK,
@@ -139,19 +139,8 @@ export const RegisterScreen: FC<ScreenPropsModel<SCREEN.register>> = ({
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
     >
       <Header
-        navigation={navigation}
-        showBackButton={false}
-        alignChildren="flex-start"
-        additionalChildren={[
-          <IconButton
-            key="back"
-            icon={IconName.back}
-            onPress={() => navigation.navigate(SCREEN.settings)}
-          />,
-          <Text key="title" style={theme.theme.headerText}>
-            {t("registerScreenTitle")}
-          </Text>
-        ]}
+        title={t("registerScreenTitle")}
+        onBack={() => navigation.navigate(SCREEN.settings)}
       />
       <View style={{ ...theme.theme.view, ...registerStyle.inputView }}>
         {state.settings.devModeEnabled && (

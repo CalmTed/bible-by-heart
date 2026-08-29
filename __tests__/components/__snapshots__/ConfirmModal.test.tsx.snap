@@ -149,10 +149,44 @@ exports[`testing confirm modal renders correctly 1`] = `
         }
       >
         <View
-          style={
+          collapsable={false}
+          jestAnimatedProps={
             {
-              "flexDirection": "row",
+              "value": {},
             }
+          }
+          jestAnimatedStyle={
+            {
+              "value": {
+                "transform": [
+                  {
+                    "scale": 1,
+                  },
+                ],
+              },
+            }
+          }
+          jestInlineStyle={
+            [
+              {
+                "flexDirection": "row",
+              },
+            ]
+          }
+          nativeID="2"
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "transform": [
+                  {
+                    "scale": 1,
+                  },
+                ],
+              },
+            ]
           }
         >
           <View
@@ -266,10 +300,44 @@ exports[`testing confirm modal renders correctly 1`] = `
           </View>
         </View>
         <View
-          style={
+          collapsable={false}
+          jestAnimatedProps={
             {
-              "flexDirection": "row",
+              "value": {},
             }
+          }
+          jestAnimatedStyle={
+            {
+              "value": {
+                "transform": [
+                  {
+                    "scale": 1,
+                  },
+                ],
+              },
+            }
+          }
+          jestInlineStyle={
+            [
+              {
+                "flexDirection": "row",
+              },
+            ]
+          }
+          nativeID="3"
+          style={
+            [
+              {
+                "flexDirection": "row",
+              },
+              {
+                "transform": [
+                  {
+                    "scale": 1,
+                  },
+                ],
+              },
+            ]
           }
         >
           <View

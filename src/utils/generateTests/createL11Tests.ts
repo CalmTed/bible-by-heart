@@ -1,10 +1,9 @@
 import { PassageModel, TestModel } from "../../models";
 import { createL10Test, CreateTestMethodModel } from "./createL10Test";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { getAddressDifference } from "../addressDifference";
-import { addressDistance } from "../addressDistance";
+import { Passage } from "../passage";
+import { Address } from "../address";
 import { randomListRange, randomRange } from "../randomizers";
-import { SENTENCE_SEPARATOR } from "../../constants";
 
 //select right qoute
 export const createL11Test: CreateTestMethodModel = ({
@@ -32,7 +31,7 @@ export const createL11Test: CreateTestMethodModel = ({
       languageFilteredPassages.filter(
         (p) =>
           ph.wp.includes(p.id) ||
-          ph.wa.find((wa) => getAddressDifference(p.address, wa))
+          ph.wa.find((wa) => Address.equals(p.address, wa))
       )
     )
     .flat();
@@ -40,7 +39,7 @@ export const createL11Test: CreateTestMethodModel = ({
   const closestPassages = [
     ...languageFilteredPassages.filter(
       (p) =>
-        addressDistance(targetPassage.address, p.address) !== 0 &&
+        Address.distance(targetPassage.address, p.address) !== 0 &&
         !fromErrors.filter((frp) => p.id === frp.id).length
     )
   ]
@@ -81,11 +80,7 @@ export const createL11Test: CreateTestMethodModel = ({
   );
   //random range from 0 and maximum possible
   const maxSENTENCELength = Math.max(
-    ...allOptions.map(
-      (ao) =>
-        ao.verseText.split(SENTENCE_SEPARATOR).filter((s) => s.length > 2)
-          .length
-    )
+    ...allOptions.map((ao) => Passage.getSentences(ao.verseText).length)
   );
   const rangeStart = randomRange(0, maxSENTENCELength - 1);
   const sentenceRange = successStroke

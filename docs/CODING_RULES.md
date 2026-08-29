@@ -6,6 +6,18 @@
 
 ---
 
+## 0. The machine
+
+- Windows, PowerShell. Both repos are developed and tested here, not on a Unix box.
+- **There is no Python installed.** Not `python`, not `python3`, not `py` — nothing.
+  Never reach for a throwaway Python script to inspect a file, transform data, or
+  compute something; it fails on the spot and the attempt is pure noise. Use Node
+  (`node -e`, a `.ts` script, a jest test) or the shell.
+- **Never edit these docs with PowerShell text cmdlets** (`Set-Content`,
+  `Add-Content`, `-replace` piped back to a file). They re-encode UTF-8 and turn
+  every em dash and every Ukrainian string in the file into mojibake. Edit them with
+  the editor/file tools.
+
 ## 1. Language & types
 
 - **TypeScript strict. `any` is banned** in new code (no `as any`, no implicit any).
@@ -20,7 +32,7 @@
 
 - **Components & screens:** `PascalCase.tsx` — `Button.tsx`, `HomeScreen.tsx`.
 - **Non-component modules (utils, services, config):** `camelCase.ts` —
-  `addressToString.ts`, `stateVersionConvert.ts`.
+  `address.ts`, `stateVersionConvert.ts`.
 - **The app repo has no offenders left** — 8.1.15 (2026-08-26) renamed the last of them
   (9 screens, `miniModal`, `setttingsMenuItem`, `testNevDott`, `settingsListWrapper`,
   `weekActivityComponent`, `icondata`), and 8.1.17 (2026-08-26) closed the last one in
@@ -40,8 +52,13 @@
 - **Never create a new base UI component without checking the library below.**
   If an existing component almost fits — extend it (new prop/variant), don't fork it.
 - Same for utils: check `src/utils/` before writing date/address/string helpers.
-  Address logic in particular already exists (`addressToString`, `addressFromString`,
-  `addressDistance`, `addressDifference`, `addressOrder`).
+  **Address logic and passage-text logic each have exactly one home** (8.2.6):
+  `utils/address.ts` (`Address.format` / `.parse` / `.equals` / `.distance` /
+  `.order` / `.versesCount`) and `utils/passage.ts` (`Passage.getSentences` /
+  `.joinSentences` / `.getRangeText` / `.getRangeDisplayText` / `.getContextBefore` /
+  `.getContextAfter` / `.getWords` / `.getFirstWords` / `.getVersesCount` /
+  `.countEnglishVerses`). Extend the namespace; never start a `verseText.split(" ")`
+  or a JSON.stringify address comparison of your own.
 - New shared component/util = update the library table below + `FILEMAP.md` in the
   same task.
 
@@ -63,11 +80,101 @@
   one is chosen" is a `gradient1`→`gradient2` ring (2px `padding` on a LinearGradient)
   over a `bgSecond` inner surface — what `Button type="outline"` draws. A solid
   `mainColor` background is not it; 8.2.1a removed the last one (`AddressPicker`).
+- **Three surfaces, and which one a thing is (8.2.2).** Before reaching for a modal,
+  decide what the surface actually is:
+  · **Screen** — anything list-like, scrolling, or multi-section, i.e. anything the user
+    *navigates into*. It gets a `SCREEN` member and `SettingsSubScreen` as its shell.
+    A modal with a `ScrollView` in it, or one styled `width/height: 100%`, is a screen
+    that has not been written yet.
+  · **Anchored popup** (`AnchoredPopup`) — a short one-tap choice made from a toolbar
+    button. It hangs off the control that opened it, does NOT dim the screen behind it,
+    and picking is also dismissing.
+  · **Dialog** (`MiniModal` / `ConfirmModal`) — a question, a confirmation, or a short
+    piece of text. It interrupts on purpose, so it dims, and it is as big as what it says
+    and no bigger.
+- **One `Header`, and the top margin is the device's (8.2.3).** Every screen and every
+  full-screen surface draws `src/components/Header.tsx` — directly, or through
+  `SettingsSubScreen` / `SettingsListWrapper` / `PassageEditor`. Never hand-roll a
+  header row: a back `IconButton`, a `theme.headerText` title and an action button
+  arranged in a `flexDirection: "row"` view **is** `Header`, and three copies of it is
+  how the app ended up with three different bar heights and two different title
+  typographies.
+  · `title` + `onBack` + `right`, or `children` for a bar with no plain title (the
+    training session's dots). `backIcon` only when the surface is *left* rather than
+    returned from — the training session's cross.
+  · **`Header` is the only place `useSafeAreaInsets` may be called.** The app is
+    `edgeToEdgeEnabled`, so it draws under the status bar and cutout; a fixed number is
+    a header behind the camera on one phone and floating on another. A screen must not
+    add its own top padding, and `theme.screen` must not carry one either — it used to
+    have a flat `paddingTop: 30` that every header screen wore *on top of* its real
+    inset, which is exactly the bug this rule exists to prevent.
+  · A screen with no bar of its own (home, the finish screen) still renders a bare
+    `<Header />`. With nothing in it, it reserves the device inset and no bar — so
+    "every screen goes through the Header" has no exceptions to remember.
+  · A full-screen `<Modal>` needs `statusBarTranslucent`, or Android lays it out below
+    the status bar and the inset is counted twice (same reason `AnchoredPopup` needs it).
+- **One screen transition, not the platform's (8.2.3).** `utils/screenTransition.ts`
+  exports `candyTransition`, spread into the navigator's `screenOptions`. Without it
+  `@react-navigation/stack` picks a preset from `Platform.Version`, so the same app
+  slides on one Android and zooms on another. Explicit `cardStyleInterpolator` /
+  `transitionSpec` in options override the named preset, so nothing else has to change —
+  but set `cardOverlayEnabled` rather than letting it default, which is `false` on iOS.
 - **Animations (new UI work):** react-native-reanimated + gesture-handler are the
   standard. No `Animated` from RN core in new code. Installed in 8.2.1 (reanimated 4 +
   `react-native-worklets`); **never add the worklets/reanimated plugin to
   `babel.config.js`** — `babel-preset-expo` applies it automatically when the package is
   installed, and a manual entry double-applies it.
+- **Press feedback belongs to `Button`, not to a screen (8.2.4).** Every button in the
+  app is that one component, so its press spring is written once and reaches ~277 call
+  sites — a screen that wants a springier button is a screen that should be using
+  `Button`. Same leverage argument as MiniModal owning the dialog entrance (8.2.1).
+- **A swipeable row's `Pressable` goes INSIDE the swipeable**, wrapping the row content
+  and nothing else. Wrapping the whole `Swipeable` puts the action panels inside the
+  row's press area, so a tap on the empty part of a revealed panel fires the row's
+  `onPress` — 8.2.4 found exactly that in the passage list. And **an action closes the
+  panel it was tapped in** (`swipeableMethods.close()`): every one of them rewrites its
+  own label, so a panel left open is a button that has silently become its opposite.
+- **A swipe action panel is a component, not an element** returned inline from
+  `renderLeftActions`/`renderRightActions`. `ReanimatedSwipeable` *calls* those
+  callbacks rather than rendering them, so a `useAnimatedStyle` written inside one is a
+  hook in a plain function. `SwipeActionPanel` in `ListScreen.tsx` is the pattern —
+  module level, so it is one component type for the whole list.
+- **Every component is declared at module level — never inside another render (8.2.5).**
+  A component defined during render is a *new component type* on every render, so React
+  unmounts and remounts its whole subtree each time the parent re-renders: state inside
+  it is lost, effects re-run, and any entrance animation restarts. `TestsScreen` had its
+  dot row written that way (`const DottList = () => ...` in the render body, used as
+  `<DottList />`), so the entire training-session header remounted on every answer. It is
+  `TestNavBar` at module level now. This is the general rule the `SwipeActionPanel` one
+  above is a special case of.
+- **Nothing is submitted, dispatched or navigated from a render body (8.2.5).** A render
+  must be free to run twice and produce the same tree. `TestsScreen` learned this the
+  hard way in 2026-07 — a redirect that ran during render pushed Home on top of the
+  finish screen and the user never saw their results — and `Level3` was still doing it
+  as late as 8.2.5, answering a test *as correct* mid-render whenever its passage was
+  missing. If a surface has to act on what it just found out, it acts in an effect. A
+  test whose passage is gone renders nothing and lets `TestsScreen`'s focus-gated effect
+  leave the session; every level component now does exactly that.
+- **An effect that acts on app state keys on IDs, not on objects (8.2.5).**
+  `state.passages.find(...)` hands back a new object identity every time the state is
+  replaced, so `useEffect(..., [targetPassage])` re-fires on every unrelated state
+  change. `[targetPassage?.id]` fires when the passage actually changed.
+- **The training screen dispatches to a level through a `Record<TESTLEVEL, …>` (8.2.5)**,
+  not seven `test.l === TESTLEVEL.lXX && <LXX … />` lines. The Record is exhaustive over
+  the enum, so adding a level is a type error until it is answered. The lookup is still
+  read as possibly-missing: a stored test carrying a level this build does not know must
+  render an empty session the cross can leave, not throw into the `ErrorBoundary`.
+- **The app is one column, and on a wide screen it stops (8.2.4).** `LAYOUT.maxContentWidth`
+  in `constants.ts` is where content stops growing on a foldable or tablet; a surface
+  that would otherwise stretch a verse across the whole panel caps at it rather than
+  picking its own number. Bars span (the `Header`), columns do not.
+- **A surface that arrives is wrapped in `Entrance`, not hand-animated (8.2.5).** The
+  fade + rise is written once there, so everything that enters the app enters at the
+  same speed with the same overshoot. `replayKey` replays it when a surface swaps its
+  *content* without unmounting (the training session moving to the next test);
+  `delayMs` staggers it behind something already moving. Only `Header` still rolls its
+  own — the animated view there *is* the bar, with its own inset and layout, so wrapping
+  it would add a node under all eleven of its tests for no motion that differs.
 - **Motion values come from `ANIMATION` in `constants.ts`, never inline numbers.**
   Duration, spring config, rise distance and start scale live there so every animated
   surface springs identically; per-component magic numbers are what make an animated app
@@ -86,6 +193,16 @@
   can never quietly rewrite the user's practice setup the way
   `ActionName.generateTests` deliberately does. Adding a mode this way costs no state
   version bump.
+- **An address and a passage's text are asked, never re-derived (8.2.6).** Six util
+  files named after verbs (`addressToString`, `addressDifference`, `addressOrder`…)
+  and nine inline `verseText.split(...)` copies became `Address` and `Passage` — two
+  namespaces of pure functions over the plain JSON that app state is (never classes:
+  a passage in AsyncStorage cannot carry methods). The duplication was not a tidiness
+  problem: the test generator counted a passage's sentences with one filter and stored
+  a `sentenceRange`, the level component resolved it with another, and the two could
+  disagree about which sentence index 2 is. Same for word indexes — the generator
+  collapsed double spaces, the renderer did not. One definition each, and both sides
+  call it.
 - **State model changes:** bump version + write converter in `stateVersionConvert.ts`
   + update `initials.ts` + prompt-backup flow. All four or nothing.
 - **Navigation is typed** (8.1.14). A screen's props are `ScreenPropsModel<SCREEN.x>`
@@ -149,31 +266,34 @@ Reuse these. Extend, don't duplicate.
 | Component | File | What it is / key props |
 |---|---|---|
 | Text | `src/components/Text.tsx` | themed `<Text>` — defaults to primary text color; `color` prop selects a semantic color (`text`/`textSecond`/`textDanger`/`mainColor`); caller `style` overrides. Use instead of RN `<Text>` in new code (STRATEGY §4.3) |
-| Button | `src/components/Button.tsx` | standard app button (title, onPress, disabled, style variants) |
+| Button | `src/components/Button.tsx` | standard app button (title, onPress, disabled, style variants) — and since 8.2.4 the app's **press feedback**: it sinks to `ANIMATION.pressScale` on press-in and springs back on press-out, on the shared `ANIMATION.spring`. A disabled `Pressable` never fires those, so a dead button never moves. Every button in the app is this component, so this is the only place that behaviour is written |
 | IconButton/Icon | `src/components/Icon.tsx` + `iconData.ts` | SVG icon set by name |
 | Input | `src/components/Input.tsx` | themed text input |
 | Checkbox | `src/components/Checkbox.tsx` | themed checkbox row |
 | Select | `src/components/Select.tsx` | dropdown-style selector |
 | SelectModal | `src/components/SelectModal.tsx` | modal list picker |
-| MiniModal | `src/components/MiniModal.tsx` | small confirm/content modal (base for confirmations) — and, since 8.2.1, the app's **animated dialog surface**: backdrop fades on a timing, the card springs up from `ANIMATION.riseDistance`/`riseScale`, and RN's platform `animationType` is `"none"` because the entrance is ours. 19 call sites inherit it, so animate dialogs by going through MiniModal, not by hand-rolling one. Shared values reset on close — RN's `<Modal>` unmounts its children but MiniModal itself stays mounted, so without the reset a reopen would start already finished |
+| AnchoredPopup | `src/components/AnchoredPopup.tsx` | 8.2.2 — the popup half of the three surfaces above: a small menu hanging off the control that opened it. Takes an `anchor` (window coords of the anchor's bottom-RIGHT corner, from `measureInWindow`) and lines its right edge up with it; `anchor={null}` (not measured yet, and always so under jest) falls back to the top-right corner, so a failed measurement is a misplaced popup and never an invisible one. Shares MiniModal's `ANIMATION` motion but deliberately not its dimmed backdrop. Measure on press, not on layout — it stays right after a rotation without a listener, and the anchor wrapper needs `collapsable={false}` to survive as a native view on Android |
+| Entrance | `src/components/Entrance.tsx` | 8.2.5 — the app's shared arrival, as a wrapper. Fades on a timing and rises `ANIMATION.riseDistance` on the shared spring; deliberately **no** scale (MiniModal's card grows out of a dimmed screen, a full-width block of text scaling up reads as the page zooming). `replayKey` replays the entrance when the wrapped content changes without unmounting — the training session's next test; `delayMs` staggers it behind something already in motion — the finish screen's Continue button behind its cup. `style` is the wrapper's own layout, because it is a real view in the tree. Shared values reset to 0 before every run: `withTiming(1)` from a value already at 1 is not an animation, so a replay without the reset silently does nothing (the same trap MiniModal has on reopen) |
+| MiniModal | `src/components/MiniModal.tsx` | small confirm/content modal (base for confirmations) — and, since 8.2.1, the app's **animated dialog surface**: backdrop fades on a timing, the card springs up from `ANIMATION.riseDistance`/`riseScale`, and RN's platform `animationType` is `"none"` because the entrance is ours. Every dialog in the app inherits it (directly, or through `ConfirmModal` / `SelectModal`), so animate dialogs by going through MiniModal, not by hand-rolling one. 8.2.2 took two surfaces off it — they were never dialogs. Shared values reset on close — RN's `<Modal>` unmounts its children but MiniModal itself stays mounted, so without the reset a reopen would start already finished |
 | ConfirmModal | `src/components/ConfirmModal.tsx` | reusable destructive-action confirmation (text + cancel/confirm; `confirmColor` defaults red) — use before any delete/irreversible action |
 | ErrorBoundary | `src/components/ErrorBoundary.tsx` | the only thing that catches a render error thrown by a child (a `try/catch` around a parent's `return` never will). `renderFallback(error, reset)`; `reset()` clears the caught error, so recovery UI calls it **after** putting a usable state back. Dependency-free on purpose — no context, no themed components — so it survives a broken theme/l10n |
 | EmergencyScreen | `src/components/EmergencyScreen.tsx` | the last-resort recovery UI (restore from either backup slot, dump state, ask for help, erase). Rendered by `App.tsx` from two places: the `ErrorBoundary` fallback and a **failed** state read on boot. Renders outside `AppProvider` by design → raw RN primitives + hardcoded bilingual strings, the one place `t()`/theme do not apply. Feature-specific, not a base component |
 | BackupOfferModal | `src/components/BackupOfferModal.tsx` | the one-shot post-upgrade "save a backup file?" offer (8.1.9). Rendered by `App.tsx` inside the provider, shown only on a boot that converted a state, dismissible and never blocking. Feature-specific — not a base component to build on |
-| Header | `src/components/Header.tsx` | screen header with back/actions |
-| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker. Since 8.2.1a: the header title is derived from `tempAddress` (NaN = unpicked) and a complete address is handed to `addressToString` — never from which part is being *edited*; the selected verse wears the gradient-outline idiom; the single-verse footer is a real row in the layout flow, so it cannot cover the last row of verses |
+| Header | `src/components/Header.tsx` | **the** app header — `title`/`onBack`/`backIcon`/`right`/`children`; springs in behind the screen transition; the only caller of `useSafeAreaInsets`, and bare (`<Header />`) it is just the device's top margin. Exports `HEADER_HEIGHT` |
+| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker. Since 8.2.1a: the header title is derived from `tempAddress` (NaN = unpicked) and a complete address is handed to `Address.format` — never from which part is being *edited*; the selected verse wears the gradient-outline idiom; the single-verse footer is a real row in the layout flow, so it cannot cover the last row of verses |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |
 | PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI. Since 8.2.1b the translation `Select` sits directly under the address and above the verse text it decides — not among the bottom selectors; a NEW passage usually arrives with it already answered by the add flow |
 | DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
 | TestNavDot | `src/components/TestNavDot.tsx` | per-test navigation dot in session |
 | WeekActivity | `src/components/WeekActivity.tsx` | weekly activity graph |
 | SettingsMenuItem | `src/components/SettingsMenuItem.tsx` | settings row (label/action/checkbox/select/textinput/taglist) |
-| SettingsSubScreen | `src/components/SettingsSubScreen.tsx` | shared shell (View + Header w/ back + StatusBar) for every settings sub-menu screen; optional `headerRight` (e.g. add button) |
+| SettingsSubScreen | `src/components/SettingsSubScreen.tsx` | shared shell (View + Header w/ back + StatusBar) for every settings sub-menu screen — and since 8.2.2 for every drilled-into screen, settings or not (`FiltersScreen`, `LogSettingsScreen`); optional `headerRight` (e.g. add button) |
 | SettingsListWrapper | `src/components/SettingsListWrapper.tsx` | reusable editable-list screen body (translations/reminders/train-modes); non-modal — list & per-item editor are two views toggled by local state |
-| Level test screens | `src/components/levels/Level1..5.tsx` | one component per test level |
+| Level test screens | `src/components/levels/L10..L50.tsx` | one component per test level, one file per component, named after it exactly (8.2.6 — `Level1.tsx`/`Level2.tsx` used to hold two each). Props: `LevelComponentModel` from `models.ts`. Verse text comes from `Passage`, addresses from `Address` |
+| SentenceContext | `src/components/levels/SentenceContext.tsx` | 8.2.6 — the sentences either side of the stretch being typed (L40, L50), which both drew inline and identically. `side="before"` ends with an ellipsis, `side="after"` starts with one, and the far end only gets one when there is more passage than is shown; nothing renders when the test has no sentence range |
 
-Key utils (check before writing a helper): `addressToString`, `addressFromString`,
-`addressDistance`, `addressDifference`, `addressOrder`, `formatDateTime`,
+Key utils (check before writing a helper): `Address` (`address.ts`),
+`Passage` (`passage.ts`), `formatDateTime`,
 `secondsToString`, `addZero`, `randomizers`, `getSimularity`, `getStats`,
 `getPerfectTests`, `levelsConvertion`, `toastShow`, `notifications`, `fileManager`,
 `handlePassageExport`, `bootBackup`, `backupFile`, `getTranslationChoice`,

@@ -1,9 +1,15 @@
 import React, { FC } from "react";
 import { StyleSheet, Text, View, Pressable } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
+} from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import { Icon, IconName } from "./Icon";
 import { useAppContext } from "../context/AppContext";
 import { DotIndicator } from "./DotIndicator";
+import { ANIMATION } from "../constants";
 
 interface ButtonModel {
   onPress: () => void;
@@ -33,6 +39,22 @@ export const Button: FC<ButtonModel> = ({
   iconAlign = "left"
 }) => {
   const { theme } = useAppContext();
+  // Press feedback lives here rather than in any screen, because every button in
+  // the app is this component (8.2.4) - the home screen is nothing but these,
+  // and so are the passage list's swipe actions. One spring, ~277 call sites.
+  // 0 = at rest, 1 = held. The spring is the shared ANIMATION one, so a button
+  // settles with the same bounce as a dialog arriving.
+  const press = useSharedValue(0);
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1 - press.value * (1 - ANIMATION.pressScale) }]
+  }));
+  // A disabled Pressable never fires these, so a dead button never moves.
+  const handlePressIn = () => {
+    press.value = withSpring(1, ANIMATION.spring);
+  };
+  const handlePressOut = () => {
+    press.value = withSpring(0, ANIMATION.spring);
+  };
   const gradientColors = disabled
     ? [theme.colors.bg, theme.colors.bgSecond]
     : type === "transparent"
@@ -52,11 +74,13 @@ export const Button: FC<ButtonModel> = ({
           : theme.colors.mainColor
       : theme.colors.text;
   return (
-    <View style={buttonStyles.touch}>
+    <Animated.View style={[buttonStyles.touch, pressStyle]}>
       <Pressable
         style={buttonStyles.touch}
         // style={{ ...buttonStyles.touch, opacity: disabled ? 0.5 : 1 }}
         onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         disabled={disabled}
         android_ripple={{
           color: theme.colors.bgBackdrop,
@@ -106,7 +130,7 @@ export const Button: FC<ButtonModel> = ({
           </View>
         </LinearGradient>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 };
 

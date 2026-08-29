@@ -128,7 +128,7 @@ export const reduce: (
         //   .filter((v, i, arr) => !arr.slice(0, i).includes(v));
         // //blocking to add more then 500 verses on english
         // if (
-        //   getNumberOfVersesInEnglish(
+        //   Passage.countEnglishVerses(
         //     state.settings.translations,
         //     changedPassages
         //   ) > 500

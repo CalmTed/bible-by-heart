@@ -46,9 +46,9 @@
 
 | File | Description |
 |---|---|
-| `models.ts` | ALL data model types: AppState, Passage, Address, history, settings, action types — **plus the navigation types** (8.1.14): `RootStackParamList` (every `SCREEN` → its params), `PassageScreenParamsModel` / `ListScreenParamsModel`, `ScreenPropsModel<T>` (a screen's `{route, navigation}`) and `RootStackNavigationModel`. They live here, not in `navigator.tsx`, because the navigator imports every screen — a screen importing its props type from there would be a cycle |
+| `models.ts` | ALL data model types: AppState, Passage, Address, history, settings, action types — **plus the navigation types** (8.1.14): `RootStackParamList` (every `SCREEN` → its params), `PassageScreenParamsModel` / `ListScreenParamsModel`, `ScreenPropsModel<T>` (a screen's `{route, navigation}`) and `RootStackNavigationModel`, plus `LevelComponentModel` (8.2.6 — the four props every level component takes; it used to live inside `Level1.tsx`, so every other level imported its props type from an unrelated level). They live here, not in `navigator.tsx`, because the navigator imports every screen — a screen importing its props type from there would be a cycle |
 | `initials.ts` | initial/default values for every state version |
-| `constants.ts` | app-wide constants: `VERSION` (state model) + `alowedStateVersions`, `API_VERSION` (re-exported from `bbh-shared`) + `API_LINK` endpoint enum, storage keys (`STORAGE_NAME`/`STORAGE_BACKUP_NAME` rolling daily/`STORAGE_PRECONVERT_BACKUP_NAME` write-once pre-migration snapshot/`STORAGE_LOGGER`, token names), training tuning (`PERFECT_TESTS_TO_PROCEED`, `STUDY_ONE_REPEATS`, `ERRORS_TO_DOWNGRADE`, `MAX_L50_TRIES`, sentence rules), enums (`SCREEN`, `SETTINGS`, `LANGCODE`, `THEMETYPE`, `SORTINGOPTION`, `STATSMETRICS`, `TESTLEVEL`, `PASSAGELEVEL`), vibration patterns, `ANIMATION` (the 0.3.0 motion vocabulary — fade duration, spring config, rise distance/scale; every reanimated surface pulls from it so the app springs the same way), and the palettes `COLOR_DARK`/`COLOR_LIGHT` + `THEME_DARK`/`THEME_LIGHT` StyleSheets |
+| `constants.ts` | app-wide constants: `VERSION` (state model) + `alowedStateVersions`, `API_VERSION` (re-exported from `bbh-shared`) + `API_LINK` endpoint enum, storage keys (`STORAGE_NAME`/`STORAGE_BACKUP_NAME` rolling daily/`STORAGE_PRECONVERT_BACKUP_NAME` write-once pre-migration snapshot/`STORAGE_LOGGER`, token names), training tuning (`PERFECT_TESTS_TO_PROCEED`, `STUDY_ONE_REPEATS`, `ERRORS_TO_DOWNGRADE`, `MAX_L50_TRIES`, sentence rules), enums (`SCREEN`, `SETTINGS`, `LANGCODE`, `THEMETYPE`, `SORTINGOPTION`, `STATSMETRICS`, `TESTLEVEL`, `PASSAGELEVEL`), vibration patterns, `ANIMATION` (the 0.3.0 motion vocabulary — fade duration, spring config, rise distance/scale, stagger delay, `pressScale`; every reanimated surface pulls from it so the app springs the same way), `LAYOUT` (`maxContentWidth` — where the app's one column stops growing on a foldable or tablet, 8.2.4), and the palettes `COLOR_DARK`/`COLOR_LIGHT` + `THEME_DARK`/`THEME_LIGHT` StyleSheets |
 | `bibleReference.ts` | Bible structure data: 66 books as `{ titleShort, longTitle }` l10n WORD keys + `chapters` (verse count per chapter, `chaptersAlternative` where translations differ) |
 | `navigator.tsx` | react-navigation stack typed with `RootStackParamList` from `models.ts` (8.1.14): all screens, `headerShown:false`, `freezeOnBlur` + `detachInactiveScreens` (render-lag fix 8.1.3), `linking` config for `bbh://` / `bible-by-heart://` / `https://biblebyheart.app` deep links, the `ReactNavigation.RootParamList` global augmentation (so `useNavigation`/`useRoute` are typed app-wide), and the background-notification TaskManager task. Exports `navigationRef` (imperative navigation from outside the tree: share intent in `App.tsx`, notification taps in `AppContext`) |
 | `storage.ts` | single `react-native-storage` instance over AsyncStorage (`defaultExpires: null`), default-exported; every persist/load goes through it |
@@ -61,10 +61,11 @@
 
 | File | Description |
 |---|---|
-| `HomeScreen.tsx` | main screen: stroke/streak, week activity, entry to test/list/stats |
-| `ListScreen.tsx` | passage list: search, filters, sort, swipe actions, editor entry. Owns the add flow: address picker → (8.2.1b) a translation `SelectModal`, shown only when `getTranslationChoice` says the answer is not already clear → `SCREEN.passage` with `{address, translationId}` |
-| `TestsScreen.tsx` | training session: renders generated tests per level, navigation dots |
-| `FinishScreen.tsx` | session results screen (feature: show dynamic session data) |
+| `HomeScreen.tsx` | main screen: stroke/streak, week activity, entry to test/list/stats. Since 8.2.4 the button column is sized by its contents rather than `flex: 1` (which it carried twice over, so on a short phone the last button fell off the screen edge) and capped at `LAYOUT.maxContentWidth`; the logo block is the one that gives when the screen is short |
+| `ListScreen.tsx` | passage list: search, filter/sort entry points, swipe actions, editor entry. Since 8.2.2 the filter button navigates to `FiltersScreen` and the sort button opens an `AnchoredPopup` under itself (measured with `measureInWindow` on press) — neither is a modal any more. Owns the add flow, a one-way sequence held in a single `AddFlowStep` (8.2.1d): a translation `SelectModal` → the address picker → `SCREEN.passage` with `{address, translationId}`. The translation step comes first because translations disagree on verse numbering, and it is skipped silently when `getTranslationChoice` says the answer is not already clear (8.2.1b). Backing out of the picker returns to the translation step when there is one. Rows swipe on `ReanimatedSwipeable` since 8.2.4 (RN-core `Animated` gone): the action panels are a module-level `SwipeActionPanel` driven by the swipe's own `progress`, each action closes the panel it was tapped in, and the row's `Pressable` sits *inside* the swipeable so a tap on a revealed panel no longer opens the editor. The search + list column stops at `LAYOUT.maxContentWidth` |
+| `FiltersScreen.tsx` | 8.2.2 — passage-list filters (selected level / max level / tags / translations). Was a MiniModal with a ScrollView inside `ListScreen`, i.e. a sub-menu in a dialog's clothes. Dispatches `toggleFilter`; the filters live in app state, so nothing is handed back to the list |
+| `TestsScreen.tsx` | training session: picks the level component for the active test, owns the dot bar and the one way out. Since 8.2.5: the dot bar is `TestNavBar`, a **module-level** component (it used to be built inside the render body, so the whole header remounted on every answer); the level is looked up in a `Record<TESTLEVEL, FC<LevelComponentModel>>` instead of seven near-identical conditional blocks; the session body is wrapped in `Entrance` keyed on the test id, so moving to the next test arrives instead of blinking, and capped at `LAYOUT.maxContentWidth`; the hand-rolled exit dialog is a `ConfirmModal` |
+| `FinishScreen.tsx` | end of a training session — since 8.2.5 a **shell** for the real session data 8.5.2 will add: bare `Header` (device top margin, no bar) over a scrolling body over a Continue button that stays put. The body's `flexGrow` + centring keeps the cup exactly where it was while there is nothing else in it; the old `flex: 4` hero over a `flex: 1` button could not have hosted a summary at all. Hero and button enter through `Entrance`, the button staggered behind the cup |
 | `StatsScreen.tsx` | global + per-passage statistics |
 | `CalendarScreen.tsx` | month/day activity calendar view |
 | `SettingsScreen.tsx` | settings hub: language/theme selects + rows that navigate to the sub-menu screens below (was: rendered each sub-list inline as a MiniModal). User row gated behind `isAutorized` |
@@ -76,8 +77,9 @@
 | `NotificationsSettingsScreen.tsx` | Reminders settings sub-menu (enable, smart time, reminders link, dev test). Was `settingsLists/notificationsSettings` MiniModal |
 | `RemindersSettingsScreen.tsx` | Reminders editable list (nested under Reminders settings). Was a modal-in-modal via `SettingsListWrapper` |
 | `StatsSettingsScreen.tsx` | Stats settings sub-menu (weekly metric). Was `settingsLists/statsSettings` MiniModal |
-| `AboutSettingsScreen.tsx` | About + legal + dev-mode sub-menu. Was `settingsLists/aboutSettings` MiniModal; inner info/password/log dialogs stay MiniModals. Its dev-mode state export/import rows delegate to `utils/backupFile` since 8.1.9 (same file format as the user-facing backup, no confirmation — dev only) |
-| `UserSettingsScreen.tsx` | Account settings (email/profile/data visibility, delete account). Was `settingsLists/userSettings` MiniModal; delete-confirm stays a MiniModal |
+| `AboutSettingsScreen.tsx` | About + legal + dev-mode sub-menu. Was `settingsLists/aboutSettings` MiniModal; the inner About/legal/dev-password dialogs stay MiniModals (8.2.2 verdict: they are dialogs), while the log viewer left for `LogSettingsScreen`. Its dev-mode state export/import rows delegate to `utils/backupFile` since 8.1.9 (same file format as the user-facing backup, no confirmation — dev only) |
+| `UserSettingsScreen.tsx` | Account settings (email/profile/data visibility, delete account). Was `settingsLists/userSettings` MiniModal; delete-confirm stays a MiniModal — 8.2.2 kept it a dialog but dropped the `width/height: 100%` sizing that made it a screen in disguise, and swapped its back arrow for a close cross |
+| `LogSettingsScreen.tsx` | 8.2.2 — dev-mode log viewer (list, export, clear), reached from About settings. Was a MiniModal styled to fill the screen. Its read effect now runs on mount only; the old one listed its own result among its dependencies and re-read forever |
 | `LoginScreen.tsx` | email/password login vs API (P1: finish & verify e2e) |
 | `RegisterScreen.tsx` | account registration vs API |
 
@@ -85,8 +87,8 @@
 
 See the component library table in `CODING_RULES.md` §7 for descriptions:
 `Text` `AddressPicker` `BackupOfferModal` `Button` `Checkbox` `ConfirmModal`
-`DotIndicator` `EmergencyScreen` `ErrorBoundary` `Header` `Icon`+`iconData.ts` `Input`
-`LevelPicker` `MiniModal` `PassageEditor` `Select` `SelectModal` `SettingsListWrapper`
+`DotIndicator` `EmergencyScreen` `Entrance` `ErrorBoundary` `Header` `Icon`+`iconData.ts` `Input`
+`AnchoredPopup` `LevelPicker` `MiniModal` `PassageEditor` `Select` `SelectModal` `SettingsListWrapper`
 `SettingsMenuItem` `SettingsSubScreen` `TestNavDot` `WeekActivity`
 
 All component files are `PascalCase.tsx` (`iconData.ts` is data, not a component) since
@@ -112,13 +114,33 @@ hardcoded bilingual strings. `useAppContext()` still throws without a provider, 
 purpose, so a missing provider anywhere else is a loud failure rather than a silent
 fallback theme.
 
-Two `theme={theme}` occurrences survive inside `{/* ... */}` JSX comment blocks
-(`PassageEditor.tsx` reminder toggle, `TestsScreen.tsx` dev-mode "Pass" button) — dead
-code that predates the migration, left untouched to keep the diff honest. A grep for
-`theme={` will hit them; they are not live call sites.
+One `theme={theme}` occurrence survives inside a `{/* ... */}` JSX comment block
+(`PassageEditor.tsx` reminder toggle) — dead code that predates the migration, left
+untouched to keep the diff honest. A grep for `theme={` will hit it; it is not a live
+call site. The second one (`TestsScreen.tsx`'s commented-out dev-mode "Pass" button)
+went with the 8.2.5 rewrite of that screen.
+
+`Header.tsx` — **the** app header since 8.2.3, and the only caller of
+`useSafeAreaInsets` in the codebase. Props are `title` / `onBack` / `backIcon` /
+`right` / `children`; it springs in on mount, staggered behind the screen transition.
+Every screen and the one full-screen modal (`AddressPicker`) reaches it — directly, or
+through `SettingsSubScreen`, `SettingsListWrapper` or `PassageEditor`. 8.2.3 deleted
+three hand-rolled copies of it (`SettingsSubScreen`, `PassageEditor` with its own
+`insets.top` and a magic `60`, `AddressPicker` with a fixed `paddingTop: 50`) and the
+flat `paddingTop: 30` on `theme.screen` that every header screen was sitting on top of.
+Rendered bare (`<Header />`, as home and the finish screen do) it is the device's top
+margin and nothing else. Exports `HEADER_HEIGHT`.
+
+`Entrance.tsx` — 8.2.5, the app's shared arrival as a wrapper: fade on a timing +
+rise on the `ANIMATION` spring, no scale. Two callers today (`TestsScreen`'s session
+body keyed on the test id, `FinishScreen`'s hero and its staggered button), and the
+place any future surface goes instead of hand-rolling a `useSharedValue` pair.
+`Header.tsx` keeps its own copy on purpose — its animated view *is* the bar.
 
 `SettingsSubScreen.tsx` — shared shell (View + Header with back + StatusBar) for
-every settings sub-menu screen. `SettingsListWrapper.tsx` — reusable editable-list
+every settings sub-menu screen, and since 8.2.2 for the two non-settings screens the
+modal purge produced (`FiltersScreen`, `LogSettingsScreen`): anything reached by
+drilling in gets this shell rather than a hand-rolled header. `SettingsListWrapper.tsx` — reusable editable-list
 body (translations/reminders/train-modes), now non-modal: list and per-item editor
 are two views toggled by local state (was a MiniModal-in-MiniModal). The old
 `settingsLists/` sub-list components were converted into the settings sub-screens
@@ -126,7 +148,8 @@ in `src/screens/` and removed.
 
 | Subdir | Description |
 |---|---|
-| `levels/Level1..5.tsx` | render one test type each (options / address / word blocks / typing…) |
+| `levels/L10.tsx` `L11.tsx` `L20.tsx` `L21.tsx` `L30.tsx` `L40.tsx` `L50.tsx` | one file per test level, each named after its only export (8.2.6 split `Level1.tsx`/`Level2.tsx`, which held two components each). They render one test type each (options / address / word blocks / typing…) and read the passage's text only through `Passage`. Since 8.2.5 none of them answers a test from its render body: a test whose passage was deleted renders an empty `View` and lets `TestsScreen` leave the session (`L30` used to submit it as *correct*, mid-render; `L10` used to crash on it, fixed 8.2.6), and `L30`'s safety valve for a test with no missing words fires from an effect keyed on the passage **id**. Their shared props type `LevelComponentModel` lives in `models.ts` |
+| `levels/SentenceContext.tsx` | 8.2.6 — the sentences either side of the range being typed (L40, L50), over `Passage.getContextBefore`/`getContextAfter`. `side="before"\|"after"` decides which end wears the "..."; renders nothing when the test has no range |
 
 ### `src/services/`
 
@@ -154,12 +177,11 @@ in `src/screens/` and removed.
 | `getPerfectTests.ts` | `getPerfectTestsNumber(history, passage)` — length of the newest unbroken run of error-free tests at/above the passage's `maxLevel`; compared against `PERFECT_TESTS_TO_PROCEED` to level a passage up |
 | `getSimularity.ts` | string similarity (answer checking) |
 | `levelsConvertion.ts` | passageLevel ↔ testLevel conversion |
-| `addressToString.ts` / `addressFromString.ts` | Address ↔ human string; parser finds the reference ANYWHERE in the text (title + chapter:verse, word-boundary-guarded), picks the most specific book, and matches per-book aliases from `bookAliases.ts` |
-| `bookAliases.ts` | Per-language abbreviation / spelling-variant lists per book (keyed by long-title WORD), consumed by `addressFromString` in addition to the localized titles |
+| `address.ts` | 8.2.6 — **everything an address can do**, as one namespace over plain `AddressType` data: `Address.format` (address → human string), `.parse` (finds the reference ANYWHERE in a text — title + chapter:verse, word-boundary-guarded — picks the most specific book, matches per-book aliases from `bookAliases.ts`), `.equals` (open end = starts where it ends; **pure**, the old `getAddressDifference` assigned to its arguments and so edited passages inside app state), `.distance`, `.order`, `.versesCount`. Replaces `addressToString` / `addressFromString` / `addressDistance` / `addressDifference` / `addressOrder` / `getNumberOfVerses`, all deleted |
+| `passage.ts` | 8.2.6 — everything the app knows about a passage's **text**: `Passage.getSentences` (one definition, punctuation kept, so the pieces `joinSentences` back into readable text), `.getRangeText` / `.getRangeDisplayText` (what a stored `sentenceRange` means, to recall and to read), `.getContextBefore` / `.getContextAfter`, `.getWords` (whitespace collapsed, so a stored word index means the same word to the generator and to the renderer), `.getFirstWords`, `.getVersesCount`, `.countEnglishVerses` (was `getNumberOfEnglishVerses`). The nine inline `split(SENTENCE_SEPARATOR)` copies — four different filters, three different joins — all come here now |
+| `bookAliases.ts` | Per-language abbreviation / spelling-variant lists per book (keyed by long-title WORD), consumed by `Address.parse` in addition to the localized titles |
 | `sanitizeSharedText.ts` | Pure cleaner for share-sheet text: normalizes untypable chars (dashes, curly quotes, nbsp, ellipsis), strips URLs + wrapping quotes + dangling separators. Used by `ListScreen.handleTextFromIntent` |
-| `getTranslationChoice.ts` | 8.2.1b — `getTranslationChoice(translations)` → `{needsChoice, translationId}`: whether the add-passage flow must ask for a translation (only with more than one) and which one it uses/preselects (the default, else the first). Used by `ListScreen.handleAPSubmit` |
-| `addressDistance.ts` / `addressDifference.ts` / `addressOrder.ts` | address math for test generation/sorting |
-| `getNumberOfVerses.ts` / `getNumberOfEnglishVerses.ts` | verse counting for limits (localized vs English chapter numbering) |
+| `getTranslationChoice.ts` | 8.2.1b — `getTranslationChoice(translations)` → `{needsChoice, translationId}`: whether the add-passage flow must ask for a translation (only with more than one) and which one it uses/preselects (the default, else the first). Used by `ListScreen` to decide which step the add flow opens on (8.2.1d) |
 | `fileManager.ts` | `writeFile`/`readFile` — import/export files (txt/json) via document picker |
 | `handlePassageExport.ts` | passage export/import serialization (`passagesToLSV`/`arrayToLSV`/`LSVToArray`/`arrayToPassages`) + dedupe |
 | `notifications.ts` | reminders: `schedulePushNotification`, `getAutoTimeTrigger` (smart time), `checkSchedule` (re-plan on state change), `registerForPushNotificationsAsync` (permissions + localized Android channel) |
@@ -167,6 +189,7 @@ in `src/screens/` and removed.
 | `randomizers.ts` | `randomRange`/`randomItem`/`randomListRange` — used by test generation |
 | `getThemeFromScheme.ts` | `getThemeFromScheme(themeType, colorScheme)` → `{ theme, colors }` (dark/light, `auto` resolved from the passed OS scheme — never calls `useColorScheme` itself, see §3 polyfill history); exports `ThemeAndColorsModel` |
 | `toastShow.ts` | toast notifications |
+| `screenTransition.ts` | 8.2.3 — the app's one screen transition. `candyTransition` (spread into the navigator's `screenOptions`) + the `forCandyCard` interpolator it is built from: a capped horizontal travel, a parallax shove on the card underneath, an early fade and a 12% overlay dim, all riding one `ANIMATION.spring` clamped against overshoot. Replaces `@react-navigation/stack`'s `Platform.Version`-picked preset, which made the same app slide on one Android and zoom on another |
 | `logger.ts` | app logger — `logger.write`/`.error`/`.readAll`/`.clearAll`; appends to a `STORAGE_LOGGER` array capped at `LOGGER_MAX_ARRAY_SIZE`, read by the dev-mode log viewer |
 | `isTokenExpired.ts` | JWT payload decode + expiry check (used by `services/fetch.ts` auth/refresh) |
 | `generateTests/index.ts` | `getPassagesByTrainMode` (which passages are due) + `generateTests`/`generateATest` — orchestrates per-passage test generation by level. Also `generateStudyOneTests(state, passageId, repeats?)` (8.2.1c): the "study this one" drill — one passage repeated `STUDY_ONE_REPEATS` times at its own selected level, in one session, reading no train mode at all |
@@ -183,12 +206,12 @@ in `src/screens/` and removed.
 | Area | Files |
 |---|---|
 | smoke | `App.test.tsx` |
-| components | AddressPicker, Button, Checkbox, ConfirmModal, ErrorBoundary, Header, Icon, Input, MiniModal, Select, SettingsMenuItem, Text (+snapshots) — 8.1.15a renamed the eight camelCase leftovers and their `.snap` files so every test matches its subject's casing (CODING_RULES §2) |
-| levels | Level1–5 (+snapshots) |
-| utils | addressFromString, backupFile, bootBackup, createL11Tests, generateStudyOneTests, getNumberOfVerses, getStats, getTranslationChoice, handlePassageExport, isTokenExpired, notifications, reduce, sanitizeSharedText, stateVersionConvert |
-| screens | `screens/ListScreen.test.tsx` — the add-passage flow (8.2.1b) driven through the real address picker: asks for the translation when several exist, skips it when one does, navigates nowhere when dismissed. `screens/PassageScreen.test.tsx` — the study-one offer (8.2.1c) driven through the real editor's Save: offered on a new passage with text, generates a one-passage session and opens training, declined goes to the list, never offered on an edit or on an empty passage |
+| components | AddressPicker, AnchoredPopup, Button, Checkbox, ConfirmModal, Entrance, ErrorBoundary, Header, Icon, Input, MiniModal, Select, SettingsMenuItem, Text (+snapshots) — 8.1.15a renamed the eight camelCase leftovers and their `.snap` files so every test matches its subject's casing (CODING_RULES §2). `Header.test.tsx` is behavioural, not a snapshot: 8.2.3 found the old one wrapped the Header in a bare `SafeAreaProvider`, which renders nothing until it knows the insets — so it had been snapshotting an empty tree and asserting nothing at all. It now pins the device inset, the bare-Header margin, the back/right/children contract and the one-line title. `Button.test.tsx` gained the 8.2.4 press worklet: its resting frame through a real worklet (the toolchain canary, but for the one component every button in the app is) and a guard that the animated wrapper did not cost the press itself. `Entrance.test.tsx` (8.2.5) is the same canary for the shared arrival wrapper — its first frame through a real worklet, the caller's layout style surviving the merge, and exactly one animated view however many children it wraps |
+| levels | `L10`–`L50` (+snapshots), one suite per level file since 8.2.6, all rendering the shared `fixtures/levelPassages.ts` passage. `L30.test.tsx` also carries the 8.2.5 render-purity guards: a deleted passage is never answered, an unplayable test (no missing words) is passed exactly **once** across re-renders — which is the observable difference between an effect and a render body — and a playable one is left alone. `L10.test.tsx` pins the 8.2.6 guard: a test whose passage is gone renders instead of reading `.verseText` off `undefined` |
+| utils | address (parse + versesCount + the purity of `equals`), passage (sentences/ranges/context/words, 8.2.6), backupFile, bootBackup, createL11Tests, generateStudyOneTests, getStats, getTranslationChoice, handlePassageExport, isTokenExpired, notifications, reduce, sanitizeSharedText, stateVersionConvert |
+| screens | `screens/FiltersScreen.test.tsx` — the filters screen (8.2.2): every section the modal had, the empty-tags case, level/tag toggles landing in the right filter, and leaving by `goBack` instead of a dismiss. `screens/ListScreen.test.tsx` — the toolbar after the purge (8.2.2: the filter button navigates instead of opening anything, the sort popup opens and closes on pick) and the add-passage flow (8.2.1d) driven through the real address picker: the translation is asked for before any verse number is on screen, skipped when there is only one, dismissing it goes nowhere, and the picker's back lands on the translation step (or closes the flow when that step was skipped), plus the row interactions (8.2.4) over a real stateful context: what each swipe action says and writes, archiving dropping the row out of the default view, the delete confirm still standing between a swipe and a lost passage, and a tap on the row still reaching the editor. jest cannot perform the drag itself — but ReanimatedSwipeable keeps both panels in the tree behind an opacity of 0, so their labels and handlers are reachable. `screens/PassageScreen.test.tsx` — the study-one offer (8.2.1c) driven through the real editor's Save: offered on a new passage with text, generates a one-passage session and opens training, declined goes to the list, never offered on an edit or on an empty passage. `screens/TestsScreen.test.tsx` (8.2.5) — the training session over a real stateful context, driven through L10 because its right answer is one button press: which test opens (the first *unfinished* one), the dot bar moving between them and refusing a dot the user has not reached, answering advancing to the next test, the last answer committing to history and opening the finish screen, and the cross → confirm → session thrown away / kept. It mocks only `useIsFocused` out of `@react-navigation/native` (`requireActual` for the rest — AppContext pulls in the navigator). `screens/FinishScreen.test.tsx` (8.2.5) — the shell: the congratulation and its way out, the bare `Header` (asserted bare by having no props at all), and the scrolling body 8.5.2 will fill |
 | e2e | `e2e/flow.test.tsx` — the release guard (8.1.16a): one test drives create state → add passage → `generateTests` → answer with errors → finish → assert stats, through the reducer + generators only (no rendering), plus an explicit assertion that no error count is exposed |
-| fixtures | `fixtures/state006.ts`, `fixtures/state007.ts` — realistic legacy states (passages, history, settings) for the 8.1.10 converter hops. **Not test suites**: `package.json`'s jest `testPathIgnorePatterns` excludes `__tests__/fixtures/`, otherwise jest's default `testMatch` picks them up and fails them as suites with no tests |
+| fixtures | `fixtures/levelPassages.ts` — the passage every level suite renders (`makeLevelPassage` / `makeLevelState` / `makeStateWith`), 8.2.6: it used to be copied into all five level tests, four times over in the level 1 one. `fixtures/state006.ts`, `fixtures/state007.ts` — realistic legacy states (passages, history, settings) for the 8.1.10 converter hops. **Not test suites**: `package.json`'s jest `testPathIgnorePatterns` excludes `__tests__/fixtures/`, otherwise jest's default `testMatch` picks them up and fails them as suites with no tests |
 
 `test-utils/renderWithContext.tsx` (repo root, outside `__tests__/` so jest doesn't
 treat it as a suite) — shared helper that renders a component under an

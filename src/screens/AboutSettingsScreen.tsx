@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 import * as SecureStore from "expo-secure-store";
@@ -8,7 +8,6 @@ import { SettingsMenuItem } from "../components/SettingsMenuItem";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { MiniModal } from "../components/MiniModal";
-import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
   DAY,
@@ -21,15 +20,14 @@ import {
 import { createAppState } from "../initials";
 import { ActionName, ScreenPropsModel } from "../models";
 import { reduce } from "../utils/reduce";
-import { writeFile } from "../utils/fileManager";
 import { exportBackupFile, importBackupFile } from "../utils/backupFile";
-import { dateToString } from "../utils/formatDateTime";
 import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 
 // About / dev settings — was a MiniModal rendered inline in the settings list.
-// Now a stack screen reached from settingsScreen. The small info / dev-password /
-// log popups inside stay MiniModals (they are dialogs, not sub-menus).
+// Now a stack screen reached from settingsScreen. The small info / dev-password
+// popups inside stay MiniModals (they are dialogs, not sub-menus); the log
+// viewer, which filled the screen, became its own screen in 8.2.2.
 export const AboutSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsAbout>
 > = ({ navigation }) => {
@@ -38,24 +36,6 @@ export const AboutSettingsScreen: FC<
   const [isDevPasswordModalOpen, setIsDevPasswordModalOpen] = useState(false);
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
   const [isLegalModalShown, setIsLegalModalShown] = useState(false);
-  const [logModalOpen, setLogModalOpen] = useState(false);
-  const [loggerText, setLoggerText] = useState([] as string[]);
-
-  useEffect(() => {
-    if (state.settings.devModeEnabled) {
-      logger
-        .readAll()
-        .then((loggerText) => {
-          if (loggerText) {
-            setLoggerText(loggerText.slice().reverse());
-          }
-        })
-        .catch((err) => {
-          logger.error(`Unable to load logs: ${err}`);
-        });
-    }
-  }, [state.settings.devModeEnabled, loggerText, setLoggerText, logModalOpen]);
-
   const aboutSettingsStyle = StyleSheet.create({
     scrollView: {
       width: "100%",
@@ -74,11 +54,6 @@ export const AboutSettingsScreen: FC<
     devModeHeader: {
       color: theme.colors.text,
       fontSize: 16
-    },
-    logMiniModal: {
-      width: "100%",
-      flexGrow: 1,
-      paddingTop: 50
     }
   });
 
@@ -259,99 +234,9 @@ export const AboutSettingsScreen: FC<
               subtext={t("settsShowLogSubtext")}
               type="action"
               actionCallBack={() => {
-                setLogModalOpen(true);
+                navigation.navigate(SCREEN.settingsLog);
               }}
             />
-            <MiniModal
-              shown={logModalOpen}
-              handleClose={() => setLogModalOpen(false)}
-              style={aboutSettingsStyle.logMiniModal}
-            >
-              <ScrollView
-                style={{
-                  width: "100%"
-                }}
-              >
-                <Button
-                  icon={IconName.back}
-                  iconAlign="left"
-                  title={t("Cancel")}
-                  onPress={() => setLogModalOpen(false)}
-                />
-                <Button
-                  title={t("settsExportLog")}
-                  onPress={() => {
-                    const content = JSON.stringify(logger, null, " ");
-                    const fileName = `BBH_Log_${VERSION}_${dateToString(new Date().getTime())}.json`;
-                    writeFile(fileName, content, "application/json")
-                      .then((r) => {
-                        if (r) {
-                          logger.write(`Log exported`);
-                          toastShow(t("settsLogExported"), 1000);
-                        }
-                      })
-                      .catch((err) => {
-                        logger.error(
-                          `Error while exporting state. Error: ${err}`
-                        );
-                        toastShow(t("ErrorWhileWritingFile"), 1000);
-                      });
-                  }}
-                />
-                <Button
-                  color="red"
-                  title={t("settsClearLog")}
-                  onPress={() => {
-                    logger.clearAll();
-                    setLoggerText([]);
-                  }}
-                />
-                <Text
-                  style={{ ...theme.theme.text }}
-                >{`Length: ${loggerText.length}`}</Text>
-                <View style={{ gap: 10 }}>
-                  {loggerText.map((string, i) => {
-                    return (
-                      <View
-                        style={{
-                          ...theme.theme.rowView,
-                          ...theme.theme.fullWidth
-                        }}
-                        key={`${string.substring(0, 10)}${i}`}
-                      >
-                        <Text
-                          style={{
-                            ...theme.theme.text,
-                            color: string.includes("[ERROR]")
-                              ? theme.colors.textDanger
-                              : theme.colors.text
-                          }}
-                        >
-                          {string.substring(0, 20)}
-                        </Text>
-                        <Text
-                          style={{
-                            ...theme.theme.text,
-                            color: string.includes("[ERROR]")
-                              ? theme.colors.textDanger
-                              : theme.colors.text
-                          }}
-                        >
-                          {string.substring(20)}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-                <Text
-                  style={{
-                    ...theme.theme.text
-                  }}
-                >
-                  New beginning
-                </Text>
-              </ScrollView>
-            </MiniModal>
           </View>
         )}
         {state.settings.devModeEnabled && (

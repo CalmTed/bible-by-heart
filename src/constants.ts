@@ -50,9 +50,12 @@ export const TEST_LIST_NUMBER = 10;
 export const MAX_L50_TRIES = 5; //with bonus for a long passage
 export const ERRORS_TO_DOWNGRADE = 2;
 export const DEFAULT_TRAINMODE_ID = 3;
-export const SENTENCE_SEPARATOR = /[.!?;]/g;
 export const MINIMUM_SENTENCE_LENGTH = 20;
 export const FIRST_FEW_WORDS = 4;
+// Longest passage-option button title before it is cut with an ellipsis (L11, L21).
+export const OPTION_TITLE_MAX_LENGTH = 50;
+// How many sentences of context L40/L50 show around the range being typed.
+export const CONTEXT_SENTENCES = 3;
 
 export const MINUTE = 60;
 export const HOUR = 3600;
@@ -83,6 +86,9 @@ export enum SCREEN {
   calendar = "calendar",
   login = "login",
   register = "register",
+  // Passage-list sub-menu - was a full-screen MiniModal inside ListScreen
+  // (8.2.2). A scrolling multi-section list is navigation, not a dialog.
+  listFilters = "listFilters",
   // Settings sub-menus — real stack screens (used to be MiniModals nested in the
   // settings list; converted to screens to drop the modal slide animation).
   settingsList = "settingsList",
@@ -94,7 +100,10 @@ export enum SCREEN {
   // Nested lists inside the sub-menus above (were modal-in-modal).
   settingsTranslations = "settingsTranslations",
   settingsReminders = "settingsReminders",
-  settingsTrainModes = "settingsTrainModes"
+  settingsTrainModes = "settingsTrainModes",
+  // Dev-mode log viewer - was a full-screen MiniModal inside the About
+  // sub-menu (8.2.2).
+  settingsLog = "settingsLog"
 }
 
 export enum SORTINGOPTION {
@@ -141,7 +150,25 @@ export const ANIMATION = {
   // how far a surface travels while it fades in, in px
   riseDistance: 16,
   // scale a surface starts from before settling at 1
-  riseScale: 0.94
+  riseScale: 0.94,
+  // How long a surface waits before entering, when something else is already
+  // moving underneath it (8.2.3: the Header behind its screen transition). Short
+  // enough that the two still read as one gesture, long enough that the order is
+  // legible - the card lands, then its header arrives. Starting both at once
+  // looks like one thing stuttering rather than two things arriving.
+  staggerMs: 90,
+  // How far a control sinks under a finger (8.2.4). Deliberately smaller than
+  // riseScale: an entrance may be theatrical, a press must not be - it happens
+  // dozens of times a session and any bigger reads as the button wobbling.
+  pressScale: 0.96
+};
+
+// The app is one column of content, and on a foldable or a tablet that column
+// must stop growing rather than stretch a passage across 1800px (8.2.4). Same
+// principle as ANIMATION: the number lives in one place, so every wide-screen
+// surface stops at the same width instead of each picking its own.
+export const LAYOUT = {
+  maxContentWidth: 560
 };
 
 export const COLOR_DARK = {
@@ -173,8 +200,12 @@ export const COLOR_LIGHT = {
 };
 
 export const THEME_DARK = StyleSheet.create({
+  // No `paddingTop` here on purpose (8.2.3). It used to be a flat 30, which
+  // every screen wore *in addition to* its Header's real device inset - so the
+  // bar sat 30px lower than it should on a screen that had one, and screens
+  // without one had 30px standing in for a status bar that is 47 on some phones
+  // and 24 on others. The top margin belongs to `Header`, which measures it.
   screen: {
-    paddingTop: 30,
     backgroundColor: COLOR_DARK.bg,
     width: "100%",
     height: "100%",

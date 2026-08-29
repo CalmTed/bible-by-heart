@@ -104,7 +104,7 @@ Groups/friends/feed are optional and come later.
   `src/utils/stateVersionConvert.ts`.
 - **Learning engine:** `src/utils/generateTests/` generates per-level tests
   (levels 1–5, internally 10/11/20/21/30/40/50); level components render them
-  (`src/components/levels/Level1..5.tsx`); results flow through the reducer into
+  (`src/components/levels/L10..L50.tsx`, one file per level); results flow through the reducer into
   history and stats (`src/utils/getStats.ts`).
 - **i18n:** `src/l10n/` (en + ua). UI strings are ALWAYS translated in both.
   Code, comments, docs — English only.

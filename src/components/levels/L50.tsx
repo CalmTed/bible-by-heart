@@ -1,20 +1,21 @@
 import React, { FC, useEffect, useState } from "react";
-import { ActionName, AddressType } from "../../models";
+import { ActionName, AddressType, LevelComponentModel } from "../../models";
 import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
 import {
   ERRORS_TO_DOWNGRADE,
-  FIRST_FEW_WORDS,
   MAX_L50_TRIES,
-  SENTENCE_SEPARATOR,
   VIBRATION_PATTERNS
 } from "../../constants";
-import addressToString from "../../utils/addressToString";
+import { Address } from "../../utils/address";
+import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./Level1";
 import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
-import { getAddressDifference } from "../../utils/addressDifference";
+import { SentenceContext } from "./SentenceContext";
+
+// Level 5: type the passage out with no autocomplete, one character at a time,
+// then name the address.
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -36,10 +37,6 @@ const levelComponentStyle = StyleSheet.create({
     padding: 10,
     maxHeight: 200,
     minHeight: 50
-  },
-  otherSentencesTextView: {
-    marginHorizontal: 10,
-    marginVertical: 5
   },
   passageText: {
     alignContent: "center",
@@ -91,28 +88,15 @@ export const L50: FC<LevelComponentModel> = ({
     null as null | AddressType
   );
   const targetPassage = state.passages.find((p) => p.id === test.pi);
+  const wholeText = targetPassage?.verseText || "";
   //showAddressOrFirstWords: true => address false => first words
-  const sentences = (targetPassage?.verseText || "")
-    .split(SENTENCE_SEPARATOR)
-    .filter((s) => s.length > 0);
-  const sentancesRange =
-    test.d?.sentenceRange && test.d.sentenceRange.length === 2
-      ? (targetPassage?.verseText || "").slice(
-          sentences
-            .slice(0, sentences.slice(...test.d.sentenceRange).join(".").length)
-            .join(".").length,
-          sentences.slice(...test.d.sentenceRange).join(".").length
-        )
-      : targetPassage?.verseText || "";
-  const targetText = sentancesRange;
-  const firstFewWords =
-    targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
+  //the sentences this test asks for; the whole passage when it carries no range
+  const targetText = Passage.getRangeText(wholeText, test.d?.sentenceRange);
+  const firstFewWords = Passage.getFirstWords(targetText);
   const initialValue = test.d.showAddressOrFirstWords ? "" : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
-  const sentancesRangeLength =
-    test.d?.sentenceRange && test.d.sentenceRange.length === 2
-      ? test.d.sentenceRange[1] - test.d.sentenceRange[0]
-      : sentences.length;
+  //a longer stretch to type earns more tries
+  const sentancesRangeLength = Passage.getSentences(targetText).length;
   const maxTriesBonus =
     targetPassage && sentancesRangeLength > 2 ? sentancesRangeLength - 2 : 0;
   const [tries, setTries] = useState(MAX_L50_TRIES + maxTriesBonus);
@@ -156,7 +140,7 @@ export const L50: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    if (getAddressDifference(targetPassage.address, value)) {
+    if (Address.equals(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }
@@ -289,7 +273,7 @@ export const L50: FC<LevelComponentModel> = ({
               color: theme.colors.text
             }}
           >
-            {addressToString(targetPassage.address, t)}
+            {Address.format(targetPassage.address, t)}
           </Text>
         )}
         {!isAddressProvided && (
@@ -313,20 +297,11 @@ export const L50: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 && (
-        <View style={levelComponentStyle.otherSentencesTextView}>
-          <Text style={theme.theme.text}>
-            {test.d.sentenceRange[0] > 3 ? "..." : ""}
-            {sentences
-              .slice(
-                test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
-                test.d.sentenceRange[0]
-              )
-              .join("")}
-            ...
-          </Text>
-        </View>
-      )}
+      <SentenceContext
+        text={wholeText}
+        range={test.d.sentenceRange}
+        side="before"
+      />
       <View style={levelComponentStyle.passageTextView}>
         <Input
           multiline
@@ -342,20 +317,11 @@ export const L50: FC<LevelComponentModel> = ({
           textStyle={levelComponentStyle.inputTextStyle}
         />
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length && (
-        <View style={levelComponentStyle.otherSentencesTextView}>
-          <Text style={theme.theme.text}>
-            ...
-            {sentences
-              .slice(
-                test.d.sentenceRange[1],
-                Math.min(test.d.sentenceRange[1] + 3, sentences.length)
-              )
-              .join("")}
-            {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
-          </Text>
-        </View>
-      )}
+      <SentenceContext
+        text={wholeText}
+        range={test.d.sentenceRange}
+        side="after"
+      />
       <View style={levelComponentStyle.optionButtonsWrapper}>
         {/* text is not entered */}
         {!isCorrect && (
@@ -399,7 +365,7 @@ export const L50: FC<LevelComponentModel> = ({
               color="green"
               title={
                 selectedAddress
-                  ? addressToString(selectedAddress, t)
+                  ? Address.format(selectedAddress, t)
                   : t("LevelSelectAddress")
               }
               onPress={() => setAPVisible(true)}
@@ -425,7 +391,7 @@ export const L50: FC<LevelComponentModel> = ({
               key="rightAnswer"
               type="outline"
               color="green"
-              title={addressToString(targetPassage.address, t)}
+              title={Address.format(targetPassage.address, t)}
               onPress={() => {}}
               disabled={levelFinished}
             />,
@@ -433,7 +399,7 @@ export const L50: FC<LevelComponentModel> = ({
               key="wrongAnswer"
               type="outline"
               color="red"
-              title={addressToString(selectedAddress, t)}
+              title={Address.format(selectedAddress, t)}
               onPress={() => {}}
               disabled={levelFinished}
             />,

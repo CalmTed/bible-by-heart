@@ -32,41 +32,95 @@ judged from tests.
 > done (2026-08-27); the journey holds together only on a device, so it is the first
 > thing to walk on the next build.
 
-- [ ] **8.2.2 Modal purge**
-      Audit every full-screen `MiniModal`; convert sub-menu-like ones (filter/tag
-      selection in `ListScreen` first) to screens or anchored popups. Real dialogs —
-      confirms, About — stay modals. Output includes the written verdict list.
-
-- [ ] **8.2.3 Wrapper rewrite — screen transitions + `Header`** (build)
-      An explicit reanimated / `cardStyleInterpolator` transition instead of the
-      platform default, consistent across devices; retune the FlatList scroll feel.
-      *Files:* `navigator.tsx`, `Header.tsx`, `ListScreen.tsx`.
-
-- [ ] **8.2.4 Wrapper rewrite — home + passage-list interactions** (build)
-      Gestures, swipe actions, springy feedback; layout holds from small phone to
-      foldable. Keep row props primitive — the `React.memo` row memoization from 8.1.3
-      is easy to break.
-
-- [ ] **8.2.5 Wrapper rewrite — tests/levels screens + finish-screen shell** (build)
-      The training loop gets the same treatment; finish screen becomes a shell ready for
-      real session data (8.5.2). No navigate-during-render smells left.
-      *Risk:* the training loop is the core product — regressions here are the worst.
-
-- [ ] **8.2.6 Split level components + Passage/Address abstraction**
-      One file per level, and — since this is where sentence/word logic already lives —
-      introduce the `Passage`/`Address` methods (`getSentences()`, address math) that
-      replace the scattered utils. Old utils delegate or die.
-      *Risk:* two refactors in one step — if it grows, split it and tell Fedir.
+> Fedir's 2026-08-28 additions: 8.2.1d closes the add-passage journey, and 8.2.11–8.2.15
+> pull the text-source work **into 0.3.0** (it was 8.5.1 in 0.6.0). bbh-api now carries
+> four full Ukrainian translations as JSON, so this milestone ships real Ukrainian text —
+> §3.3 of `STRATEGY.md` is no longer waiting on permission.
 
 - [ ] **8.2.7 Level 5 similar-chars tolerance**
       An equivalence list (dash variants, quote/apostrophe variants, ellipsis, і/i
       lookalikes, diacritic case) used by the L5 comparator, one unit test per pair.
       Complements 8.1.4 (sanitize on input) by tolerating on comparison. Do not widen
-      tolerance to real misspellings.
+      tolerance to real misspellings. It is not made redundant by 8.2.11 normalizing at
+      the API: passages **already saved** in a user's state keep whatever characters they
+      were stored with, and nothing may rewrite them behind his back.
 
 - [ ] **8.2.8 Haptics/sound util**
       One `src/utils/feedback.ts` that checks `hapticsEnabled` / `soundsEnabled` itself;
       no component reads those settings directly.
+
+- [ ] **8.2.11 [api] Passage text endpoint — the bundled translations**
+      The four Ukrainian JSONs in `bbh-api/src/translations/` (`ukr-hom`, `ukr-kul`,
+      `ukr-ogi`, `ukr-turk` — meta + book names + full verse text) become a served
+      resource: a catalogue endpoint listing available translations with their metadata
+      and book-name maps, and a passage endpoint answering an address with text. Goes
+      through the service layer like everything else (`STRATEGY.md` §4), zod schema on
+      the query, supertest coverage including a bad address and an unknown translation.
+      Decide and write down how the files are loaded — lazily per translation, not four
+      30k-verse blobs held in memory on boot.
+      **Text must come out typeable — this is not cosmetic.** Learning ends in typing the
+      verse by hand, and the L5 comparator demands the *exact* character, so anything a
+      phone keyboard cannot produce makes a passage unlearnable.
+      **A whitelist, not a blacklist** (Fedir, 2026-08-28) — only necessary characters
+      survive, so a character nobody anticipated fails closed instead of reaching a user.
+      The whitelist is **per language**, which is the whole point (see the defect below):
+      · `uk` → the 33 Ukrainian letters in both cases, and nothing else Cyrillic
+      · `en` → `A–Z a–z`
+      · both → `0–9`, space, and the basic punctuation `.` `,` `:` `;` `!` `?` `-` `'` `"`
+      **Order matters: fold, then validate.** First map the typographic variants to their
+      ASCII equivalents with the *same table* `src/utils/sanitizeSharedText.ts` (8.1.4)
+      already uses — `—` (10 283) and `–` (190) → `-`; `’` (3 267) → `'`; `«` `»`
+      (3 193 / 3 188), `“` `”` (1 914 / 1 908), `„` (11) → `"`; `…` (1 955) → `...` — so
+      one definition of "typeable" serves both repos. Then drop the editorial apparatus
+      Fedir approved: `[` `]` (872), `*` (92), `|` and `_` (one each), and — same class,
+      same rule — `(` `)` (1 694). Marks go, the words between them stay.
+      Only then validate against the whitelist. **A leftover is a data defect, not
+      something to silently strip** — the run must report it with book/chapter/verse.
+      *Known defects it will report (found 2026-08-28, ~45 spots):* OCR damage where a
+      Latin or Russian letter replaced a Cyrillic one mid-word — `госпzдї` (ukr-kul
+      Gen 24:23), `заповmт` (Gen 17:14), `Райдугr` (Gen 9:13), `IIIеванія` (ukr-hom
+      Neh 9:5, three Latin `I` for `Ш`), `Iсус` (Luk 24:15, Latin `I`), `Хіэл` (1Kin
+      16:34, Russian `э`). These are untypeable *and* wrong text; fix them in the source
+      JSONs as part of this step, one at a time — a homoglyph cannot be mapped blindly.
+      Normalize **once at the API**, so no client can serve untypeable text, and cover it
+      with a test that walks every verse of every translation and asserts the output uses
+      nothing outside that translation's whitelist.
+
+- [ ] **8.2.12 [api] ESV through the same endpoint — proxy, never a store**
+      ESV joins the catalogue as one more translation id, so the client makes the same
+      `api.bbh.app` call for it as for the Ukrainian ones. **The key is read from the
+      env file at request time** (`STRATEGY.md` §4) and lives nowhere else — not in a
+      constant, not in this file, not in anything git indexes; confirm `.env` and
+      `.agent` are both still ignored before committing. bbh-api is a **pure proxy**:
+      the upstream response is passed through and **no passage text is written to disk,
+      to sqlite, or to a cache** — a supertest asserts that, so a later "let's cache it"
+      cannot land quietly. Upstream failure maps to a clean error, never a 500 body with
+      the key in it. The upstream response goes through the **same normalizer as 8.2.11**
+      before it is returned — ESV text is typed by hand exactly like the Ukrainian text,
+      and normalizing a response in flight is not storing it.
+
+- [ ] **8.2.13 Client text source — one call for every translation**
+      `src/services/fetchESV.ts` becomes a source-agnostic `fetchPassageText` over
+      `API_LINK`, and `ESVTOKEN` leaves the app entirely (`app.config.js` extra + any
+      EAS secret) — the client must never hold the key again. Translations come from the
+      catalogue, so a Ukrainian translation is selectable in the passage editor and
+      `TRANSLATIONS_TO_FETCH` stops being a hardcoded `[1]`. Per-translation verse
+      numbering is what 8.2.1d cleared the way for. l10n en+ua; the offline rule stands —
+      no text source means no text, never a broken app.
+
+- [ ] **8.2.14 Book-name variants, on-device**
+      Extend `src/utils/bookAliases.ts` (8.1.5) into a fuller local table of book-name
+      spellings and abbreviations, harvested from the four translations' `books` maps
+      plus the common third-party forms, so shared/typed text resolves to an address
+      **without a network call**. Stays a shipped constant, not a download. One test per
+      added variant, and no alias may collide with another book.
+
+- [ ] **8.2.15 [api] Landing page**
+      A single static HTML page in `bbh-api/static/`, in the app's visual style, with a
+      short description and store buttons — Play now, App Store slot left dark until
+      8.7.5. Alongside the existing privacy/terms/account-deletion pages and linked to
+      them. Plain HTML + inline CSS, no build step, no framework, responsive from phone
+      to desktop.
 
 - [ ] **8.2.10 🏁 0.3.0 — minor bump, build, Play release** (build)
 
@@ -102,8 +156,6 @@ judged from tests.
 
 ## 0.6.0 — Content & finish
 
-- [ ] **8.5.1 Pluggable text-source interface** (generalize `fetchESV.ts`) so a Ukrainian
-      translation becomes config + one fetcher file once permission is secured
 - [ ] **8.5.2 Finish-screen session data** — what was trained, time, level-ups, what
       needs repeating, **without** error counts; l10n en+ua
 - [ ] **8.5.3 Stats correctness pass** — day-average over *active days only*
@@ -137,6 +189,10 @@ judged from tests.
 
 ## Not scheduled
 
+**8.5.1 Pluggable text-source interface** was superseded on 2026-08-28 and its ID retired:
+bbh-api serving the translations (8.2.11–8.2.13) *is* the pluggable source, and it happens
+in 0.3.0 instead of 0.6.0. Nothing was dropped — the capability moved a milestone earlier.
+
 Post-1.0 pool lives in `STRATEGY.md` §3. Dropped from the queue on 2026-08-24:
 fresh-install default tags/train-modes (`initials.ts:130`), the standalone
 error-message-design unification, and layered `t("page.title")` l10n keys (8.2.9).
@@ -147,6 +203,129 @@ error-message-design unification, and layered `t("page.title")` l10n keys (8.2.9
 
 Newest first. One line each; the full story is in `docs/robotdiary.md` under the date.
 
+- [x] **8.2.6** Split level components + Passage/Address abstraction — 2026-08-29 · both
+      halves done in one sitting; the second half is what made the first worth doing.
+      **(1) Seven level files**, each named after its only export — `Level1.tsx` and
+      `Level2.tsx` held two components each, and `LevelComponentModel` lived inside
+      `Level1.tsx`, so every other level imported its props type from an unrelated level
+      (it is in `models.ts` now). `SentenceContext.tsx` took the context-sentences block
+      L40 and L50 each drew inline. **(2) `utils/address.ts` and `utils/passage.ts`** —
+      two namespaces of pure functions over plain JSON (never classes: state is
+      AsyncStorage JSON). Seven util files were deleted and ~25 call sites moved over.
+      The duplication was hiding real disagreements: sentences were split with four
+      different filters and joined three different ways, so a `sentenceRange` written by
+      a generator did not always mean the same slice to the level that resolved it; word
+      indexes were collapsed by the generator and not by the renderer; `getAddressDifference`
+      **mutated the passage addresses it compared**, inside app state. All three are fixed
+      by there being one definition. Found and fixed on the way: L10 crashed on a test
+      whose passage had been deleted. 254 tests ✓, snapshots regenerated. **Needs a
+      device walk of a sliced test** (see robotdiary).
+- [x] **8.2.5** Wrapper rewrite — tests/levels screens + finish-screen shell — 2026-08-28 ·
+      the training loop got the same treatment, and three real defects came out of reading
+      it honestly. **(1) The dot row was a component declared inside `TestsScreen`'s render
+      body** — a new component type every render, so React remounted the whole session
+      header (gradients and all) on every answer. It is `TestNavBar` at module level now,
+      and CODING_RULES §4 gained the general rule that the 8.2.4 `SwipeActionPanel` one is
+      a special case of. **(2) Seven near-identical `test.l === TESTLEVEL.lXX && <LXX …/>`
+      blocks became a `Record<TESTLEVEL, FC<LevelComponentModel>>`** — exhaustive, so a new
+      level is a type error until answered, but read as possibly-missing so an unknown
+      stored level renders a leaveable session instead of throwing. **(3) `Level3` answered
+      a test from its render body**, and three things were wrong with it: it ran during
+      render (the class of bug that made the finish screen get skipped in July), its guard
+      `!missingWords` was `![]` and had therefore never once fired, and the half that *was*
+      live submitted a test whose passage had been deleted as **correct**. Now: a deleted
+      passage renders nothing and lets `TestsScreen` leave the session (what every other
+      level already did), and the real valve — a test with no missing words — fires from an
+      effect keyed on the passage **id**, because `passages.find(...)` hands back a new
+      object identity on every state change and an identity dep would re-submit forever.
+      **New `Entrance`** (`components/Entrance.tsx`): the app's arrival written once — fade
+      on a timing, rise on the shared spring, deliberately no scale — with `replayKey` (the
+      session body is keyed on the test id, so the next test arrives rather than blinks) and
+      `delayMs` (the finish button staggered behind its cup). `Header` keeps its own copy on
+      purpose; its animated view *is* the bar. **The finish screen is a shell**: bare Header
+      → scrolling body (`flexGrow` + centring, so the cup stays put while it is empty and a
+      summary scrolls when 8.5.2 fills it) → a Continue button that stays put; no session
+      data invented here. Plus the exit dialog became a `ConfirmModal` (one of 8.2.2's two
+      hand-rolled confirms), `LAYOUT.maxContentWidth` on both surfaces, and two dead styles
+      + the commented-out dev "Pass" button removed. 19 new tests (10 `TestsScreen` — it had
+      none at all before, driven through L10 over a real stateful context; 3 `Entrance`;
+      3 `FinishScreen`; 3 `Level3` render-purity, of which "passed once across re-renders"
+      is the one that proves effect-not-render); no new l10n strings, no snapshots retaken.
+      0.2.3 → 0.2.4, lint ✓, 229 tests ✓.
+- [x] **8.2.4** Wrapper rewrite — home + passage-list interactions — 2026-08-28 · three
+      changes, each picked for leverage rather than surface. **(1) Press feedback lives in
+      `Button`** — it sinks to the new `ANIMATION.pressScale` on press-in and springs back
+      on press-out, which upgrades every button in the app at once (~277 call sites, and
+      the home screen is nothing but these). Same argument as MiniModal owning the dialog
+      entrance in 8.2.1. **(2) The passage rows moved to `ReanimatedSwipeable`**, so the
+      last RN-core `Animated` in the list is gone and the action panels are driven by the
+      swipe's own `progress` instead of sitting fully formed behind the row: a module-level
+      `SwipeActionPanel` (a component, because the render callbacks are *called*, so a hook
+      written inline there would be a hook in a plain function) clamps progress at 1 and
+      trails the row out from under it. Two interaction defects fell out on the way — an
+      action left its panel open even though every one of them rewrites its own label
+      ("Archive" → "Unarchive"), and the row's `Pressable` wrapped the *whole* swipeable,
+      so a tap on the empty part of a revealed panel opened the editor. Both fixed; both
+      now rules in CODING_RULES §4. **(3) Layout small→foldable:** new
+      `LAYOUT.maxContentWidth` caps the list column (search field and rows together — the
+      `Header` still spans, a bar is not a column) and the home button column. Home's
+      buttons were `flex: 1` *twice over* — the same style on a wrapper and on the column
+      inside it — so on a short phone they got exactly half the leftover space and the last
+      one fell off the edge; content-sized now, with the logo block absorbing the squeeze.
+      Row props stayed primitive, so the 8.1.3 `React.memo` still holds. 6 new tests (3
+      Button, 4 row interactions, driven through a real stateful context because a swipe
+      action only proves anything if what it writes comes back into the list); no new l10n
+      strings — nothing gained or lost a word. 9 snapshots retaken, all of them the same
+      one-line change (the Button's outer `View` became an `Animated.View`). 0.2.2 → 0.2.3,
+      lint ✓, 210 tests ✓.
+- [x] **8.2.3** Wrapper rewrite — screen transitions + `Header` — 2026-08-28 · picked up
+      from a session that ran out of budget mid-step, which had written
+      `utils/screenTransition.ts` and the new `Header` API but wired up neither: the
+      transition was imported by nothing and the Header's eight call sites still passed
+      the old props, so every settings sub-screen rendered an empty bar. Finished:
+      `candyTransition` spread into the navigator (explicit options override v7's
+      `Platform.Version` preset; `cardOverlayEnabled` set, since it defaults off on iOS),
+      `ANIMATION.staggerMs` added, all call sites migrated. **Then, at Fedir's ask, a full
+      header sweep:** `theme.screen`'s flat `paddingTop: 30` removed — every header screen
+      had been wearing it *on top of* its real device inset — and the three hand-rolled
+      headers (`SettingsSubScreen`, `PassageEditor` with its own `insets.top`,
+      `AddressPicker` with a fixed `paddingTop: 50`) all replaced by `Header`, which is now
+      the only caller of `useSafeAreaInsets`. A bare `<Header />` = the device margin and no
+      bar, so home and the finish screen need no exception. All 21 screens + the one
+      full-screen modal go through it. `Header.test.tsx` was found to be testing nothing —
+      a bare `SafeAreaProvider` renders no children, so it had been snapshotting an empty
+      tree — and is now 11 behavioural tests. FlatList scroll retuned around the search
+      field above it. 0.2.1 → 0.2.2, 204 tests ✓. Reported: `__tests__` is covered by
+      neither tsc nor eslint, which is why the dead test could never have failed.
+- [x] **8.2.2** Modal purge — 2026-08-28 · all 18 modal surfaces audited against a rule
+      this step wrote down (CODING_RULES §4): **screen** for anything list-like or
+      scrolling, **anchored popup** for a one-tap toolbar choice, **dialog** for a
+      question or a short text. Four moved. `ListScreen`'s filters became
+      `FiltersScreen` (a stack screen — the filters live in app state, so nothing is
+      handed back); its sort became the app's first `AnchoredPopup`, a new base
+      component that hangs off the button, does **not** dim behind it (that omission is
+      the difference from `MiniModal`, whose dim says "answer me first"), and closes on
+      pick. The dev log viewer became `LogSettingsScreen`, which killed a self-feeding
+      read effect on the way. The delete-account confirm stayed a dialog but lost the
+      `width/height: 100%` that made it a screen in disguise. **`AddressPicker` is a
+      recorded exception:** it is a screen by the rule, but its flow's back stack lives
+      in its caller and would have to move into the navigator — a step of its own.
+      13 new tests, no new l10n strings, 194 tests ✓. Two out-of-scope findings reported
+      in `robotdiary.md`: the hand-rolled confirms in `PassageEditor` and `TestsScreen`
+      that could be `ConfirmModal`, and the `AddressPicker` conversion.
+- [x] **8.2.1d** Translation step moves *before* the address picker — 2026-08-28 · order
+      is now translation → address → editor, because translations disagree on verse
+      numbering. The two booleans (`isAPOpen` + a held `addressAwaitingTranslation`)
+      became one `AddFlowStep` = `"closed" | "translation" | "address"`, so two steps
+      can never be open at once, plus a `flowTranslationId` the flow carries to the
+      editor. **The flow gained a real back stack:** the picker's back at the book list
+      lands on the translation step instead of closing everything (and still closes it
+      when that step was skipped) — the one behaviour change to walk on a device. The
+      picker's own title/back walk (8.1.7 / 8.2.1a) is untouched: `AddressPicker.tsx`
+      needed no change at all, the reorder is entirely in its caller.
+      `getTranslationChoice` unchanged — `needsChoice` now picks the *opening* step.
+      The 3 flow tests rewritten for the new order + 2 new back-stack tests (5 in
+      `ListScreen.test.tsx`); no new files, no new l10n strings. 181 tests ✓.
 - [x] **8.2.1c** "Study this one" — single-passage learning mode — 2026-08-27 · saving a
       **new** passage that has text now offers a drill on that passage alone
       (`ConfirmModal`, green confirm) → `SCREEN.test`; declining, or editing an existing

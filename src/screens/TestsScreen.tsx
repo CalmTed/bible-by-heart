@@ -1,28 +1,137 @@
 import React, { FC, useEffect, useState } from "react";
 import { useIsFocused } from "@react-navigation/native";
-import { View, StyleSheet, Text } from "react-native";
-import { TESTLEVEL, PASSAGELEVEL, SCREEN } from "../constants";
+import { View, StyleSheet } from "react-native";
+import { LAYOUT, TESTLEVEL, PASSAGELEVEL, SCREEN } from "../constants";
 import {
   ActionModel,
   ActionName,
+  LevelComponentModel,
   PassageModel,
   ScreenPropsModel,
   TestModel
 } from "../models";
 
+import { Text } from "../components/Text";
 import { Header } from "../components/Header";
-import { Button, IconButton } from "../components/Button";
+import { Button } from "../components/Button";
 import { IconName } from "../components/Icon";
 import { reduce } from "../utils/reduce";
 import { TestNavDot } from "../components/TestNavDot";
-import { L10, L11 } from "../components/levels/Level1";
-import { L20, L21 } from "../components/levels/Level2";
-import { L30 } from "../components/levels/Level3";
+import { L10 } from "../components/levels/L10";
+import { L11 } from "../components/levels/L11";
+import { L20 } from "../components/levels/L20";
+import { L21 } from "../components/levels/L21";
+import { L30 } from "../components/levels/L30";
+import { L40 } from "../components/levels/L40";
+import { L50 } from "../components/levels/L50";
 import { LevelPicker } from "../components/LevelPicker";
-import { L40 } from "../components/levels/Level4";
-import { L50 } from "../components/levels/Level5";
 import { useAppContext } from "../context/AppContext";
-import { MiniModal } from "../components/MiniModal";
+import { ConfirmModal } from "../components/ConfirmModal";
+import { Entrance } from "../components/Entrance";
+
+// Which component plays which test level. A Record over the whole enum on
+// purpose: adding a level is then a type error here until it is answered, which
+// is what the seven near-identical `activeTest.l === TESTLEVEL.lXX && <LXX .../>`
+// blocks this replaced could never enforce.
+const LEVEL_COMPONENTS: Record<TESTLEVEL, FC<LevelComponentModel>> = {
+  [TESTLEVEL.l10]: L10,
+  [TESTLEVEL.l11]: L11,
+  [TESTLEVEL.l20]: L20,
+  [TESTLEVEL.l21]: L21,
+  [TESTLEVEL.l30]: L30,
+  [TESTLEVEL.l40]: L40,
+  [TESTLEVEL.l50]: L50
+};
+
+// More tests than this and the row stops being a row of dots and becomes a
+// tally of how many are done / wrong / untouched.
+const MAX_DOTS = 13;
+
+const testsStyle = StyleSheet.create({
+  testNav: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    height: "100%",
+    overflow: "scroll"
+  },
+  // The session's one column. The Header above it still spans - a bar spans, a
+  // column does not (8.2.4) - but a verse must not run the full width of an
+  // unfolded foldable, and the answer buttons must not drift a hand's width
+  // apart from each other.
+  testColumn: {
+    flex: 1,
+    width: "100%",
+    maxWidth: LAYOUT.maxContentWidth,
+    alignItems: "center"
+  },
+  viewHidden: {
+    display: "none"
+  }
+});
+
+interface TestNavBarModel {
+  tests: TestModel[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}
+
+/**
+ * The training session's header content: one dot per test, or a tally when there
+ * are too many of them to read.
+ *
+ * A real component at module level, not a closure built inside `TestsScreen`'s
+ * render. A component defined during render is a NEW component type on every
+ * render, so React unmounts and remounts the whole row - every dot and every
+ * gradient in it - each time anything in the session changes. Same rule
+ * `SwipeActionPanel` follows in `ListScreen` (8.2.4), for the same reason.
+ */
+const TestNavBar: FC<TestNavBarModel> = ({ tests, activeIndex, onSelect }) => {
+  if (tests.length >= MAX_DOTS) {
+    return (
+      <View style={testsStyle.testNav}>
+        <TestNavDot isCurrent={false} color="green" />
+        <Text>{`${tests.filter((tst) => tst.f).length}x`}</Text>
+        <TestNavDot isCurrent={false} color="red" />
+        <Text>{`${tests.filter((tst) => tst.en && !tst.f).length}x`}</Text>
+        <TestNavDot isCurrent={false} color="gray" />
+        <Text>{`${tests.filter((tst) => !tst.td.length).length}x`}</Text>
+      </View>
+    );
+  }
+  return (
+    <View style={testsStyle.testNav}>
+      {tests.map((tst, i, arr) => {
+        const isFinished = tst.f;
+        const hasErrors = !!tst.en;
+        const isFirst = i === 0;
+        //if it first and unfinished
+        //or if not finished and previus is finished
+        const isLastOfUnfinished =
+          (isFirst && !isFinished) || (!isFinished && arr[i - 1]?.f);
+        const color =
+          isFinished || (activeIndex === i && !hasErrors)
+            ? "green"
+            : hasErrors
+              ? "red"
+              : isLastOfUnfinished
+                ? "text"
+                : "gray";
+        return (
+          <TestNavDot
+            key={tst.i}
+            isCurrent={activeIndex === i}
+            color={color}
+            onPress={() =>
+              isFinished || isLastOfUnfinished || hasErrors ? onSelect(i) : null
+            }
+          />
+        );
+      })}
+    </View>
+  );
+};
 
 export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
   navigation
@@ -169,32 +278,6 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
     });
   };
 
-  const testsStyle = StyleSheet.create({
-    viewHidden: {
-      display: "none"
-    },
-    testNav: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      flex: 1,
-      height: "100%",
-      overflow: "scroll"
-    },
-    centeredView: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 30
-    },
-    subText: {
-      color: theme.colors.text,
-      fontSize: 20,
-      textAlign: "center",
-      marginHorizontal: 20
-    }
-  });
-
   //nothing valid to render — the focus-gated effect above handles redirecting
   if (!state.testsActive.length) {
     return <View style={{ ...theme.theme.screen }} />;
@@ -218,72 +301,11 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
   if (!targetPassage) {
     return <View style={{ ...theme.theme.screen }} />;
   }
-  const DottList =
-    state.testsActive.length < 13
-      ? () => (
-          <View style={{ ...testsStyle.testNav }}>
-            {state.testsActive.map((tst, i, arr) => {
-              const isFinished = tst.f;
-              const hasErrors = !!tst.en;
-              const isFirst = i === 0;
-              //if it first and unfinished
-              //or if not finished and previus is finished
-              const isLastOfUnfinished =
-                (isFirst && !isFinished) || (!isFinished && arr[i - 1]?.f);
-              const color =
-                isFinished || (activeTestIndex === i && !hasErrors)
-                  ? "green"
-                  : hasErrors
-                    ? "red"
-                    : isLastOfUnfinished
-                      ? "text"
-                      : "gray";
-              return (
-                <TestNavDot
-                  key={tst.i}
-                  isCurrent={activeTestIndex === i}
-                  color={color}
-                  onPress={() =>
-                    isFinished || isLastOfUnfinished || hasErrors
-                      ? setActiveTest(i)
-                      : null
-                  }
-                />
-              );
-            })}
-          </View>
-        )
-      : () => (
-          <View style={{ ...testsStyle.testNav }}>
-            <TestNavDot
-              key={"testDoddGreen"}
-              isCurrent={false}
-              color={"green"}
-              onPress={() => {}}
-            />
-            <Text style={theme.theme.text}>
-              {state.testsActive.filter((t) => t.f).length}x
-            </Text>
-            <TestNavDot
-              key={"testDoddRed"}
-              isCurrent={false}
-              color={"red"}
-              onPress={() => {}}
-            />
-            <Text style={theme.theme.text}>
-              {state.testsActive.filter((t) => t.en && !t.f).length}x
-            </Text>
-            <TestNavDot
-              key={"testDoddGray"}
-              isCurrent={false}
-              color={"gray"}
-              onPress={() => {}}
-            />
-            <Text style={theme.theme.text}>
-              {state.testsActive.filter((t) => !t.td.length).length}x
-            </Text>
-          </View>
-        );
+  // Typed as possibly missing on purpose: the Record above is exhaustive over
+  // TESTLEVEL, but a state carrying a level this build does not know must render
+  // an empty session the cross can leave, not throw into the ErrorBoundary.
+  const LevelComponent: FC<LevelComponentModel> | undefined =
+    LEVEL_COMPONENTS[activeTestObj.l];
 
   return (
     <View style={{ ...theme.theme.screen }}>
@@ -297,125 +319,54 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
         }}
       >
         <Header
-          navigation={navigation}
-          showBackButton={false}
-          alignChildren="flex-start"
-          additionalChildren={[
-            <IconButton
-              key="icon"
-              icon={IconName.cross}
-              onPress={() => setShowExitConfirm(true)}
-            />,
-            <DottList key="list" />
-          ]}
-        />
-        <LevelPicker
-          state={state}
-          targetPassage={targetPassage}
-          testLevel={activeTestObj.l}
-          handleChange={handleLevelChange}
-          handleOpen={handleLevelPickerOpen}
-          handleRestart={handleReset}
-        />
-        {activeTestObj?.l === TESTLEVEL.l10 && (
-          <L10
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l11 && (
-          <L11
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l20 && (
-          <L20
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l21 && (
-          <L21
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l30 && (
-          <L30
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l40 && (
-          <L40
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {activeTestObj?.l === TESTLEVEL.l50 && (
-          <L50
-            test={activeTestObj}
-            state={state}
-            submitTest={handleTestSubmit}
-            dispatch={handleDispatch}
-          />
-        )}
-        {state.settings.devModeEnabled && (
-          <Button onPress={handleReset} title={t("Reset")} />
-        )}
-        {/* {
-        state.settings.devModeEnabled &&
-        <Button theme={theme} onPress={() => {
-          handleTestSubmit({
-            isRight: true,
-            modifiedTest:activeTestObj
-          })
-        }} title={t("Pass")}/>
-        } */}
-      </View>
-      <MiniModal
-        shown={showExitConfirm}
-        handleClose={() => setShowExitConfirm(false)}
-      >
-        <Text style={{ ...theme.theme.text, fontSize: 18 }}>
-          {t("TestExitConfirmationText")}
-        </Text>
-        <View
-          style={{
-            ...theme.theme.rowView,
-            ...theme.theme.marginVertical,
-            ...theme.theme.gap20
-          }}
+          backIcon={IconName.cross}
+          onBack={() => setShowExitConfirm(true)}
         >
-          <Button
-            onPress={() => setShowExitConfirm(false)}
-            type="secondary"
-            title={t("Cancel")}
+          <TestNavBar
+            tests={state.testsActive}
+            activeIndex={activeTestIndex}
+            onSelect={setActiveTest}
           />
-          <Button
-            onPress={() => {
-              exitTests();
-              setShowExitConfirm(false);
-            }}
-            type="main"
-            color="green"
-            title={t("ExitTesting")}
+        </Header>
+        {/* The whole body arrives as one thing whenever the session moves to
+            another test — level label included, because the label is part of
+            what changed. `replayKey` is the test id, so answering a test and
+            jumping between dots both replay it, while a re-render caused by
+            anything else (an error marked, a level changed) does not. */}
+        <Entrance replayKey={activeTestObj.i} style={testsStyle.testColumn}>
+          <LevelPicker
+            state={state}
+            targetPassage={targetPassage}
+            testLevel={activeTestObj.l}
+            handleChange={handleLevelChange}
+            handleOpen={handleLevelPickerOpen}
+            handleRestart={handleReset}
           />
-        </View>
-      </MiniModal>
+          {LevelComponent && (
+            <LevelComponent
+              test={activeTestObj}
+              state={state}
+              submitTest={handleTestSubmit}
+              dispatch={handleDispatch}
+            />
+          )}
+          {state.settings.devModeEnabled && (
+            <Button onPress={handleReset} title={t("Reset")} />
+          )}
+        </Entrance>
+      </View>
+      <ConfirmModal
+        shown={showExitConfirm}
+        text={t("TestExitConfirmationText")}
+        cancelTitle={t("Cancel")}
+        confirmTitle={t("ExitTesting")}
+        confirmColor="green"
+        onCancel={() => setShowExitConfirm(false)}
+        onConfirm={() => {
+          exitTests();
+          setShowExitConfirm(false);
+        }}
+      />
     </View>
   );
 };

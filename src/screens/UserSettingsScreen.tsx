@@ -401,14 +401,15 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         style={userSettingsStyle.deletionMiniModal}
       >
         <View style={userSettingsStyle.deletionModalHeader}>
-          <IconButton
-            icon={IconName.back}
-            onPress={() => handleClosingDeletionConfirmationModal()}
-          />
-          <Text style={theme.theme.headerText}>
+          <Text style={{ ...theme.theme.headerText, ...theme.theme.flexOne }}>
             {t("settsUserConfirmDeleteAccountHeader")}{" "}
             {loadingState ? "⏳" : ""}
           </Text>
+          {/* a dialog is dismissed, not navigated back out of */}
+          <IconButton
+            icon={IconName.cross}
+            onPress={() => handleClosingDeletionConfirmationModal()}
+          />
         </View>
         <View style={{ ...theme.theme.view, gap: 12 }}>
           <Text style={{ ...theme.theme.text, fontSize: 16 }}>
@@ -448,13 +449,13 @@ const userSettingsStyle = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 20
   },
+  // 8.2.2: this is a confirmation, so it stays a dialog - but it used to be
+  // sized width/height 100%, which made it a screen wearing a modal's clothes.
+  // A dialog is as tall as what it says.
   deletionMiniModal: {
-    width: "100%",
-    height: "100%",
-    paddingTop: 50
+    width: "90%"
   },
   deletionModalHeader: {
-    height: 60,
     flexWrap: "nowrap",
     flexDirection: "row",
     width: "100%",

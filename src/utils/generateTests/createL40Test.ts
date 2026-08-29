@@ -1,9 +1,6 @@
-import {
-  FIRST_FEW_WORDS,
-  PERFECT_TESTS_TO_PROCEED,
-  SENTENCE_SEPARATOR
-} from "../../constants";
+import { FIRST_FEW_WORDS, PERFECT_TESTS_TO_PROCEED } from "../../constants";
 import { getPerfectTestsNumber } from "../getPerfectTests";
+import { Passage } from "../passage";
 import { CreateTestMethodModel } from "./createL10Test";
 import { ErrorGradedWord, getWordsFromErrors } from "./getWordsFromErrors";
 import { getErrorGradedSentences } from "./getErrorGradedSentences";
@@ -75,9 +72,7 @@ export const createL40Test: CreateTestMethodModel = ({
 
   //spliting to sentences
   const sentences = targetPassage
-    ? targetPassage.verseText
-        .split(SENTENCE_SEPARATOR)
-        .filter((s) => s.length > 1)
+    ? Passage.getSentences(targetPassage.verseText)
     : undefined;
   if (!sentences) {
     return initialTest;
@@ -97,7 +92,7 @@ export const createL40Test: CreateTestMethodModel = ({
       ...initialTest.d,
       //show first words instead of address only if there are more then 4 words
       showAddressOrFirstWords:
-        targetPassage.verseText.split(" ").length > FIRST_FEW_WORDS
+        Passage.getWords(targetPassage.verseText).length > FIRST_FEW_WORDS
           ? Math.random() > 0.5
           : true,
       sentenceRange

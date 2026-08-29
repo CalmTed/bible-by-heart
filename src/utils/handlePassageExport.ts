@@ -1,10 +1,8 @@
 import { createT } from "../l10n";
 import { PASSAGE_ROWS_TO_EXPORT } from "../constants";
 import { AppStateModel, PassageModel } from "../models";
-import addressToString from "./addressToString";
-import addressFromString from "./addressFromString";
+import { Address } from "./address";
 import { createPassage } from "../initials";
-import { getAddressDifference } from "./addressDifference";
 import { logger } from "./logger";
 
 //line separated values
@@ -30,7 +28,7 @@ export const passagesToLSV: (state: AppStateModel) => string | false = (
         let newValue = value;
         switch (key) {
           case "address":
-            newValue = addressToString(
+            newValue = Address.format(
               value,
               createT(
                 state.settings.translations.filter(
@@ -165,7 +163,7 @@ export const arrayToPassages: (
   const importedPassages: PassageModel[] = data
     .map((passage, importedDataItemIndex) => {
       const addressColumnIndex = headers.indexOf("address");
-      const address = addressFromString(passage[addressColumnIndex]);
+      const address = Address.parse(passage[addressColumnIndex]);
       if (!address) {
         invalidIndexes.push(importedDataItemIndex);
         return null;
@@ -197,10 +195,7 @@ export const arrayToPassages: (
         }
       });
       const samePassage = state.passages.find((ep) => {
-        const sameAddress = getAddressDifference(
-          newPassage.address,
-          ep.address
-        );
+        const sameAddress = Address.equals(newPassage.address, ep.address);
         const sameTranslation =
           newPassage.verseTranslation === ep.verseTranslation;
         return sameAddress && sameTranslation;

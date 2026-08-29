@@ -29,7 +29,7 @@ import {
   TranslationModel
 } from "./models";
 import { createT } from "./l10n";
-import { getNumberOfVerses } from "./utils/getNumberOfVerses";
+import { Address } from "./utils/address";
 
 const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
@@ -227,7 +227,7 @@ export const createPassage009: (
     id: genId(),
     ownerId: ownerId || null,
     address: address,
-    versesNumber: getNumberOfVerses(address),
+    versesNumber: Address.versesCount(address),
     verseText: text || "",
     verseTranslation: translation || null,
     dateCreated: birthTime,
@@ -359,7 +359,7 @@ export const createPassage008: (
     id: genId(),
     ownerId: ownerId || null,
     address: address,
-    versesNumber: getNumberOfVerses(address),
+    versesNumber: Address.versesCount(address),
     verseText: text || "",
     verseTranslation: translation || null,
     dateCreated: birthTime,

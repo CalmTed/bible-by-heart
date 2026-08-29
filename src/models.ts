@@ -250,6 +250,7 @@ export type RootStackParamList = {
   [SCREEN.calendar]: undefined;
   [SCREEN.login]: undefined;
   [SCREEN.register]: undefined;
+  [SCREEN.listFilters]: undefined;
   [SCREEN.settingsList]: undefined;
   [SCREEN.settingsTests]: undefined;
   [SCREEN.settingsNotifications]: undefined;
@@ -259,6 +260,7 @@ export type RootStackParamList = {
   [SCREEN.settingsTranslations]: undefined;
   [SCREEN.settingsReminders]: undefined;
   [SCREEN.settingsTrainModes]: undefined;
+  [SCREEN.settingsLog]: undefined;
 };
 
 /**
@@ -275,6 +277,20 @@ export type ScreenPropsModel<T extends keyof RootStackParamList> =
  * (`services/fetch.ts`'s forced logout).
  */
 export type RootStackNavigationModel = StackNavigationProp<RootStackParamList>;
+
+/**
+ * Props of a level component (`src/components/levels/L10..L50.tsx`) — the same
+ * four for every level, which is what lets `TestsScreen` dispatch to them
+ * through one `Record<TESTLEVEL, FC<LevelComponentModel>>`. It lived inside
+ * `Level1.tsx` until 8.2.6, so every other level imported its own props type
+ * from the file of an unrelated level.
+ */
+export interface LevelComponentModel {
+  test: TestModel;
+  state: AppStateModel;
+  submitTest: (data: { isRight: boolean; modifiedTest: TestModel }) => void;
+  dispatch: (action: ActionModel) => void;
+}
 
 export enum ActionName {
   setLang = "setLang",

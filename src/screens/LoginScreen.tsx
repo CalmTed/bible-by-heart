@@ -1,8 +1,8 @@
 import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, Alert, ScrollView } from "react-native";
+import { View, StyleSheet, Alert, ScrollView } from "react-native";
 import { useAppContext } from "../context/AppContext";
 import { Header } from "../components/Header";
-import { Button, IconButton } from "../components/Button";
+import { Button } from "../components/Button";
 import { IconName } from "../components/Icon";
 import {
   ACCESS_TOKEN_NAME,
@@ -242,19 +242,8 @@ export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
       contentContainerStyle={{ ...theme.theme.view, ...theme.theme.screen }}
     >
       <Header
-        navigation={navigation}
-        showBackButton={false}
-        alignChildren="flex-start"
-        additionalChildren={[
-          <IconButton
-            key="back"
-            icon={IconName.back}
-            onPress={() => navigation.navigate(SCREEN.settings)}
-          />,
-          <Text key="title" style={theme.theme.headerText}>
-            {t("loginScreenTitle")}
-          </Text>
-        ]}
+        title={t("loginScreenTitle")}
+        onBack={() => navigation.navigate(SCREEN.settings)}
       />
       <View style={{ ...theme.theme.view, ...loginStyle.inputView }}>
         <Input

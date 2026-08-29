@@ -1,0 +1,147 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AnchoredPopup renders correctly 1`] = `
+<Modal
+  animationType="none"
+  onDismiss={[Function]}
+  onRequestClose={[Function]}
+  statusBarTranslucent={true}
+  transparent={true}
+  visible={true}
+>
+  <View
+    accessibilityState={
+      {
+        "busy": undefined,
+        "checked": undefined,
+        "disabled": undefined,
+        "expanded": undefined,
+        "selected": undefined,
+      }
+    }
+    accessibilityValue={
+      {
+        "max": undefined,
+        "min": undefined,
+        "now": undefined,
+        "text": undefined,
+      }
+    }
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onBlur={[Function]}
+    onClick={[Function]}
+    onFocus={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "flex": 1,
+      }
+    }
+  />
+  <View
+    collapsable={false}
+    jestAnimatedProps={
+      {
+        "value": {},
+      }
+    }
+    jestAnimatedStyle={
+      {
+        "value": {
+          "opacity": 0,
+          "transform": [
+            {
+              "translateY": 16,
+            },
+            {
+              "scale": 0.94,
+            },
+          ],
+        },
+      }
+    }
+    jestInlineStyle={
+      [
+        {
+          "backgroundColor": "#272A27",
+          "borderRadius": 10,
+          "elevation": 8,
+          "gap": 10,
+          "maxHeight": 1198,
+          "minWidth": 160,
+          "paddingHorizontal": 15,
+          "paddingVertical": 10,
+          "position": "absolute",
+          "right": 450,
+          "shadowColor": "#272A2799",
+          "shadowOffset": {
+            "height": 2,
+            "width": 0,
+          },
+          "shadowOpacity": 0.5,
+          "shadowRadius": 10,
+          "top": 126,
+          "transformOrigin": "top right",
+        },
+      ]
+    }
+    nativeID="0"
+    style={
+      [
+        {
+          "backgroundColor": "#272A27",
+          "borderRadius": 10,
+          "elevation": 8,
+          "gap": 10,
+          "maxHeight": 1198,
+          "minWidth": 160,
+          "paddingHorizontal": 15,
+          "paddingVertical": 10,
+          "position": "absolute",
+          "right": 450,
+          "shadowColor": "#272A2799",
+          "shadowOffset": {
+            "height": 2,
+            "width": 0,
+          },
+          "shadowOpacity": 0.5,
+          "shadowRadius": 10,
+          "top": 126,
+          "transformOrigin": "top right",
+        },
+        {
+          "opacity": 0,
+          "transform": [
+            {
+              "translateY": 16,
+            },
+            {
+              "scale": 0.94,
+            },
+          ],
+        },
+      ]
+    }
+  >
+    <Text
+      style={
+        [
+          {
+            "color": "#ECECEC",
+          },
+          undefined,
+        ]
+      }
+    >
+      option
+    </Text>
+  </View>
+</Modal>
+`;

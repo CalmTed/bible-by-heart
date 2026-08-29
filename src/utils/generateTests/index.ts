@@ -12,7 +12,7 @@ import {
   TestModel,
   TrainModeModel
 } from "../../models";
-import { getAddresOrder } from "../addressOrder";
+import { Address } from "../address";
 import { logger } from "../logger";
 import { createL10Test, CreateTestMethodModel } from "./createL10Test";
 import { createL11Test } from "./createL11Tests";
@@ -92,7 +92,7 @@ export const getPassagesByTrainMode: (
       .sort((a, b) => {
         switch (trainMode.sort) {
           case SORTINGOPTION.address:
-            return getAddresOrder(b.address) - getAddresOrder(a.address);
+            return Address.order(b.address) - Address.order(a.address);
           case SORTINGOPTION.maxLevel:
             return b.maxLevel - a.maxLevel;
           case SORTINGOPTION.selectedLevel:

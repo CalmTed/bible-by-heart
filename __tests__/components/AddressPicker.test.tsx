@@ -1,16 +1,37 @@
 import { fireEvent } from "@testing-library/react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { renderWithContext } from "../../test-utils/renderWithContext";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  renderWithContext,
+  RenderWithContextOptions
+} from "../../test-utils/renderWithContext";
 import { AddressPicker } from "../../src/components/AddressPicker";
 import { LANGCODE, THEMETYPE } from "../../src/constants";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { createT } from "../../src/l10n";
 
+// The picker draws the app's `Header` since 8.2.3, and the Header takes its top
+// margin from the device — so it needs a provider that knows the insets.
+// SafeAreaProvider renders nothing until it does.
+const safeAreaMetrics = {
+  frame: { x: 0, y: 0, width: 390, height: 844 },
+  insets: { top: 47, left: 0, right: 0, bottom: 34 }
+};
+
+const renderPicker = (
+  ui: React.ReactElement,
+  options: RenderWithContextOptions = {}
+) =>
+  renderWithContext(
+    <SafeAreaProvider initialMetrics={safeAreaMetrics}>{ui}</SafeAreaProvider>,
+    options
+  );
+
 describe("testing address picker", () => {
   const t = createT(LANGCODE.en);
 
   it("renders correctly", async () => {
-    const tree = renderWithContext(
+    const tree = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />,
       { langCode: LANGCODE.ua }
     ).toJSON();
@@ -19,7 +40,7 @@ describe("testing address picker", () => {
 
   it("offers a primary 'add' action after a single start verse is picked (8.1.7)", () => {
     const onConfirm = jest.fn();
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={onConfirm} />
     );
     // Genesis -> chapter 1 -> verse 1
@@ -44,7 +65,7 @@ describe("testing address picker", () => {
 
   it("lets the user extend the range instead of adding one verse (8.1.7)", () => {
     const onConfirm = jest.fn();
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={onConfirm} />
     );
     fireEvent.press(screen.getByText(t("bGenShrt")));
@@ -59,7 +80,7 @@ describe("testing address picker", () => {
   });
 
   it("titles the header from what is picked, not from the part being edited (8.2.1a)", () => {
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
     // nothing picked yet
@@ -78,7 +99,7 @@ describe("testing address picker", () => {
   });
 
   it("shows the range being built in the header title (8.2.1a)", () => {
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
     fireEvent.press(screen.getByText(t("bGenShrt")));
@@ -91,7 +112,7 @@ describe("testing address picker", () => {
   });
 
   it("drops the un-picked part from the title when going back (8.2.1a)", () => {
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
     fireEvent.press(screen.getByText(t("bGenShrt")));
@@ -106,7 +127,7 @@ describe("testing address picker", () => {
   });
 
   it("marks the selected start verse with a gradient outline, not a flat fill (8.2.1a)", () => {
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
     // the ring is the only round (66px) gradient in the tree — src/ carries no
@@ -130,7 +151,7 @@ describe("testing address picker", () => {
   });
 
   it("renders the single-verse state with an in-flow footer (8.2.1a)", () => {
-    const screen = renderWithContext(
+    const screen = renderPicker(
       <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
     );
     fireEvent.press(screen.getByText(t("bGenShrt")));

@@ -1,20 +1,18 @@
 import React, { FC, useEffect, useState } from "react";
-import { ActionName, AddressType } from "../../models";
+import { ActionName, AddressType, LevelComponentModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
-import addressToString from "../../utils/addressToString";
+import { Address } from "../../utils/address";
+import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
-import { LevelComponentModel } from "./Level1";
 import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
-import {
-  ERRORS_TO_DOWNGRADE,
-  FIRST_FEW_WORDS,
-  SENTENCE_SEPARATOR,
-  VIBRATION_PATTERNS
-} from "../../constants";
-import { getAddressDifference } from "../../utils/addressDifference";
+import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { SentenceContext } from "./SentenceContext";
+
+// Level 4: type the passage out with the word autocomplete, then name the
+// address (or read it, when the test gives the address and asks for the words).
 
 const levelComponentStyle = StyleSheet.create({
   levelComponentView: {
@@ -31,10 +29,6 @@ const levelComponentStyle = StyleSheet.create({
     textTransform: "uppercase",
     fontWeight: "500",
     textAlign: "center"
-  },
-  otherSentencesTextView: {
-    marginHorizontal: 10,
-    marginVertical: 5
   },
   passageTextView: {
     maxHeight: 100,
@@ -109,25 +103,12 @@ export const L40: FC<LevelComponentModel> = ({
   //  true => address
   //  false => first words
   const targetPassageWholeText = targetPassage?.verseText || "";
-  const sentences = targetPassageWholeText
-    .split(SENTENCE_SEPARATOR)
-    .filter((s) => s.length > 0);
-
-  //if we have defined range
-  //true: slice to start to end
-  //false: full passage text
-  const sentancesRangeText =
-    test.d?.sentenceRange && test.d.sentenceRange.length === 2
-      ? // targetPassageWholeText.slice(
-        //     sentences.slice(0, sentences.slice(...test.d.sentenceRange).join(".").length).join(".").length,
-        //     sentences.slice(...test.d.sentenceRange).join(".").length
-        //   )
-        sentences.slice(...test.d.sentenceRange).join(".")
-      : targetPassageWholeText;
-
-  const targetText = sentancesRangeText;
-  const firstFewWords =
-    targetText.split(" ").slice(0, FIRST_FEW_WORDS).join(" ") + " ";
+  //the sentences this test asks for; the whole passage when it carries no range
+  const targetText = Passage.getRangeText(
+    targetPassageWholeText,
+    test.d?.sentenceRange
+  );
+  const firstFewWords = Passage.getFirstWords(targetText);
   const initialValue = test.d.showAddressOrFirstWords ? "" : firstFewWords;
   const [passageText, setPassageText] = useState(initialValue);
   useEffect(() => {
@@ -144,7 +125,7 @@ export const L40: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    if (getAddressDifference(targetPassage.address, value)) {
+    if (Address.equals(targetPassage.address, value)) {
       if (state.settings.hapticsEnabled) {
         Vibration.vibrate(VIBRATION_PATTERNS.testRight);
       }
@@ -291,7 +272,7 @@ export const L40: FC<LevelComponentModel> = ({
               color: theme.colors.text
             }}
           >
-            {addressToString(targetPassage.address, t)}
+            {Address.format(targetPassage.address, t)}
           </Text>
         )}
         {!isAddressProvided && (
@@ -305,20 +286,11 @@ export const L40: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[0] > 0 && (
-        <View style={levelComponentStyle.otherSentencesTextView}>
-          <Text style={theme.theme.text}>
-            {test.d.sentenceRange[0] > 3 ? "..." : ""}
-            {sentences
-              .slice(
-                test.d.sentenceRange[0] > 3 ? test.d.sentenceRange[0] - 3 : 0,
-                test.d.sentenceRange[0]
-              )
-              .join("")}
-            ...
-          </Text>
-        </View>
-      )}
+      <SentenceContext
+        text={targetPassageWholeText}
+        range={test.d.sentenceRange}
+        side="before"
+      />
       <View
         style={{
           ...levelComponentStyle.passageTextView
@@ -337,20 +309,11 @@ export const L40: FC<LevelComponentModel> = ({
           numberOfLines={4}
         />
       </View>
-      {test.d.sentenceRange && test.d.sentenceRange[1] < sentences.length && (
-        <View style={levelComponentStyle.otherSentencesTextView}>
-          <Text style={theme.theme.text}>
-            ...
-            {sentences
-              .slice(
-                test.d.sentenceRange[1],
-                Math.min(test.d.sentenceRange[1] + 3, sentences.length)
-              )
-              .join("")}
-            {sentences.length - test.d.sentenceRange[1] >= 3 ? "..." : ""}
-          </Text>
-        </View>
-      )}
+      <SentenceContext
+        text={targetPassageWholeText}
+        range={test.d.sentenceRange}
+        side="after"
+      />
       {!!wordOptions.length && currentWords.length < 5 && (
         <Text
           style={{
@@ -369,7 +332,7 @@ export const L40: FC<LevelComponentModel> = ({
               color="green"
               title={
                 selectedAddress
-                  ? addressToString(selectedAddress, t)
+                  ? Address.format(selectedAddress, t)
                   : t("LevelSelectAddress")
               }
               onPress={() => setAPVisible(true)}

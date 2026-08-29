@@ -1,5 +1,5 @@
 import { AddressType } from "../models";
-import addressToString from "../utils/addressToString";
+import { Address } from "../utils/address";
 import { LANGCODE } from "../constants";
 import { createT } from "../l10n";
 import { logger } from "../utils/logger";
@@ -13,7 +13,7 @@ export const fetchESV: (address: AddressType) => Promise<string> = async (
   if (!ESVTOKEN) {
     return "";
   }
-  const addressString = addressToString(address, createT(LANGCODE.en));
+  const addressString = Address.format(address, createT(LANGCODE.en));
   if (addressString === "-") {
     return new Promise(() => {
       return false;

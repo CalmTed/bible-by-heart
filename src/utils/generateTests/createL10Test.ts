@@ -1,8 +1,9 @@
 import { AddressType, PassageModel, TestModel } from "../../models";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { SENTENCE_SEPARATOR } from "../../constants";
+import { MINIMUM_SENTENCE_LENGTH } from "../../constants";
 import { randomItem, randomRange } from "../randomizers";
-import { getAddressDifference } from "../addressDifference";
+import { Address } from "../address";
+import { Passage } from "../passage";
 import { bibleReference } from "../../bibleReference";
 
 export interface CreateTestInputModel {
@@ -24,9 +25,7 @@ export const createL10Test: CreateTestMethodModel = ({
   }
 
   const successStroke = getPerfectTestsNumber(history, targetPassage);
-  const sentases = targetPassage.verseText
-    .split(SENTENCE_SEPARATOR)
-    .filter((s) => s.length > 1);
+  const sentases = Passage.getSentences(targetPassage.verseText);
   const randomSentenceStart = randomRange(
     1,
     sentases.length > 1 ? sentases.length - 1 : 1
@@ -38,7 +37,9 @@ export const createL10Test: CreateTestMethodModel = ({
   const shouldntSlice =
     !successStroke ||
     sentases.length < 2 ||
-    sentases.slice(randomSentenceStart, randomSentenceEnd).join().length < 20 ||
+    Passage.joinSentences(
+      sentases.slice(randomSentenceStart, randomSentenceEnd)
+    ).length < MINIMUM_SENTENCE_LENGTH ||
     Math.random() > 0.5;
   const sentenceRange = shouldntSlice
     ? []
@@ -49,7 +50,7 @@ export const createL10Test: CreateTestMethodModel = ({
     .map((h) => h.wa)
     .flat();
   let uniqueErrorAddresses = errorAddresses.filter((a, i, arr) => {
-    return arr.filter((a2) => getAddressDifference(a, a2)).length === 1;
+    return arr.filter((a2) => Address.equals(a, a2)).length === 1;
   });
   const neigborsAddresses = passages
     .filter(
@@ -61,8 +62,8 @@ export const createL10Test: CreateTestMethodModel = ({
     .map((np) => np.address);
   let uniqueNeigborsAddresses = neigborsAddresses.filter(
     (a) =>
-      uniqueErrorAddresses.filter((a2) => getAddressDifference(a, a2))
-        .length === 0 && !getAddressDifference(a, targetPassage.address)
+      uniqueErrorAddresses.filter((a2) => Address.equals(a, a2)).length === 0 &&
+      !Address.equals(a, targetPassage.address)
   );
   const probabilityOptionError = errorAddresses.length ? 0.5 : 0;
   const probabilityOptionNeigbor = neigborsAddresses.length
@@ -142,7 +143,7 @@ export const createL10Test: CreateTestMethodModel = ({
       endVerseNum: randomEndVerseNumber
     };
     //call itself to regenerate other random address
-    if (exept.find((e) => getAddressDifference(e, justRandomAddress))) {
+    if (exept.find((e) => Address.equals(e, justRandomAddress))) {
       return getRandomAddress(target, exept);
     }
     return justRandomAddress;
@@ -154,7 +155,7 @@ export const createL10Test: CreateTestMethodModel = ({
       const selectedErrorItem = randomItem(uniqueErrorAddresses) as AddressType;
       addressOptions.push(selectedErrorItem);
       uniqueErrorAddresses = uniqueErrorAddresses.filter(
-        (a) => !getAddressDifference(a, selectedErrorItem)
+        (a) => !Address.equals(a, selectedErrorItem)
       );
     } else if (
       Math.random() < probabilityOptionNeigbor &&
@@ -165,7 +166,7 @@ export const createL10Test: CreateTestMethodModel = ({
       ) as AddressType;
       addressOptions.push(selectedNeigborItem);
       uniqueNeigborsAddresses = uniqueNeigborsAddresses.filter(
-        (a) => !getAddressDifference(a, selectedNeigborItem)
+        (a) => !Address.equals(a, selectedNeigborItem)
       );
     } else {
       addressOptions.push(

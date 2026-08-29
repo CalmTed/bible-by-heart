@@ -10,7 +10,7 @@ import {
 } from "../constants";
 import { ActionName, ScreenPropsModel } from "../models";
 import { createT } from "../l10n";
-import { Button, IconButton } from "../components/Button";
+import { Button } from "../components/Button";
 import { reduce } from "../utils/reduce";
 import { Header } from "../components/Header";
 import { Icon, IconName } from "../components/Icon";
@@ -120,19 +120,8 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
   return (
     <View style={{ ...theme.theme.screen, ...theme.theme.view }}>
       <Header
-        navigation={navigation}
-        showBackButton={false}
-        alignChildren="flex-start"
-        additionalChildren={[
-          <IconButton
-            key="back"
-            icon={IconName.back}
-            onPress={() => navigation.navigate(SCREEN.home)}
-          />,
-          <Text key="title" style={theme.theme.headerText}>
-            {t("settingsScreenTitle")} {loadingState ? "⏳" : ""}
-          </Text>
-        ]}
+        title={`${t("settingsScreenTitle")}${loadingState ? " ⏳" : ""}`}
+        onBack={() => navigation.navigate(SCREEN.home)}
       />
       <ScrollView style={settingsStyle.scrollView}>
         <View style={settingsStyle.topUserDataView}>

@@ -2,7 +2,7 @@ import { LANGCODE } from "../constants";
 import { WORD } from "../l10n";
 
 // Extra accepted spellings / abbreviations per book, applied by
-// `addressFromString` IN ADDITION to the app's localized long + short titles.
+// `Address.parse` IN ADDITION to the app's localized long + short titles.
 // Keyed by the book's long-title l10n key (WORD) so it stays readable and
 // stable regardless of book index. Per-language, matched case-insensitively.
 //
