@@ -148,6 +148,9 @@ export const en = {
   PassagesHidden: "Passages hidden",
   DaysStroke: "Days stroke",
   NoTagsFound: "Add tags to passages to add them here",
+  FilterNoTags: "No tags",
+  FilteredBy: "Filtered by",
+  Search: "Search",
   Tags: "Tags",
   Translations: "Translations",
   fetchPropositionText: "Do you want to fetch passage text?",
@@ -155,6 +158,8 @@ export const en = {
   NotAFetchableTranslation: "Enter passage text here",
   NoDataForThisDay: "No data for this day",
   TestExitConfirmationText: "Are you sure? Passed tests will not be saved",
+  TestNoOptionsText:
+    "This test could not be built from your passages. Pick another test above, or leave the session.",
   PassageDeleteConfirmationText:
     "Delete this passage permanently? This cannot be undone.",
   //settings lables, headers and subtexts
@@ -189,13 +194,15 @@ export const en = {
   settsImportStateHeader: "Import state",
   settsImportStateSubtext: "Open state from JSON file",
   settsBackupExportHeader: "Save backup file",
-  settsBackupExportSubtext: "Write all app data to a .json file you keep",
+  settsBackupExportSubtext: "Write all app data to a .bbhbackup file you keep",
   settsBackupRestoreHeader: "Restore from backup file",
   settsBackupRestoreSubtext: "Replace all app data with a saved backup file",
   settsBackupRestoreConfirm: "Restore",
   settsRestored: "Restored!",
   BackupRestoreConfirmationText:
     "Replace everything in the app with this backup? Current data will be lost.",
+  BackupMadeOn: "Backup made on",
+  BackupMadeOnUnknown: "This backup carries no date",
   BackupOfferText:
     "App data has been updated to a new format. Save a backup file of the previous data, just in case?",
   BackupOfferConfirm: "Save backup",

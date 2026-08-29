@@ -39,11 +39,23 @@ export const Button: FC<ButtonModel> = ({
   iconAlign = "left"
 }) => {
   const { theme } = useAppContext();
+  // True exactly when `gradientColors` below resolves to two DIFFERENT colors,
+  // i.e. when the button actually draws a gradient: the filled `main` one and the
+  // `outline` ring. Gray and transparent buttons are flat fills wearing the same
+  // component.
+  const hasGradient = type !== "transparent" && color !== "gray";
   // Press feedback lives here rather than in any screen, because every button in
   // the app is this component (8.2.4) - the home screen is nothing but these,
   // and so are the passage list's swipe actions. One spring, ~277 call sites.
   // 0 = at rest, 1 = held. The spring is the shared ANIMATION one, so a button
   // settles with the same bounce as a dialog arriving.
+  //
+  // ...except on a gradient (8.2.30). expo-linear-gradient bakes its ramp at the
+  // view's layout size, so scaling the view does not scale the gradient with it:
+  // the ramp stretches and, at the sizes a press uses, visibly drops out. Fedir
+  // saw the filled and outlined buttons disappear mid-press. A gradient is
+  // decoration, not an animation, so the flat buttons keep the spring and the
+  // gradient ones keep the Android ripple as their only feedback.
   const press = useSharedValue(0);
   const pressStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 - press.value * (1 - ANIMATION.pressScale) }]
@@ -55,15 +67,21 @@ export const Button: FC<ButtonModel> = ({
   const handlePressOut = () => {
     press.value = withSpring(0, ANIMATION.spring);
   };
-  const gradientColors = disabled
-    ? [theme.colors.bg, theme.colors.bgSecond]
-    : type === "transparent"
+  // `transparent` comes FIRST, before `disabled`: a transparent button that is
+  // dead is still transparent. Ordering it the other way gave every disabled
+  // icon button a bg->bgSecond plate under it, which is the "shadow" on the
+  // calendar's month arrows - they are disabled at the ends of the range, and
+  // the plate reads as a drop shadow rather than as nothing (8.2.32).
+  const gradientColors =
+    type === "transparent"
       ? ["transparent", "transparent"]
-      : color === "gray"
-        ? [theme.colors.bgSecond, theme.colors.bgSecond]
-        : color === "green"
-          ? [theme.colors.gradient1, theme.colors.gradient2]
-          : [theme.colors.redGradient1, theme.colors.redGradient2];
+      : disabled
+        ? [theme.colors.bg, theme.colors.bgSecond]
+        : color === "gray"
+          ? [theme.colors.bgSecond, theme.colors.bgSecond]
+          : color === "green"
+            ? [theme.colors.gradient1, theme.colors.gradient2]
+            : [theme.colors.redGradient1, theme.colors.redGradient2];
   const textColor = disabled
     ? theme.colors.textSecond
     : type === "transparent"
@@ -79,8 +97,10 @@ export const Button: FC<ButtonModel> = ({
         style={buttonStyles.touch}
         // style={{ ...buttonStyles.touch, opacity: disabled ? 0.5 : 1 }}
         onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        // Not attached at all on a gradient (8.2.30) rather than attached and
+        // guarded, so "does this button animate" is answerable from the tree.
+        onPressIn={hasGradient ? undefined : handlePressIn}
+        onPressOut={hasGradient ? undefined : handlePressOut}
         disabled={disabled}
         android_ripple={{
           color: theme.colors.bgBackdrop,

@@ -10,12 +10,12 @@ import { Input } from "../components/Input";
 import { MiniModal } from "../components/MiniModal";
 import {
   ACCESS_TOKEN_NAME,
+  APP_VERSION,
   DAY,
   PRIVACY_POLICY_LINK,
   REFRESH_TOKEN_NAME,
   SCREEN,
-  TERMS_OF_SERVICE_LINK,
-  VERSION
+  TERMS_OF_SERVICE_LINK
 } from "../constants";
 import { createAppState } from "../initials";
 import { ActionName, ScreenPropsModel } from "../models";
@@ -31,7 +31,7 @@ import toastShow from "../utils/toastShow";
 export const AboutSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsAbout>
 > = ({ navigation }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, dispatch, t, theme } = useAppContext();
 
   const [isDevPasswordModalOpen, setIsDevPasswordModalOpen] = useState(false);
   const [isAboutTextModalShown, setIsAboutTextModalShown] = useState(false);
@@ -100,11 +100,14 @@ export const AboutSettingsScreen: FC<
       title={t("settsAboutHeader")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={aboutSettingsStyle.scrollView}>
+      <ScrollView
+        style={aboutSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           type="action"
           header={t("settsAboutHeader")}
-          subtext={`${t("settsAboutSubtext")}: ${VERSION}`}
+          subtext={`${t("settsAboutSubtext")}: ${APP_VERSION}`}
           actionCallBack={() => {
             setIsAboutTextModalShown(true);
           }}
@@ -116,7 +119,7 @@ export const AboutSettingsScreen: FC<
           <Text style={theme.theme.headerText}>{t("AboutHeader")}</Text>
           <Text style={theme.theme.text}>{t("AboutText")}</Text>
           <Text style={theme.theme.text}>
-            {t("version")}: {VERSION}
+            {t("version")}: {APP_VERSION}
           </Text>
           <Button
             title={t("Close")}
@@ -269,7 +272,11 @@ export const AboutSettingsScreen: FC<
                   }
                   logger.write(`State imported`);
                   toastShow(`${t("settsImported")}`, 1000);
-                  setState(restored);
+                  // The one whole-snapshot write that is meant (8.2.24): a
+                  // restore REPLACES the state on purpose, and `restored` came
+                  // out of a file rather than off a stale closure. Everything
+                  // else in this app writes through dispatch or an updater.
+                  setState(restored.state);
                 });
               }}
             />
@@ -278,16 +285,9 @@ export const AboutSettingsScreen: FC<
               subtext=""
               header={t("settsResetLocalUserData")}
               actionCallBack={async () => {
-                const newState = reduce(state, {
-                  name: ActionName.resetUserData
-                });
-                if (newState === null) {
-                  return logger.error(
-                    `Unknown error: Unable to reset user data`
-                  );
-                }
                 logger.write("[DEV] cleared local user data");
-                setState(newState);
+                // dispatch, not a captured snapshot (8.2.24)
+                dispatch({ name: ActionName.resetUserData });
                 await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
                 await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
               }}

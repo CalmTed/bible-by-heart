@@ -12,9 +12,8 @@ exports[`testing level 11 rendering L11 renders correctly 1`] = `
   <View
     style={
       {
-        "alignContent": "center",
-        "justifyContent": "center",
-        "maxHeight": 200,
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
       }
     }
   >
@@ -35,11 +34,44 @@ exports[`testing level 11 rendering L11 renders correctly 1`] = `
   <View
     style={
       {
-        "alignItems": "center",
-        "flex": 2,
+        "flex": 1,
         "gap": 10,
         "justifyContent": "center",
         "paddingHorizontal": 20,
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "justifyContent": "center",
+          "paddingHorizontal": 20,
+          "width": "100%",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#ECECEC",
+            "fontSize": 14,
+            "textAlign": "center",
+          }
+        }
+      >
+        This test could not be built from your passages. Pick another test above, or leave the session.
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "gap": 10,
+        "paddingBottom": 20,
+        "paddingHorizontal": 20,
+        "paddingTop": 10,
         "width": "100%",
       }
     }

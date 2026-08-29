@@ -12,9 +12,8 @@ exports[`testing level 21 rendering L21 renders correctly 1`] = `
   <View
     style={
       {
-        "alignContent": "center",
-        "justifyContent": "center",
-        "maxHeight": 200,
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
       }
     }
   >
@@ -35,22 +34,25 @@ exports[`testing level 21 rendering L21 renders correctly 1`] = `
   <View
     style={
       {
-        "alignItems": "center",
-        "flex": 2,
+        "flex": 1,
         "gap": 10,
         "justifyContent": "center",
         "paddingHorizontal": 20,
         "width": "100%",
       }
     }
-  >
-    <View
-      style={
-        {
-          "gap": 10,
-        }
+  />
+  <View
+    style={
+      {
+        "gap": 10,
+        "paddingBottom": 20,
+        "paddingHorizontal": 20,
+        "paddingTop": 10,
+        "width": "100%",
       }
-    />
+    }
+  >
     <View
       style={
         {

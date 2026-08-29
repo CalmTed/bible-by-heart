@@ -11,41 +11,60 @@ const dayInMs = DAY * 1000;
 // cap it so a long history can't produce an unbounded array.
 const TOP_ADDRESS_ERRORS_LIMIT = 10;
 
+// The local calendar day a test was finished on, as a sortable string. Shared by
+// getStroke and getMaxStroke so the two cannot drift on what "a day" means.
+const testDayKey = (t: TestModel): string => {
+  const d = new Date(t.td[t.td.length - 1][1] || 0);
+  return `${addZero(d.getFullYear(), 4)}-${addZero(d.getMonth() + 1)}-${addZero(
+    d.getDate()
+  )}`;
+};
+
+// Unique days, first occurrence first — a Set instead of the
+// `arr.slice(0, i).includes(v)` this used to do per element, which allocated an
+// array per record and compared O(n²) times (8.2.21: 42 ms at 5 000 records on a
+// desktop, and this runs on the home screen on every state change).
+const uniqueInOrder = (values: string[]): string[] => {
+  const seen = new Set<string>();
+  const unique: string[] = [];
+  values.forEach((v) => {
+    if (!seen.has(v)) {
+      seen.add(v);
+      unique.push(v);
+    }
+  });
+  return unique;
+};
+
 export const getStroke = (testHistory: TestModel[]) => {
   const nowD = new Date().getTime();
-  const allDays = [...testHistory]
-    .sort((a, b) => Math.max(...b.td.flat()) - Math.max(...a.td.flat()))
-    .map((t) => {
-      //there should be at least two data points: finishinh tes and finishing session
-      const d = new Date(t.td[t.td.length - 1][1] || 0);
-      return `${addZero(d.getFullYear(), 4)}-${addZero(
-        d.getMonth() + 1
-      )}-${addZero(d.getDate())}`;
-    });
-  // GET UNIQUE
-  const uniqueDays = allDays.filter(
-    (v, i, arr) => !arr.slice(0, i).includes(v)
-  ); //unique
+  // Sort by a precomputed key: the comparator used to re-flatten both operands
+  // on every comparison.
+  const allDays = testHistory
+    .map((t) => ({ at: Math.max(...t.td.flat()), day: testDayKey(t) }))
+    .sort((a, b) => b.at - a.at)
+    .map((v) => v.day);
+  const uniqueDays = uniqueInOrder(allDays);
   const isToday = nowD - new Date(uniqueDays[0]).getTime() < dayInMs;
   const isYesterday =
     !isToday && nowD - new Date(uniqueDays[0]).getTime() < dayInMs * 2;
-  const unbrokenSeries = uniqueDays
-    .map((v, i, arr) => {
-      const d2 = new Date(v).getTime();
-      if (!i) {
-        //last test was finished less then 24h before
-        return isToday || isYesterday;
-      } else {
-        //if there are no false - then there is an unbroken series
-        const prvD = new Date(arr[i - 1]).getTime();
-        return prvD - d2 <= dayInMs;
-      }
-    })
-    .filter((v, i, arr) => {
-      return !arr.slice(0, i + 1).includes(false);
-    });
+  // The stroke is the leading run of consecutive days: the old code built the
+  // whole boolean array and then dropped everything from the first false on with
+  // another O(n²) slice-includes. Same answer, one pass, no allocation.
+  const dayTimes = uniqueDays.map((v) => new Date(v).getTime());
+  let strokeLength = 0;
+  for (let i = 0; i < dayTimes.length; i++) {
+    const isUnbroken =
+      i === 0
+        ? isToday || isYesterday
+        : dayTimes[i - 1] - dayTimes[i] <= dayInMs;
+    if (!isUnbroken) {
+      break;
+    }
+    strokeLength++;
+  }
   return {
-    length: unbrokenSeries.length,
+    length: strokeLength,
     today: isToday
   };
 };
@@ -56,14 +75,7 @@ export const getStroke = (testHistory: TestModel[]) => {
 export const getMaxStroke: (testHistory: TestModel[]) => number = (
   testHistory
 ) => {
-  const uniqueDayTimes = [...testHistory]
-    .map((t) => {
-      const d = new Date(t.td[t.td.length - 1][1] || 0);
-      return `${addZero(d.getFullYear(), 4)}-${addZero(
-        d.getMonth() + 1
-      )}-${addZero(d.getDate())}`;
-    })
-    .filter((v, i, arr) => !arr.slice(0, i).includes(v)) //unique days
+  const uniqueDayTimes = uniqueInOrder(testHistory.map(testDayKey))
     .map((v) => new Date(v).getTime())
     .sort((a, b) => a - b);
   if (!uniqueDayTimes.length) {

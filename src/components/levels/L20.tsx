@@ -1,39 +1,21 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType, LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
 import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
-import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE } from "../../constants";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 2, first half: read the verse, name its address in the picker.
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
-  },
-  passageTextView: {
-    alignContent: "center",
-    flex: 1
-  },
-  passageText: {
-    fontSize: 18,
-    letterSpacing: 0.5,
-    marginHorizontal: 20,
-    marginVertical: 10,
-    borderRadius: 10,
-    padding: 10
-  },
-  optionButtonsWrapper: {
-    flex: 2,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    paddingHorizontal: 20
+  verseCard: {
+    ...levelLayout.promptCard,
+    ...levelLayout.verseText
   }
 });
 
@@ -82,17 +64,13 @@ export const L20: FC<LevelComponentModel> = ({
       return;
     }
     if (Address.equals(rightPassage.address, value)) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: test
       }); //adding finish date and isFifish on reducer
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       setErrorValue(selectedAddress);
     }
   };
@@ -115,19 +93,24 @@ export const L20: FC<LevelComponentModel> = ({
     test.d?.sentenceRange
   );
   return (
-    <View style={levelComponentStyle.levelComponentView}>
-      <ScrollView style={levelComponentStyle.passageTextView}>
+    <View style={levelLayout.screen}>
+      <ScrollView
+        style={levelLayout.prompt}
+        contentContainerStyle={levelLayout.promptContent}
+      >
         <Text
           style={{
             ...theme.theme.text,
-            ...levelComponentStyle.passageText,
+            ...levelComponentStyle.verseCard,
             backgroundColor: theme.colors.bgSecond
           }}
         >
           {verseText}
         </Text>
       </ScrollView>
-      <View style={levelComponentStyle.optionButtonsWrapper}>
+      {/* The answer is the address the user picks; the two coloured addresses
+          after a wrong one are the same answer, marked. */}
+      <View style={levelLayout.answer}>
         {!!errorValue && [
           <Button
             key="right"
@@ -142,17 +125,9 @@ export const L20: FC<LevelComponentModel> = ({
             type="outline"
             color="red"
             onPress={() => {}}
-          />,
-          <Button
-            key="continue"
-            title={t("ButtonContinue")}
-            type="main"
-            color={"green"}
-            disabled={levelFinished}
-            onPress={() => handleErrorSubmit(errorValue)}
           />
         ]}
-        {!errorValue && [
+        {!errorValue && (
           <Button
             key="address"
             title={
@@ -161,10 +136,24 @@ export const L20: FC<LevelComponentModel> = ({
                 : t("LevelSelectAddress")
             }
             type="outline"
-            color={!errorValue ? "green" : "red"}
+            color="green"
             onPress={() => setAPVisible(true)}
-            disabled={levelFinished || !!errorValue}
-          />,
+            disabled={levelFinished}
+          />
+        )}
+      </View>
+      <View style={levelLayout.action}>
+        {!!errorValue && (
+          <Button
+            key="continue"
+            title={t("ButtonContinue")}
+            type="main"
+            color={"green"}
+            disabled={levelFinished}
+            onPress={() => handleErrorSubmit(errorValue)}
+          />
+        )}
+        {!errorValue && (
           <Button
             key="submit"
             title={t("Submit")}
@@ -175,7 +164,7 @@ export const L20: FC<LevelComponentModel> = ({
               selectedAddress ? handleAddressCheck(selectedAddress) : null
             }
           />
-        ]}
+        )}
         {(test.en || 0) > ERRORS_TO_DOWNGRADE && (
           <Button
             key="nextButton"
@@ -187,6 +176,7 @@ export const L20: FC<LevelComponentModel> = ({
         )}
       </View>
       <AddressPicker
+        confirmTitle="Submit"
         visible={APVisible}
         onCancel={handleAddressCancel}
         onConfirm={handleAddressSelect}

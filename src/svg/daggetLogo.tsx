@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { SvgXml } from "react-native-svg";
+import { LOGO_HEIGHT, LOGO_RATIO } from "../constants";
 const xmlData = `
 <svg width="213" height="134" viewBox="0 0 213 134" fill="none" xmlns="http://www.w3.org/2000/svg">
 <mask id="mask0_34_1458" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="213" height="134">
@@ -49,10 +50,14 @@ const xmlData2 = `
 </g>
 </svg>`;
 
-export const DaggerLogoSVG: FC<{ isOutline?: boolean; color: string }> = ({
-  isOutline,
-  color = "#ECECEC"
-}) => {
+// 8.2.31: the home logo is sized by the screen it is on, not by a number
+// baked in here. `height` drives it and the width follows the artwork's own
+// ratio, so the mark never distorts; unset, it draws at its natural size.
+export const DaggerLogoSVG: FC<{
+  isOutline?: boolean;
+  color: string;
+  height?: number;
+}> = ({ isOutline, color = "#ECECEC", height = LOGO_HEIGHT }) => {
   const data = (isOutline ? xmlData : xmlData2).replace(/#ECECEC/gi, color);
-  return <SvgXml xml={data} width="255" height="160" />;
+  return <SvgXml xml={data} width={height * LOGO_RATIO} height={height} />;
 };

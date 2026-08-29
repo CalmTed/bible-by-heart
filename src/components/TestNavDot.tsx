@@ -24,12 +24,19 @@ export const TestNavDot: FC<TestNavDotModel> = ({
           ? [theme.colors.text, theme.colors.textSecond]
           : [theme.colors.gradient1, theme.colors.gradient2];
   const testNavDottStyles = StyleSheet.create({
+    // 8.2.35: the Pressable IS the dot. It used to sit between the wrapper and
+    // the gradient with no size of its own, so the gradient's height: "100%"
+    // resolved against a view sized by its 13px child - a 13px dot parked in the
+    // top-left corner of an 18px wrapper (off-centre), and a CURRENT dot, which
+    // has no child at all, sized to nothing.
     wrapper: {
       width: 18,
       aspectRatio: 1,
       borderRadius: 100,
       overflow: "hidden",
-      marginHorizontal: 5
+      marginHorizontal: 5,
+      alignItems: "center",
+      justifyContent: "center"
     },
     gradientView: {
       height: "100%",
@@ -46,19 +53,20 @@ export const TestNavDot: FC<TestNavDotModel> = ({
     }
   });
   return (
-    <View style={testNavDottStyles.wrapper}>
-      <Pressable onPress={() => (onPress ? onPress() : null)}>
-        <LinearGradient
-          //@ts-ignore
-          colors={colors}
-          start={{ x: 0.0, y: 0 }}
-          end={{ x: 0.0, y: 1.0 }}
-          locations={[0, 1]}
-          style={testNavDottStyles.gradientView}
-        >
-          {!isCurrent && <View style={testNavDottStyles.inner} />}
-        </LinearGradient>
-      </Pressable>
-    </View>
+    <Pressable
+      style={testNavDottStyles.wrapper}
+      onPress={() => (onPress ? onPress() : null)}
+    >
+      <LinearGradient
+        //@ts-ignore
+        colors={colors}
+        start={{ x: 0.0, y: 0 }}
+        end={{ x: 0.0, y: 1.0 }}
+        locations={[0, 1]}
+        style={testNavDottStyles.gradientView}
+      >
+        {!isCurrent && <View style={testNavDottStyles.inner} />}
+      </LinearGradient>
+    </Pressable>
   );
 };

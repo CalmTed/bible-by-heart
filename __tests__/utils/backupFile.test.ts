@@ -2,9 +2,11 @@ import { VERSION } from "../../src/constants";
 import { createAppState, createAppState009 } from "../../src/initials";
 import {
   BACKUP_APP_TAG,
+  BACKUP_FILE_EXTENSION,
   BackupEnvelopeModel,
   createBackupFileName,
   parseBackup,
+  parseBackupEnvelope,
   readStateVersion,
   serializeBackup
 } from "../../src/utils/backupFile";
@@ -38,10 +40,18 @@ describe("backupFile - readStateVersion", () => {
 });
 
 describe("backupFile - createBackupFileName", () => {
+  // 8.2.34: a backup is the app's own kind of file now, so it wears the app's
+  // own extension - which is what the intent filter in app.config.js matches.
   it("names the file after the state version and the export date", () => {
     expect(createBackupFileName(EXPORT_TIME, "0.0.9")).toMatch(
-      /^BibleByHeartBackup_0\.0\.9_\d{4}-\d{2}-\d{2}\.json$/
+      /^BibleByHeartBackup_0\.0\.9_\d{4}-\d{2}-\d{2}\.bbhbackup$/
     );
+  });
+
+  it("carries the app's own extension", () => {
+    expect(
+      createBackupFileName(EXPORT_TIME).endsWith(`.${BACKUP_FILE_EXTENSION}`)
+    ).toBe(true);
   });
 
   it("defaults to the current state version", () => {
@@ -141,5 +151,47 @@ describe("backupFile - parseBackup", () => {
     });
 
     expect(parseBackup(ancient)).toBeNull();
+  });
+});
+
+/**
+ * 8.2.34 — restoring replaces everything, so the confirmation has to say what
+ * would change. That needs the file's date, which `parseBackup` threw away.
+ */
+describe("backupFile - parseBackupEnvelope", () => {
+  it("hands back the state AND when the backup was written", () => {
+    const state = createAppState();
+    const parsed = parseBackupEnvelope(
+      serializeBackup(state, EXPORT_TIME) as string
+    );
+    expect(parsed?.exportedAt).toBe(EXPORT_TIME);
+    expect(parsed?.state.version).toBe(VERSION);
+  });
+
+  it("says so when the content is a bare state with no envelope", () => {
+    // the pre-8.1.9 dev export and the emergency screen's text dump: still
+    // restorable, but there is no date to show
+    const parsed = parseBackupEnvelope(JSON.stringify(createAppState()));
+    expect(parsed?.state.version).toBe(VERSION);
+    expect(parsed?.exportedAt).toBeNull();
+  });
+
+  it("ignores a date that is not a number", () => {
+    const parsed = parseBackupEnvelope(
+      JSON.stringify({
+        app: BACKUP_APP_TAG,
+        exportedAt: "yesterday",
+        stateVersion: VERSION,
+        state: createAppState()
+      })
+    );
+    expect(parsed?.exportedAt).toBeNull();
+  });
+
+  it("is null for content that is not a state at all, date or no date", () => {
+    expect(parseBackupEnvelope("not json")).toBeNull();
+    expect(
+      parseBackupEnvelope(JSON.stringify({ exportedAt: EXPORT_TIME }))
+    ).toBeNull();
   });
 });

@@ -14,7 +14,7 @@ import {
   TestModel,
   TrainModeModel
 } from "../models";
-import { getPerfectTestsNumber } from "./getPerfectTests";
+import { getPerfectTestsNumbers } from "./getPerfectTests";
 import { checkSchedule } from "./notifications";
 import {
   generateATest,
@@ -24,7 +24,6 @@ import {
 } from "./generateTests";
 import { createAppState, createTest } from "../initials";
 import { logger } from "./logger";
-import toastShow from "./toastShow";
 
 export const reduce: (
   state: AppStateModel,
@@ -379,10 +378,13 @@ export const reduce: (
       });
       //updating history
       const newHistory = [...state.testsHistory, ...testsWithUpdatedLastTest];
+      // One pass over the history for ALL passages: the single-passage form used
+      // to filter and sort the whole history once per passage (8.2.21).
+      const perfectTests = getPerfectTestsNumbers(newHistory, state.passages);
       const newPassages = state.passages.map((p) => {
         //updating passages max level
         //updating passages new level awalible
-        const perfectTestsNumber = getPerfectTestsNumber(newHistory, p);
+        const perfectTestsNumber = perfectTests.get(p.id) || 0;
         const hasErrorFromLastThreeTests =
           perfectTestsNumber <= PERFECT_TESTS_TO_PROCEED;
         const nextLevel = {
@@ -599,34 +601,47 @@ export const reduce: (
   }
   if (changedState) {
     const timeOfChange = new Date().getTime();
+    // Copy-on-write from here down. Every branch above builds a NEW top-level
+    // object, but most of them keep the previous state's `settings` object, so
+    // assigning into `changedState.settings` writes into the state React has
+    // already rendered. That was invisible while the reducer ended in a full deep
+    // clone; without it (8.2.20) it is a live shared reference. Build a new
+    // settings object only when a heal actually fires.
+    let settings = changedState.settings;
     if (
-      changedState.settings.devModeActivationTime &&
-      changedState.settings.devModeActivationTime + DAY * 1000 < timeOfChange
+      settings.devModeActivationTime &&
+      settings.devModeActivationTime + DAY * 1000 < timeOfChange
     ) {
-      changedState.settings.devModeActivationTime = null;
-      changedState.settings.devModeEnabled = false;
+      settings = {
+        ...settings,
+        devModeActivationTime: null,
+        devModeEnabled: false
+      };
     }
     // Heal a dangling left-swipe tag. Tags have no registry — they exist only
     // as long as some passage carries them — so removing a tag from every
     // passage can leave settings.leftSwipeTag pointing at a tag that no longer
     // exists. ARCHIVED_NAME is always available, so fall back to it. Centralized
     // here so it covers every passage-mutating action (STRATEGY §3).
-    const swipeTag = changedState.settings.leftSwipeTag;
+    // The scan is O(passages), so run it only when something could have stranded
+    // the tag: the passages changed, or settings did (setLeftSwipeTag).
+    const swipeTag = settings.leftSwipeTag;
     if (
+      (changedState.passages !== state.passages ||
+        changedState.settings !== state.settings) &&
       swipeTag !== ARCHIVED_NAME &&
       !changedState.passages.some((p) => p.tags.includes(swipeTag))
     ) {
-      changedState.settings.leftSwipeTag = ARCHIVED_NAME;
+      settings = { ...settings, leftSwipeTag: ARCHIVED_NAME };
     }
+    // Safe to assign: `changedState` is always a fresh top-level object.
+    changedState.settings = settings;
     changedState.lastChange = timeOfChange;
   }
-  try {
-    //checking if not corrapted
-    const safeObject: AppStateModel = JSON.parse(JSON.stringify(changedState));
-    return safeObject;
-  } catch (err) {
-    logger.error(`Cant change app state ${err}`);
-    toastShow("Cant change app state " + err, 10000);
-    return state;
-  }
+  // No deep clone here (8.2.20). It cost a full JSON round-trip of passages +
+  // history on EVERY action, which is what made the app feel slow. The only
+  // failure it caught — a state that cannot be serialized — is caught by the
+  // persist path in AppContext, which stringifies the very same object and
+  // already logs and toasts.
+  return changedState;
 };

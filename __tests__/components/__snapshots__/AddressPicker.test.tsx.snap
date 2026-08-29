@@ -38,7 +38,7 @@ exports[`testing address picker renders correctly 1`] = `
               "opacity": 0,
               "transform": [
                 {
-                  "translateY": 16,
+                  "translateY": -8,
                 },
               ],
             },
@@ -71,7 +71,7 @@ exports[`testing address picker renders correctly 1`] = `
               "opacity": 0,
               "transform": [
                 {
-                  "translateY": 16,
+                  "translateY": -8,
                 },
               ],
             },
@@ -407,8 +407,8 @@ exports[`testing address picker renders correctly 1`] = `
             <ViewManagerAdapter_ExpoLinearGradient
               colors={
                 [
-                  4280756775,
-                  4281085996,
+                  0,
+                  0,
                 ]
               }
               endPoint={
@@ -4357,7 +4357,7 @@ exports[`testing address picker renders the single-verse state with an in-flow f
               "opacity": 0,
               "transform": [
                 {
-                  "translateY": 16,
+                  "translateY": -8,
                 },
               ],
             },
@@ -4390,7 +4390,7 @@ exports[`testing address picker renders the single-verse state with an in-flow f
               "opacity": 0,
               "transform": [
                 {
-                  "translateY": 16,
+                  "translateY": -8,
                 },
               ],
             },

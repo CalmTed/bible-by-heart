@@ -1,42 +1,21 @@
 import React, { FC, useEffect, useState } from "react";
 import { LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, Vibration } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
+import { NoOptions } from "./NoOptions";
 import { useAppContext } from "../../context/AppContext";
 import {
   MINIMUM_SENTENCE_LENGTH,
-  OPTION_TITLE_MAX_LENGTH,
-  VIBRATION_PATTERNS
+  OPTION_TITLE_MAX_LENGTH
 } from "../../constants";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 1, second half: read the address, pick the verse out of the options.
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
-  },
-  addressTextView: {
-    alignContent: "center",
-    justifyContent: "center",
-    maxHeight: 200
-  },
-  addressText: {
-    fontSize: 22,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    textAlign: "center"
-  },
-  optionButtonsWrapper: {
-    flex: 2,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    paddingHorizontal: 20
-  },
   textTransformNone: {
     textTransform: "none"
   }
@@ -101,9 +80,7 @@ export const L11: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
       return;
     }
     if (targetPassage.id === value) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: {
@@ -111,9 +88,7 @@ export const L11: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       setErrorValue(value);
     }
   };
@@ -123,18 +98,19 @@ export const L11: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
   }
   const levelFinished = test.f;
   return (
-    <View style={{ ...levelComponentStyle.levelComponentView }}>
-      <View style={{ ...levelComponentStyle.addressTextView }}>
+    <View style={levelLayout.screen}>
+      <View style={levelLayout.promptContent}>
         <Text
           style={{
             ...theme.theme.text,
-            ...levelComponentStyle.addressText
+            ...levelLayout.addressText
           }}
         >
           {Address.format(targetPassage.address, t)}
         </Text>
       </View>
-      <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
+      <View style={levelLayout.answer}>
+        {!test.d.passagesOptions?.length && <NoOptions />}
         {test.d.passagesOptions &&
           test.d.passagesOptions.map((op) => {
             const limitedTitle = getOptionTitle(
@@ -169,6 +145,8 @@ export const L11: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
               );
             }
           })}
+      </View>
+      <View style={levelLayout.action}>
         {!!errorValue && (
           <Button
             title={t("ButtonContinue")}

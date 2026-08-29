@@ -159,4 +159,26 @@ describe("testing address picker", () => {
     fireEvent.press(screen.getByText("1")); // start verse 1
     expect(screen.toJSON()).toMatchSnapshot();
   });
+
+  // Last on purpose: the two snapshots above carry react-test-renderer `nativeID`
+  // counters, so a test inserted ahead of them renumbers the snapshot instead of
+  // testing anything.
+  it("says what the confirm actually does, not always 'Add' (8.2.32)", () => {
+    const screen = renderPicker(
+      <AddressPicker
+        confirmTitle="Submit"
+        visible={true}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />
+    );
+    fireEvent.press(screen.getByText(t("bGenShrt")));
+    fireEvent.press(screen.getByText("1")); // chapter 1
+    fireEvent.press(screen.getByText("1")); // start verse 1
+
+    // the level screens open this very picker to ANSWER a test, and "Add" is a
+    // lie about what the button is going to do there
+    expect(screen.getByText(t("Submit"))).toBeTruthy();
+    expect(screen.queryByText(t("APAddVerse"))).toBeNull();
+  });
 });

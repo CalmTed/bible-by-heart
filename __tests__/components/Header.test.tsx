@@ -1,4 +1,4 @@
-import { StyleSheet, Text, ViewStyle } from "react-native";
+import { StyleSheet, Text, View, ViewStyle } from "react-native";
 import { fireEvent, within } from "@testing-library/react-native";
 import type { ReactTestRendererJSON } from "react-test-renderer";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -6,6 +6,7 @@ import { Header, HEADER_HEIGHT } from "../../src/components/Header";
 import { IconButton } from "../../src/components/Button";
 import { IconName } from "../../src/components/Icon";
 import { renderWithContext } from "../../test-utils/renderWithContext";
+import { ANIMATION } from "../../src/constants";
 
 // SafeAreaProvider renders nothing until it knows the insets — the old version
 // of this file wrapped the Header in a bare provider, so it snapshotted an
@@ -167,5 +168,27 @@ describe("Header (8.2.3)", () => {
 
   it("exports its own height, so screens can lay out under it", () => {
     expect(HEADER_HEIGHT).toBeGreaterThan(0);
+  });
+
+  // 8.2.29. The bar used to rise from below over the same distance as the
+  // content it caps, at nearly the same moment, and read as scrambled. It falls
+  // from the top edge now, over less ground. jest-expo never advances frames, so
+  // what is checkable here is the frame the entrance STARTS from - which is the
+  // half of it that carries the direction.
+  it("starts above its seat, and travels less than the content does", () => {
+    const screen = renderHeader(<Header title="Passages" />);
+    const bar = screen
+      .UNSAFE_getAllByType(View)
+      .find(
+        (node) =>
+          (node.props.jestAnimatedStyle?.value as { opacity?: number })
+            ?.opacity === 0
+      );
+    expect(bar).toBeTruthy();
+    expect(bar!.props.jestAnimatedStyle.value).toEqual({
+      opacity: 0,
+      transform: [{ translateY: -ANIMATION.headerDropDistance }]
+    });
+    expect(ANIMATION.headerDropDistance).toBeLessThan(ANIMATION.riseDistance);
   });
 });

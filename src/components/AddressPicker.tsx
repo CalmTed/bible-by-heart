@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  Vibration,
   View
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,14 +16,18 @@ import { WORD } from "../l10n";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
 import { Address } from "../utils/address";
-import { VIBRATION_PATTERNS } from "../constants";
 import { useAppContext } from "../context/AppContext";
+import { feedback } from "../utils/feedback";
 
 interface AddressPickerModel {
   visible: boolean;
   onCancel: () => void;
   onConfirm: (address: AddressType) => void;
   address?: AddressType;
+  // What the primary footer button says. It defaults to "Add", which is true when
+  // the picker is adding a passage - but a level screen opens the same picker to
+  // ANSWER a test, and "Add" is a lie there (8.2.32).
+  confirmTitle?: WORD;
 }
 
 const bookList = bibleReference.map((book) => book.titleShort);
@@ -62,12 +65,13 @@ const getPickerTitle: (
 };
 
 export const AddressPicker: FC<AddressPickerModel> = ({
+  confirmTitle = "APAddVerse",
   visible,
   address,
   onCancel,
   onConfirm
 }) => {
-  const { theme, t } = useAppContext();
+  const { state, theme, t } = useAppContext();
   const isNoAddress = !address;
   const isAddressNull =
     address?.bookIndex === null ||
@@ -155,7 +159,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     } else {
       handleListButtonPress(index);
     }
-    Vibration.vibrate(VIBRATION_PATTERNS.APSelectVerse);
+    feedback(state.settings, "APSelectVerse");
   };
 
   const handleConfirm: (a: AddressType) => void = (address) => {
@@ -319,7 +323,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
             <Button
               type="main"
               color="green"
-              title={t("APAddVerse")}
+              title={t(confirmTitle)}
               style={APstyle.footerPrimary}
               onPress={() => handleConfirm(tempAddress)}
             />

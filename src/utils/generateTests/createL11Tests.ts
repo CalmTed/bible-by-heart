@@ -4,6 +4,7 @@ import { getPerfectTestsNumber } from "../getPerfectTests";
 import { Passage } from "../passage";
 import { Address } from "../address";
 import { randomListRange, randomRange } from "../randomizers";
+import { MIN_TEST_OPTIONS } from "../../constants";
 
 //select right qoute
 export const createL11Test: CreateTestMethodModel = ({
@@ -11,14 +12,20 @@ export const createL11Test: CreateTestMethodModel = ({
   passages,
   history
 }) => {
-  const optionsLength = 4;
+  const optionsLength = MIN_TEST_OPTIONS;
   const targetPassage = passages.find(
     (p) => p.id === initialTest.pi
   ) as PassageModel;
   const languageFilteredPassages = passages.filter(
     (p) => p.verseTranslation === targetPassage.verseTranslation
   );
-  //if passages.length < optionsLength then replace with L10
+  // Not enough verses in the target's own translation to offer four of them, so
+  // this becomes the OTHER half of level 1 - read the verse, pick the address.
+  // The count is the third one guarding this: `generateATest` checks the whole
+  // library twice before getting here, and one passage on another translation (or
+  // on `null`, which a custom-text passage carries) is enough to fail this one
+  // while both of those passed. createL10Test stamps the level it hands back, so
+  // the test that comes out of here is honestly an l10 (8.2.38).
   if (languageFilteredPassages.length < optionsLength) {
     return createL10Test({ initialTest, passages, history });
   }

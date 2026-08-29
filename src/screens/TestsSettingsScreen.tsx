@@ -12,7 +12,7 @@ import { reduce } from "../utils/reduce";
 export const TestsSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsTests>
 > = ({ navigation }) => {
-  const { state, setState, t } = useAppContext();
+  const { state, setState, t, theme } = useAppContext();
 
   return (
     <SettingsSubScreen
@@ -20,7 +20,10 @@ export const TestsSettingsScreen: FC<
       title={t("settsLabelTests")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={testsSettingsStyle.scrollView}>
+      <ScrollView
+        style={testsSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           header={t("settsHaptics")}
           subtext={t(

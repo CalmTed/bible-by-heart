@@ -29,9 +29,12 @@ interface fetchResponseModel {
 export const fetchAPI: (a: {
   link: API_LINK;
   method: "POST" | "GET" | "DELETE";
+  // Mandatory, in case of an invalid refresh token. It carries NO `state`
+  // (8.2.24): a request is awaited, so any snapshot handed in here is one or
+  // more state changes old by the time the logout runs, and writing it back
+  // rolled the whole app one step backwards - which is how picking a language
+  // silently undid itself.
   logoutMethods: {
-    //mandatory, in case of invalid refresh token
-    state: AppStateModel;
     setState: React.Dispatch<React.SetStateAction<AppStateModel>>;
     navigation: RootStackNavigationModel;
     screen: SCREEN;
@@ -47,18 +50,16 @@ export const fetchAPI: (a: {
 }) => {
   try {
     const initiateLogout: (
-      state: AppStateModel,
       setState: React.Dispatch<React.SetStateAction<AppStateModel>>,
       navigation: RootStackNavigationModel,
       screen: SCREEN
-    ) => Promise<void> = async (state, setState, navigation, screen) => {
-      const newState = reduce(state, {
-        name: ActionName.resetUserData
-      });
-      if (newState === null) {
-        return logger.error(`Unknown error: Unable to reset user data`);
-      }
-      setState(newState);
+    ) => Promise<void> = async (setState, navigation, screen) => {
+      // Functional updater, never a captured snapshot (8.2.24). React hands the
+      // reducer whatever the state IS at the moment this runs, which is the only
+      // thing that can be true after an awaited request.
+      setState(
+        (prev) => reduce(prev, { name: ActionName.resetUserData }) ?? prev
+      );
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
       // State lives in AppContext now (setState above already reset it); just
@@ -121,7 +122,6 @@ export const fetchAPI: (a: {
         } else {
           //refresh token expired too → logging out
           initiateLogout(
-            logoutMethods.state,
             logoutMethods.setState,
             logoutMethods.navigation,
             logoutMethods.screen

@@ -20,7 +20,7 @@ import { reduce } from "../utils/reduce";
 export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
   navigation
 }) => {
-  const { state, t, setState, theme } = useAppContext();
+  const { t, setState, theme } = useAppContext();
 
   const [tempEmail, setTempEmail] = useState("");
   const [tempPassword, setTempPassword] = useState("");
@@ -48,7 +48,6 @@ export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
             password
           },
           logoutMethods: {
-            state,
             setState,
             navigation,
             screen: SCREEN.settings
@@ -73,7 +72,6 @@ export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
                   Authorization: `Bearer ${result.data.token}`
                 },
                 logoutMethods: {
-                  state,
                   setState,
                   navigation,
                   screen: SCREEN.settings
@@ -90,42 +88,39 @@ export const LoginScreen: FC<ScreenPropsModel<SCREEN.login>> = ({
                     keyof AppStateModel["userData"] | "appLanguage",
                     any
                   >;
-                  const newState = reduce(state, {
-                    name: ActionName.setUserData,
-                    payload: {
-                      uuid: udd.uuid,
-                      email: udd.email,
-                      registrationDate: udd.registrationDate,
-                      isEmailConfirmed: udd.isEmailConfirmed,
-                      //setting user data update time automaticaly
-                      userName: udd.userName,
-                      userTitle: udd.userTitle,
-                      userPicture: udd.userPicture,
-                      birthDate: udd.birthDate,
-                      userRights: udd.userRights,
-                      isProfilePublic: udd.isProfilePublic,
-                      isDataPublic: udd.isDataPublic,
-                      friendRequests: udd.friendRequests,
-                      friends: udd.friends,
-                      blockedUsers: udd.blockedUsers,
-                      sessions: udd.sessions,
-                      applang:
-                        state.settings.langCode !== udd.appLanguage
-                          ? udd.appLanguage
-                          : undefined //set app lang if different
-                    }
-                  });
-                  if (newState === null) {
-                    logger.error(
-                      `Login : Unable to update user data. User data: ${JSON.stringify(udd)}`
-                    );
-                    return Alert.alert(
-                      t("netUnknownError"),
-                      t("netUnableToSaveUserData")
-                    );
-                  }
                   logger.write(`Authinicated as ${userData?.data?.userName}`);
-                  setState(newState);
+                  // Functional updater, not reduce(state) + setState (8.2.24):
+                  // this runs two awaited requests after `state` was read, and
+                  // `applang` has to compare against the language the app is in
+                  // NOW rather than the one it was in when the login started.
+                  setState(
+                    (prev) =>
+                      reduce(prev, {
+                        name: ActionName.setUserData,
+                        payload: {
+                          uuid: udd.uuid,
+                          email: udd.email,
+                          registrationDate: udd.registrationDate,
+                          isEmailConfirmed: udd.isEmailConfirmed,
+                          //setting user data update time automaticaly
+                          userName: udd.userName,
+                          userTitle: udd.userTitle,
+                          userPicture: udd.userPicture,
+                          birthDate: udd.birthDate,
+                          userRights: udd.userRights,
+                          isProfilePublic: udd.isProfilePublic,
+                          isDataPublic: udd.isDataPublic,
+                          friendRequests: udd.friendRequests,
+                          friends: udd.friends,
+                          blockedUsers: udd.blockedUsers,
+                          sessions: udd.sessions,
+                          applang:
+                            prev.settings.langCode !== udd.appLanguage
+                              ? udd.appLanguage
+                              : undefined //set app lang if different
+                        }
+                      }) ?? prev
+                  );
                   navigation.navigate(SCREEN.settings);
                   break;
                 case 400:

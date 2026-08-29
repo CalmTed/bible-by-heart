@@ -1,37 +1,20 @@
 import React, { FC, useEffect, useState } from "react";
 import { AddressType, LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
+import { NoOptions } from "./NoOptions";
 import { useAppContext } from "../../context/AppContext";
-import { VIBRATION_PATTERNS } from "../../constants";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 1, first half: read the verse, pick its address out of four options.
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
-  },
-  passageTextView: {
-    alignContent: "center",
-    flex: 1
-  },
-  passageText: {
-    fontSize: 18,
-    letterSpacing: 0.5,
-    margin: 20,
-    borderRadius: 10,
-    padding: 10
-  },
-  optionButtonsWrapper: {
-    flex: 2,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    paddingHorizontal: 20
+  verseCard: {
+    ...levelLayout.promptCard,
+    ...levelLayout.verseText
   }
 });
 
@@ -59,9 +42,7 @@ export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
       return;
     }
     if (Address.equals(rightPassage.address, value)) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: {
@@ -69,9 +50,7 @@ export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       setErrorValue(value);
     }
   };
@@ -88,19 +67,23 @@ export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
     test.d?.sentenceRange
   );
   return (
-    <View style={{ ...levelComponentStyle.levelComponentView }}>
-      <ScrollView style={{ ...levelComponentStyle.passageTextView }}>
+    <View style={levelLayout.screen}>
+      <ScrollView
+        style={levelLayout.prompt}
+        contentContainerStyle={levelLayout.promptContent}
+      >
         <Text
           style={{
             ...theme.theme.text,
-            ...levelComponentStyle.passageText,
+            ...levelComponentStyle.verseCard,
             backgroundColor: theme.colors.bgSecond
           }}
         >
           {verseText}
         </Text>
       </ScrollView>
-      <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
+      <View style={levelLayout.answer}>
+        {!test.d.addressOptions?.length && <NoOptions />}
         {test.d.addressOptions &&
           test.d.addressOptions.map((op) => {
             if (!errorValue) {
@@ -132,6 +115,8 @@ export const L10: FC<LevelComponentModel> = ({ test, state, submitTest }) => {
               );
             }
           })}
+      </View>
+      <View style={levelLayout.action}>
         {!!errorValue && (
           <Button
             title={t("ButtonContinue")}

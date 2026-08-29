@@ -10,10 +10,17 @@ exports[`testing level 20 rendering L20 renders correctly 1`] = `
   }
 >
   <RCTScrollView
+    contentContainerStyle={
+      {
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
+      }
+    }
     style={
       {
-        "alignContent": "center",
-        "flex": 1,
+        "flexGrow": 0,
+        "flexShrink": 1,
+        "width": "100%",
       }
     }
   >
@@ -26,8 +33,6 @@ exports[`testing level 20 rendering L20 renders correctly 1`] = `
             "color": "#ECECEC",
             "fontSize": 18,
             "letterSpacing": 0.5,
-            "marginHorizontal": 20,
-            "marginVertical": 10,
             "padding": 10,
           }
         }
@@ -39,8 +44,7 @@ exports[`testing level 20 rendering L20 renders correctly 1`] = `
   <View
     style={
       {
-        "alignItems": "center",
-        "flex": 2,
+        "flex": 1,
         "gap": 10,
         "justifyContent": "center",
         "paddingHorizontal": 20,
@@ -199,6 +203,18 @@ exports[`testing level 20 rendering L20 renders correctly 1`] = `
         </ViewManagerAdapter_ExpoLinearGradient>
       </View>
     </View>
+  </View>
+  <View
+    style={
+      {
+        "gap": 10,
+        "paddingBottom": 20,
+        "paddingHorizontal": 20,
+        "paddingTop": 10,
+        "width": "100%",
+      }
+    }
+  >
     <View
       collapsable={false}
       jestAnimatedProps={

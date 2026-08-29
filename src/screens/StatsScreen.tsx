@@ -136,7 +136,10 @@ export const StatsScreen: FC<ScreenPropsModel<SCREEN.stats>> = ({
           />
         }
       />
-      <ScrollView style={statsStyle.listView}>
+      <ScrollView
+        style={statsStyle.listView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <View style={statsStyle.mainScoreView}>
           <View style={statsStyle.absoluteScoreTextView}>
             <Text style={statsStyle.absoluteScoreTextNumber}>

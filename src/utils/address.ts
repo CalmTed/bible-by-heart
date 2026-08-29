@@ -32,13 +32,21 @@ const escapeRegExp = (s: string): string =>
 const isWordChar = (ch: string | undefined): boolean =>
   typeof ch === "string" && /[\p{L}\d]/u.test(ch);
 
-// An open end ("John 3:16") means the end is the start. `Object.is` rather than
-// `===` so two unpicked addresses (NaN parts, what AddressPicker hands around
-// before a book is chosen) still compare equal, which is what the old
-// JSON.stringify comparison did by accident.
+// An open end ("John 3:16") means the end is the start. Two spellings of "open"
+// reach here: `null`, which is what a persisted address carries because JSON has
+// no NaN, and `NaN`, which is what AddressPicker hands around before the end is
+// picked. Until 8.2.20 the reducer deep-cloned its result through JSON on every
+// action, so every NaN quietly became null before anything compared it; without
+// that clone a just-added single verse would no longer equal its own stored copy.
+// Fold both spellings here instead. `Object.is` below rather than `===`, so two
+// unpicked addresses (all-NaN, what the picker hands around before a book is
+// chosen) still compare equal — what the old JSON.stringify comparison did by
+// accident.
+const isOpenEnd = (n: number | null): boolean => n === null || isNaN(n);
 const endChapter = (a: AddressType): number =>
-  a.endChapterNum ?? a.startChapterNum;
-const endVerse = (a: AddressType): number => a.endVerseNum ?? a.startVerseNum;
+  isOpenEnd(a.endChapterNum) ? a.startChapterNum : (a.endChapterNum as number);
+const endVerse = (a: AddressType): number =>
+  isOpenEnd(a.endVerseNum) ? a.startVerseNum : (a.endVerseNum as number);
 
 const format: (address: AddressType, t: (w: WORD) => string) => string = (
   address,

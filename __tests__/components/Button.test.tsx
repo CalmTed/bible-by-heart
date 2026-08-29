@@ -1,7 +1,9 @@
 import { fireEvent } from "@testing-library/react-native";
 import { View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Button } from "../../src/components/Button";
-import { ANIMATION } from "../../src/constants";
+import { ANIMATION, THEMETYPE } from "../../src/constants";
+import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { renderWithContext } from "../../test-utils/renderWithContext";
 
 // The press handler is the innermost `accessible` host node — the Pressable.
@@ -53,5 +55,63 @@ describe("testing button", () => {
     );
     fireEvent.press(disabled.getByText("tap"));
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  // 8.2.30. expo-linear-gradient bakes its ramp at layout size, so a scaled
+  // gradient stretches instead of scaling and visibly drops out mid-press. The
+  // press handlers are therefore not attached at all on a gradient button, which
+  // is what this asserts - jest-expo never advances frames, so the shared value
+  // itself would read 1 either way and could not tell the two apart.
+  it("does not animate the press of a gradient button", () => {
+    const gradients = [
+      { type: "main", color: "green" },
+      { type: "outline", color: "green" },
+      { type: "main", color: "red" }
+    ] as const;
+    // Searched by prop rather than by type: RN turns onPressIn into responder
+    // handlers on the way down, so the host View never carries it, and the
+    // composite that does is not the `Pressable` this file could import.
+    const pressHandlerCount = (screen: ReturnType<typeof renderWithContext>) =>
+      screen.UNSAFE_root.findAll((node) => node.props?.onPressIn !== undefined)
+        .length;
+
+    gradients.forEach(({ type, color }) => {
+      const screen = renderWithContext(
+        <Button title="tap" type={type} color={color} onPress={() => {}} />
+      );
+      expect(pressHandlerCount(screen)).toBe(0);
+    });
+
+    const flats = [
+      { type: "transparent", color: "green" },
+      { type: "main", color: "gray" }
+    ] as const;
+    flats.forEach(({ type, color }) => {
+      const screen = renderWithContext(
+        <Button title="tap" type={type} color={color} onPress={() => {}} />
+      );
+      expect(pressHandlerCount(screen)).toBe(1);
+    });
+  });
+
+  // 8.2.32. `disabled` used to win over `transparent`, so a dead icon button drew
+  // a bg->bgSecond plate under itself - the "shadow" on the calendar's month
+  // arrows, which are disabled at the ends of the available range.
+  it("keeps a transparent button transparent when it is disabled", () => {
+    const colorsOf = (screen: ReturnType<typeof renderWithContext>) =>
+      screen.UNSAFE_getAllByType(LinearGradient)[0].props.colors;
+
+    expect(
+      colorsOf(renderWithContext(<Button onPress={() => {}} disabled />))
+    ).toEqual(["transparent", "transparent"]);
+
+    const { colors } = getThemeFromScheme(THEMETYPE.dark);
+    expect(
+      colorsOf(
+        renderWithContext(
+          <Button onPress={() => {}} type="main" color="green" disabled />
+        )
+      )
+    ).toEqual([colors.bg, colors.bgSecond]);
   });
 });

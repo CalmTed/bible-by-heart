@@ -62,7 +62,6 @@ export const RegisterScreen: FC<ScreenPropsModel<SCREEN.register>> = ({
             appLanguage: state.settings.langCode
           },
           logoutMethods: {
-            state,
             setState,
             navigation,
             screen: SCREEN.register

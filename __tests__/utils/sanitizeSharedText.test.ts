@@ -110,4 +110,95 @@ describe("sanitizeSharedText", () => {
   it("returns an empty string for a URL-only share", () => {
     expect(sanitizeSharedText("https://bible.com/x")).toBe("");
   });
+
+  // --- 8.2.33: bracketed verse numbers -----------------------------------
+
+  it("drops a leading bracketed verse number", () => {
+    expect(sanitizeSharedText("[1] In the beginning God created")).toBe(
+      "In the beginning God created"
+    );
+  });
+
+  it("drops bracketed verse numbers from the middle of a range", () => {
+    expect(
+      sanitizeSharedText("[1] In the beginning [2] The earth was without form")
+    ).toBe("In the beginning The earth was without form");
+  });
+
+  it("drops a two-digit and a chapter:verse bracketed number", () => {
+    expect(sanitizeSharedText("[16] For God so loved")).toBe("For God so loved");
+    expect(sanitizeSharedText("[3:16] For God so loved")).toBe(
+      "For God so loved"
+    );
+  });
+
+  it("drops a bracketed number padded with spaces", () => {
+    expect(sanitizeSharedText("[ 12 ] and he said")).toBe("and he said");
+  });
+
+  it("keeps brackets around words - they are editorial apparatus (8.2.11)", () => {
+    expect(sanitizeSharedText("and [the] LORD said")).toBe("and [the] LORD said");
+    expect(sanitizeSharedText("[a] note")).toBe("[a] note");
+    expect(sanitizeSharedText("the [2nd] time")).toBe("the [2nd] time");
+  });
+
+  // --- 8.2.33: leading translation code -----------------------------------
+
+  it("drops a leading code standing in front of a verse number", () => {
+    expect(sanitizeSharedText("ESV [1] In the beginning")).toBe(
+      "In the beginning"
+    );
+    expect(sanitizeSharedText("NIV84 [1] In the beginning")).toBe(
+      "In the beginning"
+    );
+  });
+
+  it("drops a leading code with a registered mark", () => {
+    expect(sanitizeSharedText("ESV\u00ae [1] In the beginning")).toBe(
+      "In the beginning"
+    );
+  });
+
+  it("drops a leading code separated by a colon or a dash", () => {
+    expect(sanitizeSharedText("ESV: In the beginning")).toBe("In the beginning");
+    expect(sanitizeSharedText("ESV - In the beginning")).toBe(
+      "In the beginning"
+    );
+    // the dash folding runs first, so an em dash reaches the same shape
+    expect(sanitizeSharedText(`ESV ${EM_DASH} In the beginning`)).toBe(
+      "In the beginning"
+    );
+  });
+
+  it("drops a leading code sitting alone on the first line", () => {
+    expect(sanitizeSharedText("ESV\nIn the beginning")).toBe(
+      "In the beginning"
+    );
+  });
+
+  it("keeps an all-caps word that is part of the verse", () => {
+    // the whole reason the three shapes above are narrow
+    expect(sanitizeSharedText("LORD is my shepherd")).toBe(
+      "LORD is my shepherd"
+    );
+    expect(sanitizeSharedText("I AM has sent me to you")).toBe(
+      "I AM has sent me to you"
+    );
+  });
+
+  it("keeps a code that is not leading", () => {
+    expect(sanitizeSharedText("In the beginning ESV")).toBe(
+      "In the beginning ESV"
+    );
+  });
+
+  it("handles the whole shape another Bible app shares", () => {
+    const shared =
+      `ESV [1] ${LDQUO}In the beginning, God created the heavens${RDQUO} ` +
+      "[2] The earth was without form.\n" +
+      "https://www.bible.com/bible/59/GEN.1.1";
+    expect(sanitizeSharedText(shared)).toBe(
+      '"In the beginning, God created the heavens" The earth was without form.'
+    );
+  });
 });

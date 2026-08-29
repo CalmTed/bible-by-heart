@@ -72,7 +72,10 @@ export const LogSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsLog>> = ({
       title={t("settsShowLogHeader")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={logStyle.scrollView}>
+      <ScrollView
+        style={logStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <Button title={t("settsExportLog")} onPress={handleExport} />
         <Button
           color="red"

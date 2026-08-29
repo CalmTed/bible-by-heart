@@ -425,8 +425,11 @@ describe("end-to-end learning flow (8.1.16a)", () => {
       expect(passage.maxLevel).toBe(PASSAGELEVEL.l2);
       expect(passage.isNewLevelAwalible).toBe(true);
       expect(passage.upgradeDates[PASSAGELEVEL.l2]).toBeGreaterThan(0);
-      // autoIncreaseLevel is off by default: the user still chooses when to move
-      expect(passage.selectedLevel).toBe(PASSAGELEVEL.l1);
+      // autoIncreaseLevel is ON for new installs since 8.2.32, and this flow
+      // starts from createAppState - so reaching a new maxLevel also moves the
+      // selected one. An existing user converting from 0.0.9 keeps their own
+      // setting, so both outcomes are live in the wild.
+      expect(passage.selectedLevel).toBe(PASSAGELEVEL.l2);
     });
     expect(erroredPassage?.maxLevel).toBe(PASSAGELEVEL.l1);
     expect(erroredPassage?.isNewLevelAwalible).toBe(false);

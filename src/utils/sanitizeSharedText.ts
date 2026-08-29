@@ -45,6 +45,39 @@ const stripWrappingQuotes = (input: string): string => {
   return text;
 };
 
+// A translation code the way another Bible app stamps it in front of a share:
+// two to eight capitals and digits, optionally with a registered / trademark
+// mark. ESV, KJV, NIV84, NASB95, UCVNTR, ESV\u00ae.
+const CODE = "[A-Z][A-Z0-9]{1,7}[\u00ae\u2122]?";
+
+// Only these three shapes are stripped, and the reason is "LORD is my shepherd".
+// A bare capitalized token followed by ordinary text is not evidence of anything
+// - Scripture is full of all-caps words - so the code has to stand APART from the
+// verse before it can be called a code (8.2.33).
+const LEADING_CODE_SHAPES = [
+  // "ESV [1] In the beginning" - a bracketed verse number right behind it
+  new RegExp(`^${CODE}[ \\t]+(?=\\[[ \\t]*\\d)`),
+  // "ESV: In the beginning" / "ESV - In the beginning"
+  new RegExp(`^${CODE}[ \\t]*[:-][ \\t]*`),
+  // "ESV" alone on the first line
+  new RegExp(`^${CODE}[ \\t]*\\r?\\n[ \\t]*`)
+];
+
+const stripLeadingTranslationCode = (input: string): string => {
+  for (const shape of LEADING_CODE_SHAPES) {
+    if (shape.test(input)) {
+      return input.replace(shape, "");
+    }
+  }
+  return input;
+};
+
+// A verse number as other apps mark it: "[1]", "[ 12 ]", "[3:16]". DIGITS ONLY -
+// square brackets around words are real editorial apparatus in the translations
+// the app bundles ("and [the] LORD said"), and stripping those would rewrite the
+// text the user is going to be tested on character by character (8.2.11).
+const BRACKETED_VERSE_NUMBER = /\[[ \t]*\d+(?:[ \t]*[:.][ \t]*\d+)?[ \t]*\]/g;
+
 export const sanitizeSharedText = (input: string): string => {
   let text = input
     // en/em dash → hyphen
@@ -59,6 +92,12 @@ export const sanitizeSharedText = (input: string): string => {
     .replace(/[   ]/g, " ");
   // strip URLs (share payloads usually append a source link)
   text = text.replace(/(?:https?:\/\/|www\.)\S+/gi, "");
+  // The code goes first and the verse numbers second: the "ESV [1] ..." shape
+  // uses the bracket as its evidence, so removing the brackets first would take
+  // that evidence away. Both run after the dash/space folding above, which is
+  // what makes "ESV \u2014 In the beginning" reach the plain-hyphen shape.
+  text = stripLeadingTranslationCode(text.trimStart());
+  text = text.replace(BRACKETED_VERSE_NUMBER, "");
   // collapse runs of spaces left behind, keep newlines
   text = text.replace(/ {2,}/g, " ").trim();
   // peel wrapping quotes, then trailing/leading dangling separators — alternate

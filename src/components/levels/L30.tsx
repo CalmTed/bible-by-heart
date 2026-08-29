@@ -1,34 +1,26 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType, LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
 import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
-import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE } from "../../constants";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 3: the verse with words missing — put them back in order, then name
 // the address.
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
-  },
-  passageTextView: {
-    maxHeight: "30%",
-    height: "auto",
-    borderRadius: 10,
-    margin: 10,
-    paddingHorizontal: 10
-  },
-  passageText: {
+  // the verse card is the prompt block's card, laid out as wrapping words
+  verseCard: {
+    ...levelLayout.promptCard,
     alignContent: "center",
     letterSpacing: 0.3,
     flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 10
+    flexWrap: "wrap"
   },
   fixedWord: {
     paddingHorizontal: 2,
@@ -41,19 +33,6 @@ const levelComponentStyle = StyleSheet.create({
   },
   hiddenWordText: {
     color: "transparent"
-  },
-  optionButtonsScrollWrapper: {
-    flex: 1,
-    width: "100%"
-  },
-  optionButtonsWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-    width: "100%",
-    gap: 10,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingVertical: 10
   },
   optionButtonStyle: {
     padding: 0
@@ -91,6 +70,9 @@ export const L30: FC<LevelComponentModel> = ({
       ? words.map((w, i) => i).slice(0, alreadyEnteredUntill)
       : [];
   const [selectedWords, setSelectedWords] = useState(defaultSelectedWords);
+  // The index of the word the user tapped by mistake. `null` is "no error" -
+  // NEVER a falsy check, because word 0 is a word the user can get wrong and
+  // `!errorIndex` silently swallowed that whole case (8.2.26).
   const [errorIndex, setErrorIndex] = useState(null as number | null);
   const [wrongAddress, setWrongAddress] = useState(null as AddressType | null);
 
@@ -142,9 +124,7 @@ export const L30: FC<LevelComponentModel> = ({
     }
 
     if (Address.equals(targetPassage.address, value)) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: {
@@ -152,9 +132,7 @@ export const L30: FC<LevelComponentModel> = ({
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       setWrongAddress(value);
     }
   };
@@ -164,15 +142,11 @@ export const L30: FC<LevelComponentModel> = ({
   ) => {
     const neededWord = words[nextUnselectedIndex];
     const selectedWord = words[selectedMissingWord];
-    if (state.settings.hapticsEnabled) {
-      Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
-    }
-    if (neededWord && selectedWord === neededWord) {
+    feedback(state.settings, "wordClick");
+    if (neededWord && Passage.sameWord(selectedWord, neededWord)) {
       setSelectedWords((prv) => [...prv, nextUnselectedIndex]);
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       //handle error
       setErrorIndex(selectedMissingWord);
     }
@@ -222,14 +196,17 @@ export const L30: FC<LevelComponentModel> = ({
   }
 
   return (
-    <View style={levelComponentStyle.levelComponentView}>
+    <View style={levelLayout.screen}>
       <ScrollView
-        style={{
-          ...levelComponentStyle.passageTextView,
-          backgroundColor: theme.colors.bgSecond
-        }}
+        style={levelLayout.prompt}
+        contentContainerStyle={levelLayout.promptContent}
       >
-        <View style={levelComponentStyle.passageText}>
+        <View
+          style={{
+            ...levelComponentStyle.verseCard,
+            backgroundColor: theme.colors.bgSecond
+          }}
+        >
           {words.map((w, i) => {
             return (
               <View
@@ -269,16 +246,12 @@ export const L30: FC<LevelComponentModel> = ({
         </View>
       </ScrollView>
       {/* fi there are some missig words or error with them*/}
-      {(!!unselectedWords.length || !!errorIndex) && (
-        <ScrollView
-          style={{
-            ...levelComponentStyle.optionButtonsScrollWrapper
-          }}
-        >
-          <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
+      {(!!unselectedWords.length || errorIndex !== null) && (
+        <ScrollView style={levelLayout.answerScroll}>
+          <View style={levelLayout.answerScrollContent}>
             {
               // if no error and not finished yet
-              !errorIndex &&
+              errorIndex === null &&
                 !levelFinished &&
                 unselectedWords.map((mwi) => {
                   return (
@@ -296,7 +269,7 @@ export const L30: FC<LevelComponentModel> = ({
             }
             {
               // if there is an error and not finished yet
-              !!errorIndex && [
+              errorIndex !== null && [
                 ...missingWords
                   //filter for only wrong index and right one
                   .filter(
@@ -342,8 +315,8 @@ export const L30: FC<LevelComponentModel> = ({
         </ScrollView>
       )}
       {/* if no missing words and no error with them and addres is not wrong */}
-      {!unselectedWords.length && !errorIndex && !wrongAddress && (
-        <View style={levelComponentStyle.optionButtonsWrapper}>
+      {!unselectedWords.length && errorIndex === null && !wrongAddress && (
+        <View style={levelLayout.action}>
           <Button
             type="outline"
             color="green"
@@ -365,6 +338,7 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={!selectedAddress || levelFinished}
           />
           <AddressPicker
+            confirmTitle="Submit"
             visible={APVisible}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}
@@ -372,8 +346,8 @@ export const L30: FC<LevelComponentModel> = ({
         </View>
       )}
       {/* if no missing words but wrong address */}
-      {!unselectedWords.length && !errorIndex && wrongAddress && (
-        <View style={levelComponentStyle.optionButtonsWrapper}>
+      {!unselectedWords.length && errorIndex === null && wrongAddress && (
+        <View style={levelLayout.action}>
           <Button
             type="outline"
             color="green"
@@ -396,6 +370,7 @@ export const L30: FC<LevelComponentModel> = ({
             disabled={levelFinished}
           />
           <AddressPicker
+            confirmTitle="Submit"
             visible={APVisible}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}

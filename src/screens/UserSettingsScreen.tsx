@@ -27,7 +27,7 @@ import { logger } from "../utils/logger";
 export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
   navigation
 }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, dispatch, t, theme } = useAppContext();
 
   const [isDeletionConfirmationModalShown, setDeletionConfirmationModalShown] =
     useState(false);
@@ -57,16 +57,15 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
     if (!/^[A-Za-z0-9\s ]{0,50}$/.test(newValue)) {
       return;
     }
-    const newState = reduce(state, {
+    // dispatch rather than reduce(state) + setState, here and below (8.2.24):
+    // a whole-snapshot write is a rollback of everything that changed since the
+    // snapshot was read.
+    dispatch({
       name: ActionName.setUserData,
       payload: {
         userTitle: newValue
       }
     });
-    if (newState === null) {
-      return;
-    }
-    setState(newState);
   };
 
   const updateUserData = async () => {
@@ -80,7 +79,6 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         Authorization: `Bearer ${accessToken}`
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
@@ -96,38 +94,39 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
           keyof AppStateModel["userData"] | "appLanguage",
           any
         >;
-        const newState = reduce(state, {
-          name: ActionName.setUserData,
-          payload: {
-            uuid: udd.uuid,
-            email: udd.email,
-            registrationDate: udd.registrationDate,
-            isEmailConfirmed: udd.isEmailConfirmed,
-            //setting user data update time automaticaly
-            userName: udd.userName,
-            userTitle: udd.userTitle,
-            userPicture: udd.userPicture,
-            birthDate: udd.birthDate,
-            userRights: udd.userRights,
-            isProfilePublic: udd.isProfilePublic,
-            isDataPublic: udd.isDataPublic,
-            friendRequests: udd.friendRequests,
-            friends: udd.friends,
-            blockedUsers: udd.blockedUsers,
-            sessions: udd.sessions,
-            applang:
-              state.settings.langCode !== udd.appLanguage
-                ? udd.appLanguage
-                : undefined //set app lang if different
-          }
-        });
-        if (newState === null) {
-          return Alert.alert(
-            t("netUnknownError"),
-            t("netUnableToSaveUserData")
-          );
-        }
-        setState(newState);
+        // A functional updater rather than a dispatch, because the payload reads
+        // the state too: `applang` compares the server's language against the
+        // one the app is CURRENTLY in, and this runs after an awaited request
+        // (8.2.24). Reading it off a captured `state` compares against whatever
+        // the language was before the call.
+        setState(
+          (prev) =>
+            reduce(prev, {
+              name: ActionName.setUserData,
+              payload: {
+                uuid: udd.uuid,
+                email: udd.email,
+                registrationDate: udd.registrationDate,
+                isEmailConfirmed: udd.isEmailConfirmed,
+                //setting user data update time automaticaly
+                userName: udd.userName,
+                userTitle: udd.userTitle,
+                userPicture: udd.userPicture,
+                birthDate: udd.birthDate,
+                userRights: udd.userRights,
+                isProfilePublic: udd.isProfilePublic,
+                isDataPublic: udd.isDataPublic,
+                friendRequests: udd.friendRequests,
+                friends: udd.friends,
+                blockedUsers: udd.blockedUsers,
+                sessions: udd.sessions,
+                applang:
+                  prev.settings.langCode !== udd.appLanguage
+                    ? udd.appLanguage
+                    : undefined //set app lang if different
+              }
+            }) ?? prev
+        );
         break;
       case 400:
         Alert.alert(
@@ -173,7 +172,6 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         //need to add on API side: userName
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
@@ -187,32 +185,24 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
   const handleIsProfilePublicChange = (
     isPublic: AppStateModel["userData"]["isProfilePublic"]
   ) => {
-    const newState = reduce(state, {
+    dispatch({
       name: ActionName.setUserData,
       payload: {
         isProfilePublic: isPublic || undefined
       }
     });
-    if (newState === null) {
-      return;
-    }
-    setState(newState);
     syncUserData();
   };
 
   const handleIsDataPublicChange = (
     isPublic: AppStateModel["userData"]["isDataPublic"]
   ) => {
-    const newState = reduce(state, {
+    dispatch({
       name: ActionName.setUserData,
       payload: {
         isDataPublic: isPublic || undefined
       }
     });
-    if (newState === null) {
-      return;
-    }
-    setState(newState);
     syncUserData();
   };
 
@@ -229,7 +219,6 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         Authorization: `Bearer ${accessToken}`
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
@@ -270,20 +259,14 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
         uuid: state.userData.uuid
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
       }
     });
     if (requestEmailConfirmationResult?.response?.status === 200) {
-      const newState = reduce(state, {
-        name: ActionName.resetUserData
-      });
-      if (newState === null) {
-        return logger.error(`Unknown error: Unable to reset user data`);
-      }
-      setState(newState);
+      logger.write(`Local user data cleared after account deletion`);
+      dispatch({ name: ActionName.resetUserData });
       await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
       navigation.navigate(SCREEN.settings);
@@ -303,7 +286,10 @@ export const UserSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsUser>> = ({
       title={`${t("settsUserHeader")}${loadingState ? " ⏳" : ""}`}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={userSettingsStyle.scrollView}>
+      <ScrollView
+        style={userSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           type="label"
           header={`${t("settsUserEmail")}: ${state.userData.email?.replace(/(\w{3})[\w.-]+@([\w.]+\w)/, "$1***@$2")}`}

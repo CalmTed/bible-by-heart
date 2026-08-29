@@ -8,7 +8,7 @@ import React, {
   useRef,
   useState
 } from "react";
-import { useColorScheme } from "react-native";
+import { AppState as RNAppState, useColorScheme } from "react-native";
 import * as Notifications from "expo-notifications";
 
 import { ActionModel, ActionName, AppStateModel } from "../models";
@@ -22,6 +22,7 @@ import {
   DAY,
   LANGCODE,
   SCREEN,
+  STATE_PERSIST_DEBOUNCE,
   STORAGE_BACKUP_NAME,
   STORAGE_NAME
 } from "../constants";
@@ -85,16 +86,52 @@ export const AppProvider: FC<AppProviderModel> = ({
   // so this fires exactly when it should WITHOUT the per-render
   // `JSON.stringify(state)` that ran on every render regardless (O(history) —
   // a primary render-lag suspect, STRATEGY §8.1.1).
+  //
+  // The write is coalesced to at most one per STATE_PERSIST_DEBOUNCE (8.2.20):
+  // serializing the whole state is O(history) and answering a single test can
+  // dispatch more than once. Whatever is pending is flushed the moment the app
+  // leaves the foreground and on unmount, so a kill mid-window cannot lose an
+  // answer.
+  const pendingStateRef = useRef<AppStateModel | null>(null);
+  const persistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const flushState = useCallback(() => {
+    if (persistTimerRef.current) {
+      clearTimeout(persistTimerRef.current);
+      persistTimerRef.current = null;
+    }
+    const pending = pendingStateRef.current;
+    if (!pending) {
+      return;
+    }
+    pendingStateRef.current = null;
+    // This is also where a non-serializable state is now caught. The reducer used
+    // to end every action in a JSON round-trip for exactly that (8.2.20); the same
+    // failure surfaces here, because storage.save() stringifies synchronously.
+    try {
+      storage
+        .save({
+          key: STORAGE_NAME,
+          data: { ...pending }
+        })
+        .catch((e: unknown) => {
+          logger.error(`Error on saving state in AppProvider e:${e}`);
+          toastShow(String(e), 10000);
+        });
+    } catch (e) {
+      logger.error(`Cant save app state ${e}`);
+      toastShow(`Cant save app state ${String(e)}`, 10000);
+    }
+  }, []);
+
   useEffect(() => {
-    storage
-      .save({
-        key: STORAGE_NAME,
-        data: { ...state }
-      })
-      .catch((e) => {
-        logger.error(`Error on saving state in AppProvider e:${e}`);
-        toastShow(e, 10000);
-      });
+    pendingStateRef.current = state;
+    if (!persistTimerRef.current) {
+      persistTimerRef.current = setTimeout(() => {
+        persistTimerRef.current = null;
+        flushState();
+      }, STATE_PERSIST_DEBOUNCE);
+    }
 
     if ((state?.lastBackup || 0) < new Date().getTime() - DAY) {
       // Deep clone only on the once-a-day backup path, not on every save.
@@ -121,7 +158,22 @@ export const AppProvider: FC<AppProviderModel> = ({
           logger.error(`Error on saving daily backup in AppProvider e:${e}`);
         });
     }
-  }, [state]);
+  }, [state, flushState]);
+
+  // The debounce's safety net: anything still pending goes to storage when the
+  // app stops being the foreground app (Android kills backgrounded apps without
+  // warning) and when the provider unmounts.
+  useEffect(() => {
+    const subscription = RNAppState.addEventListener("change", (next) => {
+      if (next !== "active") {
+        flushState();
+      }
+    });
+    return () => {
+      subscription.remove();
+      flushState();
+    };
+  }, [flushState]);
 
   // Notification-response handling. Uses the imperative navigationRef + the
   // deep-link-aware stack instead of a per-screen navigation object.

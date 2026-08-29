@@ -3303,3 +3303,701 @@ counter still matches the length of what it is asking for.
    (8.2.3); the `PassageEditor` hand-rolled confirm (8.2.2); the passage-list row's
    collapse/expand hard snap and the untagged-passage filter surprise (8.2.4);
    `TestNavDot`'s `//@ts-ignore` (8.2.5).
+
+## 2026-08-29 (b) — planning session, no code
+
+Fedir walked the 0.2.4 APK on a real phone and came back with ~18 findings, plus one
+question that framed the whole session: *can the reducer be removed or replaced with a
+faster one — is generating and comparing state what costs the time?* No code was written;
+this session answered that question and turned the feedback into `PLAN.md` steps
+8.2.20–8.2.34 and 8.5.5.
+
+**The answer: no, and the reducer never was the cost.** Benchmarked a synthetic state
+(desktop V8; Hermes on an old phone is roughly 5–15× slower) at 500 / 2 000 / 5 000
+history records:
+
+| | H=500 | H=2 000 | H=5 000 |
+|---|---|---|---|
+| state size | 81 KB | 304 KB | 743 KB |
+| `JSON.parse(JSON.stringify(state))` | 1.0 ms | 3.4 ms | 8.9 ms |
+| `JSON.stringify(state)` (the persist) | 0.3 ms | 1.5 ms | 3.5 ms |
+| `getStroke` | 1.1 ms | 8.2 ms | **42.4 ms** |
+| `getPassagesByTrainMode` | 0.2 ms | 0.7 ms | 3.6 ms |
+
+The reducer body — object spreads over `passages` / `testsHistory` — does not appear in
+these numbers at all. What *does*:
+
+1. **`reduce.ts:620-628` deep-clones the entire state on every action**, via
+   `JSON.parse(JSON.stringify(changedState))`, as a corruption guard against a corruption
+   the reducer cannot produce. That is the "massive calculation every action" Fedir felt,
+   and it is what makes `dispatch` O(state) instead of O(change).
+2. **`AppContext.tsx:83` stringifies and writes the whole state on every change** — a
+   second full pass plus an AsyncStorage write, undebounced.
+3. **`getStroke` / `getMaxStroke` are O(n²)** (`getStats.ts:26`, `:66` — `arr.slice(0, i)
+   .includes(v)` per element). This runs on the home screen. 42 ms at 5 000 records on a
+   desktop is a third of a second on a phone, and it is the "lag before any screen update".
+4. **`getPassagesByTrainMode` filters and sorts the whole history once per passage**
+   (`generateTests/index.ts:45`), and `finishTesting` calls `getPerfectTestsNumber` per
+   passage over the full history (`reduce.ts:385`). O(P × H) both.
+5. **The context value is the whole state**, so every dispatch re-renders the focused
+   screen entirely (`freezeOnBlur` from 8.1.1 already spares the blurred ones), and
+   `ListScreen.tsx:291` recomputes `filteredPassages` unmemoized on every one.
+
+Redux, Zustand, Jotai or a hand-rolled store would carry every one of items 1–4 unchanged
+— they are work done *around* the state transition, not the transition. So `ARCHITECTURE.md`
+§5 stands, and the plan attacks the measurements instead: 8.2.20 (drop the clone, debounce
+the persist), 8.2.21 (the O(n²) and O(P × H) scans), 8.2.22 (React Compiler — Expo SDK 54
+supports `experiments.reactCompiler`, the biggest render win available without touching the
+state model), then **8.2.23: re-measure on the device before anything structural.** The only
+structural option worth naming is slice subscriptions via `useSyncExternalStore` over the
+*same* reducer — that is what Zustand is, ~40 lines here, no dependency — and it is a
+decision doc and an ARCHITECTURE amendment before it is code, not a speculative rewrite.
+
+**Root causes found while reading, now written into their steps:**
+
+- **The language switch reverts** (8.2.24) because of a stale-snapshot write, not anything
+  to do with language. `SettingsScreen.tsx:181` calls `syncLangChange` right after the
+  change; a rejected refresh token sends `fetch.ts:55` into
+  `setState(reduce(logoutMethods.state, resetUserData))`, and `logoutMethods.state` is the
+  snapshot captured *before* the language changed — so the whole state rolls back a step.
+  There are ~10 `setState(<whole snapshot>)` sites of the same shape. This is a silent
+  data-loss path, and it is the reason the step is not filed as a settings bug.
+- **The tag filter hides untagged passages** (8.2.25). `state.filters.tags` is a *hide*-list,
+  and `ListScreen.tsx:299` shows a passage only if it carries at least one non-hidden tag —
+  so an untagged passage vanishes the moment any tag exists anywhere in the library, with no
+  filter ever set by the user. This is the "untagged-passage filter surprise" reported at
+  8.2.4, now with its mechanism and Fedir's exact repro.
+- **The About screen has been lying for six versions** (8.2.32): `constants.ts:5` hardcodes
+  `VERSION = "0.1.0"` while `package.json` is at `0.2.4`. `app.config.js` already reads the
+  version from `package.json`; `constants.ts` never did.
+- **L3 showing every word** (8.2.26): the style is right (`hiddenWordText` is
+  `color: "transparent"`), so the prime suspect is the generator/renderer word-index
+  disagreement 8.2.6 described — `missingWords.includes(i)` matching nothing.
+
+**Ordering decisions I made (move them if they are wrong):** the performance block goes
+ahead of everything else in 0.3.0, including 8.2.7/8.2.8 and the text-source work, because
+the feel fixes cannot be judged against a stalled JS thread; the level-up offer went to
+0.6.0 as 8.5.5 rather than the post-1.0 pool, because it belongs with the finish screen
+8.5.2 builds.
+
+**Open questions for Fedir:**
+
+1. `autoIncreaseLevel` on by default — new installs only, or flipped for existing users too?
+   The second is a state converter, not a default (noted inside 8.2.32).
+2. `docs/ARCHITECTURE.md` §5 says Expo SDK 53 / RN 0.79; the repo is on Expo ^54 /
+   RN 0.81.5 / reanimated 4.1.1 with `newArchEnabled: true`. Not fixed silently — say the
+   word and it gets corrected.
+3. `eas.json` sets `"environment": "development"` on both the `preview` and `staging` build
+   profiles. That selects which EAS environment variables the build gets, not a debug
+   build, so it is not a performance cause — but `staging` reading the development
+   environment looks unintended.
+
+No source files changed, so no FILEMAP update; `npm run lint` / `npm test` not re-run,
+there being nothing new for them to check.
+
+---
+
+## 2026-08-29 (c) — 8.2.20 + 8.2.21: the two performance steps
+
+Both steps in one session, in the order the plan wanted them. `npm run lint` ✓,
+`npm test` ✓ (44 suites, 268 tests, 23 snapshots — none moved).
+
+### 8.2.20 — the deep clone is gone
+
+`reduce.ts` ended **every** action with `JSON.parse(JSON.stringify(changedState))`.
+Removed rather than replaced: a cheaper clone is still O(state) per action, which is the
+property that made it slow. It now returns `changedState` directly, so the parts of the
+state an action did not touch come back **by identity** — which is what the new reducer
+tests assert, because identity is the only observable proof the clone is gone.
+
+**The trap the step warned about was real, and there was a second one it did not name.**
+
+1. *The settings mutation.* The block after the switch heals two things — the dev-mode
+   expiry and a dangling `leftSwipeTag` — by assigning into `changedState.settings`. Most
+   branches build a fresh `settings`, but `setPassage`, `deletePassage`, `finishTesting`
+   and every other passage-only action keep the previous state's object, so those heals
+   had been writing into state React had already rendered. The clone hid it completely.
+   The block is copy-on-write now: a new `settings` is built only when a heal actually
+   fires. The tag scan is also guarded — it walks every passage, and only a passage or a
+   settings change can strand a tag, so an unrelated action skips it. (The plan named the
+   passages guard; settings is in there too, because `setLeftSwipeTag` is the other way a
+   tag can go dangling.)
+2. *The one nobody was looking for: the clone was normalizing `NaN` to `null`.* An
+   address's open end has two spellings — `null`, what a persisted address carries because
+   JSON has no NaN, and `NaN`, what `AddressPicker` hands around and what a single-verse
+   passage is saved with. The reducer's JSON round-trip quietly turned every NaN into null
+   on the way out, so everything downstream only ever saw one spelling. Without it,
+   `Address.equals` compares `endChapterNum ?? startChapterNum` — and `??` does not catch
+   NaN — so a passage added this session would **not equal its own stored copy** after a
+   restart. That reaches L10's option list, the decoy generators and the import
+   de-duplication. `address.ts` folds both spellings now (`isOpenEnd`). The existing suite
+   caught the symptom immediately: `reduce.test.ts` had a line comparing against
+   `JSON.parse(JSON.stringify(before.passages))` "because the reducer round-trips its
+   result" — that comment was the only written trace of the coercion anywhere.
+
+The serialization guard the clone was nominally providing moved to the persist path in
+`AppContext`, which stringifies the same object anyway. **Gotcha:** `storage.save()` from
+`react-native-storage` calls `JSON.stringify` *synchronously* in its own body, so a
+non-serializable state throws before a promise exists — the existing `.catch` would never
+have seen it. It is wrapped in a `try` as well.
+
+The second full copy is coalesced: the persist effect writes at most once per
+`STATE_PERSIST_DEBOUNCE` (1 s), and flushes whatever is pending on `AppState`
+background/inactive and on unmount, so a kill mid-window cannot lose an answer. Trailing
+edge only — every write is up to a second late, and the background flush is what makes
+that safe.
+
+### 8.2.21 — four scans, one pass each
+
+Same outputs everywhere; `historyScans.test.ts` keeps the four implementations that were
+replaced and asserts the shipped ones agree with them on a deterministic 5 000-record
+history (40 passages, with a deliberate 5-day gap after the 30 most recent days so the
+current stroke and the record stroke are different numbers — a fixture of unbroken days
+would let a wrong implementation pass).
+
+- **`getStroke` / `getMaxStroke`** — `arr.slice(0, i).includes(v)` per element became a
+  `Set`, and the two now share one `testDayKey`. Two more O(n²) shapes were in there
+  besides the one the plan named: the sort comparator re-flattened both operands on every
+  comparison (a precomputed key now), and the "unbroken series" was built as a whole
+  boolean array and then trimmed with another slice-includes — it is the leading run,
+  counted in one loop.
+- **`getPassagesByTrainMode`** — one `Map<passageId, lastTestedAt>` instead of filtering
+  and sorting the whole history once per passage. Exported as `getLastTestedByPassage` so
+  the agreement test can hold it against the naive form. Its `isDueTo` also became a `Set`
+  lookup: it was called from **inside the sort comparator**, so a linear `find` there was
+  O(P² log P). (Not named in the step — same function, same class of problem, said here
+  rather than done silently.)
+- **`finishTesting`** — `getPerfectTests.ts` gained `getPerfectTestsNumbers(history,
+  passages)`, which buckets the history by `pi` in one pass and answers for every passage.
+  The single-passage export stays; `LevelPicker` calls it once through a `useMemo` now
+  instead of once per branch that might render.
+- **`ListScreen.filteredPassages`** — `invertedTags` hoisted out of the per-passage
+  callback, the filter memoized on what it actually reads, and `sortedPassages` memoized
+  too: it is the FlatList's `data`, and a fresh array every render defeats everything
+  below it, so memoizing the filter without it would have bought nothing.
+
+### Found on the way — reported, not fixed
+
+- **`npm run lint` does not type-check the tests.** `tsconfig.json`'s `include` is
+  `["*", "src/*", "src/**/*", "plugins/*"]`, so `__tests__/` is invisible to `tsc`, and
+  jest transpiles without checking. I noticed because a `createTest()` call I wrote with
+  **no arguments** (it takes three) passed both lint and the suite. Fixed my own call; the
+  hole is still there. One entry in `include` would close it, and it will surface real
+  errors in the existing suites.
+- **A level-1 test that renders an address and nothing else** — reported live by Fedir
+  mid-session, added to the plan as **8.2.38** at his word. It is `L11`, and the cause is
+  a silent fallback: `createL11Tests.ts:22` counts the passages sharing the target's
+  translation, and when there are fewer than four it hands the work to `createL10Test`
+  **without rewriting `initialTest.l`**. The test comes back still labelled
+  `TESTLEVEL.l11`, so `TestsScreen` renders `L11`, which reads `test.d.passagesOptions` —
+  the L10 generator only ever writes `addressOptions` — and maps over `undefined`. Four
+  passages is exactly where it bites: `generateATest`'s two "L11 needs four passages"
+  guards count the whole library and pass, and one passage on a different translation (or
+  `null`) drops the inner count to three.
+- **`docs/PLAN.md`'s 8.2.22 lost its `(build)` tag and its closing sentence** at some
+  point while the file was open in the editor. Restored both — the step turns on the React
+  Compiler in the Expo config, so it cannot not be a build step. Flagged here in case the
+  removal was deliberate.
+
+### Needs manual verification (device)
+
+- **The whole point of 8.2.20 is felt, not tested.** Fedir already confirmed the clone
+  removal on an APK; what is new here is the copy-on-write settings block and the
+  coalesced persist. Worth one deliberate check: answer a test, kill the app from the task
+  switcher **immediately** (inside a second), reopen — the answer must be there. That is
+  the background flush doing its job.
+- The address change (`isOpenEnd`) affects which decoy addresses L10 offers and whether an
+  imported passage is recognized as a duplicate. Add a single verse through the picker,
+  then train it at level 1 and check the options look sane.
+- 8.2.21 changed no outputs by design, but `getStroke` drives the home screen's streak —
+  glance at it against the calendar once.
+
+## 2026-08-29 (d) — six steps in one run: the small ones, the two motion notes, shared text, level 1, and the snapshot-write class
+
+Fedir asked for several steps in a row, fastest first, and for 8.2.23 to be left alone
+(no re-measurement build until 0.3.0 is finished). Six went out. **8.2.26 is half done and
+is the one thing waiting on him** — see the end.
+
+Two decisions came from him at the start, both now in the plan:
+
+- **8.2.32 `autoIncreaseLevel`** — on for **new installs only**. `createAppState010` flips
+  to `true`; `createAppState009` is the historical shape and was left alone, and
+  `stateVersionConvert` already carries the field across, so nobody's setting changes
+  under them. The e2e flow test asserted the old default and now asserts the new one, with
+  the reason written next to it: both outcomes are live in the wild.
+- **8.2.30** — "only when button has gradient... due to [its] baking nature it does not
+  animate and disappears even [while] rescaling." That is the mechanism, and it made the
+  fix obvious.
+
+### 8.2.32 — the small ones
+
+- **The About screen has been printing the state version for six releases.**
+  `constants.ts`'s `VERSION` is the version of the *state shape* — `alowedStateVersions`
+  and every converter is written against it, so it is not supposed to track
+  `package.json`. The fix is not to move it: `APP_VERSION` reads the real one back out of
+  `Constants.expoConfig`, which `app.config.js` already takes from `package.json`. Both
+  places the About screen showed a version now show that one. `BackupOfferModal`'s
+  `fromVersion → VERSION` is a *state* version comparison and is correct as it stands.
+- **The address picker said "Add" while a test was being answered.** It takes a
+  `confirmTitle` now, defaulting to `APAddVerse`; L20/L30/L40/L50 pass `Submit`, which
+  both l10n files already had.
+- **The calendar's arrow "shadow" is not a shadow.** `Button` ordered `disabled` ahead of
+  `transparent`, so a dead icon button drew a `bg`→`bgSecond` gradient plate under itself.
+  On a `bg` screen that reads exactly like a drop shadow, and the month arrows are the
+  app's most visible disabled transparent buttons (they are dead at the ends of the
+  range). `transparent` wins now: a transparent button that is dead is still transparent.
+
+### 8.2.30 — gradient buttons do not animate
+
+`hasGradient` = not `transparent` and not `color="gray"`, which is exactly when
+`gradientColors` resolves to two different colours. The press handlers are **not attached**
+on those rather than attached-and-guarded, so "does this button animate" is answerable
+from the rendered tree — which is what the new test asserts, since jest-expo never
+advances a frame and the shared value reads 1 either way.
+
+Finding the assertable seam took three tries: the host `View` never carries `onPressIn`
+(RN turns it into responder handlers on the way down), and `UNSAFE_getAllByType(Pressable)`
+finds nothing because the composite that carries it is not the `Pressable` a test can
+import. Searching by prop works.
+
+### 8.2.29 — the header falls
+
+`ANIMATION.headerDropDistance` = 8, half of `riseDistance`, and the header's `translateY`
+is negative. Two things were wrong with the old entrance and the new one answers both: the
+bar rose *with* the screen it caps, at the same moment over the same 16px, and a frame
+that out-travels its own contents pulls the eye to the wrong place.
+
+### 8.2.33 — shared text
+
+Bracketed verse numbers are **digits only** — `[1]`, `[ 12 ]`, `[3:16]`. `[the]` is real
+editorial apparatus in the translations 8.2.11 will bundle, and stripping it would rewrite
+text the user is going to be tested on character by character.
+
+A leading translation code is stripped in exactly three shapes, and the reason is "LORD is
+my shepherd": a capitalized token followed by ordinary text is not evidence of anything.
+So the code has to stand apart from the verse — `ESV [1] …` (a bracketed number behind
+it), `ESV: …` / `ESV - …` (a separator), or `ESV` alone on the first line. The code is
+stripped *before* the verse numbers, because the first shape uses the bracket as its
+evidence; both run after the dash folding, which is what lets an em-dash separator reach
+the plain-hyphen shape.
+
+### 8.2.38 — level 1 with an address and nothing under it
+
+Exactly as the step described. The fix is one line and one rule: **a generator stamps the
+level it wrote, never inherits it.** `createL10Test` returns `l: TESTLEVEL.l10` whatever it
+was called with, so L11's fallback for a library that cannot fill four options *within one
+translation* now hands back an honest l10 and `TestsScreen` renders L10 over the
+`addressOptions` that are actually there.
+
+`createL50Test` is literally `createL40Test` (an alias), so "every generator stamps its own
+level" would have been wrong as a blanket rule — L10 is the only one that is another
+level's fallback, and it is the only one that stamps.
+
+The other half of the step: `levels/NoOptions.tsx`, rendered by L10 and L11 when the
+payload has no options. **Deliberately no skip button** — what a skipped test does to the
+level-up maths is 8.2.36's decision, and a "passed" test nobody answered is exactly the
+quiet corruption that step exists to settle. Updating `L10.test.tsx`'s snapshot showed
+that the "renders correctly" snapshot has always been of a test with no options at all
+(it renders a bare `createTest`), so it now snapshots the NoOptions state. Worth knowing;
+not worth a random-seeded snapshot to fix.
+
+### 8.2.24 — the snapshot-write class
+
+`fetchAPI`'s `logoutMethods` takes **no `state`**. The call is awaited, so anything handed
+in there is a snapshot of a state that has since moved on, and resetting from that
+snapshot rolled the whole app one step backwards — which is how picking a language undid
+itself. Seven sites converted:
+
+- `dispatch` where the action is self-contained: `SettingsScreen` (manual logout),
+  `UserSettingsScreen` x4 (user title, profile-public, data-public, account deletion),
+  `AboutSettingsScreen` (the dev reset).
+- a **functional updater** where the payload itself reads the state:
+  `UserSettingsScreen.updateUserData` and `LoginScreen`, both of which compute `applang` by
+  comparing the server's language against the one the app is in — which has to mean *now*,
+  not "when the request started".
+
+The two whole-object writes left are the backup restores (`AboutSettingsScreen` dev
+import, `ListSettingsScreen` confirmed restore). Those mean it: a restore replaces the
+state, and the object came out of a file rather than off a closure. Both now say so in a
+comment so the next reader does not "fix" them.
+
+`reduce` only ever returns `null` for an unknown action name, so the null-check alerts
+these sites carried were unreachable; they went with the conversion. The one audit line
+worth keeping (account deletion) is now a `logger.write` on the success path instead of a
+`logger.error` on the impossible one.
+
+New `services/fetchLogout.test.ts` drives the real `fetchAPI` with two expired tokens and
+asserts both halves: `setState` is called with a **function**, and applying that function
+to a state whose language changed mid-request keeps the change while still logging out.
+
+### 8.2.26 — half done, and the half that is left is Fedir's
+
+The test the step said to leave behind is written and green: 75 generated tests across
+three passage shapes, asserting that every word in `missingWords` renders
+`color: "transparent"` and that every readable word is one that was *not* taken out, plus
+the same after answering one of them. Two more pin the paths that reveal words **on
+purpose** so a future change has to mean it.
+
+The suspected cause is not the cause. `Passage.getWords` was unified in 8.2.6 and the
+generator and the renderer agree — 1 500 generated tests over five passage texts produced
+no `missingWords` index that is not a real word, and no duplicate. Every fresh-test path I
+can drive hides correctly.
+
+**Question for Fedir, and the step is blocked on it: which state was the screenshot in?**
+Two paths reveal words by design — a test carried back after a wrong *address*
+(`lastErrorIsWrongAddress` selects every word, so only the address is left to redo) and a
+finished test reached through the nav dots (review). If it was one of those, 8.2.26 is a
+wording change, not a bug.
+
+Two things I found while in there that look more like the real complaint, both reported
+into the step rather than fixed:
+
+- **A two-word passage offers one option, which is the answer.** The screenshotted passage
+  is exactly that shape. That is 8.2.36's rule, arriving on L3 instead of L2.
+- **A repeated word gives itself away.** Only the *indexes* in `missingWords` are hidden,
+  so a verse containing the same word twice with one instance hidden shows the answer two
+  words later, with the matching option right below. Hide every occurrence, or have the
+  generator avoid repeated words? Design decision.
+
+### Found on the way — reported, not fixed
+
+- **`L30`'s `errorIndex` state cannot represent word index 0.** It is `null | number` and
+  every branch tests it with a truthiness check, so picking the wrong option when the
+  correct answer is the verse's **first** word sets `errorIndex` to 0, which reads as "no
+  error": the error UI never appears and the tap does nothing at all. Same shape as the
+  `!missingWords` bug 8.2.5 found in this file. It is a different symptom from 8.2.26, so
+  it is here rather than folded in silently.
+- **`__tests__/` is still invisible to `tsc`** (reported in the 8.2.21 entry, unchanged).
+  `tsconfig.json`'s `include` does not cover it, and it bit again this session: two test
+  files typechecked clean while asserting against props that do not exist.
+
+### Needs manual verification (device)
+
+- **8.2.29 and 8.2.30 are the whole point and cannot be tested.** The header falling
+  rather than rising, and a gradient button that no longer disappears under a finger.
+  Both are one build away from being judged.
+- **8.2.32's disabled-transparent change touches every disabled icon button**, not only
+  the calendar's. Worth a glance at the passage editor and the address picker's done
+  button, which is disabled until an address is complete.
+- **8.2.24 changed the logout path.** Log in, change the interface language, and let a
+  request fail its refresh — the language must stay. And the ordinary manual logout must
+  still clear the account.
+- **8.2.38's fallback is reachable with four passages** where one is on a different
+  translation (or is a custom-text passage, which carries `null`). Train that library at
+  level 1 a few times: every test must be answerable.
+
+
+## 2026-08-29 (e) — six steps in one run: the feedback util, L3's word bank, the cut-off lists, the home column, the sort popup, and backup files the OS knows
+
+Fedir picked six of the 0.3.0 backlog as "the fast ones" and asked for them together:
+8.2.26, 8.2.27, 8.2.31, 8.2.37, 8.2.34, 8.2.8. Do, test, do, test — no build.
+
+### 8.2.8 — one place that decides whether the phone may buzz
+
+`src/utils/feedback.ts`: `feedback(settings, patternName)`. It takes the settings rather
+than reading app state, so it stays pure and unit-testable and every caller already holds
+what it needs.
+
+What the step called a tidy-up turned out to be a bug fix. The guard
+`if (state.settings.hapticsEnabled) { Vibration.vibrate(PATTERN) }` was written out
+eleven times across five level screens — and **two other call sites had no guard at all**:
+`ListScreen`'s row long-press (a bare `Vibration.vibrate(30)`) and `AddressPicker`'s
+verse long-press. A user who had turned haptics off still got buzzed by both. That is the
+argument for the util in one sentence: a setting that only holds where somebody remembered
+to read it is not a setting.
+
+The bare `30` became `VIBRATION_PATTERNS.longPress`, so no call site carries a number any
+more. `soundsEnabled` is still not implemented — but there is now exactly one function to
+implement it in, and no component will change when it happens.
+
+### 8.2.26 — the word bank answers by letters
+
+The hiding half was already proven (8.2.26's first sitting, 75 generated tests). What was
+left was Fedir's answer to the repeated-word question, and he chose the generous reading:
+**accept every occurrence** rather than hide them all.
+
+So `Passage.sameWord(a, b)` — letters and digits only, case-blind, in `utils/passage.ts`
+where all passage-text logic lives. Tapping "good." for "good" now lands. It is deliberately
+*equality of letters*, not a similarity score: "god" for "good" is still wrong, and the
+tolerant comparison L5 wants is a different step (8.2.7).
+
+Also fixed, though nothing user-visible depends on it yet: `errorIndex` was tested with
+`!errorIndex` in five places, so word index 0 read as "no error". It is unreachable today
+(the bank's chips are the *unselected* missing words and the needed index is always the
+smallest of them, so tapping chip 0 is always correct), which is why the earlier session
+reported it as a finding rather than a bug. It is `!== null` now — the trap was one
+refactor away from being real, and it is the same shape as the `!missingWords` bug 8.2.5
+found in this very file.
+
+**Still open for Fedir:** which state the original screenshot was in. Two paths reveal the
+words on purpose and both are pinned by tests — a test carried back after a wrong address,
+and a finished test being reviewed through the nav dots.
+
+### 8.2.27 — a percentage cannot see the header
+
+One bug, twice. `PassageEditor`'s scroll container was `height: "93%"` and
+`CalendarScreen`'s day view was `height: "100%"`, both **siblings of the `Header`**. A
+percentage is of the whole screen; laid out below a bar that is 90-odd pixels tall, the
+container's bottom hangs off the device by exactly that much. Hence "only Level 5 and one
+row below it are reachable". The calendar had papered over its half with
+`marginBottom: 100`, a guessed number standing in for the room the broken height was
+eating.
+
+Both are `flex: 1` now. And because Fedir asked to check the other lists: every scrolling
+surface in the app ends with `contentContainerStyle={theme.theme.scrollContent}` — nine
+settings screens, stats, both `SettingsListWrapper` lists — reading
+`LAYOUT.scrollBottomGap`, which is the 24px `ListScreen` had spelled out inline since
+8.2.3. Four screens had to pull `theme` out of context to get it, which is the only reason
+that diff is wider than two files.
+
+### 8.2.31 — the dead zones were the layout, not the logo
+
+Fedir wanted the logo near 40% of the height; the screenshot said the problem was
+distribution. The logo block was `flex: 1` with `justifyContent: "center"`, so every pixel
+of slack in the column collected into two equal voids — one above the mark, one between
+"Days stroke" and the week row.
+
+Logo / week activity / buttons now sit in one `space-between` column: the same slack spent
+as two ordinary gaps instead of two voids. And the mark is a share of the window
+(`LOGO_HEIGHT_SHARE`, floored at 96px so it stays a logo on a short phone, capped by
+`LAYOUT.maxContentWidth` on an unfolded foldable) rather than a flat 255×160 —
+`DaggerLogoSVG` and `MangerSVG` take a `height` and derive the width from the artwork's
+own ratio, so it cannot distort.
+
+New `HomeScreen.test.tsx` mocks `useWindowDimensions` and walks four window sizes.
+
+### 8.2.37 — a short list of choices is a dialog
+
+Fedir's instruction was "just show centered with little padding around, like notification
+modal", which settles the design question the step had left open. Sorting is a
+`SelectModal` now — the same component the train-mode picker and the add-passage
+translation step already use. Titled, dimmed, centred, one left edge, current sort marked
+green. All three of the step's complaints go away at once, and the "sorting needs a visible
+control to point at" half stops mattering because nothing is anchored any more.
+
+That left `AnchoredPopup` with no callers, so it is deleted along with its test and
+snapshot. The app is back to **two** surfaces — screens and dialogs — and `CODING_RULES`
+§4 has been rewritten to say so rather than describing three.
+
+### 8.2.34 — a backup is a kind of file now
+
+`.bbhbackup`, `application/vnd.biblebyheart.backup+json`, and an Android VIEW intent
+filter in `app.config.js` matching that MIME on `content://` and `file://`. The custom
+type is the point: matching `application/json` would put Bible by Heart in the chooser for
+every JSON file on the phone.
+
+Opening one reaches `BackupFileOpener` — no UI of its own, it listens for the URI
+(`getInitialURL` on a cold start, the `url` event while running), decodes with
+`readBackupFromUri` and hands the result to `BackupRestoreModal`. It is rendered
+**inside** `AppProvider`, because a restore writes the state the provider owns; App.tsx's
+own `state` stops being the truth the moment the provider mounts.
+
+`BackupRestoreModal` is the settings row's confirmation, extracted and widened as the step
+asked: the backup's date, then each count as `now → after`. "12 passages" never told
+anybody that they currently have 40. `parseBackupEnvelope` carries the date `parseBackup`
+was throwing away (`parseBackup` is a one-line wrapper over it now).
+
+Compatibility, deliberately: `BACKUP_LEGACY_MIMES` keeps every pre-8.2.34 `.json` backup
+pickable, and `readFile` no longer refuses a file whose provider reports **no** MIME type
+— which is exactly what an unknown extension produces. A safety net that rejects the copies
+it made last year is not one.
+
+**One real bug found on the way:** App.tsx's dev-mode url listener cleaned up with
+`Linking.removeAllListeners("url")`, which removes *every* url listener in the app. It
+would have silently unsubscribed the opener's the moment dev mode was toggled. It is
+`subscription.remove()` now.
+
+### Found on the way — reported, not fixed
+
+- **`MiniModal` has no `statusBarTranslucent`.** `CODING_RULES` §4 says a full-screen
+  `<Modal>` needs it or Android lays it out below the status bar; MiniModal's backdrop is
+  full-screen and does not have it, so the dim stops short of the status bar. One word to
+  add, but it changes every dialog in the app at once, so it is Fedir's call.
+- **`WeekActivity.tsx` carries a `@ts-ignore`** on the LinearGradient `colors` prop —
+  banned by §1. Untouched: it is the same expo-linear-gradient typing that 8.2.30 worked
+  around, and worth one deliberate fix rather than a drive-by.
+- **`__tests__/` is still invisible to `tsc`** (reported in 8.2.21 and again in the 8.2.38
+  entry, unchanged).
+
+### Needs manual verification (device)
+
+- **8.2.34's file write.** Android's SAF derives a file's extension from its MIME type; for
+  an unknown type it should keep the display name as given, which is what makes
+  `BibleByHeartBackup_x.y.z_2026-08-29.bbhbackup` come out with that name. That behaviour
+  is provider-specific and cannot be tested here. Save a backup and look at the file name;
+  then open it from a file manager and check the chooser offers the app.
+- **8.2.27's two screens.** A level-5 passage in the editor (the stats must scroll to their
+  end) and a day in the calendar with a long session.
+- **8.2.31 on a short phone and an unfolded foldable** — the whole point of the step is
+  proportion, which no test can judge.
+- **8.2.26 on the shape Fedir screenshotted.** A two-token passage at level 3: the missing
+  word must be invisible, and tapping a bank chip with the same letters must answer it.
+
+## 2026-08-29 (f) — 8.2.25, 8.2.36, 8.2.35
+
+Tag filters are a plain hide-list now (untagged rows stopped vanishing), and the list says
+what narrows it. `MIN_TEST_OPTIONS`: l11/l21 fall back to their address half when the
+library has no decoys. `levelLayout.ts` — prompt/answer/action on all seven levels.
+**Device:** L4/L5 with the keyboard up.
+
+
+## 2026-08-29 (g) — 8.2.28 and 8.2.7: a direction per destination, and the characters a keyboard cannot make
+
+Fedir asked for these two by name, in this order. Both are done; the first is the
+`(build)` one, so the version is bumped to **0.2.5** and `npm run build-dev` is his to
+run (it carries `--auto-submit-with-profile staging`, i.e. it submits to the Play
+internal track — the same reason 8.2.1 left it alone).
+
+### 8.2.28 — a direction per destination, and a swipe to get there
+
+**The edge belongs to the destination, and one field carries both halves of it.**
+`gestureDirection` decides which edge a card enters from *and* which way its dismissing
+drag runs. That is the whole reason this is one small change rather than two that can
+drift: `candyTransitions` is now four presets (`right` / `left` / `top` / `bottom`)
+instead of one `candyTransition`, settings takes `left`, the list `right`, practice
+`top`, stats `bottom`, and `HomeSwipe` names the same four.
+
+- **One interpolator factory, two axes.** `makeCandyCard("x" | "y")` — the maths is
+  identical, only `translateX` vs `translateY` differs. What makes four edges out of two
+  interpolators is `inverted`, the multiplier `@react-navigation/stack` derives from the
+  direction name (-1 for the two `*-inverted` ones, and for a horizontal card in RTL).
+  The old `forCandyCard` already multiplied by it *for RTL*; it turns out to be the same
+  number that flips right into left, so "comes from the left" cost nothing.
+- **The vertical gesture band was the trap.** A vertical card is dismissed by a drag that
+  starts within `gestureResponseDistance` of the edge it came from, and the library's
+  default for vertical is **135px** (50 for horizontal). On the stats screen that reaches
+  well into the list, so a drag meant to scroll would pop the screen. It is
+  `LAYOUT.headerHeight` now — the one band up there that never scrolls.
+- **Practice gets no dismissing gesture at all.** `vertical-inverted` puts the band at the
+  BOTTOM of the screen, which on every level component is the answer block, the word
+  options and Submit. A mis-flicked answer must not throw away a training session; that
+  surface is left through the cross in its header, which is what the cross is for.
+- **`HEADER_HEIGHT` moved into `LAYOUT`.** `screenTransition.ts` needed the bar's height
+  and `Header.tsx` is where it lived — but importing it would have closed the loop
+  `navigator → Header → AppContext → navigator` (AppContext imports the navigator for
+  `navigationRef`). The number is `LAYOUT.headerHeight`; `Header.tsx` still exports
+  `HEADER_HEIGHT`, reading it from there, so every existing call site and the Header test
+  are untouched.
+
+**Back must be fast — and the freeze is not a separate mechanism.** The plan's diagnosis
+("popping unfreezes a screen which then does its whole first render inside the
+animation") turns out to have one lever, not two: `CardStack` renders
+`shouldFreeze={activityState === STATE_INACTIVE}`, so *detached* and *frozen* are the
+same state. `detachPreviousScreen: false` on the four screens home reaches raises
+`activeScreensLimit`, home's activity state settles at
+`STATE_TRANSITIONING_OR_BELOW_TOP` instead of `STATE_INACTIVE`, and it is neither
+detached nor frozen underneath them. The pop then has nothing left to render. Cost: home
+re-renders on every dispatch while a session is running — cheap since 8.2.20/8.2.21,
+because `getStroke` and `WeekActivity` are both memoized on `state.testsHistory`, which
+only changes when a session finishes. `freezeOnBlur` stays on globally; deeper stacks
+(settings → about) freeze exactly as before.
+
+**`HomeSwipe`** wraps the home column in one `Gesture.Pan`. Dominant axis wins, so a
+diagonal drag resolves to one destination rather than two or none.
+`ANIMATION.swipeThreshold` (60) for the three that navigate; `ANIMATION.pullTrigger`
+(88) for the pull, **because that one starts a training session** — a gesture that acts
+must ask more of the finger than one that goes somewhere, or the user falls into it. It
+draws a pull-to-reload chevron that follows at half speed and flips at exactly the
+distance that will fire it. `available` gates the firing and not merely the arrow: with
+an empty library there is nothing to practise and nothing for stats to be about, and the
+swipe must do nothing rather than open an empty session. The pull calls the same
+`startPractice` the button does, so with more than one train mode enabled it still opens
+the picker — a swipe is a shortcut to the question, never an answer to it.
+
+Not memoized, on purpose: `onSwipe` closes over which train modes are active and whether
+the library is empty, so a gesture cached across renders would keep answering with the
+previous render's state. Rebuilding it is a diff inside `GestureDetector`, on a screen
+that re-renders rarely.
+
+**Gestures can be tested, with one catch.**
+`react-native-gesture-handler/jest-utils` drives a real one (`fireGestureHandler` +
+`getByGestureTestId`, which needs `.withTestId()` on the gesture — a gesture is not a
+node in the tree). The catch cost three failing tests before I found it: the handler is a
+worklet, and **`runOnJS` hands the call back to the JS thread**, so a synchronous
+assertion right after the release always sees zero calls. Every drag in the suite is
+awaited past a tick. On a device that hop is the entire point — the gesture is not
+allowed to block on JS — so this is the test adapting to the design, not the reverse.
+Written into CODING_RULES §4 next to the animation equivalent.
+
+### 8.2.7 — the characters a keyboard cannot make
+
+The tolerance had to go on the **comparison**, and the plan already said why: 8.1.4 folds
+these on the way in and 8.2.11 will fold them at the API, but neither reaches a passage
+already sitting in somebody's state, and rewriting a user's text behind their back is not
+ours to do. So `Passage` gained `foldTypeable` / `typedEquals` / `typedPrefixLength`,
+and L50's private `simplifyString` is gone.
+
+- **The old comparator knew about eight ASCII marks** — `,.-:;!?'"` — and an em dash is
+  not one of them. A passage stored with `—`, or with `’`, or with a Cyrillic `і` where a
+  Latin `i` was scanned, could not be answered at level 5 **at all**: the user types the
+  only thing the keyboard offers and is told they are wrong, every time, forever. That is
+  the bug; the equivalence list is the fix.
+- **42 equivalences**, one `it` each, asserted in both directions (the OCR damage in the
+  bundled translations runs the other way — a Latin letter inside a Cyrillic word, so the
+  *stored* side is the typeable one). Eight Cyrillic/Latin homoglyph pairs made the cut:
+  а е і о р с у х and their capitals. Cyrillic te/ve/en/em did **not** — their capitals
+  pass for T, B, H, M but their lowercase forms pass for nothing Latin, and folding one
+  case and not the other would make the lowercasing disagree with itself.
+- **No two Cyrillic letters fold onto the same Latin one**, which is what makes this safe:
+  it can only forgive the wrong keyboard, never merge two real Ukrainian letters. The
+  suite says so out loud — і vs ї, і vs и, and a Cyrillic te against a Latin t.
+- **"Diacritic case" = NFC, not stripping diacritics.** Ukrainian ї can arrive precomposed
+  or as і + a combining diaeresis, and no keyboard offers the choice. Stripping the
+  diaeresis instead would fold ї into і, which is a real distinction and exactly the
+  "widening to misspellings" the step forbids. `normalize` is guarded (`"normalize" in
+  String.prototype`) — it is an engine feature, not a language one, same caution as
+  `getSentences` avoiding lookbehind for Hermes; the fallback loses the tolerance, never
+  the app.
+- **The fold is strictly 1:1** because `typedPrefixLength` maps an index in the folded
+  text back to an index in the real one. That is what rules the ellipsis out of the table
+  (it would become three dots), so `…` is dropped as punctuation instead.
+- **Whitespace runs now collapse.** Dropping the `-` out of "word - word" leaves two
+  spaces where the user typed one, so the old comparator failed a correct answer whenever
+  a stripped mark had a space on each side. A run of spaces — or the newline a stored
+  passage may carry — was never something the user was asked to reproduce.
+
+**One behaviour deliberately preserved.** The failed-attempt repair keeps the common
+prefix **plus one character**, which is what the old filter produced (its `i > 0` branch
+compared prefixes, not characters, so it always kept one past the divergence). It reads
+as intentional — the next character is the hint — so `typedPrefixLength` returns the
+common prefix and L50 does the `+ 1`, with the empty case still yielding "".
+
+### Found, not fixed
+
+- **`docs/PLAN.md` no longer contains 8.2.22 or 8.2.23.** 8.2.28's own text still refers
+  to "8.2.20–8.2.22 come first, on purpose", and the 2026-08-29 (c) diary entry describes
+  8.2.22 as the React Compiler step and 8.2.23 as the re-measurement. Neither is in the
+  open list or the Archive now. If they were dropped deliberately (8.2.23 was explicitly
+  parked until 0.3.0 is finished), the sentence in 8.2.28 is a dangling reference and
+  nothing else; if they were lost the way 8.2.22's `(build)` tag was lost once before,
+  they need restoring. **Not touched either way** — flagged here.
+- **L40 compares typed text with `startsWith` and `===` on the raw strings**
+  (`L40.tsx`: `targetText.trim().startsWith(passageText.trim())`), and its word-option
+  matching uses raw `toLowerCase().startsWith`. Level 4 has autocomplete, so a curly
+  apostrophe is usually tapped rather than typed and the damage is smaller — but the same
+  passage that was unlearnable at level 5 will refuse a hand-typed em dash at level 4.
+  8.2.7 says "the L5 comparator", so **not touched**. It is a two-line change
+  (`Passage.typedEquals` / a folded `startsWith`) if Fedir wants it as its own step.
+- **`package-lock.json`'s root version was still 0.2.1** — three bumps behind. Synced to
+  0.2.5 as part of this step's version bump; only the two root `version` fields, verified
+  by diff (8.2.1 caught a hand-rolled bump rewriting four dependencies that legitimately
+  sit at 0.2.0).
+
+### Needs manual verification (device)
+
+- **The four directions, and whether they read as places.** Swipe right for settings, left
+  for the list, up for stats, pull down for practice — and the same four with the buttons,
+  to check the card comes from the edge the finger asked from.
+- **The pull.** Whether 88px is the right price for starting a session, and whether the
+  chevron reads as a pull-to-reload rather than as a stray glyph. Both numbers are in
+  `ANIMATION` (`pullTrigger`, `pullMax`) and cost one line to change.
+- **Whether the swipes fight the buttons.** The pan claims the touch after 20px, so a tap
+  should still be a tap on all five home buttons.
+- **Back, which is the half jest cannot see.** Home → settings → back, and the same out of
+  a finished training session: with `detachPreviousScreen: false` the pop should reveal a
+  screen that is already drawn.
+- **Stats, dismissed by dragging down from its bar** — and, more importantly, that
+  scrolling its list near the top does *not* dismiss it.
+- **Level 5 against a passage with a curly apostrophe or an em dash in it.** Any of the
+  four bundled Ukrainian translations will do once 8.2.11 lands; until then, paste one
+  through the share sheet and edit a `—` back into the text.

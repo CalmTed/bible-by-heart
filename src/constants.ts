@@ -1,8 +1,18 @@
 import { StyleSheet } from "react-native";
+import Constants from "expo-constants";
 import { PassageModel } from "./models";
 import { API_VERSION } from "bbh-shared";
 
+// The version of the STATE SHAPE, not of the app. `alowedStateVersions` and every
+// converter in `stateVersionConvert.ts` are written against it, so it moves only
+// when the shape does - it was never meant to track package.json (8.2.32).
 export const VERSION = "0.1.0";
+
+// The version of the APP, for anything a user is shown. `app.config.js` already
+// takes it from package.json, so reading it back out of the config is the one
+// place it cannot drift - which is exactly what it did for six releases while the
+// About screen printed the state version instead (8.2.32).
+export const APP_VERSION = Constants.expoConfig?.version ?? "";
 
 export const alowedStateVersions = [
   "0.0.4",
@@ -37,9 +47,20 @@ export const STORAGE_PRECONVERT_BACKUP_NAME = "preConvertBackup";
 export const STORAGE_LOGGER = "logs";
 
 export const ARCHIVED_NAME = "Archived";
+// The tag filter is a hide-list of tag names, so "passages with no tags at all"
+// needs a name of its own to be nameable there (8.2.25). A leading control
+// character keeps it out of reach of any tag a user could type.
+export const NO_TAGS_NAME = "\u0000NoTags";
 
 export const BACKGROUND_NOTIFICATION_NAME = "backgroundNotificationName";
 export const CUSTOM_TRANSLATION_NAME = "null";
+
+// How many options a test that asks the user to PICK one has to offer (8.2.36).
+// One option is not a test: it cannot be got wrong, and it is still recorded as
+// a pass, which is what the level-up maths counts. A level that cannot reach
+// this many options is not that level - it becomes the half of its level that
+// asks about the address instead, which needs no library to draw decoys from.
+export const MIN_TEST_OPTIONS = 4;
 
 export const PERFECT_TESTS_TO_PROCEED = 4;
 // How many times a "study this one" session repeats its single passage.
@@ -62,6 +83,12 @@ export const HOUR = 3600;
 export const DAY = HOUR * 24;
 
 export const LOGGER_MAX_ARRAY_SIZE = 1000;
+
+// Coalescing window for the state persist in AppContext. Serializing the whole
+// state is O(history), so it runs at most once per this many ms instead of once
+// per action (8.2.20); whatever is pending is flushed when the app leaves the
+// foreground, so nothing can be lost to a kill mid-window.
+export const STATE_PERSIST_DEBOUNCE = 1000;
 
 export const ACCESS_TOKEN_NAME = "accessToken";
 export const REFRESH_TOKEN_NAME = "refreshToken";
@@ -131,7 +158,9 @@ export const VIBRATION_PATTERNS = {
   testRight: [0, 20, 190, 20],
   testWrong: [0, 300],
   wordClick: 10,
-  APSelectVerse: 10
+  APSelectVerse: 10,
+  // a long press that changed something - the list row collapsing (8.2.8)
+  longPress: 30
 };
 
 // Candy-UI motion vocabulary (0.3.0). Every reanimated surface pulls its timing
@@ -149,6 +178,12 @@ export const ANIMATION = {
   },
   // how far a surface travels while it fades in, in px
   riseDistance: 16,
+  // How far the Header falls INTO place from above (8.2.29). A bar is a frame,
+  // not content: it arrives from the edge it lives on rather than rising from
+  // below like the screen it caps, which read as the two scrambling past each
+  // other. Half of riseDistance on purpose - the frame must move LESS than what
+  // is arriving underneath it, or the eye follows the wrong thing.
+  headerDropDistance: 8,
   // scale a surface starts from before settling at 1
   riseScale: 0.94,
   // How long a surface waits before entering, when something else is already
@@ -160,15 +195,43 @@ export const ANIMATION = {
   // How far a control sinks under a finger (8.2.4). Deliberately smaller than
   // riseScale: an entrance may be theatrical, a press must not be - it happens
   // dozens of times a session and any bigger reads as the button wobbling.
-  pressScale: 0.96
+  pressScale: 0.96,
+  // Gesture geometry (8.2.28). `swipeThreshold` is how far a finger has to
+  // travel before a swipe counts as asking for a screen rather than as a
+  // twitch; `pullTrigger` is the longer pull the practice arrow needs, because
+  // that gesture STARTS a session and a session is not something to fall into;
+  // `pullMax` is where the arrow stops following the finger, so an enormous
+  // drag does not walk it down the screen. Here rather than in the one
+  // component for the same reason the spring is: the next surface that takes a
+  // swipe must feel like this one, not invent its own numbers.
+  swipeThreshold: 60,
+  pullTrigger: 88,
+  pullMax: 120
 };
 
 // The app is one column of content, and on a foldable or a tablet that column
 // must stop growing rather than stretch a passage across 1800px (8.2.4). Same
 // principle as ANIMATION: the number lives in one place, so every wide-screen
 // surface stops at the same width instead of each picking its own.
+// The app mark's natural size (8.2.31). The artwork is 255x160, so a caller
+// picks a height and the width follows - the home screen scales it to the phone
+// it is on rather than every screen hard-coding 255.
+export const LOGO_HEIGHT = 160;
+export const LOGO_RATIO = 255 / 160;
+
 export const LAYOUT = {
-  maxContentWidth: 560
+  maxContentWidth: 560,
+  // The app bar's own height, above whatever the device's top inset adds. It
+  // lives here rather than in `Header.tsx` because `screenTransition.ts` needs
+  // it too (8.2.28 gives the vertical screens a gesture band exactly one bar
+  // deep), and a util reaching into a component would close the loop
+  // navigator -> Header -> AppContext -> navigator.
+  headerHeight: 60,
+  // How far the last row of a scrolling surface clears the screen edge (8.2.27).
+  // A list that ends flush against the bottom reads as cut off rather than
+  // finished - and on the two screens that sized their scroll area in percent it
+  // WAS cut off. One number, so every list ends the same way.
+  scrollBottomGap: 24
 };
 
 export const COLOR_DARK = {
@@ -246,6 +309,12 @@ export const THEME_DARK = StyleSheet.create({
   },
   gap20: {
     gap: 20
+  },
+  // The contentContainerStyle of any scrolling surface (8.2.27): its last row
+  // clears the screen edge instead of ending flush against it. Colourless like
+  // rowView/gap20, and shared so every list in the app ends the same way.
+  scrollContent: {
+    paddingBottom: LAYOUT.scrollBottomGap
   }
 });
 
@@ -284,6 +353,9 @@ export const THEME_LIGHT: typeof THEME_DARK = {
   },
   gap20: {
     ...THEME_DARK.gap20
+  },
+  scrollContent: {
+    ...THEME_DARK.scrollContent
   }
 };
 

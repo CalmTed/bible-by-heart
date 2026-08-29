@@ -9,7 +9,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
 import { RootStackParamList } from "./models";
-import { candyTransition } from "./utils/screenTransition";
+import { candyTransition, candyTransitions } from "./utils/screenTransition";
 import { HomeScreen } from "./screens/HomeScreen";
 import { ListScreen } from "./screens/ListScreen";
 import { FiltersScreen } from "./screens/FiltersScreen";
@@ -74,6 +74,43 @@ const linking: LinkingOptions<RootStackParamList> = {
   }
 };
 
+/**
+ * The four screens home reaches directly (8.2.28). Each one arrives from the
+ * edge it lives beyond, and `HomeSwipe` moves the finger the same way.
+ *
+ * `detachPreviousScreen: false` is the other half of "back must be fast". The
+ * stack detaches the screen underneath the top one, and a detached screen is
+ * also a FROZEN one (`react-native-screens` freezes on an inactive activity
+ * state) — so popping back to home used to unfreeze it and run its whole first
+ * render inside the pop animation, which is precisely when the JS thread has no
+ * time to spare. Kept attached, home is already drawn when the card comes off
+ * it. It costs home re-rendering on state changes while a session is running,
+ * which is cheap since 8.2.20/8.2.21: `getStroke` and the week row are memoized
+ * on `state.testsHistory`, and that only changes when a session finishes.
+ */
+const listDestination = {
+  ...candyTransitions.right,
+  detachPreviousScreen: false
+};
+const settingsDestination = {
+  ...candyTransitions.left,
+  detachPreviousScreen: false
+};
+const statsDestination = {
+  ...candyTransitions.bottom,
+  detachPreviousScreen: false
+};
+// Practice arrives from above and is the one destination with NO dismissing
+// gesture. Its inverted-vertical swipe would start in the bottom band of the
+// screen - which on every level component is the answer block, the word options
+// and the Submit button - so a mis-flicked answer would abandon the session.
+// A training session is left on purpose, through the cross in its header.
+const practiceDestination = {
+  ...candyTransitions.top,
+  detachPreviousScreen: false,
+  gestureEnabled: false
+};
+
 export const Navigator: FC = () => {
   //TODO handle open training
   TaskManager.defineTask(
@@ -109,7 +146,11 @@ export const Navigator: FC = () => {
         }}
       >
         <Stack.Screen name={SCREEN.home} component={HomeScreen} />
-        <Stack.Screen name={SCREEN.settings} component={SettingsScreen} />
+        <Stack.Screen
+          name={SCREEN.settings}
+          component={SettingsScreen}
+          options={settingsDestination}
+        />
         <Stack.Screen
           name={SCREEN.settingsList}
           component={ListSettingsScreen}
@@ -147,12 +188,24 @@ export const Navigator: FC = () => {
           component={UserSettingsScreen}
         />
         <Stack.Screen name={SCREEN.settingsLog} component={LogSettingsScreen} />
-        <Stack.Screen name={SCREEN.listPassage} component={ListScreen} />
+        <Stack.Screen
+          name={SCREEN.listPassage}
+          component={ListScreen}
+          options={listDestination}
+        />
         <Stack.Screen name={SCREEN.listFilters} component={FiltersScreen} />
         <Stack.Screen name={SCREEN.passage} component={PassageScreen} />
-        <Stack.Screen name={SCREEN.test} component={TestsScreen} />
+        <Stack.Screen
+          name={SCREEN.test}
+          component={TestsScreen}
+          options={practiceDestination}
+        />
         <Stack.Screen name={SCREEN.testResults} component={FinishScreen} />
-        <Stack.Screen name={SCREEN.stats} component={StatsScreen} />
+        <Stack.Screen
+          name={SCREEN.stats}
+          component={StatsScreen}
+          options={statsDestination}
+        />
         <Stack.Screen name={SCREEN.calendar} component={CalendarScreen} />
         <Stack.Screen name={SCREEN.login} component={LoginScreen} />
         <Stack.Screen name={SCREEN.register} component={RegisterScreen} />

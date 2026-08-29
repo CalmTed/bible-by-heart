@@ -93,7 +93,9 @@ export const createAppState010: () => AppStateModel010 = () => {
       [SETTINGS.hapticsEnabled]: true,
       [SETTINGS.soundsEnabled]: true,
       [SETTINGS.compressOldTestsData]: true,
-      [SETTINGS.autoIncreaseLevel]: false,
+      // On for new installs only (8.2.32, Fedir): a converted state keeps whatever
+      // the user had - stateVersionConvert carries this field across untouched.
+      [SETTINGS.autoIncreaseLevel]: true,
       [SETTINGS.leftSwipeTag]: ARCHIVED_NAME, // options from existing tags; archived by default. Dangling tag is healed in reduce.ts
 
       [SETTINGS.remindersEnabled]: true,

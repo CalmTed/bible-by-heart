@@ -63,7 +63,10 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
         title={titleText}
         onBack={() => setItemSelected(null)}
       >
-        <ScrollView style={settingsListWrapperStyle.contentsView}>
+        <ScrollView
+          style={settingsListWrapperStyle.contentsView}
+          contentContainerStyle={theme.theme.scrollContent}
+        >
           {renderEditItem(itemSelected, handleItemChange, handleRemove)}
         </ScrollView>
       </SettingsSubScreen>
@@ -83,7 +86,10 @@ export const SettingsListWrapper: FC<SettingsListWrapperModel> = ({
         />
       }
     >
-      <ScrollView style={settingsListWrapperStyle.itemsListView}>
+      <ScrollView
+        style={settingsListWrapperStyle.itemsListView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         {items.map((item) => (
           <Pressable
             key={item.id}

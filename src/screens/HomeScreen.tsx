@@ -1,6 +1,12 @@
 import React, { FC, useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Linking } from "react-native";
-import { LAYOUT, SCREEN, THEMETYPE } from "../constants";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  useWindowDimensions
+} from "react-native";
+import { LAYOUT, LOGO_RATIO, SCREEN, THEMETYPE } from "../constants";
 import { Button } from "../components/Button";
 import { Header } from "../components/Header";
 import { DaggerLogoSVG } from "../svg/daggetLogo";
@@ -13,6 +19,7 @@ import { SelectModal } from "../components/SelectModal";
 import { ActionName, ScreenPropsModel } from "../models";
 import { getPassagesByTrainMode } from "../utils/generateTests";
 import { MangerSVG } from "../svg/manger";
+import { HomeSwipe, SwipeDirection } from "../components/HomeSwipe";
 import { logger } from "../utils/logger";
 
 export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
@@ -21,6 +28,19 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   const { state, dispatch, t, theme } = useAppContext();
 
   const [showTrainModesList, setShowTrainModesList] = useState(false);
+
+  // 8.2.31 - the logo is a share of the screen, not 160px on every device. The
+  // width cap is what stops it on an unfolded foldable, where a fifth of the
+  // height would be wider than the column the buttons live in.
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const logoHeight = Math.max(
+    MIN_LOGO_HEIGHT,
+    Math.min(
+      windowHeight * LOGO_HEIGHT_SHARE,
+      (Math.min(windowWidth, LAYOUT.maxContentWidth) - LOGO_SIDE_MARGIN * 2) /
+        LOGO_RATIO
+    )
+  );
 
   // getStroke walks the whole history (O(history)); recompute only when the
   // history actually changes, not on every re-render (8.1.1 finding #4/d).
@@ -31,6 +51,44 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   const activeTrainModes = state.settings.trainModesList.filter(
     (m) => m.enabled
   );
+  const hasPassages = state.passages.length > 0;
+
+  // One definition of "start practising", so the button and the pull-down
+  // gesture cannot drift apart (8.2.28). More than one train mode still asks
+  // which one - a swipe may not silently pick for the user.
+  const startPractice = () => {
+    if (activeTrainModes.length > 1) {
+      setShowTrainModesList(true);
+      return;
+    }
+    dispatch({ name: ActionName.generateTests });
+    navigation.navigate(SCREEN.test);
+  };
+
+  // The four edges, in the same words `utils/screenTransition.ts` uses for the
+  // four card directions: the finger runs the way the card travels. Settings
+  // lives to the LEFT, so it is a swipe rightwards that pulls it in.
+  const handleSwipe = (direction: SwipeDirection) => {
+    switch (direction) {
+      case "right":
+        navigation.navigate(SCREEN.settings);
+        return;
+      case "left":
+        navigation.navigate(SCREEN.listPassage);
+        return;
+      case "up":
+        navigation.navigate(SCREEN.stats);
+        return;
+      case "down":
+        startPractice();
+    }
+  };
+
+  // Settings and the list are always reachable; stats and practice need
+  // something to be about, exactly as the buttons below them do.
+  const swipeDirections: SwipeDirection[] = hasPassages
+    ? ["left", "right", "up", "down"]
+    : ["left", "right"];
 
   // Was firing on EVERY render (async work, no effect guard — 8.1.1 finding #4);
   // it only needs to read the launch URL once on mount.
@@ -95,10 +153,18 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   const logoBlock = (
     <View style={homeStyle.logoView}>
       {new Date().getMonth() !== 11 && (
-        <DaggerLogoSVG isOutline={strokeData.today} color={theme.colors.text} />
+        <DaggerLogoSVG
+          isOutline={strokeData.today}
+          color={theme.colors.text}
+          height={logoHeight}
+        />
       )}
       {new Date().getMonth() === 11 && (
-        <MangerSVG isOutline={strokeData.today} color={theme.colors.text} />
+        <MangerSVG
+          isOutline={strokeData.today}
+          color={theme.colors.text}
+          height={logoHeight}
+        />
       )}
       <Text style={{ ...theme.theme.text, ...homeStyle.titleText }}>
         {/* Bible by heart */}
@@ -116,7 +182,7 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
   );
   const mainButtons = (
     <View style={homeStyle.buttonView}>
-      {state.passages.length === 0 && (
+      {!hasPassages && (
         <Button
           key={"addFirstPassageButton"}
           type="main"
@@ -125,23 +191,15 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
           onPress={() => navigation.navigate(SCREEN.listPassage)}
         />
       )}
-      {state.passages.length > 0 && [
+      {hasPassages && [
         <Button
           key={"practiceButton"}
           type="main"
           color="green"
           title={t("homePractice")}
-          onPress={() => {
-            if (activeTrainModes.length > 1) {
-              setShowTrainModesList(true);
-            } else {
-              dispatch({ name: ActionName.generateTests });
-              navigation.navigate(SCREEN.test);
-            }
-          }}
+          onPress={startPractice}
           icon={activeTrainModes.length > 1 ? IconName.selectArrow : undefined}
           iconAlign="right"
-          disabled={state.passages.length === 0}
         />,
         <Button
           key={"listButton"}
@@ -193,21 +251,48 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
       />
       {/* No bar of its own - but the top margin still comes from the device */}
       <Header />
-      {logoBlock}
-      <WeekActivity state={state} />
-      {mainButtons}
+      {/* 8.2.31: the four blocks are spaced on purpose. The logo used to sit in
+          a `flex: 1` box that centred it, so ALL the slack collected in two
+          equal voids - one above the logo, one under "Days stroke" - and the
+          week row was left pinned above the buttons. space-between spends the
+          same slack as two ordinary gaps: mark at the top, the week in the
+          middle, the buttons where the thumb is. */}
+      {/* 8.2.28: the same four destinations the buttons below reach, reachable
+          with the finger and from the edge each of them arrives from. */}
+      <HomeSwipe onSwipe={handleSwipe} available={swipeDirections}>
+        <View style={homeStyle.column}>
+          {logoBlock}
+          <WeekActivity state={state} />
+          {mainButtons}
+        </View>
+      </HomeSwipe>
     </View>
   );
 };
 
+// A fifth of the screen for the mark itself; with the app name and the stroke
+// line under it the whole block lands near the 40% Fedir asked for. The floor
+// keeps it a logo rather than an icon on a short phone.
+const LOGO_HEIGHT_SHARE = 0.2;
+const MIN_LOGO_HEIGHT = 96;
+const LOGO_SIDE_MARGIN = 20;
+
 const homeStyle = StyleSheet.create({
-  // The one block that gives when the screen is short: it holds a fixed-size
-  // logo and two lines of text, and losing some of its breathing room is
-  // survivable in a way an unreachable Settings button is not (8.2.4).
+  column: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 10
+  },
+  // The one block that gives when the screen is short: it holds the logo and
+  // two lines of text, and losing some of its breathing room is survivable in a
+  // way an unreachable Settings button is not (8.2.4). Content-sized since
+  // 8.2.31 - as `flex: 1` it was the thing manufacturing the dead zones.
   logoView: {
     alignItems: "center",
     justifyContent: "center",
-    flex: 1
+    flexShrink: 1
   },
   titleText: {
     fontSize: 35,

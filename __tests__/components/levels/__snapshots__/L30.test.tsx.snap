@@ -10,14 +10,17 @@ exports[`testing level 30 rendering L30 renders correctly 1`] = `
   }
 >
   <RCTScrollView
+    contentContainerStyle={
+      {
+        "paddingHorizontal": 20,
+        "paddingVertical": 10,
+      }
+    }
     style={
       {
-        "backgroundColor": "#2C302C",
-        "borderRadius": 10,
-        "height": "auto",
-        "margin": 10,
-        "maxHeight": "30%",
-        "paddingHorizontal": 10,
+        "flexGrow": 0,
+        "flexShrink": 1,
+        "width": "100%",
       }
     }
   >
@@ -26,6 +29,8 @@ exports[`testing level 30 rendering L30 renders correctly 1`] = `
         style={
           {
             "alignContent": "center",
+            "backgroundColor": "#2C302C",
+            "borderRadius": 10,
             "flexDirection": "row",
             "flexWrap": "wrap",
             "letterSpacing": 0.3,
@@ -324,12 +329,10 @@ exports[`testing level 30 rendering L30 renders correctly 1`] = `
   <View
     style={
       {
-        "flex": 1,
-        "flexDirection": "row",
-        "flexWrap": "wrap",
         "gap": 10,
+        "paddingBottom": 20,
         "paddingHorizontal": 20,
-        "paddingVertical": 10,
+        "paddingTop": 10,
         "width": "100%",
       }
     }

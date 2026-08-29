@@ -24,7 +24,7 @@ import { logger } from "../utils/logger";
 export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
   navigation
 }) => {
-  const { state, setState, t, theme } = useAppContext();
+  const { state, setState, dispatch, t, theme } = useAppContext();
   const [loadingState, setLoadingState] = useState(false);
 
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
@@ -49,7 +49,6 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
         Authorization: `Bearer ${accessToken}`
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
@@ -62,15 +61,13 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
     switch (logingoutResult.response.status) {
       case 200:
         logger.write(`Logged out manualy from ${state.userData.userName}`);
-        const newState = reduce(state, {
-          name: ActionName.resetUserData
-        });
-        if (newState === null) {
-          return logger.error(`Unknown error: Unable to reset user data`);
-        }
         await SecureStore.deleteItemAsync(ACCESS_TOKEN_NAME);
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_NAME);
-        setState(newState);
+        // dispatch, not reduce(state) + setState (8.2.24). `state` here was read
+        // before the request was awaited, so writing the whole object back put
+        // every change made in between - a language, a passage, an answer - back
+        // the way it was.
+        dispatch({ name: ActionName.resetUserData });
         break;
       case 401:
         Alert.alert(
@@ -103,7 +100,6 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
         appLanguage: newLangCode
       },
       logoutMethods: {
-        state,
         setState,
         navigation,
         screen: SCREEN.settings
@@ -123,7 +119,10 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
         title={`${t("settingsScreenTitle")}${loadingState ? " ⏳" : ""}`}
         onBack={() => navigation.navigate(SCREEN.home)}
       />
-      <ScrollView style={settingsStyle.scrollView}>
+      <ScrollView
+        style={settingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <View style={settingsStyle.topUserDataView}>
           <View style={{ ...settingsStyle.userImageView }}>
             <Icon

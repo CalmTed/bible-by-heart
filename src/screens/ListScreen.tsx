@@ -1,11 +1,4 @@
-import React, {
-  FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -14,8 +7,7 @@ import {
   Pressable,
   TextInput,
   StyleProp,
-  TextStyle,
-  Vibration
+  TextStyle
 } from "react-native";
 import Animated, {
   SharedValue,
@@ -24,6 +16,7 @@ import Animated, {
 import {
   ANIMATION,
   ARCHIVED_NAME,
+  NO_TAGS_NAME,
   LANGCODE,
   LAYOUT,
   SORTINGOPTION,
@@ -48,7 +41,6 @@ import ReanimatedSwipeable, {
   SwipeableMethods
 } from "react-native-gesture-handler/ReanimatedSwipeable";
 import { reduce } from "../utils/reduce";
-import { AnchoredPopup, PopupAnchorModel } from "../components/AnchoredPopup";
 import { SelectModal } from "../components/SelectModal";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { timeToString } from "../utils/formatDateTime";
@@ -57,6 +49,7 @@ import { logger } from "../utils/logger";
 import toastShow from "../utils/toastShow";
 import { sanitizeSharedText } from "../utils/sanitizeSharedText";
 import { getTranslationChoice } from "../utils/getTranslationChoice";
+import { feedback } from "../utils/feedback";
 
 // The add-passage flow is a sequence of steps, not a pair of independent
 // modals: translation -> address -> editor (8.2.1d). One value says where the
@@ -92,12 +85,6 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
 
   const [searchText, setSearch] = useState("");
   const [isSortingOpen, setOpenSorting] = useState(false);
-  // The sort menu hangs off the toolbar button that opens it (8.2.2), so the
-  // button has to be measured before the popup can be placed. Measuring on
-  // press rather than on layout keeps it right after a rotation or a
-  // font-scale change without a listener.
-  const sortAnchorRef = useRef<View>(null);
-  const [sortAnchor, setSortAnchor] = useState<PopupAnchorModel | null>(null);
   const [passageIdToRemove, setPassageIdToRemove] = useState<number | null>(
     null
   );
@@ -192,7 +179,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
   );
   const handleListItemLongPress = useCallback(
     (passage: PassageModel) => {
-      Vibration.vibrate(30);
+      feedback(state.settings, "longPress");
       handlePESubmit({
         ...passage,
         isCollapsed: !passage.isCollapsed
@@ -213,18 +200,6 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     (passage: PassageModel) => setPassageIdToRemove(passage.id),
     []
   );
-  const handleSortOpen = () => {
-    // measureInWindow never calls back under jest (and can report NaN before a
-    // first layout), so the popup keeps its null anchor and falls back to the
-    // corner instead of being placed at NaN.
-    sortAnchorRef.current?.measureInWindow((x, y, width, height) => {
-      if (![x, y, width, height].every((n) => Number.isFinite(n))) {
-        return;
-      }
-      setSortAnchor({ x: x + width, y: y + height });
-    });
-    setOpenSorting(true);
-  };
   const handleSortChange = (option: SORTINGOPTION) => {
     setOpenSorting(false);
     setState((prv) => {
@@ -280,73 +255,110 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       handleTextFromIntent(passageText);
     }
   }, [passageText]);
-  const allTags = useMemo(
+  // Memoized on what it actually reads. Every dispatch hands each consumer a new
+  // context value, so this used to refilter the whole library on state changes
+  // that had nothing to do with it.
+  const searchLower = searchText.toLowerCase();
+  const filteredPassages = useMemo(
     () =>
-      state.passages
-        .map((p) => p.tags)
-        .flat()
-        .filter((v, i, arr) => !arr.slice(0, i).includes(v)),
-    [state.passages]
-  );
-  const filteredPassages = state.passages.filter((p) => {
-    //strat 1: JSON.stringify(invertedTags) === JSON.stringify(p.tags)
-    //strat 2: p.tags.includes(at least one of invertedTags[]) exept Archived
-    const invertedTags = allTags.filter(
-      (at) => !state.filters.tags.includes(at)
-    );
-    // const isTagFilteringShown = JSON.stringify(invertedTags) === JSON.stringify(p.tags)
-    const isTagFilteringShown =
-      invertedTags.length > 0
-        ? invertedTags.find((it) => p.tags.includes(it))
-        : state.filters.tags.length === allTags.length
-          ? !p.tags.includes(ARCHIVED_NAME)
+      state.passages.filter((p) => {
+        // A hide-list, exactly like the three below it: a passage is hidden
+        // because it carries a tag the user chose to hide, and for no other
+        // reason (8.2.25). It used to be the inverse - shown only if it carried
+        // at least one NON-hidden tag - so an untagged passage vanished the
+        // moment any tag existed anywhere in the library.
+        const isTagFilteringShown = p.tags.length
+          ? !p.tags.some((tag) => state.filters.tags.includes(tag))
+          : !state.filters.tags.includes(NO_TAGS_NAME);
+        const isSelectedLevelFilteringShown =
+          state.filters.selectedLevels.filter(
+            (SLFilter) => p.selectedLevel === SLFilter
+          ).length === 0;
+        const isMaxLevelFilteringShown =
+          state.filters.maxLevels.filter((MLFilter) => p.maxLevel === MLFilter)
+            .length === 0;
+        const isTranslationsFilteringShown =
+          state.filters.translations.filter(
+            (TFilter) => p.verseTranslation === TFilter
+          ).length === 0;
+        const isSearchMetFilteringNeeded = !!searchLower.length;
+        const isSearchFilteringShown = isSearchMetFilteringNeeded
+          ? p.verseText.toLowerCase().includes(searchLower) ||
+            Address.format(p.address, t).toLowerCase().includes(searchLower) ||
+            p.tags.join("").toLowerCase().includes(searchLower)
           : true;
-    const isSelectedLevelFilteringShown =
-      state.filters.selectedLevels.filter(
-        (SLFilter) => p.selectedLevel === SLFilter
-      ).length === 0;
-    const isMaxLevelFilteringShown =
-      state.filters.maxLevels.filter((MLFilter) => p.maxLevel === MLFilter)
-        .length === 0;
-    const isTranslationsFilteringShown =
-      state.filters.translations.filter(
-        (TFilter) => p.verseTranslation === TFilter
-      ).length === 0;
-    const isSearchMetFilteringNeeded = !!searchText.length;
-    const isSearchFilteringShown = isSearchMetFilteringNeeded
-      ? p.verseText.toLowerCase().includes(searchText.toLowerCase()) ||
-        Address.format(p.address, t)
-          .toLowerCase()
-          .includes(searchText.toLowerCase()) ||
-        p.tags.join("").toLowerCase().includes(searchText.toLowerCase())
-      : true;
-    return (
-      isTagFilteringShown &&
-      isSearchFilteringShown &&
-      isSelectedLevelFilteringShown &&
-      isMaxLevelFilteringShown &&
-      isTranslationsFilteringShown
-    );
-  });
-  const sortedPassages = [...filteredPassages].sort((a, b) => {
-    switch (state.sort) {
-      case SORTINGOPTION.address:
-        return Address.order(b.address) - Address.order(a.address);
-      case SORTINGOPTION.maxLevel:
-        return b.maxLevel - a.maxLevel;
-      case SORTINGOPTION.selectedLevel:
-        return b.selectedLevel - a.selectedLevel;
-      case SORTINGOPTION.resentlyCreated:
-        return b.dateCreated - a.dateCreated;
-      case SORTINGOPTION.oldestToTrain:
-        return a.dateTested - b.dateTested;
-      default:
-        return 0;
-    }
-  });
-  const archivedPassages = state.passages.filter((p) =>
-    p.tags.includes(ARCHIVED_NAME)
+        return (
+          isTagFilteringShown &&
+          isSearchFilteringShown &&
+          isSelectedLevelFilteringShown &&
+          isMaxLevelFilteringShown &&
+          isTranslationsFilteringShown
+        );
+      }),
+    [state.passages, state.filters, searchLower, t]
   );
+  // The FlatList's `data`: a fresh array on every render defeats every
+  // memoization below it, so it moves with the filter (8.2.21).
+  const sortedPassages = useMemo(
+    () =>
+      [...filteredPassages].sort((a, b) => {
+        switch (state.sort) {
+          case SORTINGOPTION.address:
+            return Address.order(b.address) - Address.order(a.address);
+          case SORTINGOPTION.maxLevel:
+            return b.maxLevel - a.maxLevel;
+          case SORTINGOPTION.selectedLevel:
+            return b.selectedLevel - a.selectedLevel;
+          case SORTINGOPTION.resentlyCreated:
+            return b.dateCreated - a.dateCreated;
+          case SORTINGOPTION.oldestToTrain:
+            return a.dateTested - b.dateTested;
+          default:
+            return 0;
+        }
+      }),
+    [filteredPassages, state.sort]
+  );
+  // What is actually narrowing the list, named (8.2.25). A list shorter than
+  // the library has to say why, and "Archived" is a reason like any other -
+  // hiding it is only the default, not an absence of filtering.
+  const activeFilterNames = useMemo(() => {
+    const names: string[] = [];
+    if (state.filters.tags.includes(ARCHIVED_NAME)) {
+      names.push(t("Archived"));
+    }
+    if (state.filters.tags.includes(NO_TAGS_NAME)) {
+      names.push(t("FilterNoTags"));
+    }
+    if (
+      state.filters.tags.some(
+        (tag) => tag !== ARCHIVED_NAME && tag !== NO_TAGS_NAME
+      )
+    ) {
+      names.push(t("Tags"));
+    }
+    if (state.filters.selectedLevels.length) {
+      names.push(t("SelectedLevel"));
+    }
+    if (state.filters.maxLevels.length) {
+      names.push(t("MaxLevel"));
+    }
+    if (state.filters.translations.length) {
+      names.push(t("Translations"));
+    }
+    if (searchLower.length) {
+      names.push(t("Search"));
+    }
+    return names;
+  }, [state.filters, searchLower, t]);
+  // The dot means "you have set something", so the default archived-hidden
+  // does not light it. It used to compare two counts, which lit for any
+  // archived passage that a search had also hidden.
+  const isAnyFilterSet =
+    state.filters.tags.some((tag) => tag !== ARCHIVED_NAME) ||
+    !!state.filters.selectedLevels.length ||
+    !!state.filters.maxLevels.length ||
+    !!state.filters.translations.length;
   const listStyle = StyleSheet.create({
     searchView: {
       flexDirection: "row",
@@ -375,20 +387,22 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
     passagesListContent: {
       // The last row scrolls clear of the screen edge instead of ending flush
       // against it, which is what made the list feel like it was cut off rather
-      // than finished (8.2.3).
-      paddingBottom: 24
+      // than finished (8.2.3). The number moved to LAYOUT in 8.2.27, where every
+      // other scrolling surface now reads it too.
+      paddingBottom: LAYOUT.scrollBottomGap
     },
     hiddenLabel: {
       ...theme.theme.subText,
       textAlign: "center",
-      paddingVertical: 10
+      paddingTop: 10
+    },
+    hiddenReasonLabel: {
+      ...theme.theme.subText,
+      textAlign: "center",
+      paddingBottom: 10
     },
     devStatsView: {
       margin: 20
-    },
-    sortPopupHeader: {
-      ...theme.theme.subText,
-      marginBottom: 4
     }
   });
   return (
@@ -409,23 +423,16 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           {!!searchText.length && (
             <IconButton icon={IconName.cross} onPress={() => setSearch("")} />
           )}
-          {/* collapsable={false} keeps the wrapper a real native view on
-              Android, which is what makes it measurable */}
-          <View ref={sortAnchorRef} collapsable={false}>
-            <IconButton
-              icon={IconName.sort}
-              onPress={handleSortOpen}
-              color={theme.colors.textSecond}
-            />
-          </View>
+          <IconButton
+            icon={IconName.sort}
+            onPress={() => setOpenSorting(true)}
+            color={theme.colors.textSecond}
+          />
           <IconButton
             icon={IconName.filter}
             onPress={() => navigation.navigate(SCREEN.listFilters)}
             color={theme.colors.textSecond}
-            dot={
-              state.passages.length - filteredPassages.length >
-              archivedPassages.length
-            }
+            dot={isAnyFilterSet}
           />
         </View>
         <FlatList
@@ -451,9 +458,16 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           )}
           ListFooterComponent={
             state.passages.length > sortedPassages.length ? (
-              <Text style={listStyle.hiddenLabel}>{`${t("PassagesHidden")} ${
-                state.passages.length - sortedPassages.length
-              }`}</Text>
+              <View>
+                <Text style={listStyle.hiddenLabel}>{`${t(
+                  "PassagesHidden"
+                )} ${state.passages.length - sortedPassages.length}`}</Text>
+                {!!activeFilterNames.length && (
+                  <Text style={listStyle.hiddenReasonLabel}>{`${t(
+                    "FilteredBy"
+                  )}: ${activeFilterNames.join(", ")}`}</Text>
+                )}
+              </View>
             ) : null
           }
           initialNumToRender={10}
@@ -544,25 +558,22 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
           </View>
         )} */}
       </View>
-      {/* Sorting is a short, one-tap choice made from the toolbar, so it hangs
-          off the button that opens it instead of taking over the screen
-          (8.2.2). Picking closes it - there is nothing else to do in there. */}
-      <AnchoredPopup
-        shown={isSortingOpen}
-        anchor={sortAnchor}
-        handleClose={() => setOpenSorting(false)}
-      >
-        <Text style={listStyle.sortPopupHeader}>{t("TitleSort")}</Text>
-        {Object.values(SORTINGOPTION).map((option) => (
-          <Button
-            key={option}
-            type="outline"
-            color={option === state.sort ? "green" : "gray"}
-            title={t(option)}
-            onPress={() => handleSortChange(option)}
-          />
-        ))}
-      </AnchoredPopup>
+      {/* 8.2.37: sorting used to hang off the search row in an AnchoredPopup.
+          It read as broken - five options each centred at their own width, no
+          dim behind it, and nothing on screen it visibly came from. It is the
+          same list of choices SelectModal already draws for every other picker
+          in the app: titled, dimmed, centred, one left edge. */}
+      <SelectModal
+        isShown={isSortingOpen}
+        title={t("TitleSort")}
+        options={Object.values(SORTINGOPTION).map((option) => ({
+          value: option,
+          label: t(option)
+        }))}
+        selectedIndex={Object.values(SORTINGOPTION).indexOf(state.sort)}
+        onSelect={(value) => handleSortChange(value as SORTINGOPTION)}
+        onCancel={() => setOpenSorting(false)}
+      />
       {/* the add-passage flow, in the order the user walks it (8.2.1d) */}
       <SelectModal
         isShown={addFlowStep === "translation"}

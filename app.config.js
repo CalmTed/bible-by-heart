@@ -95,6 +95,27 @@ export default {
             "BROWSABLE",
             "DEFAULT"
           ]
+        },
+        // 8.2.34: opening a backup file offers Bible by Heart. The app's own
+        // MIME type (see src/utils/backupFile.ts) is what makes the offer
+        // specific - matching application/json would put the app in the chooser
+        // for every JSON file on the phone. No BROWSABLE here: this is a file
+        // being opened, not a link being followed.
+        {
+          action: "VIEW",
+          data: [
+            {
+              scheme: "content",
+              mimeType: "application/vnd.biblebyheart.backup+json"
+            },
+            {
+              scheme: "file",
+              mimeType: "application/vnd.biblebyheart.backup+json"
+            }
+          ],
+          category: [
+            "DEFAULT"
+          ]
         }
       ],
       allowBackup: true,

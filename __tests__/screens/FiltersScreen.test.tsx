@@ -11,6 +11,7 @@ import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { FiltersScreen } from "../../src/screens/FiltersScreen";
 import {
   ARCHIVED_NAME,
+  NO_TAGS_NAME,
   LANGCODE,
   PASSAGELEVEL,
   SCREEN,
@@ -107,6 +108,25 @@ describe("FiltersScreen (8.2.2)", () => {
     const { screen } = renderFilters(stateWithTags([]));
     expect(screen.getByText(t("NoTagsFound"))).toBeTruthy();
     expect(screen.queryByText(t("Tags"))).toBeNull();
+  });
+
+  // 8.2.25 — "has no tags" is a value the hide-list can name, so it is offered
+  // as a tag option, but only in a library where it separates something.
+  it("offers 'no tags' as a tag option once tagged and untagged both exist", () => {
+    const state = stateWithTags(["memorized"]);
+    state.passages.push({
+      ...createPassage(createAddress(), "", undefined, undefined),
+      tags: []
+    });
+    const { screen, seen } = renderFilters(state);
+
+    fireEvent.press(screen.getByText(t("FilterNoTags")));
+    expect(seen.state.filters.tags).toContain(NO_TAGS_NAME);
+  });
+
+  it("does not offer 'no tags' when nothing is tagged", () => {
+    const { screen } = renderFilters(stateWithTags([]));
+    expect(screen.queryByText(t("FilterNoTags"))).toBeNull();
   });
 
   it("toggles a selected-level filter into state and back out", () => {

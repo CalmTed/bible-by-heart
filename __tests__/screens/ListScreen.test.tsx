@@ -6,16 +6,18 @@
  */
 import { useState } from "react";
 import { fireEvent, render, within } from "@testing-library/react-native";
-import { Modal } from "react-native";
+import { Modal, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { renderWithContext } from "../../test-utils/renderWithContext";
 import { AppContext } from "../../src/context/AppContext";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { ListScreen } from "../../src/screens/ListScreen";
-import { IconButton } from "../../src/components/Button";
+import { Button, IconButton } from "../../src/components/Button";
+import { MiniModal } from "../../src/components/MiniModal";
 import { IconName } from "../../src/components/Icon";
 import {
   ARCHIVED_NAME,
+  NO_TAGS_NAME,
   LANGCODE,
   SCREEN,
   SORTINGOPTION,
@@ -240,6 +242,40 @@ describe("ListScreen toolbar (8.2.2)", () => {
     expect(screen.queryByText(t("SelectedLevel"))).toBeNull();
   });
 
+  /**
+   * 8.2.37 — sorting used to be an AnchoredPopup: five options each centred at
+   * their own width, no dim behind them, and nothing on screen the popup
+   * visibly hung from. It is the app's ordinary dialog now, which is what makes
+   * it a titled, dimmed, centred list with one left edge.
+   */
+  it("draws sorting as the app's shared dialog, with the current sort marked", () => {
+    const state = stateWithAPassage();
+    const { screen } = renderAddFlow(state);
+    pressIcon(screen, IconName.sort);
+
+    const dialog = screen
+      .UNSAFE_getAllByType(MiniModal)
+      .find((node) => node.props.shown === true);
+    expect(dialog).toBeTruthy();
+    // the title is inside the dialog, not floating over the toolbar
+    expect(within(dialog!).getByText(t("TitleSort"))).toBeTruthy();
+    // and the dim MiniModal owns is really behind it
+    expect(
+      within(dialog!)
+        .UNSAFE_getAllByType(View)
+        .some(
+          (node) =>
+            StyleSheet.flatten(node.props.style)?.backgroundColor ===
+            getThemeFromScheme(THEMETYPE.dark).colors.bgBackdrop
+        )
+    ).toBe(true);
+
+    const current = within(dialog!)
+      .UNSAFE_getAllByType(Button)
+      .find((node) => node.props.title === t(state.sort));
+    expect(current?.props.color).toBe("green");
+  });
+
   it("opens the sort popup and closes it as soon as a sort is picked", () => {
     const state = stateWithAPassage();
     const { screen, navigate } = renderAddFlow(state);
@@ -365,5 +401,79 @@ describe("ListScreen row interactions (8.2.4)", () => {
     expect(navigate).toHaveBeenCalledWith(SCREEN.passage, {
       passageId: seen.state.passages[0].id
     });
+  });
+});
+
+/**
+ * 8.2.25 — the tag filter is a hide-list, and it hides only what it names.
+ * The repro: one tagged passage plus one untagged one, no filter ever set, and
+ * the untagged one was invisible.
+ */
+describe("ListScreen tag filtering (8.2.25)", () => {
+  const renderList = (state: AppStateModel) =>
+    renderWithContext(
+      <SafeAreaProvider initialMetrics={safeAreaMetrics}>
+        <ListScreen {...makeScreenProps(SCREEN.listPassage, jest.fn())} />
+      </SafeAreaProvider>,
+      { state }
+    );
+
+  const TAGGED = "tagged verse text";
+  const UNTAGGED = "untagged verse text";
+  const libraryOfTwo = (): AppStateModel => {
+    const state = createAppState();
+    state.passages = [
+      { ...createPassage(createAddress(), TAGGED), tags: ["read"] },
+      { ...createPassage(createAddress(), UNTAGGED), tags: [] }
+    ];
+    return state;
+  };
+
+  it("keeps an untagged passage visible when another passage has a tag", () => {
+    const screen = renderList(libraryOfTwo());
+
+    expect(screen.getByText(TAGGED)).toBeTruthy();
+    expect(screen.getByText(UNTAGGED)).toBeTruthy();
+    // nothing is hidden, so nothing announces a hidden count
+    expect(screen.queryByText(`${t("PassagesHidden")} 1`)).toBeNull();
+  });
+
+  it("hides only the passages carrying a hidden tag", () => {
+    const state = libraryOfTwo();
+    state.filters.tags = ["read"];
+    const screen = renderList(state);
+
+    expect(screen.queryByText(TAGGED)).toBeNull();
+    expect(screen.getByText(UNTAGGED)).toBeTruthy();
+  });
+
+  it("hides untagged passages only when the filter names them", () => {
+    const state = libraryOfTwo();
+    state.filters.tags = [NO_TAGS_NAME];
+    const screen = renderList(state);
+
+    expect(screen.getByText(TAGGED)).toBeTruthy();
+    expect(screen.queryByText(UNTAGGED)).toBeNull();
+  });
+
+  it("says what is filtering the list whenever it is shorter", () => {
+    const state = libraryOfTwo();
+    state.filters.tags = ["read"];
+    const screen = renderList(state);
+
+    expect(screen.getByText(`${t("PassagesHidden")} 1`)).toBeTruthy();
+    expect(
+      screen.getByText(`${t("FilteredBy")}: ${t("Tags")}`)
+    ).toBeTruthy();
+  });
+
+  it("names archiving as the reason when the default filter is what hid a row", () => {
+    const state = libraryOfTwo();
+    state.passages[0].tags = [ARCHIVED_NAME];
+    const screen = renderList(state);
+
+    expect(
+      screen.getByText(`${t("FilteredBy")}: ${t("Archived")}`)
+    ).toBeTruthy();
   });
 });

@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType, LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, ScrollView, Vibration } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
@@ -8,59 +8,15 @@ import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { getSimularity } from "../../utils/getSimularity";
-import { ERRORS_TO_DOWNGRADE, VIBRATION_PATTERNS } from "../../constants";
+import { ERRORS_TO_DOWNGRADE } from "../../constants";
 import { SentenceContext } from "./SentenceContext";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 4: type the passage out with the word autocomplete, then name the
 // address (or read it, when the test gives the address and asks for the words).
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1,
-    paddingHorizontal: 15
-  },
-  addressTextView: {
-    alignContent: "flex-start",
-    justifyContent: "center"
-  },
-  addressText: {
-    fontSize: 22,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    textAlign: "center"
-  },
-  passageTextView: {
-    maxHeight: 100,
-    height: "auto",
-    minHeight: 100,
-    borderRadius: 10,
-    marginHorizontal: 10,
-    marginBottom: 0,
-    paddingHorizontal: 0
-  },
-  passageText: {
-    alignContent: "center",
-    letterSpacing: 0.3,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 10,
-    fontSize: 18,
-    fontWeight: "500"
-  },
-  optionButtonsScrollWrapper: {
-    flex: 1,
-    width: "100%"
-  },
-  optionButtonsWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-    width: "100%",
-    gap: 10,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingVertical: 10
-  },
   inputSubtext: {
     textAlign: "center",
     fontSize: 12,
@@ -68,10 +24,11 @@ const levelComponentStyle = StyleSheet.create({
   },
   inputWrapperStyle: {
     width: "100%",
-    height: "100%",
-    display: "flex",
-    alignContent: "flex-start",
-    justifyContent: "flex-start"
+    flex: 1
+  },
+  inputTextGrow: {
+    flex: 1,
+    textAlignVertical: "top"
   },
   inputStyle: {
     width: "100%",
@@ -84,6 +41,13 @@ const levelComponentStyle = StyleSheet.create({
   wordOptionTextStyle: {
     fontSize: 16,
     textTransform: "none"
+  },
+  // The words to pick from are a hint under the input, not the answer itself,
+  // so they stay in the action block and never grow past a couple of rows.
+  wordOptions: {
+    ...levelLayout.answerScrollContent,
+    paddingHorizontal: 0,
+    maxHeight: 120
   }
 });
 
@@ -126,9 +90,7 @@ export const L40: FC<LevelComponentModel> = ({
       return;
     }
     if (Address.equals(targetPassage.address, value)) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: {
@@ -136,9 +98,7 @@ export const L40: FC<LevelComponentModel> = ({
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       //add error
       submitTest({
         isRight: false,
@@ -192,9 +152,7 @@ export const L40: FC<LevelComponentModel> = ({
       newUserProvidedText.trim().split(" ")[userProvidedWords.length - 1] !==
       targetWords[userProvidedWords.length - 1];
     if (isWordWasWrong) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       submitTest({
         isRight: false,
         modifiedTest: {
@@ -213,9 +171,7 @@ export const L40: FC<LevelComponentModel> = ({
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.wordClick);
-      }
+      feedback(state.settings, "wordClick");
       setPassageText(newUserProvidedText);
     }
   };
@@ -263,41 +219,30 @@ export const L40: FC<LevelComponentModel> = ({
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
   return (
-    <ScrollView style={levelComponentStyle.levelComponentView}>
-      <View style={levelComponentStyle.addressTextView}>
-        {isAddressProvided && (
-          <Text
-            style={{
-              ...levelComponentStyle.addressText,
-              color: theme.colors.text
-            }}
-          >
-            {Address.format(targetPassage.address, t)}
-          </Text>
-        )}
-        {!isAddressProvided && (
-          <Text
-            style={{
-              ...levelComponentStyle.passageText,
-              color: theme.colors.text
-            }}
-          >
-            {t("FinishPassage")}
-          </Text>
-        )}
+    <View style={levelLayout.screen}>
+      <View style={levelLayout.promptContent}>
+        <Text
+          style={{
+            ...levelLayout.addressText,
+            color: theme.colors.text
+          }}
+        >
+          {isAddressProvided
+            ? Address.format(targetPassage.address, t)
+            : t("FinishPassage")}
+        </Text>
       </View>
-      <SentenceContext
-        text={targetPassageWholeText}
-        range={test.d.sentenceRange}
-        side="before"
-      />
-      <View
-        style={{
-          ...levelComponentStyle.passageTextView
-        }}
-      >
+      {/* The answer is the typing, so the input takes the room the prompt left
+          instead of a fixed 100px band with a screenful of nothing under it. */}
+      <View style={levelLayout.answer}>
+        <SentenceContext
+          text={targetPassageWholeText}
+          range={test.d.sentenceRange}
+          side="before"
+        />
         <Input
           multiline
+          grow
           disabled={levelFinished}
           value={passageText}
           placeholder={t("LevelWritePassageText")}
@@ -306,27 +251,42 @@ export const L40: FC<LevelComponentModel> = ({
           onChange={handleTextChange}
           wrapperStyle={levelComponentStyle.inputWrapperStyle}
           style={levelComponentStyle.inputStyle}
+          textStyle={levelComponentStyle.inputTextGrow}
           numberOfLines={4}
         />
+        <SentenceContext
+          text={targetPassageWholeText}
+          range={test.d.sentenceRange}
+          side="after"
+        />
       </View>
-      <SentenceContext
-        text={targetPassageWholeText}
-        range={test.d.sentenceRange}
-        side="after"
-      />
-      {!!wordOptions.length && currentWords.length < 5 && (
-        <Text
-          style={{
-            ...levelComponentStyle.inputSubtext,
-            color: theme.colors.textSecond
-          }}
-        >
-          {t("LevelL40Hint")}
-        </Text>
-      )}
-      {passageText.length >= targetText.length && isCorrect && (
-        <View style={levelComponentStyle.optionButtonsWrapper}>
-          {!isAddressProvided && (
+      <View style={levelLayout.action}>
+        {!!wordOptions.length && currentWords.length < 5 && (
+          <Text
+            style={{
+              ...levelComponentStyle.inputSubtext,
+              color: theme.colors.textSecond
+            }}
+          >
+            {t("LevelL40Hint")}
+          </Text>
+        )}
+        <ScrollView style={levelComponentStyle.wordOptions}>
+          {wordOptions.map((w, i) => (
+            <Button
+              type="outline"
+              key={`${w}-${i}`}
+              title={w}
+              onPress={() => handleWordSelect(passageText, w)}
+              style={levelComponentStyle.wordOptionStyle}
+              textStyle={levelComponentStyle.wordOptionTextStyle}
+              disabled={levelFinished}
+            />
+          ))}
+        </ScrollView>
+        {passageText.length >= targetText.length &&
+          isCorrect &&
+          !isAddressProvided && (
             <Button
               type="outline"
               color="green"
@@ -339,6 +299,7 @@ export const L40: FC<LevelComponentModel> = ({
               disabled={levelFinished}
             />
           )}
+        {passageText.length >= targetText.length && isCorrect && (
           <Button
             type="main"
             color="green"
@@ -352,38 +313,24 @@ export const L40: FC<LevelComponentModel> = ({
               levelFinished
             }
           />
-        </View>
-      )}
+        )}
+        {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
+          new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 5) && (
+          <Button
+            type="secondary"
+            color="gray"
+            title={`${t("DowngradeLevel")}`}
+            onPress={() => handleDowngrade()}
+            disabled={levelFinished}
+          />
+        )}
+      </View>
       <AddressPicker
+        confirmTitle="Submit"
         visible={APVisible}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddressSelect}
       />
-      <ScrollView style={{ ...levelComponentStyle.optionButtonsScrollWrapper }}>
-        <View style={{ ...levelComponentStyle.optionButtonsWrapper }}>
-          {wordOptions.map((w, i) => (
-            <Button
-              type="outline"
-              key={`${w}-${i}`}
-              title={w}
-              onPress={() => handleWordSelect(passageText, w)}
-              style={levelComponentStyle.wordOptionStyle}
-              textStyle={levelComponentStyle.wordOptionTextStyle}
-              disabled={levelFinished}
-            />
-          ))}
-        </View>
-      </ScrollView>
-      {((test.en || 0) > ERRORS_TO_DOWNGRADE ||
-        new Date().getTime() - test?.td?.[0]?.[0] > 1000 * 60 * 5) && (
-        <Button
-          type="secondary"
-          color="gray"
-          title={`${t("DowngradeLevel")}`}
-          onPress={() => handleDowngrade()}
-          disabled={levelFinished}
-        />
-      )}
-    </ScrollView>
+    </View>
   );
 };

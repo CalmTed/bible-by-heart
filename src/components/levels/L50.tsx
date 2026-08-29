@@ -1,11 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
 import { ActionName, AddressType, LevelComponentModel } from "../../models";
-import { View, Text, StyleSheet, Vibration, ScrollView } from "react-native";
-import {
-  ERRORS_TO_DOWNGRADE,
-  MAX_L50_TRIES,
-  VIBRATION_PATTERNS
-} from "../../constants";
+import { View, Text, StyleSheet } from "react-native";
+import { ERRORS_TO_DOWNGRADE, MAX_L50_TRIES } from "../../constants";
 import { Address } from "../../utils/address";
 import { Passage } from "../../utils/passage";
 import { Button } from "../Button";
@@ -13,51 +9,13 @@ import { useAppContext } from "../../context/AppContext";
 import { AddressPicker } from "../AddressPicker";
 import { Input } from "../Input";
 import { SentenceContext } from "./SentenceContext";
+import { feedback } from "../../utils/feedback";
+import { levelLayout } from "./levelLayout";
 
 // Level 5: type the passage out with no autocomplete, one character at a time,
 // then name the address.
 
 const levelComponentStyle = StyleSheet.create({
-  levelComponentView: {
-    width: "100%",
-    flex: 1
-  },
-  addressTextView: {
-    alignContent: "flex-start",
-    justifyContent: "center",
-    marginVertical: 10
-  },
-  addressText: {
-    fontSize: 22,
-    textTransform: "uppercase",
-    fontWeight: "500",
-    textAlign: "center"
-  },
-  passageTextView: {
-    padding: 10,
-    maxHeight: 200,
-    minHeight: 50
-  },
-  passageText: {
-    alignContent: "center",
-    letterSpacing: 0.3,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 10,
-    fontSize: 18,
-    fontWeight: "500",
-    textAlign: "center"
-  },
-  optionButtonsWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-    width: "100%",
-    gap: 10,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingVertical: 10,
-    alignItems: "flex-start"
-  },
   inputSubtext: {
     textAlign: "center",
     fontSize: 12
@@ -68,11 +26,13 @@ const levelComponentStyle = StyleSheet.create({
     justifyContent: "flex-start"
   },
   inputTextStyle: {
-    fontWeight: "normal"
+    fontWeight: "normal",
+    flex: 1,
+    textAlignVertical: "top"
   },
   inputWrapperStyle: {
     width: "100%",
-    height: "100%"
+    flex: 1
   }
 });
 
@@ -141,9 +101,7 @@ export const L50: FC<LevelComponentModel> = ({
       return;
     }
     if (Address.equals(targetPassage.address, value)) {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testRight);
-      }
+      feedback(state.settings, "testRight");
       submitTest({
         isRight: true,
         modifiedTest: {
@@ -151,9 +109,7 @@ export const L50: FC<LevelComponentModel> = ({
         }
       });
     } else {
-      if (state.settings.hapticsEnabled) {
-        Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-      }
+      feedback(state.settings, "testWrong");
       setWrongAddress(value);
     }
   };
@@ -165,14 +121,13 @@ export const L50: FC<LevelComponentModel> = ({
     if (!targetPassage) {
       return;
     }
-    const simplifyString: (arg: string) => string = (input) => {
-      const output = input
-        .trim()
-        .toLowerCase()
-        .replace(/[,|.|-|:|;|!|?|'|"]/g, "");
-      return output;
-    };
-    if (simplifyString(passageText) === simplifyString(targetText)) {
+    // 8.2.7: the comparison forgives characters the keyboard cannot make - the
+    // curly apostrophe, the em dash, the Cyrillic "i" - because a passage stored
+    // with one of those is otherwise unlearnable at this level, and rewriting
+    // the user's own text to fix that is not ours to do. The tolerance is
+    // `Passage`'s, not this file's: the old private `simplifyString` here knew
+    // about eight ASCII marks and nothing else.
+    if (Passage.typedEquals(passageText, targetText)) {
       setIsCorrect(true);
       if (passageText !== targetText) {
         setPassageText(targetText);
@@ -180,25 +135,14 @@ export const L50: FC<LevelComponentModel> = ({
     } else {
       if (tries > 0) {
         setTries((prv) => prv - 1);
-        const enteredTextArray = passageText.split("");
-        const rightPart = targetText
-          .split("")
-          .filter((targetChar, i, wholeString) => {
-            if (!i) {
-              return enteredTextArray[i] === targetChar;
-            } else {
-              return (
-                enteredTextArray.slice(0, i).join("") ===
-                wholeString.slice(0, i).join("")
-              );
-            }
-          })
-          .join("");
-        setPassageText(rightPart);
+        // What the user got right, plus the one character they got wrong - the
+        // shape the filter this replaced produced, kept deliberately: the next
+        // character IS the hint. Rebuilt from `targetText`, so the text handed
+        // back always carries the passage's own characters.
+        const rightLength = Passage.typedPrefixLength(passageText, targetText);
+        setPassageText(rightLength ? targetText.slice(0, rightLength + 1) : "");
       } else {
-        if (state.settings.hapticsEnabled) {
-          Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-        }
+        feedback(state.settings, "testWrong");
         const words = targetText.split(" ");
         const userWords = passageText.split(" ");
         const wrongWordIndex =
@@ -206,9 +150,7 @@ export const L50: FC<LevelComponentModel> = ({
             .map((w, i) => {
               const iterationtText = words.slice(0, i).join(" ");
               const passageSliced = userWords.slice(0, i).join(" ");
-              return (
-                simplifyString(iterationtText) === simplifyString(passageSliced)
-              );
+              return Passage.typedEquals(passageSliced, iterationtText);
             })
             .filter((w) => !!w).length - 1; //length is corrisponging to the last word user got right
         submitTest({
@@ -234,9 +176,7 @@ export const L50: FC<LevelComponentModel> = ({
       if (!aucompleteWarn) {
         setAucompleteWarn(true);
       } else {
-        if (state.settings.hapticsEnabled) {
-          Vibration.vibrate(VIBRATION_PATTERNS.testWrong);
-        }
+        feedback(state.settings, "testWrong");
         submitTest({
           isRight: false,
           modifiedTest: {
@@ -264,28 +204,18 @@ export const L50: FC<LevelComponentModel> = ({
   const levelFinished = test.f;
   const isAddressProvided = test.d.showAddressOrFirstWords;
   return (
-    <ScrollView style={levelComponentStyle.levelComponentView}>
-      <View style={levelComponentStyle.addressTextView}>
-        {isAddressProvided && (
-          <Text
-            style={{
-              ...levelComponentStyle.addressText,
-              color: theme.colors.text
-            }}
-          >
-            {Address.format(targetPassage.address, t)}
-          </Text>
-        )}
-        {!isAddressProvided && (
-          <Text
-            style={{
-              ...levelComponentStyle.passageText,
-              color: theme.colors.text
-            }}
-          >
-            {t("FinishPassageL5")}
-          </Text>
-        )}
+    <View style={levelLayout.screen}>
+      <View style={levelLayout.promptContent}>
+        <Text
+          style={{
+            ...levelLayout.addressText,
+            color: theme.colors.text
+          }}
+        >
+          {isAddressProvided
+            ? Address.format(targetPassage.address, t)
+            : t("FinishPassageL5")}
+        </Text>
         {!!aucompleteWarn && (
           <Text
             style={{
@@ -297,14 +227,17 @@ export const L50: FC<LevelComponentModel> = ({
           </Text>
         )}
       </View>
-      <SentenceContext
-        text={wholeText}
-        range={test.d.sentenceRange}
-        side="before"
-      />
-      <View style={levelComponentStyle.passageTextView}>
+      {/* The typing IS the answer, so the input takes everything the address
+          left - it used to sit in a 200px band with the bottom half empty. */}
+      <View style={levelLayout.answer}>
+        <SentenceContext
+          text={wholeText}
+          range={test.d.sentenceRange}
+          side="before"
+        />
         <Input
           multiline
+          grow
           disabled={levelFinished || !!wrongAddress}
           value={passageText}
           placeholder={t("LevelWritePassageText")}
@@ -316,13 +249,13 @@ export const L50: FC<LevelComponentModel> = ({
           autoCorrect={false}
           textStyle={levelComponentStyle.inputTextStyle}
         />
+        <SentenceContext
+          text={wholeText}
+          range={test.d.sentenceRange}
+          side="after"
+        />
       </View>
-      <SentenceContext
-        text={wholeText}
-        range={test.d.sentenceRange}
-        side="after"
-      />
-      <View style={levelComponentStyle.optionButtonsWrapper}>
+      <View style={levelLayout.action}>
         {/* text is not entered */}
         {!isCorrect && (
           <Button
@@ -414,10 +347,11 @@ export const L50: FC<LevelComponentModel> = ({
           ]}
       </View>
       <AddressPicker
+        confirmTitle="Submit"
         visible={APVisible}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddressSelect}
       />
-    </ScrollView>
+    </View>
   );
 };

@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import {
   PERFECT_TESTS_TO_PROCEED,
@@ -31,6 +31,12 @@ export const LevelPicker: FC<LevelPickerModel> = ({
 }) => {
   const { theme, t } = useAppContext();
   const [levelPickerShown, setLevelPickerShown] = useState(false);
+  // One call per render, not one per branch that might render (8.2.21): it
+  // walks the whole history for this passage.
+  const perfectTestsNumber = useMemo(
+    () => getPerfectTestsNumber(state.testsHistory, targetPassage),
+    [state.testsHistory, targetPassage]
+  );
   const closeLevelPicker = () => {
     setLevelPickerShown(false);
   };
@@ -124,15 +130,13 @@ export const LevelPicker: FC<LevelPickerModel> = ({
         </View>
         {!testLevel && targetPassage.maxLevel !== PASSAGELEVEL.l5 && (
           <Text style={levelPickerStyles.subText}>
-            {t("LevelPickerSubtext")} (
-            {getPerfectTestsNumber(state.testsHistory, targetPassage)}/
+            {t("LevelPickerSubtext")} ({perfectTestsNumber}/
             {PERFECT_TESTS_TO_PROCEED})
           </Text>
         )}
         {!testLevel && targetPassage.maxLevel === PASSAGELEVEL.l5 && (
           <Text style={levelPickerStyles.subText}>
-            {t("LevelPickerSubtextL5")} (
-            {getPerfectTestsNumber(state.testsHistory, targetPassage)})
+            {t("LevelPickerSubtextL5")} ({perfectTestsNumber})
           </Text>
         )}
         {testLevel &&
@@ -141,8 +145,7 @@ export const LevelPicker: FC<LevelPickerModel> = ({
           targetPassage.selectedLevel === targetPassage.maxLevel &&
           targetPassage.selectedLevel !== PASSAGELEVEL.l5 && (
             <Text style={levelPickerStyles.subText}>
-              {t("LevelPickerSubtext")} (
-              {getPerfectTestsNumber(state.testsHistory, targetPassage)}/
+              {t("LevelPickerSubtext")} ({perfectTestsNumber}/
               {PERFECT_TESTS_TO_PROCEED})
             </Text>
           )}

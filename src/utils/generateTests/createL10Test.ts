@@ -1,6 +1,10 @@
 import { AddressType, PassageModel, TestModel } from "../../models";
 import { getPerfectTestsNumber } from "../getPerfectTests";
-import { MINIMUM_SENTENCE_LENGTH } from "../../constants";
+import {
+  MINIMUM_SENTENCE_LENGTH,
+  MIN_TEST_OPTIONS,
+  TESTLEVEL
+} from "../../constants";
 import { randomItem, randomRange } from "../randomizers";
 import { Address } from "../address";
 import { Passage } from "../passage";
@@ -19,7 +23,7 @@ export const createL10Test: CreateTestMethodModel = ({
   history
 }) => {
   const targetPassage = passages.find((ps) => ps.id === initialTest.pi); //targetPassage
-  const optionsLength = 4;
+  const optionsLength = MIN_TEST_OPTIONS;
   if (!targetPassage) {
     return initialTest;
   }
@@ -180,6 +184,13 @@ export const createL10Test: CreateTestMethodModel = ({
   }
   return {
     ...initialTest,
+    // The level is stamped, never inherited (8.2.38). This generator is also
+    // L11's fallback for a library too small to offer four verses, and it used to
+    // hand back a test still labelled `l11` while carrying an L10 payload -
+    // `addressOptions`, never `passagesOptions`. TestsScreen dispatches on `l`,
+    // so it rendered L11, which mapped over `undefined` and drew the address with
+    // nothing under it. A generator writes the payload, so it owns the label.
+    l: TESTLEVEL.l10,
     d: {
       ...initialTest.d,
       addressOptions: [...addressOptions].sort(() =>

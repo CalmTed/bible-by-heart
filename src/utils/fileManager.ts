@@ -37,6 +37,27 @@ export const writeFile: (
   }
 };
 
+/**
+ * Read a file the app was HANDED rather than one the user picked (8.2.34): an
+ * Android VIEW intent arrives as a `content://` (or `file://`) URI that is
+ * already readable, with no picker in between.
+ *
+ * @returns the text, or false when the URI is unreadable - which is the normal
+ * outcome for every VIEW intent that is not a file at all.
+ */
+export const readFileAtUri: (uri: string) => Promise<string | false> = async (
+  uri
+) => {
+  try {
+    return await StorageAccessFramework.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.UTF8
+    });
+  } catch (error) {
+    logger.write(`Nothing readable at the opened URI: ${error}`);
+    return false;
+  }
+};
+
 export const readFile: (
   fileMIME?: string | string[]
 ) => Promise<{ content: string; mimeType: string } | false> = async (
@@ -47,7 +68,7 @@ export const readFile: (
       multiple: false,
       type: fileMIME
     });
-    if (file.canceled || !file.assets[0].uri || !file.assets[0].mimeType) {
+    if (file.canceled || !file.assets[0].uri) {
       return false;
     }
     const text = await StorageAccessFramework.readAsStringAsync(
@@ -56,7 +77,10 @@ export const readFile: (
 
     return {
       content: text,
-      mimeType: file.assets[0].mimeType
+      // A missing mimeType is no longer a refusal (8.2.34): a provider that does
+      // not recognise the app's own .bbhbackup extension reports none, and the
+      // file it just handed over is perfectly readable. What is IN it decides.
+      mimeType: file.assets[0].mimeType ?? ""
     };
   } catch (error) {
     logger.error(`File manager reading error: ${error}`);

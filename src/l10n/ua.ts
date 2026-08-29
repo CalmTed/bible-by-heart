@@ -155,6 +155,9 @@ export const ua: typeof en = {
   PassagesHidden: "Текстів приховано",
   DaysStroke: "Днів поспіль",
   NoTagsFound: "Додай категорії текстам, щоби вони відображались тут",
+  FilterNoTags: "Без категорій",
+  FilteredBy: "Відфільтровано за",
+  Search: "Пошук",
   Tags: "Категорії",
   Translations: "Переклади",
   fetchPropositionText: "Підтягнути текст автоматично?",
@@ -162,6 +165,8 @@ export const ua: typeof en = {
   NotAFetchableTranslation: "Введи текст вірша тут",
   NoDataForThisDay: "Для цього дня немає даних",
   TestExitConfirmationText: "Пройдені завдання не будуть збережені",
+  TestNoOptionsText:
+    "Не вдалося скласти це завдання з ваших уривків. Оберіть інше завдання вгорі або завершіть сесію.",
   PassageDeleteConfirmationText:
     "Видалити цей уривок назавжди? Цю дію не можна скасувати.",
   //settings lables, headers and subtexts
@@ -188,7 +193,7 @@ export const ua: typeof en = {
   settsImportStateHeader: "Імпортувати стан додатку",
   settsImportStateSubtext: "Відкрити стан даних додатку з JSON файлу",
   settsBackupExportHeader: "Зберегти резервну копію",
-  settsBackupExportSubtext: "Записати всі дані додатку у .json файл",
+  settsBackupExportSubtext: "Записати всі дані додатку у .bbhbackup файл",
   settsBackupRestoreHeader: "Відновити з резервної копії",
   settsBackupRestoreSubtext:
     "Замінити всі дані додатку збереженим файлом копії",
@@ -196,6 +201,8 @@ export const ua: typeof en = {
   settsRestored: "Відновлено!",
   BackupRestoreConfirmationText:
     "Замінити всі дані додатку цією резервною копією? Поточні дані буде втрачено.",
+  BackupMadeOn: "Копію зроблено",
+  BackupMadeOnUnknown: "Ця копія без дати",
   BackupOfferText:
     "Дані додатку оновлено до нового формату. Зберегти резервну копію попередніх даних про всяк випадок?",
   BackupOfferConfirm: "Зберегти копію",

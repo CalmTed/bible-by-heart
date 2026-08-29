@@ -12,7 +12,7 @@ import { reduce } from "../utils/reduce";
 export const StatsSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsStats>
 > = ({ navigation }) => {
-  const { state, setState, t } = useAppContext();
+  const { state, setState, t, theme } = useAppContext();
 
   return (
     <SettingsSubScreen
@@ -20,7 +20,10 @@ export const StatsSettingsScreen: FC<
       title={t("settsLabelStats")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={statsSettingsStyle.scrollView}>
+      <ScrollView
+        style={statsSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           header={t("settsWeeklyMetrics")}
           subtext={`${t(state.settings.homeScreenWeeklyMetric)}`}

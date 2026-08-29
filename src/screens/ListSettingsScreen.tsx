@@ -3,10 +3,14 @@ import { ScrollView, StyleSheet } from "react-native";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
 import { SettingsMenuItem } from "../components/SettingsMenuItem";
-import { ConfirmModal } from "../components/ConfirmModal";
 import { ARCHIVED_NAME, SCREEN } from "../constants";
-import { ActionName, AppStateModel, ScreenPropsModel } from "../models";
-import { exportBackupFile, importBackupFile } from "../utils/backupFile";
+import { ActionName, ScreenPropsModel } from "../models";
+import {
+  ParsedBackupModel,
+  exportBackupFile,
+  importBackupFile
+} from "../utils/backupFile";
+import { BackupRestoreModal } from "../components/BackupRestoreModal";
 import { reduce } from "../utils/reduce";
 import {
   LSVToArray,
@@ -24,13 +28,12 @@ import toastShow from "../utils/toastShow";
 export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
   navigation
 }) => {
-  const { state, setState, t } = useAppContext();
+  const { state, setState, t, theme } = useAppContext();
   // Decoded and already converted forward, but NOT applied: the state swap
   // waits behind the confirmation, so the counts shown in it describe the file
   // the user actually picked (8.1.9).
-  const [pendingRestore, setPendingRestore] = useState<AppStateModel | null>(
-    null
-  );
+  const [pendingRestore, setPendingRestore] =
+    useState<ParsedBackupModel | null>(null);
 
   const allTags = [
     ARCHIVED_NAME,
@@ -43,7 +46,10 @@ export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
       title={t("settsLabelList")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={listSettingsStyle.scrollView}>
+      <ScrollView
+        style={listSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           header={t("settsLeftSwipeTag")}
           subtext={`"${
@@ -191,24 +197,19 @@ export const ListSettingsScreen: FC<ScreenPropsModel<SCREEN.settingsList>> = ({
           }}
         />
       </ScrollView>
-      <ConfirmModal
-        shown={pendingRestore !== null}
-        text={`${t("BackupRestoreConfirmationText")}\n${t("NumberOfPassages")}: ${
-          pendingRestore?.passages.length ?? 0
-        }\n${t("TestsCompleted")}: ${pendingRestore?.testsHistory.length ?? 0}`}
-        confirmTitle={t("settsBackupRestoreConfirm")}
-        cancelTitle={t("Cancel")}
+      <BackupRestoreModal
+        pending={pendingRestore}
         onCancel={() => setPendingRestore(null)}
-        onConfirm={() => {
-          if (pendingRestore) {
-            // AppProvider's persist effect writes the new state to storage; no
-            // component touches storage directly (CODING_RULES §4).
-            setState(pendingRestore);
-            logger.write(
-              `State restored from backup file (${pendingRestore.passages.length} passages)`
-            );
-            toastShow(t("settsRestored"), 1000);
-          }
+        onConfirm={(parsed) => {
+          // AppProvider's persist effect writes the new state to storage; no
+          // component touches storage directly (CODING_RULES §4). A whole
+          // snapshot on purpose - a restore replaces the state, and this one
+          // came from a file, not from a closure (8.2.24).
+          setState(parsed.state);
+          logger.write(
+            `State restored from backup file (${parsed.state.passages.length} passages)`
+          );
+          toastShow(t("settsRestored"), 1000);
           setPendingRestore(null);
         }}
       />

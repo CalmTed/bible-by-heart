@@ -37,17 +37,26 @@ judged from tests.
 > four full Ukrainian translations as JSON, so this milestone ships real Ukrainian text —
 > §3.3 of `STRATEGY.md` is no longer waiting on permission.
 
-- [ ] **8.2.7 Level 5 similar-chars tolerance**
-      An equivalence list (dash variants, quote/apostrophe variants, ellipsis, і/i
-      lookalikes, diacritic case) used by the L5 comparator, one unit test per pair.
-      Complements 8.1.4 (sanitize on input) by tolerating on comparison. Do not widen
-      tolerance to real misspellings. It is not made redundant by 8.2.11 normalizing at
-      the API: passages **already saved** in a user's state keep whatever characters they
-      were stored with, and nothing may rewrite them behind his back.
+> Fedir's 2026-08-29 APK review — the first walk of the Candy UI build on a real phone.
+> It produced 8.2.20–8.2.37 below, plus 8.5.5 in 0.6.0; 8.2.38 was added the same day
+> from a live report, and 8.2.20–8.2.21 are done and archived. **8.2.20 was confirmed on
+> a device** — Fedir built an APK with the per-action deep clone taken out and reported
+> the app "heavenly fast", which settled the diagnosis below rather than merely
+> supporting it. **The performance half comes first**: the feel fixes cannot be judged
+> while the JS thread is blocked, and a good part of what reads as "the animation is
+> bad" is a good animation running against a stalled thread.
+>
+> Measured before writing these steps (desktop V8; a phone with Hermes is roughly
+> 5–15× slower). At 2 000 history records **one action** costs 3.4 ms of
+> `JSON.parse(JSON.stringify())` in `reduce.ts:622` *plus* a second full
+> `JSON.stringify` in the `AppContext` persist; `getStroke` on the home screen costs
+> 8.2 ms at 2 000 and **42 ms at 5 000**, because it is O(n²). **The reducer itself is
+> not the cost** — it is a handful of object spreads and it does not show up in the
+> measurements at all. Redux/Zustand/Jotai would move none of these numbers, because
+> every one of them is work done *around* the state transition, not the transition.
+> `ARCHITECTURE.md` §5 stands; 8.2.23 is where that gets re-examined with numbers
+> instead of suspicion.
 
-- [ ] **8.2.8 Haptics/sound util**
-      One `src/utils/feedback.ts` that checks `hapticsEnabled` / `soundsEnabled` itself;
-      no component reads those settings directly.
 
 - [ ] **8.2.11 [api] Passage text endpoint — the bundled translations**
       The four Ukrainian JSONs in `bbh-api/src/translations/` (`ukr-hom`, `ukr-kul`,
@@ -123,6 +132,15 @@ judged from tests.
       to desktop.
 
 - [ ] **8.2.10 🏁 0.3.0 — minor bump, build, Play release** (build)
+       Plus clear docs files - analyze and archive diary, compress filemap, update strategy, arch and codiing rules.
+      analyze and then archive history - find most common AI errors that lead to redos or misscomunication sitiations
+      for future
+      - limin each session to 300 characters for block if already wrote, rewrite in more compact fastion or ommin whats less important
+      - always add to history AI errors and misscimunication situaltions - for those parts each session have other 300 characters, but only for communication errors or redos midsession
+      remove all mentions of plan or paragraphs or plan numbers from the comments - add to coding rules that you don't link to any document in the comments
+      for new passages manual adding with no fetching ability add new screen to enter passage text manualy. To clerafy for user that it needs to be entered manualy.
+      remove "ESV" code or other known translation name - look for it to get translation from parsed text (from bible app)
+      for MyBible app parsing doesent work for Лк 2:22: "passage text". It leaves :"" in place. Because of : i think.
 
 ## 0.4.0 — Accounts+
 
@@ -160,6 +178,16 @@ judged from tests.
       needs repeating, **without** error counts; l10n en+ua
 - [ ] **8.5.3 Stats correctness pass** — day-average over *active days only*
       (`getStats.ts:330`), streak/timezone-DST regression tests (build)
+- [ ] **8.5.5 Offer the next level the moment it is reached**
+      Fedir, 2026-08-29: when a passage earns a new level, propose moving up to it —
+      **then**, not the next time the passage comes round, and not merely whenever it
+      would be possible. `finishTesting` already computes the moment (`reduce.ts:385`
+      sets `isNewLevelAwalible` on exactly that transition), so this is the offer, not
+      the detection. Scheduled here rather than in 0.3.0 because it belongs with the
+      finish screen 8.5.2 builds, which is where a level-up has somewhere to be said.
+      Interacts with the `autoIncreaseLevel` default in 8.2.32 — if the level rises on
+      its own, this becomes a notice rather than a question. l10n en+ua.
+
 - [ ] **8.5.4 🏁 0.6.0**
 
 ## 0.7.0 — Premium
@@ -203,6 +231,173 @@ error-message-design unification, and layered `t("page.title")` l10n keys (8.2.9
 
 Newest first. One line each; the full story is in `docs/robotdiary.md` under the date.
 
+- [x] **8.2.28 A direction per destination, and a swipe to get there**  — 2026-08-29
+      Every screen arrives from the same edge today. Settings comes from the left, the
+      list from the right, practice from the top, stats from the bottom — and home gains
+      the matching swipes, so the gesture and the transition are one motion rather than
+      two. Starting practice reads as a pull-to-reload arrow on the way down. Back must
+      be **fast**: the swipe-back gesture is unusable right now, which is partly the
+      blocked JS thread (8.2.20–8.2.22 come first, on purpose) and partly that popping
+      unfreezes a screen which then does its whole first render inside the animation.
+
+- [x] **8.2.7 Level 5 similar-chars tolerance**  — 2026-08-29
+      An equivalence list (dash variants, quote/apostrophe variants, ellipsis, і/i
+      lookalikes, diacritic case) used by the L5 comparator, one unit test per pair.
+      Complements 8.1.4 (sanitize on input) by tolerating on comparison. Do not widen
+      tolerance to real misspellings. It is not made redundant by 8.2.11 normalizing at
+      the API: passages **already saved** in a user's state keep whatever characters they
+      were stored with, and nothing may rewrite them behind his back.
+
+- [x] **8.2.25** Filters that hide only what they name — 2026-08-29 · `state.filters.tags`
+      is a hide-list like the three beside it, and `ListScreen` now reads it as one: a
+      passage is hidden because it carries a hidden tag, full stop. It used to show a
+      passage only if it carried a NON-hidden tag, so the second passage in Fedir's repro -
+      untagged, no filter ever set - disappeared the moment the first one was given a tag.
+      "Has no tags" became a value the filter can name (`NO_TAGS_NAME`, offered only where
+      it separates something), the archived special-case in `FiltersScreen` went with the
+      inversion, and a list shorter than the library now says what is narrowing it
+      (`FilteredBy` + the reasons, "Archived" among them). The filter-button dot means "you
+      set something" instead of comparing two counts. l10n `FilterNoTags`/`FilteredBy`/
+      `Search` en+ua; 7 tests.
+- [x] **8.2.36** A test with one option is not a test — 2026-08-29 · the rule, written once:
+      `MIN_TEST_OPTIONS` (4) and `canOfferPassageOptions` in `generateTests/index.ts`. The
+      levels whose options ARE other passages (l11, l21) can only draw decoys from the
+      library, so below that count each falls back to the half of its own level that asks
+      about the ADDRESS - l10 synthesizes decoys from the address space, l20 asks in the
+      picker - and a session never loses a test, it only changes which half it asks. l21 was
+      guarded by nothing at all before, so a one-passage library got a "pick the verse" test
+      whose only option was the answer, recorded as a pass. The two magic `passages.length <
+      4` in `generateATest` are gone; the count is taken inside the target's translation,
+      which is the pool the options actually come from. 10 tests at library sizes 1, 2, 3.
+- [x] **8.2.35** One arrangement for all five levels — 2026-08-29 ·
+      `components/levels/levelLayout.ts`: three blocks every level fills - **prompt** (as
+      tall as its content, never `flex: 1`, scrolls when the passage is long), **answer**
+      (takes everything left, which is what removes the empty band from the middle of L2 and
+      the empty bottom half of L5), **action** (pinned at the bottom, stretched to the
+      column, identical on all seven components). A stylesheet, not a wrapper - the 8.2.6
+      split is what made that possible. `Input` gained `grow`, because a `wrapperStyle`
+      reaches the gradient inside the input's own two outer views and grows nothing, and L4
+      and L5 are levels where the typing IS the answer. The L3 chips took the shared gutter;
+      `TestNavDot` is one centred 18px circle again (the Pressable had no size of its own,
+      so the gradient sized to a 13px child in an 18px box - and the CURRENT dot, which has
+      no child, to nothing). 12 tests, 7 snapshots moved on purpose.
+      **Needs a device:** whether the answer area still reads as roomy with the keyboard up
+      on L4/L5, and whether a ten-line passage's prompt scrolls as expected.
+- [x] **8.2.8** Haptics/sound util — 2026-08-29 · `utils/feedback.ts`: one
+      `feedback(settings, name)` that reads `hapticsEnabled` itself. The eleven hand-written
+      guards across five level screens are gone, and so are the **two call sites that never
+      had one** — the passages list's long press and the address picker's verse long press
+      both buzzed a user who had turned haptics off. `VIBRATION_PATTERNS.longPress` replaces
+      the bare `30` the list was passing. Sound stays unimplemented, but there is now exactly
+      one place to implement it. 3 tests.
+- [x] **8.2.34** Backup files the system knows about — 2026-08-29 · a backup is the app's own
+      kind of file: `.bbhbackup` + `application/vnd.biblebyheart.backup+json`, declared as an
+      Android VIEW intent filter in `app.config.js` (the custom type on purpose — matching
+      `application/json` would offer the app for every JSON on the phone). Opening one wakes
+      `BackupFileOpener` (inside the provider, since restoring writes the state the provider
+      owns) and lands on `BackupRestoreModal`, now shared with the settings row and widened to
+      say what would **change**: the backup's date and each count as `now → after`.
+      `parseBackupEnvelope` carries the date `parseBackup` used to throw away; pre-8.2.34
+      `.json` backups stay pickable through `BACKUP_LEGACY_MIMES`, and a provider reporting no
+      MIME type at all is no longer a refusal. App.tsx's `removeAllListeners("url")` became
+      `subscription.remove()` — it would have torn the opener's listener down. 9 tests.
+      **Needs a device:** whether Android's SAF keeps the `.bbhbackup` name for an unknown MIME
+      type when writing, and whether the chooser really offers the app on open.
+- [x] **8.2.37** The sorting popup reads as broken — 2026-08-29 · sorting is a `SelectModal`
+      now: titled, dimmed, centred, one left edge, the current sort marked green. It was the
+      only caller `AnchoredPopup` ever had, so the component, its test and its snapshot are
+      deleted and the app is back to two surfaces — screens and dialogs (CODING_RULES §4
+      rewritten to say so).
+- [x] **8.2.31** The home column has two dead zones, not one big logo — 2026-08-29 · the logo
+      block was `flex: 1` and centred, so all the slack collected into two equal voids. Logo /
+      week activity / buttons now sit in one `space-between` column, and the mark is a share of
+      the window height (floored so it stays a logo on a short phone, capped at
+      `LAYOUT.maxContentWidth` on a foldable) instead of a flat 255×160 — `DaggerLogoSVG` and
+      `MangerSVG` take a `height` and keep the artwork's ratio. New `HomeScreen.test.tsx`, 4
+      tests over four window sizes.
+- [x] **8.2.27** Lists that cannot reach their own bottom — 2026-08-29 · one bug, twice: a
+      `height: "93%"` (passage editor) and a `height: "100%"` (calendar day view) sibling of the
+      `Header` is a percentage of the WHOLE screen laid out below the bar, so the bottom hangs
+      off the device by the header's height. Both are `flex: 1`, and the calendar's guessed
+      `marginBottom: 100` is gone. Every other scrolling surface (nine settings screens, stats,
+      both `SettingsListWrapper` lists) now ends with `theme.theme.scrollContent` —
+      `LAYOUT.scrollBottomGap`, the number `ListScreen` had spelled out since 8.2.3.
+- [x] **8.2.26** Level 3 shows the words it is supposed to hide — 2026-08-29 · the hiding was
+      already proven in 8.2.26's first half and still is; what changed is Fedir's answer to the
+      repeated-word question: **accept every occurrence** rather than hide them all.
+      `Passage.sameWord` compares letters and digits only, case-blind, so tapping "good." for
+      "good" lands — equality of letters, never similarity, so a misspelling is still wrong. The
+      `errorIndex` falsy checks became `!== null` (word 0 is a word; the guard was unreachable
+      today, but it was a trap sitting one refactor away). 8 new tests. **Still open for Fedir:**
+      which state the original screenshot was in — a test carried back after a wrong address and
+      a finished test under review both reveal the words by design.
+
+- [x] **8.2.24** The language switch undoes itself — 2026-08-29 · `fetchAPI`'s
+      `logoutMethods` no longer takes `state` at all, and its forced logout resets through
+      a functional `setState` updater; the seven `reduce(state, …)` + `setState(newState)`
+      sites in Settings / UserSettings / Login / About became `dispatch`, or a functional
+      updater where the payload itself reads the state (`applang` compares against the
+      language the app is in *now*, not the one it was in when the request started). The
+      two remaining whole-snapshot writes are the backup restores, which mean it, and now
+      say so. New `services/fetchLogout.test.ts`: the logout must call `setState` with a
+      function, and a language picked while the request was in flight survives it.
+- [x] **8.2.38** Level 1 renders an address and nothing else — 2026-08-29 · `createL10Test`
+      stamps `l: TESTLEVEL.l10` on what it returns instead of inheriting the caller's, so
+      L11's fallback for a library that cannot fill four options in one translation hands
+      back an honest l10 rather than an l11 carrying `addressOptions`. New
+      `levels/NoOptions.tsx` — a level given no options says so instead of drawing half a
+      screen (no skip button: what a skipped test does to the level-up maths is 8.2.36's
+      call). l10n `TestNoOptionsText` en+ua; three generator tests + one render test.
+- [x] **8.2.33** Shared text: verse numbers and the translation code — 2026-08-29 ·
+      `sanitizeSharedText` strips `[1]` / `[ 12 ]` / `[3:16]` (digits only — `[the]` is
+      editorial apparatus in the bundled translations and must survive) and a leading
+      translation code in the three shapes where it stands apart from the verse:
+      `ESV [1] …`, `ESV: …` / `ESV - …`, and `ESV` alone on the first line. "LORD is my
+      shepherd" keeps its LORD, which is the whole reason the shapes are that narrow.
+      12 new tests.
+- [x] **8.2.32** The small ones — 2026-08-29 · `APP_VERSION` reads the real app version
+      back out of `expoConfig` (which `app.config.js` takes from `package.json`) and the
+      About screen shows it in both places it used to print the *state* version;
+      `autoIncreaseLevel` on for new installs only (Fedir's call — the converter carries
+      the field, so nobody's setting flips under them); the address picker takes a
+      `confirmTitle` and the five level screens pass `Submit`, because "Add" was a lie
+      while a test is being answered; and a disabled *transparent* button stays
+      transparent — `disabled` used to win over `transparent` and draw a `bg`→`bgSecond`
+      plate, which is the "shadow" on the calendar's month arrows.
+- [x] **8.2.30** Gradient items stop animating — 2026-08-29 · expo-linear-gradient bakes
+      its ramp at layout size, so the 8.2.4 press spring stretched the ramp instead of
+      scaling it and the button dropped out mid-press. The press handlers are not attached
+      at all on a gradient button (`main`/`outline` with a colour); flat gray and
+      transparent ones keep the spring, gradients keep the Android ripple.
+- [x] **8.2.29** Header entrance — 2026-08-29 · the bar falls from the top edge instead of
+      rising with the content it caps, over `ANIMATION.headerDropDistance` — half of
+      `riseDistance`, so the frame moves less than what is arriving underneath it.
+- [x] **8.2.21** O(n²) and O(P × H) out of the history scans — 2026-08-29 · four scans,
+      same outputs, one pass each. `getStroke`/`getMaxStroke` swapped
+      `arr.slice(0, i).includes(v)` for a `Set` and stopped rebuilding the whole
+      boolean array to find its leading run; `getPassagesByTrainMode` builds one
+      `Map<passageId, lastTestedAt>` (exported as `getLastTestedByPassage`) instead of
+      filtering and sorting the history once per passage, and its `isDueTo` became a
+      `Set` because it was called from inside a sort comparator; `getPerfectTests.ts`
+      gained a batched `getPerfectTestsNumbers` that buckets the history by `pi` once and
+      answers for every passage, which is what `finishTesting` now calls; `ListScreen`
+      hoisted `invertedTags` out of its per-passage callback and memoized both the filter
+      and the sorted `data` the FlatList reads. New `historyScans.test.ts` keeps the four
+      old implementations as an oracle and holds the new ones against them on a
+      deterministic 5 000-record history. 268 tests ✓.
+- [x] **8.2.20** Stop copying the whole state on every action — 2026-08-29 · the
+      `JSON.parse(JSON.stringify(changedState))` that ended every action is gone; the
+      reducer now hands back the untouched parts by identity. The trap the step warned
+      about was real: the post-switch heals assigned into `changedState.settings`, which
+      most branches share with the previous state, so they had been writing into
+      already-rendered state all along — rewritten copy-on-write, and the dangling-tag
+      scan now only runs when passages or settings actually moved. The serialization
+      guard moved to the persist path in `AppContext`, which stringifies the same object
+      (synchronously, inside `storage.save`, so it needs a `try` as well as a `.catch`).
+      That persist is also coalesced now — one write per `STATE_PERSIST_DEBOUNCE`,
+      flushed on background/inactive and on unmount. Removing the clone also removed an
+      accidental NaN→null normalization of addresses, so `Address.equals` folds both
+      spellings of an open end (see robotdiary). New `AppContext.test.tsx`.
 - [x] **8.2.6** Split level components + Passage/Address abstraction — 2026-08-29 · both
       halves done in one sitting; the second half is what made the first worth doing.
       **(1) Seven level files**, each named after its only export — `Level1.tsx` and

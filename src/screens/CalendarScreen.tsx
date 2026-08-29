@@ -8,7 +8,14 @@ import {
   Animated,
   LayoutAnimation
 } from "react-native";
-import { DAY, MINUTE, PASSAGELEVEL, SCREEN, THEMETYPE } from "../constants";
+import {
+  DAY,
+  LAYOUT,
+  MINUTE,
+  PASSAGELEVEL,
+  SCREEN,
+  THEMETYPE
+} from "../constants";
 import { Header } from "../components/Header";
 import { IconButton } from "../components/Button";
 import { IconName } from "../components/Icon";
@@ -39,9 +46,12 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
   const [selectedDay, setSelectedDay] = useState(null as null | number);
 
   const calendarStyle = StyleSheet.create({
+    // 8.2.27: `height: "100%"` under a Header pushed the whole day view down by
+    // the header's height and off the bottom of the screen by the same amount,
+    // so the last tests of a day could not be scrolled to.
     listView: {
       width: "100%",
-      height: "100%"
+      flex: 1
     },
     buttons: {
       flexDirection: "row",
@@ -120,7 +130,9 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
       flexWrap: "wrap",
       flexDirection: "row",
       width: "100%",
-      marginBottom: 100
+      // was marginBottom: 100 - a guess standing in for the room the broken
+      // `height: "100%"` above was eating (8.2.27)
+      paddingBottom: LAYOUT.scrollBottomGap
     },
     testsListItemWrapperFullWidth: {
       width: "100%"

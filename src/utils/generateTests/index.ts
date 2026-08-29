@@ -3,6 +3,7 @@ import {
   PASSAGELEVEL,
   SORTINGOPTION,
   DAY,
+  MIN_TEST_OPTIONS,
   STUDY_ONE_REPEATS
 } from "../../constants";
 import { createTest } from "../../initials";
@@ -21,6 +22,25 @@ import { createL30Test } from "./createL30Test";
 import { createL40Test } from "./createL40Test";
 import { createL50Test } from "./createL50Test";
 
+// When each passage was last tested, in ONE pass over the history. Reading this
+// used to mean filtering AND sorting the whole history once per passage, to
+// recover a single number — the delay before a session starts (8.2.21). A
+// maximum needs no sort. Exported so the agreement test can hold it against the
+// naive form it replaced.
+export const getLastTestedByPassage: (
+  history: TestModel[]
+) => Map<number, number> = (history) => {
+  const lastTested = new Map<number, number>();
+  history.forEach((t) => {
+    const testedAt = t?.td?.[0]?.[1] || 0;
+    const known = lastTested.get(t.pi);
+    if (known === undefined || testedAt > known) {
+      lastTested.set(t.pi, testedAt);
+    }
+  });
+  return lastTested;
+};
+
 export const getPassagesByTrainMode: (
   state: AppStateModel,
   trainMode: TrainModeModel
@@ -37,14 +57,13 @@ export const getPassagesByTrainMode: (
     return [];
   }
 
+  const lastTestedByPassage = getLastTestedByPassage(state.testsHistory);
+
   const passagesDueTo = state.passages.filter((p) => {
     if (p.minIntervalDaysNum === null || !p.isReminderOn) {
       return false;
     }
-    const lastTastedDate =
-      [...state.testsHistory.filter((t) => t.pi === p.id)].sort(
-        (a, b) => (b?.td?.[0]?.[1] || 0) - (a?.td?.[0]?.[1] || 0)
-      )[0]?.td?.[0]?.[1] || 0;
+    const lastTastedDate = lastTestedByPassage.get(p.id) || 0;
     const dayinMs = DAY * 1000;
     const targetNextTest =
       Math.floor((lastTastedDate + p.minIntervalDaysNum * dayinMs) / dayinMs) *
@@ -52,12 +71,10 @@ export const getPassagesByTrainMode: (
     return new Date().getTime() > targetNextTest;
   });
 
-  const isDueTo = (p: PassageModel, dueToList: PassageModel[]) => {
-    if (!dueToList || !dueToList.length) {
-      return false;
-    }
-    return !!dueToList.find((dtlp) => dtlp.id === p.id);
-  };
+  // Membership, not a scan: `isDueTo` was called from inside the sort
+  // comparator, so a linear `find` there was O(P² log P) (8.2.21).
+  const passagesDueToIds = new Set(passagesDueTo.map((p) => p.id));
+  const isDueTo = (p: PassageModel) => passagesDueToIds.has(p.id);
 
   return [
     ...[
@@ -101,10 +118,10 @@ export const getPassagesByTrainMode: (
             return b.dateCreated - a.dateCreated;
           case SORTINGOPTION.oldestToTrain:
             //if due to
-            if (isDueTo(a, passagesDueTo)) {
+            if (isDueTo(a)) {
               return -Infinity;
             }
-            if (isDueTo(b, passagesDueTo)) {
+            if (isDueTo(b)) {
               return Infinity;
             }
             return a.dateTested - b.dateTested;
@@ -185,6 +202,38 @@ export const generateStudyOneTests: (
   );
 };
 
+/**
+ * The rule for every level that asks the user to PICK a passage out of a list
+ * (l11 and l21), decided once (8.2.36).
+ *
+ * Their options are other passages, so the library is the only place a decoy
+ * can come from: a library that cannot supply `MIN_TEST_OPTIONS - 1` of them
+ * offers the answer alone, which cannot be got wrong and is still recorded as a
+ * pass. Levels that ask about the ADDRESS (l10, l20) have no such limit - the
+ * address space is infinite, so l10 synthesizes its decoys and l20 asks for the
+ * address in the picker - so each option-picking level falls back to the other
+ * half of its own level rather than being dropped. A session therefore never
+ * loses a test, it only changes which half of the level it asks.
+ *
+ * Counted inside the target's own translation, because that is the pool the
+ * options are actually drawn from - four passages across two translations look
+ * like enough and are not.
+ */
+export const canOfferPassageOptions: (
+  passages: PassageModel[],
+  passageId: number
+) => boolean = (passages, passageId) => {
+  const targetPassage = passages.find((p) => p.id === passageId);
+  if (!targetPassage) {
+    return false;
+  }
+  return (
+    passages.filter(
+      (p) => p.verseTranslation === targetPassage.verseTranslation
+    ).length >= MIN_TEST_OPTIONS
+  );
+};
+
 //generate a test
 //require passages list
 //get initial test or generate one
@@ -202,12 +251,27 @@ export const generateATest: (
     errorNumber: null,
     errorType: null
   } as TestModel;
-  const testTenghtSafeTest: TestModel =
-    passages.length > 3
-      ? littleClearerInitialTest
-      : littleClearerInitialTest.l === TESTLEVEL.l11
-        ? { ...littleClearerInitialTest, l: TESTLEVEL.l10 }
-        : littleClearerInitialTest;
+  // An option-picking level the library cannot fill becomes the other half of
+  // its own level (8.2.36). It used to be one line for l11 only, counting the
+  // whole library rather than the translation the options come from - so l21
+  // was never guarded at all and a one-passage library got a "pick the verse"
+  // test whose only option was the answer.
+  const canPickFromOptions = canOfferPassageOptions(
+    passages,
+    littleClearerInitialTest.pi
+  );
+  const optionSafeLevel: Partial<Record<TESTLEVEL, TESTLEVEL>> = {
+    [TESTLEVEL.l11]: TESTLEVEL.l10,
+    [TESTLEVEL.l21]: TESTLEVEL.l20
+  };
+  const testTenghtSafeTest: TestModel = canPickFromOptions
+    ? littleClearerInitialTest
+    : {
+        ...littleClearerInitialTest,
+        l:
+          optionSafeLevel[littleClearerInitialTest.l] ||
+          littleClearerInitialTest.l
+      };
   //filling test data here
   const testCreationList: Record<TESTLEVEL, CreateTestMethodModel> = {
     [TESTLEVEL.l10]: createL10Test,
@@ -221,17 +285,19 @@ export const generateATest: (
   const randBool = Math.random() > 0.5;
   const onlyLevelFunctions: Record<PASSAGELEVEL, CreateTestMethodModel> = {
     [PASSAGELEVEL.l1]:
-      randBool || passages.length < 4 ? createL10Test : createL11Test,
-    [PASSAGELEVEL.l2]: randBool ? createL20Test : createL21Test,
+      randBool || !canPickFromOptions ? createL10Test : createL11Test,
+    [PASSAGELEVEL.l2]:
+      randBool || !canPickFromOptions ? createL20Test : createL21Test,
     [PASSAGELEVEL.l3]: createL30Test,
     [PASSAGELEVEL.l4]: createL40Test,
     [PASSAGELEVEL.l5]: createL50Test
   };
   const onlyLevelTestLevels: Record<PASSAGELEVEL, TESTLEVEL> = {
-    //l11 cant be created without 4 passages minimum
+    //l11 and l21 cant be created without MIN_TEST_OPTIONS passages to draw from
     [PASSAGELEVEL.l1]:
-      randBool || passages.length < 4 ? TESTLEVEL.l10 : TESTLEVEL.l11,
-    [PASSAGELEVEL.l2]: randBool ? TESTLEVEL.l20 : TESTLEVEL.l21,
+      randBool || !canPickFromOptions ? TESTLEVEL.l10 : TESTLEVEL.l11,
+    [PASSAGELEVEL.l2]:
+      randBool || !canPickFromOptions ? TESTLEVEL.l20 : TESTLEVEL.l21,
     [PASSAGELEVEL.l3]: TESTLEVEL.l30,
     [PASSAGELEVEL.l4]: TESTLEVEL.l40,
     [PASSAGELEVEL.l5]: TESTLEVEL.l50

@@ -19,7 +19,7 @@ import { randomRange } from "../utils/randomizers";
 export const NotificationsSettingsScreen: FC<
   ScreenPropsModel<SCREEN.settingsNotifications>
 > = ({ navigation }) => {
-  const { state, setState, t } = useAppContext();
+  const { state, setState, t, theme } = useAppContext();
 
   const autoTime = getAutoTimeTrigger(state.testsHistory);
 
@@ -29,7 +29,10 @@ export const NotificationsSettingsScreen: FC<
       title={t("settsLabelReminders")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={notificationsSettingsStyle.scrollView}>
+      <ScrollView
+        style={notificationsSettingsStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <SettingsMenuItem
           header={t("settsEnableReminders")}
           subtext={t(

@@ -5,7 +5,8 @@ import {
   ARCHIVED_NAME,
   CUSTOM_TRANSLATION_NAME,
   TRANSLATIONS_TO_FETCH,
-  DAY
+  DAY,
+  LAYOUT
 } from "../constants";
 import { AddressType, AppStateModel, PassageModel } from "../models";
 import { Button, IconButton } from "./Button";
@@ -241,14 +242,24 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       flex: 1,
       backgroundColor: theme.colors.bg
     },
+    // 8.2.27: this used to be `height: "93%"` — 93% of the WHOLE screen, laid
+    // out BELOW the Header, so the scroll area's bottom hung off the screen by
+    // the header's height less 7% of it. On a level-5 passage "Level 5" and one
+    // row under it were the last things reachable. flex takes the room the
+    // header leaves, and no more.
     listView: {
       backgroundColor: theme.colors.bg,
-      height: "93%",
+      flex: 1,
       width: "100%",
       flexDirection: "row",
       flexWrap: "wrap",
       alignContent: "stretch",
       justifyContent: "space-evenly"
+    },
+    listContent: {
+      // the last row scrolls clear of the screen edge instead of ending flush
+      // against it (8.2.27)
+      paddingBottom: LAYOUT.scrollBottomGap
     },
     bodyTop: {
       width: "100%",
@@ -396,7 +407,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       />
 
       <View style={PEstyle.listView}>
-        <ScrollView>
+        <ScrollView contentContainerStyle={PEstyle.listContent}>
           <View style={PEstyle.bodyTop}>
             <Pressable onPress={() => setAPVisible(true)}>
               <Text style={PEstyle.bodyTopAddress}>

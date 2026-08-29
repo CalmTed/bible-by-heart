@@ -1,6 +1,11 @@
 import React, { FC } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { ARCHIVED_NAME, PASSAGELEVEL, SCREEN } from "../constants";
+import {
+  ARCHIVED_NAME,
+  NO_TAGS_NAME,
+  PASSAGELEVEL,
+  SCREEN
+} from "../constants";
 import { ActionName, ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 import { SettingsSubScreen } from "../components/SettingsSubScreen";
@@ -29,11 +34,20 @@ export const FiltersScreen: FC<ScreenPropsModel<SCREEN.listFilters>> = ({
   const { state, setState, t, theme } = useAppContext();
 
   // Every tag any passage carries, ARCHIVED_NAME included (it is stored as an
-  // ordinary tag), first-seen order, no duplicates.
+  // ordinary tag), first-seen order, no duplicates. NO_TAGS_NAME is not a tag
+  // any passage carries - it is the name the hide-list gives to "carries no
+  // tags at all" (8.2.25), offered only while some passage actually has none.
   const allTags = state.passages
     .map((p) => p.tags)
     .flat()
     .filter((v, i, arr) => !arr.slice(0, i).includes(v));
+  // Only worth offering when it separates something: some passage has tags and
+  // some has none. In a library where nothing is tagged it would only be a way
+  // to empty the list.
+  const tagOptions =
+    allTags.length && state.passages.some((p) => !p.tags.length)
+      ? [...allTags, NO_TAGS_NAME]
+      : allTags;
 
   const handleFilterChange: (arg: {
     tag?: string;
@@ -79,7 +93,10 @@ export const FiltersScreen: FC<ScreenPropsModel<SCREEN.listFilters>> = ({
       title={t("TitleFilters")}
       onBack={() => navigation.goBack()}
     >
-      <ScrollView style={filtersStyle.scrollView}>
+      <ScrollView
+        style={filtersStyle.scrollView}
+        contentContainerStyle={theme.theme.scrollContent}
+      >
         <Text style={filtersStyle.listHeader}>{t("SelectedLevel")}</Text>
         <View style={filtersStyle.optionsView}>
           {LEVELS.map((sl) => (
@@ -106,26 +123,21 @@ export const FiltersScreen: FC<ScreenPropsModel<SCREEN.listFilters>> = ({
             />
           ))}
         </View>
-        {!!allTags.length && (
+        {!!tagOptions.length && (
           <View>
             <Text style={filtersStyle.listHeader}>{t("Tags")}</Text>
             <View style={filtersStyle.optionsView}>
-              {allTags.map((option) => (
+              {tagOptions.map((option) => (
                 <Button
                   key={option}
                   type="outline"
-                  color={
-                    option === ARCHIVED_NAME &&
-                    state.filters.tags.length === allTags.length
-                      ? "red"
-                      : state.filters.tags.includes(option)
-                        ? "gray"
-                        : "green"
-                  }
+                  color={state.filters.tags.includes(option) ? "gray" : "green"}
                   title={
                     option === ARCHIVED_NAME
                       ? t("Archived")
-                      : option.slice(0, 20)
+                      : option === NO_TAGS_NAME
+                        ? t("FilterNoTags")
+                        : option.slice(0, 20)
                   }
                   onPress={() => handleFilterChange({ tag: option })}
                 />
@@ -133,7 +145,7 @@ export const FiltersScreen: FC<ScreenPropsModel<SCREEN.listFilters>> = ({
             </View>
           </View>
         )}
-        {!allTags.length && (
+        {!tagOptions.length && (
           <Text style={filtersStyle.listHeader}>{t("NoTagsFound")}</Text>
         )}
         <View>

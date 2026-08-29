@@ -2,7 +2,7 @@ import { VERSION } from "../constants";
 import { WORD } from "../l10n";
 import { AppStateModel } from "../models";
 import { restoreStateFromBackup } from "./bootBackup";
-import { readFile, writeFile } from "./fileManager";
+import { readFile, readFileAtUri, writeFile } from "./fileManager";
 import { dateToString } from "./formatDateTime";
 import { logger } from "./logger";
 import toastShow from "./toastShow";
@@ -15,7 +15,20 @@ import toastShow from "./toastShow";
 // half is the thin IO wrapper the three call sites share (the post-upgrade
 // offer, the settings rows, the dev-mode rows).
 
-export const BACKUP_FILE_MIME = "application/json";
+// A backup is the app's OWN kind of file since 8.2.34: its own extension and
+// its own MIME type, declared in `app.config.js` so Android offers Bible by
+// Heart when one is opened from a file manager or a chat.
+export const BACKUP_FILE_MIME = "application/vnd.biblebyheart.backup+json";
+export const BACKUP_FILE_EXTENSION = "bbhbackup";
+// Backups written before 8.2.34 are plain .json and must stay openable forever -
+// a safety net that rejects the copies it made last year is not one. The picker
+// offers these too, and the CONTENT decides validity, not the label: some
+// Android providers hand any file over as text/plain or octet-stream.
+export const BACKUP_LEGACY_MIMES = [
+  "application/json",
+  "text/plain",
+  "application/octet-stream"
+];
 export const BACKUP_FILE_PREFIX = "BibleByHeartBackup";
 export const BACKUP_APP_TAG = "bible-by-heart";
 const UNKNOWN_VERSION = "unknown";
@@ -50,7 +63,9 @@ export const createBackupFileName: (
   timeStamp: number,
   stateVersion?: string
 ) => string = (timeStamp, stateVersion = VERSION) =>
-  `${BACKUP_FILE_PREFIX}_${stateVersion}_${dateToString(timeStamp)}.json`;
+  `${BACKUP_FILE_PREFIX}_${stateVersion}_${dateToString(
+    timeStamp
+  )}.${BACKUP_FILE_EXTENSION}`;
 
 /**
  * Wrap a state (of ANY version - a pre-conversion snapshot is exported exactly
@@ -81,6 +96,15 @@ export const serializeBackup: (
 };
 
 /**
+ * What a picked backup file turned out to hold: the state it will restore, and
+ * when it was written (null for a bare state dump, which carries no date).
+ */
+export interface ParsedBackupModel {
+  state: AppStateModel;
+  exportedAt: number | null;
+}
+
+/**
  * Turn file content back into a state this build can run.
  *
  * Accepts both shapes on purpose: the envelope written by `serializeBackup`, and
@@ -91,9 +115,9 @@ export const serializeBackup: (
  *
  * @returns a runnable state, or null if the content is not a convertible state.
  */
-export const parseBackup: (fileContent: string) => AppStateModel | null = (
-  fileContent
-) => {
+export const parseBackupEnvelope: (
+  fileContent: string
+) => ParsedBackupModel | null = (fileContent) => {
   let parsed: unknown;
   try {
     parsed = JSON.parse(fileContent);
@@ -107,8 +131,21 @@ export const parseBackup: (fileContent: string) => AppStateModel | null = (
   const envelopeState = (parsed as { state?: unknown }).state;
   const candidate =
     envelopeState && typeof envelopeState === "object" ? envelopeState : parsed;
-  return restoreStateFromBackup(candidate);
+  const state = restoreStateFromBackup(candidate);
+  if (!state) {
+    return null;
+  }
+  const exportedAt = (parsed as { exportedAt?: unknown }).exportedAt;
+  return {
+    state,
+    exportedAt: typeof exportedAt === "number" ? exportedAt : null
+  };
 };
+
+/** The state alone, for callers with nothing to say about when it was made. */
+export const parseBackup: (fileContent: string) => AppStateModel | null = (
+  fileContent
+) => parseBackupEnvelope(fileContent)?.state ?? null;
 
 /**
  * Ask for a location and write the backup there. Total: a cancelled folder
@@ -158,16 +195,14 @@ export const exportBackupFile: (
  */
 export const importBackupFile: (
   t: TranslateModel
-) => Promise<AppStateModel | null> = async (t) => {
+) => Promise<ParsedBackupModel | null> = async (t) => {
   try {
-    // text/plain is allowed too: some Android providers hand a .json file over
-    // with that MIME type, and the content decides validity, not the label.
-    const file = await readFile([BACKUP_FILE_MIME, "text/plain"]);
+    const file = await readFile([BACKUP_FILE_MIME, ...BACKUP_LEGACY_MIMES]);
     if (!file) {
       toastShow(t("ErrorWhileReadingFile"), 1000);
       return null;
     }
-    const restored = parseBackup(file.content);
+    const restored = parseBackupEnvelope(file.content);
     if (!restored) {
       toastShow(t("ErrorWhileDecoding"), 1000);
       return null;
@@ -176,6 +211,30 @@ export const importBackupFile: (
   } catch (e) {
     logger.error(`Error while reading backup file e:${e}`);
     toastShow(t("ErrorWhileReadingFile"), 1000);
+    return null;
+  }
+};
+
+/**
+ * The other way in (8.2.34): a backup file OPENED from outside the app, which
+ * arrives as a `content://` or `file://` URI rather than through the picker.
+ * Nothing is applied here either - the caller shows the confirmation.
+ *
+ * @returns the parsed backup, or null if the URI held anything else. Silent on
+ * purpose: every VIEW intent the app receives lands here, and a link that is
+ * not a backup is not an error worth toasting at the user.
+ */
+export const readBackupFromUri: (
+  uri: string
+) => Promise<ParsedBackupModel | null> = async (uri) => {
+  try {
+    const content = await readFileAtUri(uri);
+    if (!content) {
+      return null;
+    }
+    return parseBackupEnvelope(content);
+  } catch (e) {
+    logger.error(`Error while opening backup file e:${e}`);
     return null;
   }
 };

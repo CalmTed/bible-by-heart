@@ -12,7 +12,7 @@ import { Text } from "./Text";
 import { IconButton } from "./Button";
 import { IconName } from "./Icon";
 import { useAppContext } from "../context/AppContext";
-import { ANIMATION } from "../constants";
+import { ANIMATION, LAYOUT } from "../constants";
 
 interface HeaderModel {
   // The screen's name. Rendered in the app's one header typography
@@ -50,7 +50,9 @@ interface HeaderModel {
  * It springs in on mount with the shared `ANIMATION` vocabulary, staggered
  * behind the screen transition. That is where the app's bounce lives: the card
  * itself is clamped (`utils/screenTransition.ts`), because a full-screen card
- * that overshoots uncovers the screen behind it, while a header has room.
+ * that overshoots uncovers the screen behind it, while a header has room. It
+ * falls from the top edge rather than rising with the content underneath it,
+ * and over half the distance - see `entranceStyle` below (8.2.29).
  */
 export const Header: FC<HeaderModel> = ({
   title,
@@ -82,9 +84,16 @@ export const Header: FC<HeaderModel> = ({
       withSpring(1, ANIMATION.spring)
     );
   }, [fade, rise]);
+  // Negative: the bar starts ABOVE its seat and falls into it (8.2.29). Rising
+  // from below meant the header and the screen it caps travelled the same way at
+  // the same moment, over the same 16px, which read as scrambled rather than as
+  // one thing arriving after another. It also travels half as far as the content
+  // does - a frame that out-moves its contents pulls the eye to the wrong place.
   const entranceStyle = useAnimatedStyle(() => ({
     opacity: fade.value,
-    transform: [{ translateY: (1 - rise.value) * ANIMATION.riseDistance }]
+    transform: [
+      { translateY: -(1 - rise.value) * ANIMATION.headerDropDistance }
+    ]
   }));
 
   const headerStyle = StyleSheet.create({
@@ -123,5 +132,6 @@ export const Header: FC<HeaderModel> = ({
   );
 };
 
-// The bar's own height, above whatever the device's top inset adds.
-export const HEADER_HEIGHT = 60;
+// The bar's own height, above whatever the device's top inset adds. The number
+// itself is `LAYOUT.headerHeight` - see the note there.
+export const HEADER_HEIGHT = LAYOUT.headerHeight;

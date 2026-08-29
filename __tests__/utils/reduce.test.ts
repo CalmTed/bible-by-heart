@@ -2,13 +2,15 @@ import {
   ARCHIVED_NAME,
   LANGCODE,
   PASSAGELEVEL,
+  SORTINGOPTION,
   STUDY_ONE_REPEATS,
   SETTINGS
 } from "../../src/constants";
 import {
   createAddress,
   createAppState,
-  createPassage
+  createPassage,
+  createTest
 } from "../../src/initials";
 import { ActionName, PassageModel } from "../../src/models";
 import { reduce } from "../../src/utils/reduce";
@@ -214,11 +216,9 @@ describe("reducer must return valid state for every call", () => {
     expect(after?.settings.trainModesList).toEqual(
       before.settings.trainModesList
     );
-    // the reducer JSON round-trips its result (NaN -> null), so compare the
-    // passages against the same round-trip rather than the raw fixture
-    expect(after?.passages).toEqual(
-      JSON.parse(JSON.stringify(before.passages))
-    );
+    // 8.2.20 — the reducer no longer deep-clones its result, so the parts an
+    // action did not touch come back by identity, not by value.
+    expect(after?.passages).toBe(before.passages);
   });
 
   it("is a no-op when the passage to study is gone", () => {
@@ -229,5 +229,78 @@ describe("reducer must return valid state for every call", () => {
         payload: { passageId: -1 }
       })
     ).toBe(null);
+  });
+
+  // 8.2.20 — the reducer used to end every action in
+  // JSON.parse(JSON.stringify(state)). These two tests are what prove it is gone
+  // and that removing it did not leave the shared-reference bug the clone hid.
+  describe("no deep clone of the whole state (8.2.20)", () => {
+    it("hands back the untouched parts of the state by identity", () => {
+      const before = {
+        ...testState,
+        passages: verseList,
+        testsHistory: [
+          ...createAppState().testsHistory,
+          {
+            ...createTest(1, verseList[0].id, PASSAGELEVEL.l1),
+            td: [[0, new Date().getTime()]]
+          }
+        ]
+      };
+      const after = reduce(before, {
+        name: ActionName.setSorting,
+        payload: SORTINGOPTION.address
+      });
+      expect(after?.sort).toBe(SORTINGOPTION.address);
+      // a sort change copies nothing else — history is the big one
+      expect(after?.passages).toBe(before.passages);
+      expect(after?.testsHistory).toBe(before.testsHistory);
+      expect(after?.settings).toBe(before.settings);
+    });
+
+    it("does not write into the previous state's settings object", () => {
+      // setPassage builds a new top-level state but keeps the previous
+      // `settings` reference, so the post-switch heals used to mutate the state
+      // React had already rendered. Nothing here should reach `before`.
+      const before = {
+        ...testState,
+        passages: [],
+        settings: {
+          ...testState.settings,
+          leftSwipeTag: "gone",
+          devModeEnabled: true,
+          devModeActivationTime: 1
+        }
+      };
+      const settingsBefore = { ...before.settings };
+      const after = reduce(before, {
+        name: ActionName.setPassage,
+        payload: newPassage
+      });
+      // the heals still happen, on a copy
+      expect(after?.settings.leftSwipeTag).toBe(ARCHIVED_NAME);
+      expect(after?.settings.devModeEnabled).toBe(false);
+      expect(after?.settings.devModeActivationTime).toBe(null);
+      expect(after?.settings).not.toBe(before.settings);
+      // and the state that was handed in is untouched
+      expect(before.settings).toEqual(settingsBefore);
+    });
+
+    it("skips the dangling-tag scan when neither passages nor settings moved", () => {
+      // The tag heal walks every passage; only a passage or settings change can
+      // strand the tag, so an unrelated action must leave settings by identity
+      // even while the tag is dangling.
+      const before = {
+        ...testState,
+        passages: [],
+        settings: { ...testState.settings, leftSwipeTag: "gone" }
+      };
+      const after = reduce(before, {
+        name: ActionName.setSorting,
+        payload: SORTINGOPTION.maxLevel
+      });
+      expect(after?.settings).toBe(before.settings);
+      expect(after?.settings.leftSwipeTag).toBe("gone");
+    });
   });
 });

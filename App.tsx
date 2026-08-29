@@ -23,6 +23,7 @@ import {
   BackupOfferModal,
   BackupOfferModel
 } from "./src/components/BackupOfferModal";
+import { BackupFileOpener } from "./src/components/BackupFileOpener";
 import { EmergencyScreen } from "./src/components/EmergencyScreen";
 import { ErrorBoundary } from "./src/components/ErrorBoundary";
 import { Linking, AppRegistry } from "react-native";
@@ -79,14 +80,17 @@ export default function App() {
   }, [hasShareIntent, error]);
 
   useEffect(() => {
-    Linking.addEventListener("url", (link) => {
+    const subscription = Linking.addEventListener("url", (link) => {
       if (state.settings.devModeEnabled) {
         logger.write(`[DEV] Recieved data: ${JSON.stringify(link)}`);
         toastShow("Recieved data:" + link, 1000);
       }
     });
+    // Removes THIS listener, not every url listener in the app (8.2.34):
+    // `removeAllListeners` also unsubscribed BackupFileOpener's, so opening a
+    // backup while the app was running went nowhere as soon as devMode toggled.
     return () => {
-      Linking.removeAllListeners("url");
+      subscription.remove();
     };
     // Was missing a dep array → re-subscribed on every App render. Only needs to
     // re-run when devMode toggles (rare); mount-once otherwise (8.1.1 finding #5).
@@ -294,6 +298,9 @@ export default function App() {
               offer={backupOffer}
               onClose={() => setBackupOffer(null)}
             />
+            {/* a backup file opened from outside the app (8.2.34) - inside the
+                provider, because restoring writes the state the provider owns */}
+            <BackupFileOpener />
           </AppProvider>
         </SafeAreaProvider>
       )}
