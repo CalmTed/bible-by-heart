@@ -66,8 +66,8 @@
   If an existing component almost fits — extend it (new prop/variant), don't fork it.
 - Same for utils: check `src/utils/` before writing date/address/string helpers.
   **Address logic and passage-text logic each have exactly one home:**
-  `utils/address.ts` (`Address.format` / `.parse` / `.equals` / `.distance` /
-  `.order` / `.versesCount`) and `utils/passage.ts` (`Passage.getSentences` /
+  `utils/address.ts` (`Address.format` / `.parse` / `.equals` / `.isComplete` /
+  `.distance` / `.order` / `.versesCount`) and `utils/passage.ts` (`Passage.getSentences` /
   `.joinSentences` / `.getRangeText` / `.getRangeDisplayText` / `.getContextBefore` /
   `.getContextAfter` / `.getWords` / `.sameWord` / `.getFirstWords` / `.getVersesCount` /
   `.countEnglishVerses` / `.foldTypeable` / `.typedEquals` / `.typedPrefixLength`).
@@ -146,33 +146,29 @@
   every scrolling surface ends with `contentContainerStyle={theme.theme.scrollContent}`
   (`LAYOUT.scrollBottomGap`), so the last row clears the screen edge identically
   everywhere.
-- **One screen transition, not the platform's — but a direction per destination.**
-  `utils/screenTransition.ts` exports `candyTransitions`, one preset per edge, and
-  `candyTransition` (the `right` one) spread into the navigator's `screenOptions` as the
-  default. Without any of it `@react-navigation/stack` picks a preset from
-  `Platform.Version`, so the same app slides on one Android and zooms on another. Explicit
-  `cardStyleInterpolator` / `transitionSpec` in options override the named preset, so
-  nothing else has to change — but set `cardOverlayEnabled` rather than letting it
-  default, which is `false` on iOS.
-  · **A destination's edge is written once, and the gesture that asks for it runs the same
-    way.** Settings lives to the left of home, the list to the right, practice above, stats
-    below; `gestureDirection` decides both which edge a card enters from and which way its
-    dismissal drags, so the pairing cannot come apart. Home's `HomeSwipe` reads the same
-    four names. A screen that arrives from a new edge takes a preset from
-    `candyTransitions`; it does not write its own interpolator.
-  · **A vertical card's dismissal starts within `gestureResponseDistance` of the edge it
-    came from, and the library's default is 135px** — deep enough to swallow the top of a
-    scrolling list, so a drag meant to scroll pops the screen. The bar is the one band up
-    there that never scrolls (`LAYOUT.headerHeight`). Where even that is not safe, the
-    screen takes `gestureEnabled: false` instead: practice arrives from the top, so its
-    dismissal would start in the answer block, and a mis-flicked answer must not throw a
-    training session away. That surface is left through the cross in its header.
+- **Screens do not animate, and that is the rule, not a gap.** The navigator sets
+  `animation: "none"` and `gestureEnabled: false` in `screenOptions`, so a push is a
+  swap: no spring, no interpolated card style, no per-card pan handler. A screen that
+  asks for a transition back is asking for the bug this replaced — an animated card is
+  driven by the same value the dismissing gesture writes to, and either interrupting the
+  other leaves the card resting wherever it stopped, the old screen still on top with a
+  strip of the new one beside it, clearable only by a real back gesture. It is also the
+  cheapest thing the navigator can do on a phone whose JS thread is the bottleneck.
+  · **The motion between screens is the `Header` arriving**, which rides on a screen that
+    is already in place and so cannot be left half-arrived. That is where the app's bounce
+    lives now.
+  · **A destination still lives beyond an edge, in the swipe that asks for it.** Settings
+    to the left of home, the list to the right, practice above, stats below — `HomeSwipe`
+    is the only place those four are written, because nothing else moves in that
+    direction any more.
+  · **A screen is left through its `Header`'s back button or the system back gesture.**
+    Every screen draws a `Header`; a surface with no way back out of it is unfinished.
   · **`detachPreviousScreen: false` on a destination is a performance option, not a
     presentation one.** The stack detaches the screen under the top one, and a detached
     screen is also a *frozen* one — so popping back to it unfreezes it and runs its whole
-    first render inside the pop animation, which is exactly when the JS thread has none to
-    spare. The four screens home reaches all carry it, so home is already drawn when the
-    card comes off it.
+    first render during the pop, which is exactly when the JS thread has none to spare.
+    The four screens home reaches all carry it, so home is already drawn when the screen
+    above it goes away.
 - **Animations:** react-native-reanimated + gesture-handler are the standard. No
   `Animated` from RN core in new code. **Never add the worklets/reanimated plugin to
   `babel.config.js`** — `babel-preset-expo` applies it automatically when the package is
@@ -257,6 +253,20 @@
   not a wrapper**: one file per level keeps them small enough to hold their own
   arrangement, and a wrapper would have to take the three blocks as props to do the same
   job.
+- **What must not be readable is not rendered.** A level hides part of a passage by
+  putting a blank of the same length in its place, never by drawing the real word in a
+  colour nobody can see. Level 3 spent months doing the second: a transparent word is
+  still in the tree, so every override, every stale piece of state and every theme is
+  another way for it to come back — and the report was always "I can see the words"
+  while the styling still said transparent. It is also still copyable and still
+  announced by a screen reader. A test asserts the ABSENCE of the word from the block
+  that must not show it, not the colour it would have had.
+- **A level component is mounted per test, keyed by the test id.** Two tests of the same
+  level are the same component type in the same slot, so React keeps the instance and
+  everything the previous answer left in it — filled-in words, typed text, an open
+  picker. An effect that resets on `test.i` can only put that right AFTER the frame that
+  already showed it, which on level 3 is the whole verse, readable, above the options
+  asking for it. The key is in `TestsScreen`, so no level has to remember.
 - **A test that offers options offers `MIN_TEST_OPTIONS` of them, or it is not that
   level.** One option cannot be got wrong and is still recorded as a pass, which is what
   the level-up maths counts. Levels whose options are other *passages* (l11, l21) can only
@@ -285,6 +295,38 @@
     ellipsis → three dots) belongs in the ignored punctuation instead.
   · A new equivalence is a new row in `TYPING_EQUIVALENTS` **plus its own test** — the
     suite is one `it` per pair, asserted in both directions.
+- **A chapter and a verse belong to the TRANSLATION, not to the app.** The five bundled
+  files disagree everywhere and none of it is an error: Joel runs to three chapters or
+  four, Malachi to four or three, Daniel 3 runs to 100 verses. So anything that
+  offers or validates a chapter number asks `getTranslationNumbering(sourceId)`, which
+  hands back the KJV table when nothing can answer — a translation the user typed, a
+  reference shared from another app, ESV, nothing chosen yet. `AddressPicker` takes a
+  `translationId` for exactly this, and `Address.parse` takes the `sourceId`.
+  · **The 66-book canon is enforced in the files, not in the code that reads them.**
+    A translation file carries the 66 books and their canonical chapters and nothing
+    else: the deuterocanonical books, Ps 151, Esther 11, Daniel 13-14 and the Prayer of
+    Manasseh were deleted from the files rather than shipped and filtered. So no reader
+    holds an idea of what the canon is, and `getChapterVerses` answering 0 now means
+    only "this translation does not have that chapter". A file that arrives with more
+    is stripped on the way in, never filtered on the way out.
+  · Chapter *divisions* still differ freely, and verses INSIDE a chapter are never
+    filtered — Daniel 3 at 100 verses is that chapter in that translation.
+- **The language an address is written in is not the language the app is in.**
+  `LANGCODE` is the interface, and only it may build the interface picker or reach
+  `createT` — every member has a full l10n dictionary behind it. `ADDRESSLANG` is the
+  wider set an address may be written in, and a language in it the interface does not
+  speak (Russian, for the Синодальний) gets a book-name table in `addressLanguage.ts`,
+  never a third `l10n` file: the interface picker builds itself from the enum, so adding
+  `ru` there would make it an interface language, `createT` would answer every key with
+  the key itself, and the parser would register all 132 key names as book titles.
+  · An address is formatted with `createAddressT(addressLanguage)`, never `createT` —
+    that is the whole point of the split.
+  · **A spelling that names two books is dropped, not guessed at**, and the one that goes
+    is the foreign abbreviation rather than the app's own title: "1 Цар" is the
+    Синодальний's 1 Samuel and the app's Ukrainian 1 Kings. The parser asks
+    `getBookSpellings` rather than a `t`, so a language with no title of its own for a
+    book contributes none — an English abbreviation registered as a Russian one would
+    answer an English share with a Russian language and hand it the wrong translation.
 - **State model changes:** bump version + write a converter in `stateVersionConvert.ts`
   + update `initials.ts` + the prompt-backup flow. All four or nothing.
 - **Navigation is typed.** A screen's props are `ScreenPropsModel<SCREEN.x>`
@@ -398,11 +440,11 @@ Reuse these. Extend, don't duplicate.
 | BackupRestoreModal | `src/components/BackupRestoreModal.tsx` | the one place "restore this backup?" is asked, shared by the settings row and by a backup opened from outside the app. Takes the decoded-but-NOT-applied `ParsedBackupModel`; says what would **change** (the file's date, then each count as `now → after`), because "12 passages" never told the user they currently have 40 |
 | BackupFileOpener | `src/components/BackupFileOpener.tsx` | no UI of its own: it listens for the `content://` / `file://` URI Android hands over when a `.bbhbackup` file is opened (cold start via `getInitialURL`, running app via the `url` event), decodes it and shows `BackupRestoreModal`. Rendered **inside** `AppProvider`, because restoring writes the state the provider owns |
 | BackupOfferModal | `src/components/BackupOfferModal.tsx` | the one-shot post-upgrade "save a backup file?" offer. Shown only on a boot that converted a state, dismissible and never blocking |
-| Header | `src/components/Header.tsx` | **the** app header — `title`/`onBack`/`backIcon`/`right`/`children`; falls into place from the top edge behind the screen transition; the only caller of `useSafeAreaInsets`, and bare (`<Header />`) it is just the device's top margin. Exports `HEADER_HEIGHT` |
-| HomeSwipe | `src/components/HomeSwipe.tsx` | home's four swipes, as a wrapper round the home column. `onSwipe(direction)` + `available` (the directions that currently lead somewhere; a swipe toward one that does not fires nothing, and "down" also decides whether the pull arrow exists). One `Gesture.Pan`, dominant axis wins, `ANIMATION.swipeThreshold` for the three that navigate and the longer `ANIMATION.pullTrigger` for the pull that starts a session |
-| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker. The header title is derived from `tempAddress` (NaN = unpicked) and a complete address goes to `Address.format` — never from which part is being *edited*; the selected verse wears the gradient-outline idiom; the single-verse footer is a real row in the layout flow, so it cannot cover the last row of verses. `confirmTitle` names what the primary button does, because a level screen opens the same picker to ANSWER a test |
+| Header | `src/components/Header.tsx` | **the** app header — `title`/`onBack`/`backIcon`/`right`/`children`; falls into place from the top edge, which is the whole of the motion between two screens; the only caller of `useSafeAreaInsets`, and bare (`<Header />`) it is just the device's top margin. Exports `HEADER_HEIGHT` |
+| HomeSwipe | `src/components/HomeSwipe.tsx` | home's four swipes, as a wrapper round the home column, and the only place the four destination edges are written — nothing else moves in a direction any more. `onSwipe(direction)` + `available` (the directions that currently lead somewhere; a swipe toward one that does not fires nothing, and "down" also decides whether the pull arrow exists). One `Gesture.Pan`, dominant axis wins, `ANIMATION.swipeThreshold` for the three that navigate and the longer `ANIMATION.pullTrigger` for the pull that starts a session |
+| AddressPicker | `src/components/AddressPicker.tsx` | Bible address (book/chapter/verse) picker. The header title is derived from `tempAddress` (NaN = unpicked) and a complete address goes to `Address.format` — never from which part is being *edited*; the selected verse wears the gradient-outline idiom; the single-verse footer is a real row in the layout flow, so it cannot cover the last row of verses. `confirmTitle` names what the primary button does, because a level screen opens the same picker to ANSWER a test, and `translationId` is whose chapters and verses it offers **and what the books are called** — the book list and the title go through `createAddressT`, so a Синодальний passage is picked as "Иоанна" and not as "John"; with no translation the interface language answers |
 | LevelPicker | `src/components/LevelPicker.tsx` | passage level selector with dots |
-| PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI. The translation `Select` sits directly under the address and above the verse text it decides; whether text can be fetched is asked of the catalogue (shipped copy first, live one when it answers) instead of a hardcoded id list, and a failed fetch says so once and leaves the field to type in |
+| PassageEditor | `src/components/PassageEditor.tsx` | full passage add/edit UI. The translation `Select` sits directly under the address and above the verse text it decides; whether text can be fetched is asked of the catalogue (shipped copy first, live one when it answers) instead of a hardcoded id list, and a failed fetch says so once and leaves the field to type in. An EMPTY field fills itself when the address or the translation changes; a field with text in it is only ever replaced through the Fetch button beside the translation, which confirms first |
 | DotIndicator | `src/components/DotIndicator.tsx` | progress dots |
 | TestNavDot | `src/components/TestNavDot.tsx` | per-test navigation dot in a session; the `Pressable` **is** the dot, so the gradient resolves against a view with a size |
 | WeekActivity | `src/components/WeekActivity.tsx` | weekly activity graph |
@@ -419,7 +461,9 @@ Key utils (check before writing a helper): `Address` (`address.ts`),
 `getSimularity`, `getStats`, `getPerfectTests`, `levelsConvertion`, `toastShow`,
 `notifications`, `fileManager`, `handlePassageExport`, `bootBackup`, `backupFile`,
 `getTranslationChoice`, `sanitizeSharedText`, `parseSharedPassage`, `translation`,
-`generateStudyOneTests`, `feedback`, `screenTransition`.
+`generateStudyOneTests`, `feedback`, `createAddressT`/`getBookSpellings`
+(`addressLanguage.ts`), `getTranslationNumbering`/`getChapterNumbers`/`getChapterVerses`
+(`translationNumbering.ts`).
 
 > **Backups have exactly two owners.** `bootBackup.ts` = copies inside storage (the
 > write-once pre-conversion snapshot + the version-tolerant restore). `backupFile.ts`

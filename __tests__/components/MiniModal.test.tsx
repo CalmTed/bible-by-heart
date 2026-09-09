@@ -12,7 +12,7 @@ describe("testing mini modal", () => {
     const t = createT(LANGCODE.ua);
     const tree = renderWithContext(
       <MiniModal shown={true} handleClose={() => {}}>
-        <Text style={theme.theme.headerText}>{t("fetchPropositionText")}</Text>
+        <Text style={theme.theme.headerText}>{t("fetchOverwriteText")}</Text>
         <View
           style={{
             ...theme.theme.rowView,

@@ -23,6 +23,7 @@ import {
   getPassagesByTrainMode
 } from "./generateTests";
 import { createAppState, createTest } from "../initials";
+import { sortTranslations } from "./translation";
 import { logger } from "./logger";
 
 export const reduce: (
@@ -34,6 +35,12 @@ export const reduce: (
     case ActionName.setLang:
       let defaultLangChanged = false; //this flag is to set new default translation only once, if there are few translations in the same language
       const noPassages = !state.passages.length;
+      // Changing the interface language moves the default translation to one
+      // written in it. An address language the interface does not speak can
+      // never be the same as it, so a translation like the Синодальний is never
+      // picked as a default by this rule and never un-defaulted by it either -
+      // it simply is not in the running, which is the whole reason the address
+      // language is a wider type than the interface one.
       const updatedTranslations = state.settings.translations.map(
         (translation) => {
           const isDefault = translation.isDefault;
@@ -57,10 +64,16 @@ export const reduce: (
           )?.[0]?.addressLanguage; //seting undefined if there are no corresponding translation
           const isModeLangSameAsInterface =
             action.payload === modeTranslationLangauge;
-          const defaultTranslation = updatedTranslations.filter(
+          const defaultTranslation = updatedTranslations.find(
             (translation) => translation.isDefault
-          )[0];
-          if (isDefault && !isModeLangSameAsInterface) {
+          );
+          // There may be no default to move to: the rule above only ever marks
+          // one written in the new interface language, and the user may have
+          // deleted every translation in it. The mode then keeps the
+          // translation it had, which is the one thing that is certainly still
+          // there - reaching for `.id` on nothing used to crash the language
+          // switch itself.
+          if (isDefault && !isModeLangSameAsInterface && defaultTranslation) {
             return { ...trainMode, translation: defaultTranslation.id };
           } else {
             return trainMode;
@@ -633,6 +646,16 @@ export const reduce: (
       !changedState.passages.some((p) => p.tags.includes(swipeTag))
     ) {
       settings = { ...settings, leftSwipeTag: ARCHIVED_NAME };
+    }
+    // Put the translations back in the order every list offers them in. It is
+    // healed here rather than converted once, because the order is not a state
+    // MODEL change - no shape moves, no id changes - and a state written by an
+    // older build, restored from a backup or merged from the catalogue arrives
+    // in whatever order it was written in. `sortTranslations` hands the SAME
+    // array back when nothing moves, so the common case allocates nothing.
+    const orderedTranslations = sortTranslations(settings.translations);
+    if (orderedTranslations !== settings.translations) {
+      settings = { ...settings, translations: orderedTranslations };
     }
     // Safe to assign: `changedState` is always a fresh top-level object.
     changedState.settings = settings;

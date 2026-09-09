@@ -29,10 +29,24 @@ export const alowedStateVersions = [
 // of truth shared with the server. Can't sync with an outdated version.
 export { API_VERSION };
 
+// The INTERFACE languages, and the only thing the language picker and `createT`
+// may be built from - every one of them has a full l10n dictionary behind it.
 export enum LANGCODE {
   en = "en",
   ua = "ua"
 }
+
+/**
+ * The languages an ADDRESS may be written in - a superset of the interface
+ * languages, because a translation can be read by someone whose app is in
+ * another language entirely. Russian is here and not in `LANGCODE` on purpose:
+ * the Синодальний needs its book titles, not a Russian interface, and it has no
+ * l10n dictionary at all. What it has instead is a book-name table, in
+ * `addressLanguage.ts`.
+ */
+export type ADDRESSLANG = LANGCODE | "ru";
+
+export const ADDRESS_LANGS: ADDRESSLANG[] = [...Object.values(LANGCODE), "ru"];
 
 export const STORAGE_NAME = "data";
 // Two separate recovery slots on purpose. STORAGE_BACKUP_NAME is the rolling
@@ -223,10 +237,9 @@ export const LOGO_RATIO = 255 / 160;
 export const LAYOUT = {
   maxContentWidth: 560,
   // The app bar's own height, above whatever the device's top inset adds. It
-  // lives here rather than in `Header.tsx` because `screenTransition.ts` needs
-  // it too (it gives the vertical screens a gesture band exactly one bar deep),
-  // and a util reaching into a component would close the loop navigator ->
-  // Header -> AppContext -> navigator.
+  // lives here rather than in `Header.tsx` so a util that needs the bar's size
+  // can ask for it without reaching into a component, which would close the
+  // loop navigator -> Header -> AppContext -> navigator.
   headerHeight: 60,
   // How far the last row of a scrolling surface clears the screen edge. A list
   // that ends flush against the bottom reads as cut off rather than finished -
@@ -415,7 +428,9 @@ export const PASSAGE_ROWS_TO_EXPORT = [
 export interface TranslationSourceModel {
   sourceId: string;
   title: string;
-  language: LANGCODE;
+  // The language its ADDRESSES are written in, which is not necessarily one the
+  // interface speaks.
+  language: ADDRESSLANG;
   // Proxied from upstream rather than served from the API's own files, so it can
   // be absent from the live catalogue when the server holds no key for it.
   isRemote: boolean;
@@ -427,8 +442,28 @@ export interface TranslationSourceModel {
 // selectable, and what the shipped translation list is built from. Adding a
 // source here (and to `SHIPPED_TRANSLATION_IDS` in `initials.ts`) is what puts a
 // new translation in front of a user who never reaches the server.
+/**
+ * The shipped copy of the API catalogue — and, in this order, the order every
+ * list of translations is offered in. The two most-reached-for translations
+ * come first (Турконяка, then ESV) rather than the app's own language order,
+ * because a list is scrolled past far more often than it is configured. A
+ * source the app has never seen sorts after all of these, in the order the
+ * catalogue named it.
+ */
 export const BUNDLED_TRANSLATION_SOURCES: TranslationSourceModel[] = [
+  {
+    sourceId: "ukr-turk",
+    title: "Переклад Турконяка",
+    language: LANGCODE.ua,
+    isRemote: false
+  },
   { sourceId: "esv", title: "ESV®", language: LANGCODE.en, isRemote: true },
+  {
+    sourceId: "rus-syn",
+    title: "Синодальный перевод",
+    language: "ru",
+    isRemote: false
+  },
   {
     sourceId: "ukr-hom",
     title: "Переклад Хоменка",
@@ -444,12 +479,6 @@ export const BUNDLED_TRANSLATION_SOURCES: TranslationSourceModel[] = [
   {
     sourceId: "ukr-ogi",
     title: "Переклад Огієнка",
-    language: LANGCODE.ua,
-    isRemote: false
-  },
-  {
-    sourceId: "ukr-turk",
-    title: "Переклад Турконяка",
     language: LANGCODE.ua,
     isRemote: false
   }

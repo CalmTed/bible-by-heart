@@ -1,4 +1,5 @@
 import {
+  ADDRESSLANG,
   LANGCODE,
   PASSAGELEVEL,
   SCREEN,
@@ -181,7 +182,10 @@ export interface TranslationModel {
   editable: boolean;
   isDefault: boolean;
   name: string;
-  addressLanguage: LANGCODE;
+  // The language this translation's ADDRESSES are written in, which the
+  // interface need not speak - the Синодальний names its books in Russian
+  // whatever language the app is in.
+  addressLanguage: ADDRESSLANG;
   // Which text source the API knows this translation as (>=0.1.1). `null` is a
   // translation the user made up: its text is typed, never fetched. `id` stays
   // the app's own numbering because every passage stores it.

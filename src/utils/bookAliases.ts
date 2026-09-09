@@ -1,4 +1,4 @@
-import { LANGCODE } from "../constants";
+import { ADDRESSLANG } from "../constants";
 import { WORD } from "../l10n";
 
 // Extra accepted spellings / abbreviations per book, applied by
@@ -26,14 +26,14 @@ import { WORD } from "../l10n";
 // The parser prefers the longest match, so an alias inside another alias
 // ("Йоана" within "Перше послання Йоана Богослова") resolves to the longer one.
 export const bookAliases: Partial<
-  Record<WORD, Partial<Record<LANGCODE, string[]>>>
+  Record<WORD, Partial<Record<ADDRESSLANG, string[]>>>
 > = {
   bGenLong: { en: ["Gn", "Ge"] },
   bExoLong: { en: ["Ex", "Exod"] },
   bLevLong: { en: ["Lv"], ua: ["Левит"] },
   bNumLong: { en: ["Nm", "Nu"] },
   bDeuLong: {
-    en: ["Dt", "Deut", "Deuteronomy"],
+    en: ["Dt", "Deut"],
     ua: ["Второзаконня", "Повторення Закону"]
   },
   bJoshLong: {

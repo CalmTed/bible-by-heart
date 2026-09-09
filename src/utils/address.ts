@@ -1,9 +1,13 @@
+import { getBookSpellings } from "../addressLanguage";
 import { bibleReference } from "../bibleReference";
-import { LANGCODE } from "../constants";
+import { ADDRESS_LANGS, ADDRESSLANG } from "../constants";
+import {
+  getChapterVerses,
+  getTranslationNumbering
+} from "../translationNumbering";
 import { createAddress } from "../initials";
-import { createT, WORD } from "../l10n";
+import { WORD } from "../l10n";
 import { AddressType } from "../models";
-import { bookAliases } from "./bookAliases";
 import { logger } from "./logger";
 
 // Everything an address can do, in one place. Before this the same six
@@ -15,7 +19,7 @@ import { logger } from "./logger";
 
 export interface ParsedAddressModel {
   address: AddressType;
-  language: LANGCODE | null;
+  language: ADDRESSLANG | null;
   addressString: string;
 }
 
@@ -23,6 +27,14 @@ export interface ParsedAddressModel {
 // over a single verse. Leading optional space so "John 3:16" and "John3:16" both work.
 const NUMBER_PATTERN =
   "(\\s?\\d{1,3}:\\d{1,3}-\\d{1,3}:\\d{1,3}|\\s?\\d{1,3}:\\d{1,3}-\\d{1,3}|\\s?\\d{1,3}:\\d{1,3})";
+
+// An abbreviation is usually written with the dot that says it is one - "Jn.
+// 3:16", "Ів. 3:16" - and a full title never carries one, so an optional dot
+// between the title and the numbers costs nothing and is what the user typed.
+// It sits in the matcher rather than in NUMBER_PATTERN because it belongs to
+// the title: it is consumed into the matched address string and therefore cut
+// out of a shared verse along with the reference.
+const ABBREVIATION_DOT = "\\.?";
 
 const escapeRegExp = (s: string): string =>
   s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -101,7 +113,7 @@ const format: (address: AddressType, t: (w: WORD) => string) => string = (
 // that never parses an address never pays for it at all.
 interface BookTitleModel {
   bookIndex: number;
-  language: LANGCODE;
+  language: ADDRESSLANG;
   title: string;
   // the title immediately followed by the chapter:verse pattern, anywhere in
   // the text: shared verses usually put the reference after the quote
@@ -110,33 +122,42 @@ interface BookTitleModel {
 let bookTitles: BookTitleModel[] | null = null;
 const getBookTitles: () => BookTitleModel[] = () => {
   if (bookTitles === null) {
-    bookTitles = Object.values(LANGCODE).flatMap((language) => {
-      const t = createT(language);
-      return bibleReference.flatMap((book, bookIndex) =>
-        // the localized long + short titles PLUS any per-language aliases
-        // (abbreviations / spelling variants) for this book
-        [
-          t(book.longTitle),
-          t(book.titleShort),
-          ...(bookAliases[book.longTitle]?.[language] ?? [])
-        ].map((title) => ({
+    // Every language an address may be written in, not every language the
+    // interface speaks: a Russian reference has to parse in an English app. The
+    // spellings come from `getBookSpellings`, so a language that has no title
+    // of its own for a book adds nothing here rather than borrowing English's.
+    bookTitles = ADDRESS_LANGS.flatMap((language) =>
+      bibleReference.flatMap((book, bookIndex) =>
+        getBookSpellings(book, language).map((title) => ({
           bookIndex,
           language,
           title,
-          matcher: new RegExp(escapeRegExp(title) + NUMBER_PATTERN, "gi")
+          matcher: new RegExp(
+            escapeRegExp(title) + ABBREVIATION_DOT + NUMBER_PATTERN,
+            "gi"
+          )
         }))
-      );
-    });
+      )
+    );
   }
   return bookTitles;
 };
 
-const parse: (string: string) => ParsedAddressModel | false = (string) => {
+// The translation the reference is being read for, when there is one. A share
+// from another app and an imported CSV both name the address before anything
+// knows which translation it belongs to, so the KJV table answers by default -
+// and it is also the answer for a translation the user typed themselves, which
+// has no numbering of its own to consult.
+const parse: (
+  string: string,
+  sourceId?: string | null
+) => ParsedAddressModel | false = (string, sourceId = null) => {
+  const numbering = getTranslationNumbering(sourceId);
   const defaultAddress = createAddress();
   // find needed book
   interface BookMatch {
     bookIndex: number;
-    language: LANGCODE;
+    language: ADDRESSLANG;
     matchedTitleLength: number;
     justNumbers: string;
     fullAddressString: string;
@@ -179,7 +200,7 @@ const parse: (string: string) => ParsedAddressModel | false = (string) => {
   }
   const bookIndex = bestMatch.bookIndex;
   const justNumbers = bestMatch.justNumbers;
-  const language: LANGCODE | null = bestMatch.language;
+  const language: ADDRESSLANG | null = bestMatch.language;
   const fullAddressString = bestMatch.fullAddressString;
   const part00 = justNumbers.split("-")[0]?.split(":")?.[0];
   const part01 = justNumbers.split("-")[0]?.split(":")?.[1];
@@ -201,13 +222,16 @@ const parse: (string: string) => ParsedAddressModel | false = (string) => {
   const chapterEnd = allParts ? part10 : justEndVerse ? chapterStart : null;
   const verseEnd = allParts ? part11 : justEndVerse ? part10 : null;
   // validate chapter and verses
+  // A chapter this translation does not have answers 0 verses, so a reference to
+  // one fails here for the same reason the picker draws no button for it: both
+  // sides read the one answer.
   const startExists =
-    bibleReference[bookIndex].chapters?.[parseInt(chapterStart) - 1] >
+    getChapterVerses(numbering, bookIndex, parseInt(chapterStart) - 1) >
     parseInt(verseStart) - 1;
   const endValid =
     (chapterEnd !== null &&
       verseEnd !== null &&
-      bibleReference[bookIndex].chapters?.[parseInt(chapterEnd) - 1] >
+      getChapterVerses(numbering, bookIndex, parseInt(chapterEnd) - 1) >
         parseInt(verseEnd) - 1) ||
     (chapterEnd === null && verseEnd === null);
   if (!startExists || !endValid) {
@@ -255,7 +279,18 @@ const distance: (a: AddressType, b: AddressType) => number = (a, b) =>
 const order: (a: AddressType) => number = (a) =>
   a.bookIndex * 20000 + a.startChapterNum * 200 + a.startVerseNum;
 
-const versesCount: (address: AddressType) => number = (address) => {
+/**
+ * How many verses the address spans, counted in the numbering of the
+ * translation it is written in - a span that crosses a chapter boundary has to
+ * know where that chapter ends, and the five bundled translations disagree.
+ * `sourceId` is asked for rather than optional so that every caller has to say
+ * which translation it means; `null` is a real answer (the KJV table) for a
+ * passage that has no translation yet.
+ */
+const versesCount: (
+  address: AddressType,
+  sourceId: string | null | undefined
+) => number = (address, sourceId) => {
   //if one verse (end == null || end == start)
   if (
     !address.endChapterNum ||
@@ -272,9 +307,10 @@ const versesCount: (address: AddressType) => number = (address) => {
   ) {
     return Math.abs(address.endVerseNum - address.startVerseNum) + 1;
   }
+  const numbering = getTranslationNumbering(sourceId);
   //if if next chapter from reference: (from start-verse to the end of start-chapter) + (from start of end-chapter to the end-verse)
   const fromStartingChapter =
-    bibleReference[address.bookIndex].chapters[address.startChapterNum] -
+    getChapterVerses(numbering, address.bookIndex, address.startChapterNum) -
     address.startVerseNum +
     1;
   const fromEndingChapter = address.endVerseNum;
@@ -287,11 +323,13 @@ const versesCount: (address: AddressType) => number = (address) => {
   if (howManyChaptersBetween > 0) {
     const fromAllChaptersBetween = Array(howManyChaptersBetween)
       .fill(0)
-      .map((z, i) => {
-        return bibleReference[address.bookIndex].chapters[
+      .map((z, i) =>
+        getChapterVerses(
+          numbering,
+          address.bookIndex,
           address.startChapterNum + i + 1
-        ];
-      })
+        )
+      )
       .reduce((partialSum, a) => partialSum + a, 0);
     return fromStartingChapter + fromAllChaptersBetween + fromEndingChapter;
   }
@@ -302,10 +340,31 @@ const versesCount: (address: AddressType) => number = (address) => {
   return NaN;
 };
 
+/**
+ * Whether the address names a verse at all — an open end is fine, an unpicked
+ * start is not. It is what "can this passage's text be asked for" comes down
+ * to, and it was written out by hand at each of the three places that asked.
+ * `NaN` counts as unpicked for the same reason `equals` treats it as an open
+ * end: the picker uses it for "not chosen yet".
+ */
+const isComplete: (address: AddressType) => boolean = (address) =>
+  address.bookIndex !== null &&
+  !isNaN(address.bookIndex) &&
+  address.startChapterNum !== null &&
+  !isNaN(address.startChapterNum) &&
+  address.startVerseNum !== null &&
+  !isNaN(address.startVerseNum);
+
 export const Address = {
   /** Human-readable reference, in the caller's language ("John 3:16"). */
   format,
-  /** Reads an address out of arbitrary text; `false` when there is none. */
+  /** True when the address names a verse; an open end still counts. */
+  isComplete,
+  /**
+   * Reads an address out of arbitrary text; `false` when there is none. Takes
+   * the translation's `sourceId` where the caller knows it, so the reference is
+   * validated against that translation's own chapters and verses.
+   */
   parse,
   /** True when both addresses point at the same verses. Pure. */
   equals,
@@ -313,6 +372,9 @@ export const Address = {
   distance,
   /** Sortable position in the Bible. */
   order,
-  /** How many verses the address spans, per `bibleReference`. */
+  /**
+   * How many verses the address spans, in the numbering of the translation it
+   * is written in. Takes the `sourceId` for the same reason `parse` does.
+   */
   versesCount
 };

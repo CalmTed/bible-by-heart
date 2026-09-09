@@ -65,9 +65,9 @@ export const HomeScreen: FC<ScreenPropsModel<SCREEN.home>> = ({
     navigation.navigate(SCREEN.test);
   };
 
-  // The four edges, in the same words `utils/screenTransition.ts` uses for the
-  // four card directions: the finger runs the way the card travels. Settings
-  // lives to the LEFT, so it is a swipe rightwards that pulls it in.
+  // Which edge each destination lives beyond, read as the direction the finger
+  // travels to pull it in: settings lives to the LEFT, so it is a swipe
+  // rightwards that fetches it.
   const handleSwipe = (direction: SwipeDirection) => {
     switch (direction) {
       case "right":

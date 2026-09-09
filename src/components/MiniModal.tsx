@@ -82,6 +82,10 @@ export const MiniModal: FC<MiniModalModel> = ({
       // the entrance is ours now (reanimated), not the platform slide
       animationType="none"
       transparent={true}
+      // the backdrop covers the whole window, so the dim has to reach under the
+      // status bar too - without this Android lays the modal out below it and
+      // the top strip stays undimmed
+      statusBarTranslucent
       visible={shown}
       onRequestClose={handleClose}
       onDismiss={handleClose}

@@ -153,7 +153,7 @@ export const en = {
   Search: "Search",
   Tags: "Tags",
   Translations: "Translations",
-  fetchPropositionText: "Do you want to fetch passage text?",
+  fetchOverwriteText: "Replace the text with the one from the source?",
   Loading: "Loading...",
   NotAFetchableTranslation: "Enter passage text here",
   TextSourceUnavailable: "No text right now — type the passage in yourself",
@@ -420,7 +420,7 @@ export const en = {
   bNumLong: "Numbers",
 
   bDeuShrt: "Deu",
-  bDeuLong: "Deoteronomy",
+  bDeuLong: "Deuteronomy",
 
   bJoshShrt: "Josh",
   bJoshLong: "Joshua",

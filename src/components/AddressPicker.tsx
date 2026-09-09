@@ -13,8 +13,14 @@ import { Button, IconButton } from "./Button";
 import { Header } from "./Header";
 import { IconName } from "./Icon";
 import { WORD } from "../l10n";
+import { createAddressT } from "../addressLanguage";
 import { bibleReference } from "../bibleReference";
 import { createAddress } from "../initials";
+import {
+  getChapterNumbers,
+  getChapterVerses,
+  getTranslationNumbering
+} from "../translationNumbering";
 import { Address } from "../utils/address";
 import { useAppContext } from "../context/AppContext";
 import { feedback } from "../utils/feedback";
@@ -24,6 +30,14 @@ interface AddressPickerModel {
   onCancel: () => void;
   onConfirm: (address: AddressType) => void;
   address?: AddressType;
+  // The translation the address is being picked in - the app's own id, the one
+  // a passage stores in `verseTranslation`. It decides how many chapters a book
+  // has and how many verses a chapter has, because the translations disagree
+  // (Joel runs to three chapters or four), and it decides what the books are
+  // CALLED, because an address is written in its own language. Left out
+  // (nothing chosen yet, a translation the user typed themselves) the KJV table
+  // and the interface language answer instead.
+  translationId?: number | null;
   // What the primary footer button says. It defaults to "Add", which is true
   // when the picker is adding a passage - but a level screen opens the same
   // picker to ANSWER a test, and "Add" is a lie there.
@@ -35,15 +49,21 @@ const bookList = bibleReference.map((book) => book.titleShort);
 //the title describes what has been PICKED, not which part is being edited — the
 //picker stops on the start verse, so a part-index-driven title could never show
 //it. NaN = not picked yet; a complete address goes to Address.format.
+//
+//Two dictionaries, because the title is two different things: `t` is the
+//interface, and `addressT` is the language the address itself is written in.
+//A passage picked in the Синодальний is named "Иоанна 3:16" everywhere else in
+//the app, so naming it "John" here made the picker the one place that disagreed.
 const getPickerTitle: (
   address: AddressType,
-  t: (word: WORD) => string
-) => string = (address, t) => {
+  t: (word: WORD) => string,
+  addressT: (word: WORD) => string
+) => string = (address, t, addressT) => {
   const book = bibleReference[address.bookIndex];
   if (isNaN(address.bookIndex) || !book) {
     return t("APSelectBook");
   }
-  const bookTitle = t(book.longTitle);
+  const bookTitle = addressT(book.longTitle);
   if (isNaN(address.startChapterNum)) {
     return bookTitle;
   }
@@ -61,13 +81,14 @@ const getPickerTitle: (
   if (address.endVerseNum === null || isNaN(address.endVerseNum)) {
     return `${start}-${endChapter + 1}`;
   }
-  return Address.format(address, t);
+  return Address.format(address, addressT);
 };
 
 export const AddressPicker: FC<AddressPickerModel> = ({
   confirmTitle = "APAddVerse",
   visible,
   address,
+  translationId,
   onCancel,
   onConfirm
 }) => {
@@ -100,13 +121,28 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     );
     setAddress(isAddressProvided ? address : createAddress());
   }, [visible]); //dont change this list please:)
-  const chaptersNumber = bibleReference[tempAddress.bookIndex]?.chapters.length;
-  const versesNumber =
-    bibleReference[tempAddress.bookIndex]?.chapters[
-      tempAddress[
-        addressPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"
-      ] || tempAddress.startChapterNum
-    ];
+  const translation = state.settings.translations.find(
+    (tr) => tr.id === translationId
+  );
+  const sourceId = translation?.sourceId;
+  // the books are named in the language the ADDRESS is written in, not the one
+  // the interface is in - the same table the display, the export and the parser
+  // share. A translation the user typed themselves has no language of its own,
+  // so the interface answers for it.
+  const addressT = createAddressT(
+    translation?.addressLanguage || state.settings.langCode
+  );
+  const numbering = getTranslationNumbering(sourceId);
+  // Chapter numbers, not a count: a translation with one chapter more than
+  // another may not renumber the ones after it.
+  const chapterNumbers = getChapterNumbers(numbering, tempAddress.bookIndex);
+  const versesNumber = getChapterVerses(
+    numbering,
+    tempAddress.bookIndex,
+    tempAddress[
+      addressPart === "startVerseNum" ? "startChapterNum" : "endChapterNum"
+    ] || tempAddress.startChapterNum
+  );
   const handleBack = () => {
     const curPartIndex = Object.keys(tempAddress).indexOf(addressPart);
     switch (curPartIndex) {
@@ -171,24 +207,27 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     }
     onConfirm(address);
   };
+  // Both sides of the "more than half the book" guard below are counted in the
+  // numbering the picker is offering, so the span and the book it is held
+  // against are measured by the same table.
+  const bookChapters = numbering.chapters[tempAddress.bookIndex] ?? [];
   const allBookAddress: AddressType = {
     bookIndex: tempAddress.bookIndex,
     startChapterNum: 0,
     startVerseNum: 0,
-    endChapterNum: chaptersNumber,
-    endVerseNum:
-      bibleReference[tempAddress.bookIndex]?.chapters[chaptersNumber - 1]
+    endChapterNum: bookChapters.length,
+    endVerseNum: bookChapters[bookChapters.length - 1]
   };
   const isDoneDisabled =
     isNaN(tempAddress.bookIndex) ||
     isNaN(tempAddress.startChapterNum) ||
     isNaN(tempAddress.startVerseNum) ||
     // (!tempAddress.endChapterNum || !tempAddress.endVerseNum) ||
-    Address.versesCount(tempAddress) > 500 ||
+    Address.versesCount(tempAddress, sourceId) > 500 ||
     //if more then one chapter and more then half of the book
     (tempAddress.endChapterNum !== tempAddress.startChapterNum &&
-      Address.versesCount(tempAddress) >
-        Address.versesCount(allBookAddress) / 2);
+      Address.versesCount(tempAddress, sourceId) >
+        Address.versesCount(allBookAddress, sourceId) / 2);
   //once a start verse is chosen, a single verse is already a valid passage —
   //show the primary "add" / secondary "extend range" footer.
   const isStartVerseSelected =
@@ -201,7 +240,7 @@ export const AddressPicker: FC<AddressPickerModel> = ({
     <Modal visible={visible} statusBarTranslucent>
       <View style={{ ...APstyle.root, backgroundColor: theme.colors.bg }}>
         <Header
-          title={getPickerTitle(tempAddress, t)}
+          title={getPickerTitle(tempAddress, t, addressT)}
           onBack={handleBack}
           right={
             <IconButton
@@ -227,40 +266,36 @@ export const AddressPicker: FC<AddressPickerModel> = ({
                 return (
                   <ListButton
                     key={title}
-                    title={t(title)}
+                    title={addressT(title)}
                     onPress={() => handleListButtonPress(i)}
                   />
                 );
               })}
             {["startChapterNum"].includes(addressPart) &&
-              Array.from({ length: chaptersNumber }, (v, i) => i).map(
-                (chapter, i) => {
-                  const title = (chapter + 1).toString();
-                  return (
-                    <ListButton
-                      key={title}
-                      title={title}
-                      onPress={() => handleListButtonPress(i)}
-                    />
-                  );
-                }
-              )}
+              chapterNumbers.map((chapterNum) => {
+                const title = (chapterNum + 1).toString();
+                return (
+                  <ListButton
+                    key={title}
+                    title={title}
+                    onPress={() => handleListButtonPress(chapterNum)}
+                  />
+                );
+              })}
             {["endChapterNum"].includes(addressPart) &&
-              Array.from({ length: chaptersNumber }, (v, i) => i).map(
-                (chapter, i) => {
-                  const title = (chapter + 1).toString();
-                  if (i < tempAddress.startChapterNum) {
-                    return;
-                  }
-                  return (
-                    <ListButton
-                      key={title}
-                      title={title}
-                      onPress={() => handleListButtonPress(i)}
-                    />
-                  );
+              chapterNumbers.map((chapterNum) => {
+                const title = (chapterNum + 1).toString();
+                if (chapterNum < tempAddress.startChapterNum) {
+                  return;
                 }
-              )}
+                return (
+                  <ListButton
+                    key={title}
+                    title={title}
+                    onPress={() => handleListButtonPress(chapterNum)}
+                  />
+                );
+              })}
             {["startVerseNum"].includes(addressPart) &&
               Array.from({ length: versesNumber }, (v, i) => i).map(
                 (verse, i) => {

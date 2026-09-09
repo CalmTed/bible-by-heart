@@ -1,10 +1,24 @@
 import { WORD } from "./l10n";
 
+/**
+ * The 66 books in the order every address indexes, and the KJV verse numbering,
+ * generated from the public-domain ASV rather than typed by hand.
+ *
+ * This table is the **fallback**, not the truth: a translation numbers its own
+ * chapters, and `translationNumbering.ts` carries the ones the app ships. The
+ * KJV table answers where no translation can - a translation the user invented,
+ * a reference shared from another app, nothing chosen yet - and it is also ESV's
+ * own numbering, which is proxied and stores no text to count.
+ *
+ * The verse number is the **highest** in the chapter, not how many verses are
+ * printed: the ASV leaves out sixteen New Testament verses the KJV has, numbers
+ * around the gaps, and a picker offering one fewer verse could not reach the
+ * last one.
+ */
 export const bibleReference: {
   titleShort: WORD;
   longTitle: WORD;
   chapters: number[];
-  chaptersAlternative?: number[];
 }[] = [
   {
     titleShort: "bGenShrt",
@@ -12,7 +26,7 @@ export const bibleReference: {
     chapters: [
       31, 25, 24, 26, 32, 22, 24, 22, 29, 32, 32, 20, 18, 24, 21, 16, 27, 33,
       38, 18, 34, 24, 20, 67, 34, 35, 46, 22, 35, 43, 55, 32, 20, 31, 29, 43,
-      36, 30, 23, 23, 57, 38, 34, 28, 34, 31, 22, 33, 26
+      36, 30, 23, 23, 57, 38, 34, 34, 28, 34, 31, 22, 33, 26
     ]
   },
   {
@@ -20,8 +34,8 @@ export const bibleReference: {
     longTitle: "bExoLong",
     chapters: [
       22, 25, 22, 31, 23, 30, 25, 32, 35, 29, 10, 51, 22, 31, 27, 36, 16, 27,
-      25, 26, 36, 16, 27, 25, 26, 36, 31, 33, 18, 40, 37, 21, 43, 46, 38, 18,
-      35, 23, 35, 35, 38, 29, 31, 43, 38
+      25, 26, 36, 31, 33, 18, 40, 37, 21, 43, 46, 38, 18, 35, 23, 35, 35, 38,
+      29, 31, 43, 38
     ]
   },
   {
@@ -48,7 +62,6 @@ export const bibleReference: {
       21, 20, 23, 30, 25, 22, 19, 19, 26, 68, 29, 20, 30, 52, 29, 12
     ]
   },
-
   {
     titleShort: "bJoshShrt",
     longTitle: "bJoshLong",
@@ -70,36 +83,35 @@ export const bibleReference: {
     longTitle: "bRuthLong",
     chapters: [22, 23, 18, 22]
   },
-
   {
     titleShort: "b1SamShrt",
     longTitle: "b1SamLong",
     chapters: [
       28, 36, 21, 22, 12, 21, 17, 22, 27, 27, 15, 25, 23, 52, 35, 23, 58, 30,
-      24, 42, 16, 23, 28, 23, 44, 25, 12, 25, 11, 31, 13
+      24, 42, 15, 23, 29, 22, 44, 25, 12, 25, 11, 31, 13
     ]
   },
   {
     titleShort: "b2SamShrt",
     longTitle: "b2SamLong",
     chapters: [
-      27, 32, 39, 12, 25, 23, 29, 18, 13, 19, 27, 31, 39, 33, 37, 23, 29, 32,
-      44, 26, 22, 51, 39, 25
+      27, 32, 39, 12, 25, 23, 29, 18, 13, 19, 27, 31, 39, 33, 37, 23, 29, 33,
+      43, 26, 22, 51, 39, 25
     ]
   },
   {
     titleShort: "b1KinShrt",
     longTitle: "b1KinLong",
     chapters: [
-      53, 46, 28, 20, 32, 38, 51, 66, 28, 29, 43, 33, 34, 31, 34, 34, 24, 46,
-      21, 43, 29, 54
+      53, 46, 28, 34, 18, 38, 51, 66, 28, 29, 43, 33, 34, 31, 34, 34, 24, 46,
+      21, 43, 29, 53
     ]
   },
   {
     titleShort: "b2KinShrt",
     longTitle: "b2KinLong",
     chapters: [
-      18, 25, 27, 44, 27, 33, 20, 29, 37, 36, 20, 22, 25, 29, 38, 20, 41, 37,
+      18, 25, 27, 44, 27, 33, 20, 29, 37, 36, 21, 21, 25, 29, 38, 20, 41, 37,
       37, 21, 26, 20, 37, 20, 30
     ]
   },
@@ -107,7 +119,7 @@ export const bibleReference: {
     titleShort: "b1ChrShrt",
     longTitle: "b1ChrLong",
     chapters: [
-      54, 55, 24, 43, 41, 66, 40, 40, 44, 14, 47, 41, 14, 17, 29, 43, 27, 17,
+      54, 55, 24, 43, 26, 81, 40, 40, 44, 14, 47, 40, 14, 17, 29, 43, 27, 17,
       19, 8, 30, 19, 32, 31, 31, 32, 34, 21, 30
     ]
   },
@@ -115,7 +127,7 @@ export const bibleReference: {
     titleShort: "b2ChrShrt",
     longTitle: "b2ChrLong",
     chapters: [
-      18, 17, 17, 22, 14, 42, 22, 18, 31, 19, 23, 16, 23, 14, 19, 14, 19, 34,
+      17, 18, 17, 22, 14, 42, 22, 18, 31, 19, 23, 16, 22, 15, 19, 14, 19, 34,
       11, 37, 20, 12, 21, 27, 28, 23, 9, 27, 36, 27, 21, 33, 25, 33, 27, 23
     ]
   },
@@ -127,46 +139,34 @@ export const bibleReference: {
   {
     titleShort: "bNehShrt",
     longTitle: "bNehLong",
-    chapters: [11, 20, 38, 17, 19, 19, 73, 18, 37, 40, 36, 47, 31]
+    chapters: [11, 20, 32, 23, 19, 19, 73, 18, 38, 39, 36, 47, 31]
   },
   {
     titleShort: "bEsthShrt",
     longTitle: "bEsthLong",
-    chapters: [22, 23, 15, 17, 14, 14, 10, 17, 32, 13, 12, 6]
+    chapters: [22, 23, 15, 17, 14, 14, 10, 17, 32, 3]
   },
-
   {
     titleShort: "bJobShrt",
     longTitle: "bJobLong",
     chapters: [
       22, 13, 26, 21, 27, 30, 21, 22, 35, 22, 20, 25, 28, 22, 35, 22, 16, 21,
       29, 29, 34, 30, 17, 25, 6, 14, 23, 28, 25, 31, 40, 22, 33, 37, 16, 33, 24,
-      41, 30, 32, 26, 17
+      41, 30, 24, 34, 17
     ]
   },
   {
     titleShort: "bPsShrt",
     longTitle: "bPsLong",
     chapters: [
-      6, 12, 9, 9, 13, 11, 18, 10, 21, 18, 7, 9, 6, 7, 5, 11, 15, 51, 15, 10,
-      14, 32, 6, 10, 22, 12, 14, 9, 11, 13, 25, 11, 22, 23, 28, 13, 40, 23, 14,
-      18, 14, 12, 5, 27, 18, 12, 10, 15, 21, 23, 21, 11, 7, 9, 24, 14, 12, 12,
-      18, 14, 9, 13, 12, 11, 14, 20, 8, 36, 37, 6, 24, 20, 28, 23, 11, 13, 21,
-      72, 13, 20, 17, 8, 18, 13, 14, 17, 7, 19, 52, 17, 16, 16, 5, 23, 11, 13,
-      12, 9, 9, 5, 8, 29, 22, 35, 45, 48, 43, 14, 31, 7, 10, 10, 9, 8, 18, 19,
-      2, 29, 176, 7, 8, 9, 4, 8, 5, 6, 5, 6, 8, 8, 3, 18, 3, 3, 21, 26, 9, 8,
-      24, 14, 10, 8, 12, 15, 21, 10, 20, 14, 9, 6
-    ],
-    //difference 9th: 39(not 10-11th 21,18) AND 146-147th 11,9 (not 147th: 20)
-    chaptersAlternative: [
-      6, 12, 9, 9, 13, 11, 18, 10, 39, 7, 9, 6, 7, 5, 11, 15, 51, 15, 10, 14,
-      32, 6, 10, 22, 12, 14, 9, 11, 13, 25, 11, 22, 23, 28, 13, 40, 23, 14, 18,
-      14, 12, 5, 27, 18, 12, 10, 15, 21, 23, 21, 11, 7, 9, 24, 14, 12, 12, 18,
-      14, 9, 13, 12, 11, 14, 20, 8, 36, 37, 6, 24, 20, 28, 23, 11, 13, 21, 72,
-      13, 20, 17, 8, 18, 13, 14, 17, 7, 19, 53, 17, 16, 16, 5, 23, 11, 13, 12,
-      9, 9, 5, 8, 29, 22, 35, 45, 48, 43, 14, 31, 7, 10, 10, 9, 8, 18, 19, 2,
-      29, 176, 7, 8, 9, 4, 8, 5, 6, 5, 6, 8, 8, 3, 18, 3, 3, 21, 26, 9, 8, 24,
-      14, 10, 8, 12, 15, 21, 10, 11, 9, 14, 9, 6
+      6, 12, 8, 8, 12, 10, 17, 9, 20, 18, 7, 8, 6, 7, 5, 11, 15, 50, 14, 9, 13,
+      31, 6, 10, 22, 12, 14, 9, 11, 12, 24, 11, 22, 22, 28, 12, 40, 22, 13, 17,
+      13, 11, 5, 26, 17, 11, 9, 14, 20, 23, 19, 9, 6, 7, 23, 13, 11, 11, 17, 12,
+      8, 12, 11, 10, 13, 20, 7, 35, 36, 5, 24, 20, 28, 23, 10, 12, 20, 72, 13,
+      19, 16, 8, 18, 12, 13, 17, 7, 18, 52, 17, 16, 15, 5, 23, 11, 13, 12, 9, 9,
+      5, 8, 28, 22, 35, 45, 48, 43, 13, 31, 7, 10, 10, 9, 8, 18, 19, 2, 29, 176,
+      7, 8, 9, 4, 8, 5, 6, 5, 6, 8, 8, 3, 18, 3, 3, 21, 26, 9, 8, 24, 13, 10, 7,
+      12, 15, 21, 10, 20, 14, 9, 6
     ]
   },
   {
@@ -278,14 +278,13 @@ export const bibleReference: {
   {
     titleShort: "bZechShrt",
     longTitle: "bZechLong",
-    chapters: [21, 13, 10, 14, 11, 15, 14, 23, 17, 12, 14, 9, 21]
+    chapters: [21, 13, 10, 14, 11, 15, 14, 23, 17, 12, 17, 14, 9, 21]
   },
   {
     titleShort: "bMalShrt",
     longTitle: "bMalLong",
     chapters: [14, 17, 18, 6]
   },
-
   {
     titleShort: "bMatShrt",
     longTitle: "bMatLong",
@@ -311,15 +310,16 @@ export const bibleReference: {
     titleShort: "bJohnShrt",
     longTitle: "bJohnLong",
     chapters: [
-      51, 25, 36, 54, 47, 42, 57, 50, 38, 31, 27, 33, 26, 40, 42, 31, 25
+      51, 25, 36, 54, 47, 71, 53, 59, 41, 42, 57, 50, 38, 31, 27, 33, 26, 40,
+      42, 31, 25
     ]
   },
   {
     titleShort: "bActsShrt",
     longTitle: "bActsLong",
     chapters: [
-      26, 47, 26, 37, 32, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 38, 40, 30,
-      35, 27, 27, 32, 44, 31
+      26, 47, 26, 37, 42, 15, 60, 40, 43, 48, 30, 25, 52, 28, 41, 40, 34, 28,
+      41, 38, 40, 30, 35, 27, 27, 32, 44, 31
     ]
   },
   {
@@ -367,7 +367,6 @@ export const bibleReference: {
     longTitle: "b2ThsLong",
     chapters: [12, 17, 18]
   },
-
   {
     titleShort: "b1TimShrt",
     longTitle: "b1TimLong",

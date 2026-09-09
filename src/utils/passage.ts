@@ -276,24 +276,35 @@ const getFirstWords: (text: string, count?: number) => string = (
   count = FIRST_FEW_WORDS
 ) => text.split(" ").slice(0, count).join(" ") + " ";
 
-const getVersesCount: (address: AddressType) => number = (address) =>
-  Address.versesCount(address);
+const getVersesCount: (
+  address: AddressType,
+  sourceId: string | null | undefined
+) => number = (address, sourceId) => Address.versesCount(address, sourceId);
 
 // How many verses of the library are in an English translation — the number the
-// ESV licence cares about (its cap is per user, not per passage).
+// ESV licence cares about (its cap is per user, not per passage). Each passage
+// is counted in its own translation's numbering, which is the only one that
+// knows where its chapters end.
 const countEnglishVerses: (
   translations: TranslationModel[],
   passages: PassageModel[]
 ) => number = (translations, passages) => {
-  const translationsInEnglish = translations
-    .filter((tr) => tr.addressLanguage === LANGCODE.en)
-    .map((tr) => tr.id);
+  const englishSourceIds = new Map(
+    translations
+      .filter((tr) => tr.addressLanguage === LANGCODE.en)
+      .map((tr) => [tr.id, tr.sourceId])
+  );
   return passages
-    .filter(
-      (p) =>
-        p.verseTranslation && translationsInEnglish.includes(p.verseTranslation)
+    .flatMap((p) =>
+      p.verseTranslation && englishSourceIds.has(p.verseTranslation)
+        ? [
+            Address.versesCount(
+              p.address,
+              englishSourceIds.get(p.verseTranslation)
+            )
+          ]
+        : []
     )
-    .map((p) => Address.versesCount(p.address))
     .reduce((ps, num) => ps + num, 0);
 };
 

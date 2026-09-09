@@ -23,8 +23,17 @@ export const makeContextValue = (
   options: RenderWithContextOptions = {}
 ): AppContextModel => {
   const { themeType = THEMETYPE.dark, langCode = LANGCODE.en, state } = options;
+  // `langCode` moves the state's own setting as well as `t`. The app builds one
+  // from the other, so a context whose `t` speaks Ukrainian over a state that
+  // says English is a combination the app never has - and a component reading
+  // the interface language off the state (the address picker, deciding what to
+  // call a book) would be tested against something that cannot happen. An
+  // explicit `state` still wins, since a test that built one means it.
+  const base = createAppState();
   return {
-    state: state ?? createAppState(),
+    state:
+      state ??
+      { ...base, settings: { ...base.settings, langCode } },
     setState: () => {},
     dispatch: () => {},
     t: createT(langCode),

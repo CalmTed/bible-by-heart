@@ -15,7 +15,9 @@ import { ListScreen } from "../../src/screens/ListScreen";
 import { Button, IconButton } from "../../src/components/Button";
 import { MiniModal } from "../../src/components/MiniModal";
 import { IconName } from "../../src/components/Icon";
+import { createAddressT } from "../../src/addressLanguage";
 import {
+  ADDRESSLANG,
   ARCHIVED_NAME,
   NO_TAGS_NAME,
   LANGCODE,
@@ -93,9 +95,14 @@ const pressPickerBack = (screen: Screen) => {
   fireEvent.press(within(modal!).UNSAFE_getAllByProps({ accessible: true })[0]);
 };
 
-// Genesis 1:1 through the picker, ending on its single-verse "add" action.
-const pickGenesis11 = (screen: Screen) => {
-  fireEvent.press(screen.getByText(t("bGenShrt")));
+// Genesis 1:1 through the picker, ending on its single-verse "add" action. The
+// picker names books in the language of the translation being picked in, so the
+// book button is asked for in that language while the action stays interface.
+const pickGenesis11 = (
+  screen: Screen,
+  addressLanguage: ADDRESSLANG = LANGCODE.en
+) => {
+  fireEvent.press(screen.getByText(createAddressT(addressLanguage)("bGenShrt")));
   fireEvent.press(screen.getByText("1")); // chapter 1
   fireEvent.press(screen.getByText("1")); // start verse 1
   fireEvent.press(screen.getByText(t("APAddVerse")));
@@ -147,7 +154,9 @@ describe("ListScreen add-passage flow", () => {
     expect(screen.queryByText(t("SelectTranslationTitle"))).toBeNull();
     expect(pickerModal(screen)).toBeTruthy();
 
-    pickGenesis11(screen);
+    // the one translation left is Турконяк, so the picker names books in its
+    // language rather than the interface's
+    pickGenesis11(screen, state.settings.translations[0].addressLanguage);
 
     expect(navigate).toHaveBeenCalledWith(SCREEN.passage, {
       address: GENESIS_1_1,

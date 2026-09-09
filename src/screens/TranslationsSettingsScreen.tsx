@@ -5,8 +5,8 @@ import { SettingsListWrapper } from "../components/SettingsListWrapper";
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 import { Select } from "../components/Select";
-import { LANGCODE, SCREEN } from "../constants";
-import { createT } from "../l10n";
+import { ADDRESS_LANGS, ADDRESSLANG, SCREEN } from "../constants";
+import { getAddressLangName } from "../addressLanguage";
 import { ActionName, ScreenPropsModel, TranslationModel } from "../models";
 import { createTranslation } from "../initials";
 import { reduce } from "../utils/reduce";
@@ -18,13 +18,13 @@ export const TranslationsSettingsScreen: FC<
 > = ({ navigation }) => {
   const { state, setState, t, theme } = useAppContext();
 
-  const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
-    const customT = createT(v);
-    return {
-      value: k,
-      label: `${customT("name")} ${customT("flag")}`
-    };
-  });
+  // The languages an ADDRESS may be written in, which is more than the two the
+  // interface speaks: a Russian translation names its books in Russian in an
+  // English app, and this is the list that says so.
+  const languageOptions = ADDRESS_LANGS.map((language) => ({
+    value: language,
+    label: getAddressLangName(language)
+  }));
 
   return (
     <SettingsListWrapper
@@ -115,7 +115,7 @@ export const TranslationsSettingsScreen: FC<
               onSelect={(value) =>
                 handleChange({
                   ...item,
-                  addressLanguage: value as LANGCODE
+                  addressLanguage: value as ADDRESSLANG
                 })
               }
               disabled={!translationItem.editable}

@@ -3,12 +3,11 @@ import {
   renderWithContext
 } from "../../../test-utils/renderWithContext";
 import { AppContext } from "../../../src/context/AppContext";
-import { StyleSheet } from "react-native";
-import { fireEvent } from "@testing-library/react-native";
+import { fireEvent, within } from "@testing-library/react-native";
 import { PASSAGELEVEL, TESTLEVEL } from "../../../src/constants";
 import { Passage } from "../../../src/utils/passage";
 import { createL30Test } from "../../../src/utils/generateTests/createL30Test";
-import { L30 } from "../../../src/components/levels/L30";
+import { L30, L30_VERSE_TEST_ID } from "../../../src/components/levels/L30";
 import { PassageModel } from "../../../src/models";
 import { createTest } from "../../../src/initials";
 import {
@@ -17,6 +16,14 @@ import {
   makeLevelState,
   makeStateWith
 } from "../../fixtures/levelPassages";
+
+// How many times the verse card itself shows this word. The word bank under
+// the verse renders the missing words too - that is the level - so the question
+// is only ever asked of the passage block.
+const verseShows = (
+  screen: ReturnType<typeof renderWithContext>,
+  word: string
+) => within(screen.getByTestId(L30_VERSE_TEST_ID)).queryAllByText(word).length;
 
 describe("testing level 30 rendering", () => {
   it("L30 renders correctly", async () => {
@@ -114,20 +121,14 @@ describe("Level 3 answering outside the render body", () => {
 /**
  * The test level 3 has never had: a missing word is not readable.
  *
- * L3's whole question is which words are gone, so a missing word rendered in a
- * readable colour is the answer printed above the options. Nothing asserted
- * this, which is why the report could only ever come from a screenshot.
+ * L3's whole question is which words are gone, so a missing word left readable
+ * is the answer printed above the options. It is asserted here as ABSENCE from
+ * the verse card, not as a colour: a colour that says "transparent" is one
+ * override, one stale piece of state, one theme away from being read, and each
+ * time it came back the styling still said transparent.
  */
 describe("Level 3 hiding the words it took out", () => {
-  // The word's own Text node, found by the word itself. queryAllByText also
-  // matches the option Button below the verse - the verse is rendered first, so
-  // the first hit is the one in the passage.
-  const verseWordStyle = (
-    screen: ReturnType<typeof renderWithContext>,
-    word: string
-  ) => StyleSheet.flatten(screen.queryAllByText(word)[0]?.props.style);
-
-  it("renders every missing word transparent, whatever the generator picked", () => {
+  it("never renders a missing word, whatever the generator picked", () => {
     // Several shapes on purpose: the generator has four ways of choosing
     // (a sentence range, an isle of words, seeds from errors, similar words) and
     // which one runs depends on the sentence count and on Math.random.
@@ -161,16 +162,14 @@ describe("Level 3 hiding the words it took out", () => {
             dispatch={() => {}}
           />
         );
-        missingWords.forEach((index) => {
-          expect(verseWordStyle(screen, words[index])?.color).toBe(
-            "transparent"
-          );
-        });
-        // and the other side of it: nothing readable is a word being asked for
-        words.forEach((word, index) => {
-          if (!missingWords.includes(index)) {
-            expect(verseWordStyle(screen, word)?.color).not.toBe("transparent");
-          }
+        // Counted rather than looked up, because the same word can stand in the
+        // verse twice with only one of the two taken out: what has to hold is
+        // that the card shows a word exactly as often as it was left in.
+        words.forEach((word) => {
+          const stillThere = words.filter(
+            (other, index) => other === word && !missingWords.includes(index)
+          ).length;
+          expect(verseShows(screen, word)).toBe(stillThere);
         });
         screen.unmount();
       }
@@ -195,13 +194,13 @@ describe("Level 3 hiding the words it took out", () => {
       />
     );
 
-    expect(verseWordStyle(screen, words[1])?.color).toBe("transparent");
-    expect(verseWordStyle(screen, words[3])?.color).toBe("transparent");
+    expect(verseShows(screen, words[1])).toBe(0);
+    expect(verseShows(screen, words[3])).toBe(0);
 
     // answering the first one reveals THAT word and nothing else
-    fireEvent.press(screen.getAllByText(words[1])[1]);
-    expect(verseWordStyle(screen, words[1])?.color).not.toBe("transparent");
-    expect(verseWordStyle(screen, words[3])?.color).toBe("transparent");
+    fireEvent.press(screen.getAllByText(words[1]).slice(-1)[0]);
+    expect(verseShows(screen, words[1])).toBe(1);
+    expect(verseShows(screen, words[3])).toBe(0);
   });
 
   // The two paths that reveal words on purpose, pinned so a future change has to
@@ -226,8 +225,8 @@ describe("Level 3 hiding the words it took out", () => {
       />
     );
 
-    expect(verseWordStyle(screen, words[1])?.color).not.toBe("transparent");
-    expect(verseWordStyle(screen, words[3])?.color).not.toBe("transparent");
+    expect(verseShows(screen, words[1])).toBe(1);
+    expect(verseShows(screen, words[3])).toBe(1);
   });
 
   it("reveals the words of a finished test being looked back at", () => {
@@ -249,7 +248,7 @@ describe("Level 3 hiding the words it took out", () => {
       />
     );
 
-    expect(verseWordStyle(screen, words[1])?.color).not.toBe("transparent");
+    expect(verseShows(screen, words[1])).toBe(1);
   });
 });
 
@@ -287,9 +286,7 @@ describe("Level 3 accepting a word by its letters", () => {
     const chip = screen.getAllByText(words[5]).slice(-1)[0];
     fireEvent.press(chip);
 
-    expect(
-      StyleSheet.flatten(screen.queryAllByText(words[1])[0]?.props.style).color
-    ).not.toBe("transparent");
+    expect(verseShows(screen, words[1])).toBe(1);
   });
 
   it("still refuses a word that is merely similar", () => {
@@ -314,10 +311,7 @@ describe("Level 3 accepting a word by its letters", () => {
     // "good" is not "God": pressing it puts the level into its error state,
     // which is the panel with a Continue button, not a revealed word.
     fireEvent.press(screen.getAllByText(nearWords[2]).slice(-1)[0]);
-    expect(
-      StyleSheet.flatten(screen.queryAllByText(nearWords[0])[0]?.props.style)
-        .color
-    ).toBe("transparent");
+    expect(verseShows(screen, nearWords[0])).toBe(0);
     expect(submitTest).not.toHaveBeenCalled();
   });
 });

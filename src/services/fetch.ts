@@ -17,6 +17,7 @@ import * as SecureStore from "expo-secure-store";
 import { isTokenExpired } from "../utils/isTokenExpired";
 import storage from "../storage";
 import { Alert } from "react-native";
+import { isApiVersionCompatible } from "bbh-shared";
 
 const HOST = Constants.expoConfig?.extra?.HOST || "";
 if (HOST === "") {
@@ -155,7 +156,11 @@ export const fetchAPI: (a: {
           key: APIVERSION_LAST_CHECK,
           data: new Date().getTime()
         });
-        const isVersionValid = versionData.version === API_VERSION;
+        // The shared contract decides, not string equality: it keeps the table
+        // of which server versions an app of this version may talk to, so a
+        // release that changes the contract without breaking older apps does
+        // not lock every one of them out.
+        const isVersionValid = isApiVersionCompatible(versionData.version);
         await storage.save({
           key: APIVERSION_STATUS,
           data: isVersionValid

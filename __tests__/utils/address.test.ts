@@ -93,6 +93,39 @@ describe("Address.parse", () => {
     });
   });
 
+  describe("the dot an abbreviation is written with", () => {
+    it("parses an English abbreviation written with its dot", () => {
+      const addressObject = Address.parse("Jn. 3:16");
+      expect(addressObject).not.toBe(false);
+      if (addressObject === false) {
+        return;
+      }
+      expect(addressObject.address.bookIndex).toBe(42);
+      expect(addressObject.address.startChapterNum).toBe(2);
+      expect(addressObject.address.startVerseNum).toBe(15);
+    });
+
+    it("parses a Ukrainian abbreviation written with its dot", () => {
+      const addressObject = Address.parse("Ів. 3:16");
+      expect(addressObject).not.toBe(false);
+      if (addressObject === false) {
+        return;
+      }
+      expect(addressObject.address.bookIndex).toBe(42);
+      expect(addressObject.address.startChapterNum).toBe(2);
+      expect(addressObject.address.startVerseNum).toBe(15);
+    });
+
+    it("takes the dot with it when the reference is cut out", () => {
+      const addressObject = Address.parse('Ів. 3:16 - "God so loved"');
+      expect(addressObject).not.toBe(false);
+      if (addressObject === false) {
+        return;
+      }
+      expect(addressObject.addressString).toBe("Ів. 3:16");
+    });
+  });
+
   describe("book-name aliases", () => {
     // [input, expected bookIndex, expected language]
     const enCases: [string, number][] = [
@@ -147,29 +180,110 @@ describe("Address.parse", () => {
   });
 });
 
+describe("Address.parse against a translation numbering", () => {
+  it("takes a chapter the translation has and the KJV table does not", () => {
+    // Огієнко splits Joel into four chapters where the KJV table stops at three
+    expect(Address.parse("Joel 4:1")).toBe(false);
+    const addressObject = Address.parse("Joel 4:1", "ukr-ogi");
+    expect(addressObject).not.toBe(false);
+    if (addressObject !== false) {
+      expect(addressObject.address.startChapterNum).toBe(3);
+    }
+  });
+
+  it("refuses a chapter no translation has any more", () => {
+    // Турконяк used to carry Ps 151 and Синодальний Daniel 13-14; they left the
+    // files with the rest of the deuterocanon, so there is nothing to reach
+    expect(Address.parse("Ps 151:1", "ukr-turk")).toBe(false);
+    expect(Address.parse("Dan 13:1", "rus-syn")).toBe(false);
+  });
+
+  it("still reads a verse inside a chapter the KJV table numbers shorter", () => {
+    // Daniel 3 runs to 100 verses in the Синодальний; verses inside a chapter
+    // are never filtered, whatever the KJV table says about it
+    expect(Address.parse("Dan 3:100")).toBe(false);
+    expect(Address.parse("Dan 3:100", "rus-syn")).not.toBe(false);
+  });
+});
+
 describe("Address.versesCount", () => {
+  // Genesis 31 ends at verse 55 in the KJV table and at 54 in three of the
+  // bundled translations, so a span that crosses into chapter 32 is a different
+  // number of verses depending on who is counting
+  const gen31to32 = {
+    bookIndex: 0,
+    startChapterNum: 30,
+    startVerseNum: 0,
+    endChapterNum: 31,
+    endVerseNum: 1
+  };
+
   it("counts verses across a chapter boundary", () => {
     expect(
-      Address.versesCount({
-        bookIndex: 0,
-        startChapterNum: 0,
-        endChapterNum: 1,
-        startVerseNum: 1,
-        endVerseNum: 2
-      })
+      Address.versesCount(
+        {
+          bookIndex: 0,
+          startChapterNum: 0,
+          endChapterNum: 1,
+          startVerseNum: 1,
+          endVerseNum: 2
+        },
+        null
+      )
     ).toBe(33);
   });
 
   it("counts an open-ended address as one verse", () => {
     expect(
-      Address.versesCount({
-        bookIndex: 42,
-        startChapterNum: 2,
-        startVerseNum: 15,
-        endChapterNum: null,
-        endVerseNum: null
-      })
+      Address.versesCount(
+        {
+          bookIndex: 42,
+          startChapterNum: 2,
+          startVerseNum: 15,
+          endChapterNum: null,
+          endVerseNum: null
+        },
+        null
+      )
     ).toBe(1);
+  });
+
+  it("counts a span in the numbering of the translation it is written in", () => {
+    expect(Address.versesCount(gen31to32, "ukr-turk")).toBe(56);
+    expect(Address.versesCount(gen31to32, "rus-syn")).toBe(57);
+  });
+
+  it("falls back to the KJV table when no translation is named", () => {
+    // a translation the user typed themselves, ESV, nothing chosen yet
+    expect(Address.versesCount(gen31to32, null)).toBe(57);
+    expect(Address.versesCount(gen31to32, undefined)).toBe(57);
+    expect(Address.versesCount(gen31to32, "esv")).toBe(57);
+  });
+
+  it("ends a book where the translation ends it, not where the KJV does", () => {
+    // ukr-turk folds Malachi into three chapters the Hebrew way, so its third
+    // chapter is the long one and ukr-ogi's is the short one
+    const mal3to4 = {
+      bookIndex: 38,
+      startChapterNum: 2,
+      startVerseNum: 0,
+      endChapterNum: 3,
+      endVerseNum: 1
+    };
+    expect(Address.versesCount(mal3to4, "ukr-turk")).toBe(26);
+    expect(Address.versesCount(mal3to4, "ukr-ogi")).toBe(20);
+  });
+
+  it("needs no numbering for a span inside one chapter", () => {
+    const john316 = {
+      bookIndex: 42,
+      startChapterNum: 2,
+      startVerseNum: 15,
+      endChapterNum: 2,
+      endVerseNum: 17
+    };
+    expect(Address.versesCount(john316, "ukr-turk")).toBe(3);
+    expect(Address.versesCount(john316, null)).toBe(3);
   });
 });
 
@@ -229,5 +343,42 @@ describe("Address.order and Address.distance", () => {
   it("is zero apart from itself", () => {
     expect(Address.distance(john, john)).toBe(0);
     expect(Address.distance(genesis, john)).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * What "can this passage's text be asked for" comes down to. It used to be
+ * written out by hand at each of the three places that asked, and each copy had
+ * its own idea of what an unpicked part looks like.
+ */
+describe("Address.isComplete", () => {
+  const john316 = {
+    bookIndex: 42,
+    startChapterNum: 2,
+    startVerseNum: 15,
+    endChapterNum: null,
+    endVerseNum: null
+  };
+
+  it("is true for an address with an open end", () => {
+    expect(Address.isComplete(john316)).toBe(true);
+  });
+
+  it("is true when the end is filled in as well", () => {
+    expect(
+      Address.isComplete({ ...john316, endChapterNum: 2, endVerseNum: 17 })
+    ).toBe(true);
+  });
+
+  it("is false while any part of the start is unpicked", () => {
+    expect(Address.isComplete({ ...john316, bookIndex: null })).toBe(false);
+    expect(Address.isComplete({ ...john316, startChapterNum: null })).toBe(
+      false
+    );
+    expect(Address.isComplete({ ...john316, startVerseNum: null })).toBe(false);
+  });
+
+  it("counts the picker's NaN as unpicked, the way equals does", () => {
+    expect(Address.isComplete({ ...john316, startVerseNum: NaN })).toBe(false);
   });
 });

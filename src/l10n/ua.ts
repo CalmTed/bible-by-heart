@@ -160,7 +160,7 @@ export const ua: typeof en = {
   Search: "Пошук",
   Tags: "Категорії",
   Translations: "Переклади",
-  fetchPropositionText: "Підтягнути текст автоматично?",
+  fetchOverwriteText: "Замінити текст на той, що в джерелі?",
   Loading: "Заванатження...",
   NotAFetchableTranslation: "Введи текст вірша тут",
   TextSourceUnavailable: "Тексту зараз немає — введи вірш вручну",

@@ -3,6 +3,7 @@ import { TranslationModel } from "../../src/models";
 import {
   isFetchableTranslation,
   mergeCatalogueIntoTranslations,
+  sortTranslations,
   takeSharedTranslation,
   TRANSLATION_ALIASES
 } from "../../src/utils/translation";
@@ -177,6 +178,20 @@ describe("takeSharedTranslation", () => {
     ).toBe(idOf("ukr-turk"));
   });
 
+  it("recognises the Синодальний, which the app can fetch", () => {
+    // it was the only fetchable source with no alias of its own, so a share
+    // stamped with its name was cleaned but never matched to the translation
+    expect(
+      takeSharedTranslation("Иоанна 3:16 Синодальный перевод", shipped)
+    ).toEqual({
+      text: "Иоанна 3:16 ",
+      translationId: idOf("rus-syn")
+    });
+    expect(
+      takeSharedTranslation("Иоанна 3:16 (Синодальный)", shipped).translationId
+    ).toBe(idOf("rus-syn"));
+  });
+
   it("removes a translation the app has no text for, and names none", () => {
     expect(takeSharedTranslation("John 3:16 NIV", shipped)).toEqual({
       text: "John 3:16 ",
@@ -239,5 +254,65 @@ describe("takeSharedTranslation", () => {
     Object.keys(TRANSLATION_ALIASES).forEach((sourceId) =>
       expect(shippedIds).toContain(sourceId)
     );
+  });
+});
+
+/**
+ * The order the app offers its translations in. It is a property of the list,
+ * not of the six screens that render it, so every one of them shows the same
+ * order without knowing there is one.
+ */
+describe("sortTranslations", () => {
+  const named = (sourceId: string | null, id: number) =>
+    translation({ id, sourceId, name: sourceId ?? "mine" });
+
+  it("puts the shipped sources in the order the catalogue names them", () => {
+    const shuffled = [
+      named("ukr-ogi", 5),
+      named("esv", 1),
+      named("ukr-turk", 6),
+      named("ukr-hom", 3)
+    ];
+    expect(sortTranslations(shuffled).map((tr) => tr.sourceId)).toEqual(
+      BUNDLED_TRANSLATION_SOURCES.map((source) => source.sourceId).filter(
+        (sourceId) =>
+          shuffled.some((tr) => tr.sourceId === sourceId)
+      )
+    );
+  });
+
+  it("offers Турконяка first and ESV second", () => {
+    expect(
+      sortTranslations(getDefaultTranslations(LANGCODE.ua)).map(
+        (tr) => tr.sourceId
+      )
+    ).toEqual([
+      "ukr-turk",
+      "esv",
+      "rus-syn",
+      "ukr-hom",
+      "ukr-kul",
+      "ukr-ogi"
+    ]);
+  });
+
+  it("keeps what it does not know after what it does, in the order it had", () => {
+    const list = [
+      named(null, 100),
+      named("ukr-ogi", 5),
+      named("some-future-source", 101),
+      named("ukr-turk", 6)
+    ];
+    expect(sortTranslations(list).map((tr) => tr.id)).toEqual([6, 5, 100, 101]);
+  });
+
+  it("hands the same array back when nothing moves", () => {
+    const ordered = getDefaultTranslations(LANGCODE.en);
+    expect(sortTranslations(ordered)).toBe(ordered);
+  });
+
+  it("does not renumber or rename anything on the way", () => {
+    const list = [named("ukr-ogi", 5), named("ukr-turk", 6)];
+    expect(sortTranslations(list)).toEqual([list[1], list[0]]);
   });
 });

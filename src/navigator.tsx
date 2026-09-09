@@ -9,7 +9,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 
 import { SCREEN, BACKGROUND_NOTIFICATION_NAME } from "./constants";
 import { RootStackParamList } from "./models";
-import { candyTransition, candyTransitions } from "./utils/screenTransition";
 import { HomeScreen } from "./screens/HomeScreen";
 import { ListScreen } from "./screens/ListScreen";
 import { FiltersScreen } from "./screens/FiltersScreen";
@@ -59,8 +58,15 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 // screens here. e.g. `bbh://train` -> tests, `bbh://passage/12` -> editor.
 // Verified https links additionally require /.well-known/assetlinks.json served
 // by the API (biblebyheart.app) — until then https falls back to the website.
+// Both hosts are listed for the same reason the intent filter names both: the
+// site answers on www too, and a shared link carries whichever one was open.
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: ["bbh://", "bible-by-heart://", "https://biblebyheart.app"],
+  prefixes: [
+    "bbh://",
+    "bible-by-heart://",
+    "https://biblebyheart.app",
+    "https://www.biblebyheart.app"
+  ],
   config: {
     screens: {
       [SCREEN.home]: "",
@@ -75,40 +81,20 @@ const linking: LinkingOptions<RootStackParamList> = {
 };
 
 /**
- * The four screens home reaches directly. Each one arrives from the edge it
- * lives beyond, and `HomeSwipe` moves the finger the same way.
+ * The one option the four screens home reaches directly carry.
  *
- * `detachPreviousScreen: false` is the other half of "back must be fast". The
- * stack detaches the screen underneath the top one, and a detached screen is
- * also a FROZEN one (`react-native-screens` freezes on an inactive activity
- * state) — so popping back to home used to unfreeze it and run its whole first
- * render inside the pop animation, which is precisely when the JS thread has no
- * time to spare. Kept attached, home is already drawn when the card comes off
- * it. It costs home re-rendering on state changes while a session is running,
- * which is cheap: `getStroke` and the week row are memoized on
- * `state.testsHistory`, and that only changes when a session finishes.
+ * `detachPreviousScreen: false` is what makes going back cheap. The stack
+ * detaches the screen underneath the top one, and a detached screen is also a
+ * FROZEN one (`react-native-screens` freezes on an inactive activity state) —
+ * so popping back to home would unfreeze it and run its whole first render
+ * during the pop, which is precisely when the JS thread has none to spare. Kept
+ * attached, home is already drawn when the screen above it goes away. It costs
+ * home re-rendering on state changes while a session is running, which is
+ * cheap: `getStroke` and the week row are memoized on `state.testsHistory`, and
+ * that only changes when a session finishes.
  */
-const listDestination = {
-  ...candyTransitions.right,
+const keepPreviousAttached = {
   detachPreviousScreen: false
-};
-const settingsDestination = {
-  ...candyTransitions.left,
-  detachPreviousScreen: false
-};
-const statsDestination = {
-  ...candyTransitions.bottom,
-  detachPreviousScreen: false
-};
-// Practice arrives from above and is the one destination with NO dismissing
-// gesture. Its inverted-vertical swipe would start in the bottom band of the
-// screen - which on every level component is the answer block, the word options
-// and the Submit button - so a mis-flicked answer would abandon the session.
-// A training session is left on purpose, through the cross in its header.
-const practiceDestination = {
-  ...candyTransitions.top,
-  detachPreviousScreen: false,
-  gestureEnabled: false
 };
 
 export const Navigator: FC = () => {
@@ -132,12 +118,29 @@ export const Navigator: FC = () => {
         detachInactiveScreens
         screenOptions={{
           headerShown: false,
-          gestureEnabled: true,
           presentation: "card",
-          // The app's one transition, instead of whatever preset the library
-          // picks from `Platform.Version`. Spread here so it covers every
-          // screen - a screen that opts out is a bug, not a feature.
-          ...candyTransition,
+          // No screen transition, deliberately, on every screen.
+          //
+          // `animation: "none"` is not a shorter animation, it is none at all:
+          // the stack skips the whole Animated path — no spring on the card's
+          // gesture value, no interpolated card style, no deferred start — and
+          // simply swaps the screens. An animated card is driven by a value the
+          // dismissing pan gesture writes to as well, and either one
+          // interrupting the other leaves the card resting wherever it stopped:
+          // the previous screen still on top with a strip of the new one beside
+          // it, which only a real back gesture clears. A screen that never
+          // moves cannot be left half-moved.
+          //
+          // It is also the cheapest thing the navigator can do on a phone whose
+          // JS thread is the bottleneck — nothing to interpolate per frame, and
+          // no per-card pan handler competing with the app's own gestures (the
+          // list's swipeable rows, home's four swipes, the address picker).
+          animation: "none",
+          // Dragging a card away only means anything while the card follows the
+          // finger, and nothing moves here any more. A screen is left through
+          // its Header's back button or the system back gesture, and home's own
+          // swipes still reach all four destinations.
+          gestureEnabled: false,
           // Blurred screens stay mounted (react-navigation keeps the stack), so
           // without this a single dispatch re-renders EVERY mounted screen and
           // re-runs its O(history) stat work. freezeOnBlur
@@ -149,7 +152,7 @@ export const Navigator: FC = () => {
         <Stack.Screen
           name={SCREEN.settings}
           component={SettingsScreen}
-          options={settingsDestination}
+          options={keepPreviousAttached}
         />
         <Stack.Screen
           name={SCREEN.settingsList}
@@ -191,20 +194,20 @@ export const Navigator: FC = () => {
         <Stack.Screen
           name={SCREEN.listPassage}
           component={ListScreen}
-          options={listDestination}
+          options={keepPreviousAttached}
         />
         <Stack.Screen name={SCREEN.listFilters} component={FiltersScreen} />
         <Stack.Screen name={SCREEN.passage} component={PassageScreen} />
         <Stack.Screen
           name={SCREEN.test}
           component={TestsScreen}
-          options={practiceDestination}
+          options={keepPreviousAttached}
         />
         <Stack.Screen name={SCREEN.testResults} component={FinishScreen} />
         <Stack.Screen
           name={SCREEN.stats}
           component={StatsScreen}
-          options={statsDestination}
+          options={keepPreviousAttached}
         />
         <Stack.Screen name={SCREEN.calendar} component={CalendarScreen} />
         <Stack.Screen name={SCREEN.login} component={LoginScreen} />

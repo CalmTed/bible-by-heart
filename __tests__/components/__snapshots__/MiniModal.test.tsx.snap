@@ -5,6 +5,7 @@ exports[`testing mini modal renders correctly 1`] = `
   animationType="none"
   onDismiss={[Function]}
   onRequestClose={[Function]}
+  statusBarTranslucent={true}
   transparent={true}
   visible={true}
 >
@@ -138,7 +139,7 @@ exports[`testing mini modal renders correctly 1`] = `
           }
         }
       >
-        Підтягнути текст автоматично?
+        Замінити текст на той, що в джерелі?
       </Text>
       <View
         style={

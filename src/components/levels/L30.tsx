@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { ActionName, AddressType, LevelComponentModel } from "../../models";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Address } from "../../utils/address";
@@ -12,6 +12,21 @@ import { levelLayout } from "./levelLayout";
 
 // Level 3: the verse with words missing — put them back in order, then name
 // the address.
+
+// A word that has been taken out of the verse is not RENDERED and then hidden,
+// it is never rendered at all: its slot holds this many non-breaking spaces
+// instead. Drawing the real word in a transparent colour kept the answer one
+// style override away from being readable — and the override kept happening,
+// because "is this word still missing" is answered from component state that
+// the next test can arrive before. Text that is not in the tree cannot be read
+// however the styles resolve, and it is not copyable or announced either.
+const BLANK = "\u00A0";
+const blankFor = (word: string) => BLANK.repeat(word.length);
+
+// The verse card, so a test can ask what the passage block actually shows
+// rather than searching the whole screen — the word bank below it renders the
+// missing words too, on purpose.
+export const L30_VERSE_TEST_ID = "l30Verse";
 
 const levelComponentStyle = StyleSheet.create({
   // the verse card is the prompt block's card, laid out as wrapping words
@@ -30,9 +45,6 @@ const levelComponentStyle = StyleSheet.create({
     marginHorizontal: 2,
     margin: 2,
     borderBottomWidth: 2
-  },
-  hiddenWordText: {
-    color: "transparent"
   },
   optionButtonStyle: {
     padding: 0
@@ -54,6 +66,13 @@ export const L30: FC<LevelComponentModel> = ({
   const [selectedAddress, setSelectedAddress] = useState(
     null as null | AddressType
   );
+  // One style object for every word in the verse rather than a fresh literal
+  // per word per render: a long passage is a couple of hundred of them, on the
+  // screen the app spends its time on.
+  const verseWordStyle = useMemo(
+    () => ({ color: theme.colors.text, fontSize: 18 }),
+    [theme.colors.text]
+  );
 
   const lastErrorIsWrongAddress = test.et.length
     ? test.et[test.et.length - 1] === "wrongAddressToVerse"
@@ -69,18 +88,16 @@ export const L30: FC<LevelComponentModel> = ({
     : alreadyEnteredUntill
       ? words.map((w, i) => i).slice(0, alreadyEnteredUntill)
       : [];
+  // Which words are already back in the verse. `TestsScreen` mounts a level
+  // component under the test's own id, so this starts from THIS test every time
+  // — a session moving from one level-3 test to the next remounts rather than
+  // handing new props to the instance that still holds the last answer sheet.
   const [selectedWords, setSelectedWords] = useState(defaultSelectedWords);
   // The index of the word the user tapped by mistake. `null` is "no error" -
   // NEVER a falsy check, because word 0 is a word the user can get wrong and
   // `!errorIndex` silently swallowed that whole case.
   const [errorIndex, setErrorIndex] = useState(null as number | null);
   const [wrongAddress, setWrongAddress] = useState(null as AddressType | null);
-
-  useEffect(() => {
-    //reset list if same level but different test/passage
-    resetForm();
-    setSelectedWords(defaultSelectedWords);
-  }, [test.i]);
 
   // A generated l30 test with no missing words has nothing to fill in, so the
   // user would sit on a screen with no way forward; passing it is the safety
@@ -202,17 +219,23 @@ export const L30: FC<LevelComponentModel> = ({
         contentContainerStyle={levelLayout.promptContent}
       >
         <View
+          testID={L30_VERSE_TEST_ID}
           style={{
             ...levelComponentStyle.verseCard,
             backgroundColor: theme.colors.bgSecond
           }}
         >
           {words.map((w, i) => {
+            const isTakenOut = missingWords.includes(i);
+            // Shown when it was never taken out, when the user has put it back,
+            // and when the test is being looked at after the fact.
+            const isReadable =
+              levelFinished || !isTakenOut || selectedWords.includes(i);
             return (
               <View
                 key={`${w}${i}`}
                 style={{
-                  ...(missingWords.includes(i)
+                  ...(isTakenOut
                     ? {
                         ...levelComponentStyle.variableWord,
                         borderBottomColor: theme.colors.text
@@ -225,20 +248,8 @@ export const L30: FC<LevelComponentModel> = ({
                     : {})
                 }}
               >
-                <Text
-                  style={{
-                    ...{
-                      color: theme.colors.text,
-                      fontSize: 18
-                    },
-                    ...(levelFinished ||
-                    selectedWords.includes(i) ||
-                    !missingWords.includes(i)
-                      ? {}
-                      : levelComponentStyle.hiddenWordText)
-                  }}
-                >
-                  {w}
+                <Text style={verseWordStyle}>
+                  {isReadable ? w : blankFor(w)}
                 </Text>
               </View>
             );
@@ -340,6 +351,7 @@ export const L30: FC<LevelComponentModel> = ({
           <AddressPicker
             confirmTitle="Submit"
             visible={APVisible}
+            translationId={targetPassage.verseTranslation}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}
           />
@@ -372,6 +384,7 @@ export const L30: FC<LevelComponentModel> = ({
           <AddressPicker
             confirmTitle="Submit"
             visible={APVisible}
+            translationId={targetPassage.verseTranslation}
             onCancel={() => setAPVisible(false)}
             onConfirm={handleAddressSelect}
           />

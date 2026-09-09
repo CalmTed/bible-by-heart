@@ -46,12 +46,11 @@ const ARROW_FOLLOW = 0.5;
 /**
  * Home's four swipes.
  *
- * Every screen used to arrive from the same edge, and the only way in was a
- * button. Now each destination lives beyond an edge — settings to the left, the
- * list to the right, practice above, stats below — and the swipe that asks for
- * one runs the same way the card that answers travels
- * (`utils/screenTransition.ts` holds the other half of that pairing). The
- * gesture and the transition are one motion instead of two.
+ * The only way into a destination used to be a button. Each of the four now
+ * also lives beyond an edge — settings to the left, the list to the right,
+ * practice above, stats below — so the finger reaches for the one it wants
+ * instead of aiming at a control. The screen it asks for arrives with no
+ * transition, which is why the direction has to carry the meaning on its own.
  *
  * **Pulling practice down is a pull-to-reload, on purpose.** It is the one of
  * the four that does something rather than goes somewhere — it generates a

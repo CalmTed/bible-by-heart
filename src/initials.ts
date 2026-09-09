@@ -36,9 +36,20 @@ export const genId: () => number = () => {
   return Math.round(Math.random() * 1000000000);
 };
 
+// The interface language a fresh install opens in. Russian is not one of them -
+// the app has no Russian dictionary and deliberately never will, because
+// `LANGCODE` is what builds the interface picker - but a Russian-speaking phone
+// is far better served by Ukrainian than by English, and the Синодальний is
+// there to read in either case. Everything else opens in English.
+const getInitialLangCode: () => LANGCODE = () => {
+  const phoneLangCode = getLocales()[0]?.languageCode;
+  return phoneLangCode === "uk" || phoneLangCode === "ru"
+    ? LANGCODE.ua
+    : LANGCODE.en;
+};
+
 export const createAppState010: () => AppStateModel010 = () => {
-  const phoneLangCode = getLocales()[0].languageCode;
-  const langCode = phoneLangCode === "uk" ? LANGCODE.ua : LANGCODE.en;
+  const langCode = getInitialLangCode();
   return {
     version: VERSION,
     apiVersion: API_VERSION,
@@ -191,31 +202,27 @@ export const SHIPPED_TRANSLATION_IDS: Record<string, number> = {
   "ukr-hom": 3,
   "ukr-kul": 4,
   "ukr-ogi": 5,
-  "ukr-turk": 6
+  "ukr-turk": 6,
+  "rus-syn": 7
 };
 
 // The translation list a fresh install starts with: every bundled source, in
-// English-first order. Only an English install marks a default (ESV); a
-// Ukrainian one leaves the choice open, because the add-passage flow asks which
-// translation to use anyway and four Ukrainian texts have no obvious winner.
+// the catalogue's own order, which is the order every list of them is offered
+// in. Only an English install marks a default (ESV); a Ukrainian one leaves the
+// choice open, because the add-passage flow asks which translation to use
+// anyway - and the first entry is what it preselects, which is why the order is
+// the catalogue's rather than each screen's.
 export const getDefaultTranslations: (lang: LANGCODE) => TranslationModel[] = (
   lang
-) => {
-  const fromCatalogue: TranslationModel[] = BUNDLED_TRANSLATION_SOURCES.map(
-    (source) => ({
-      id: SHIPPED_TRANSLATION_IDS[source.sourceId],
-      editable: false,
-      name: source.title,
-      sourceId: source.sourceId,
-      addressLanguage: source.language,
-      isDefault: source.sourceId === "esv" && lang === LANGCODE.en
-    })
-  );
-  return [
-    ...fromCatalogue.filter((tr) => tr.addressLanguage === LANGCODE.en),
-    ...fromCatalogue.filter((tr) => tr.addressLanguage !== LANGCODE.en)
-  ];
-};
+) =>
+  BUNDLED_TRANSLATION_SOURCES.map((source) => ({
+    id: SHIPPED_TRANSLATION_IDS[source.sourceId],
+    editable: false,
+    name: source.title,
+    sourceId: source.sourceId,
+    addressLanguage: source.language,
+    isDefault: source.sourceId === "esv" && lang === LANGCODE.en
+  }));
 
 export const getDefaultTrainModes: (lang: LANGCODE) => TrainModeModel[] = (
   lang
@@ -247,7 +254,11 @@ export const createPassage009: (
     id: genId(),
     ownerId: ownerId || null,
     address: address,
-    versesNumber: Address.versesCount(address),
+    // `translation` is one of the user's translation ids, and the source it
+    // names is only resolvable against their settings, which a factory does not
+    // have. So this is the KJV count, and `PassageEditor` - the one place a
+    // passage's address is actually picked - writes the real one.
+    versesNumber: Address.versesCount(address, null),
     verseText: text || "",
     verseTranslation: translation || null,
     dateCreated: birthTime,
@@ -381,7 +392,9 @@ export const createPassage008: (
     id: genId(),
     ownerId: ownerId || null,
     address: address,
-    versesNumber: Address.versesCount(address),
+    // an archived factory: it reproduces what a version-008 passage was, so it
+    // counts the way that version counted and is not brought up to date
+    versesNumber: Address.versesCount(address, null),
     verseText: text || "",
     verseTranslation: translation || null,
     dateCreated: birthTime,

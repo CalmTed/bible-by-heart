@@ -98,8 +98,9 @@ Groups/friends/feed are optional and come later.
   (`src/context/AppContext.tsx`). This pattern STAYS — it works, it is tested, and it was
   measured: the reducer is not what costs time. Don't introduce Redux/Zustand/etc.
 - **Navigation:** one `createStackNavigator` (`src/navigator.tsx`), typed by
-  `RootStackParamList` in `models.ts`, with the app's own transitions
-  (`utils/screenTransition.ts`). No app state travels in route params.
+  `RootStackParamList` in `models.ts`, and no screen transition at all — a push is a
+  swap, which is both the cheapest thing on a slow JS thread and the one shape that
+  cannot be left half-finished. No app state travels in route params.
 - **Data model:** `src/models.ts` (AppState, Passage, Address, History, Settings…),
   initial values in `src/initials.ts`, versioned migrations in
   `src/utils/stateVersionConvert.ts`.

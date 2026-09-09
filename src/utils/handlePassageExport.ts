@@ -1,4 +1,4 @@
-import { createT } from "../l10n";
+import { createAddressT } from "../addressLanguage";
 import { PASSAGE_ROWS_TO_EXPORT } from "../constants";
 import { AppStateModel, PassageModel } from "../models";
 import { Address } from "./address";
@@ -30,7 +30,7 @@ export const passagesToLSV: (state: AppStateModel) => string | false = (
           case "address":
             newValue = Address.format(
               value,
-              createT(
+              createAddressT(
                 state.settings.translations.filter(
                   (t) => t.id === p.verseTranslation
                 )?.[0]?.addressLanguage || state.settings.langCode

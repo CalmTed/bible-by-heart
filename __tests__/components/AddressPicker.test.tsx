@@ -6,7 +6,9 @@ import {
   RenderWithContextOptions
 } from "../../test-utils/renderWithContext";
 import { AddressPicker } from "../../src/components/AddressPicker";
+import { createAddressT } from "../../src/addressLanguage";
 import { LANGCODE, THEMETYPE } from "../../src/constants";
+import { SHIPPED_TRANSLATION_IDS } from "../../src/initials";
 import { getThemeFromScheme } from "../../src/utils/getThemeFromScheme";
 import { createT } from "../../src/l10n";
 
@@ -29,6 +31,10 @@ const renderPicker = (
 
 describe("testing address picker", () => {
   const t = createT(LANGCODE.en);
+  // the picker names books in the language of the ADDRESS, so a test that
+  // presses a book has to ask for it in the language that translation is in
+  const ua = createAddressT(LANGCODE.ua);
+  const ru = createAddressT("ru");
 
   it("renders correctly", async () => {
     const tree = renderPicker(
@@ -180,5 +186,82 @@ describe("testing address picker", () => {
     // lie about what the button is going to do there
     expect(screen.getByText(t("Submit"))).toBeTruthy();
     expect(screen.queryByText(t("APAddVerse"))).toBeNull();
+  });
+
+  it("offers the chapters the chosen translation has, not the fallback's", () => {
+    // Огієнко splits Joel into four chapters; the KJV table the picker falls
+    // back to stops at three, so the fourth button is the whole difference
+    const fallback = renderPicker(
+      <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />
+    );
+    fireEvent.press(fallback.getByText(t("bJoelShrt")));
+    expect(fallback.queryByText("4")).toBeNull();
+
+    const ogi = renderPicker(
+      <AddressPicker
+        visible={true}
+        translationId={SHIPPED_TRANSLATION_IDS["ukr-ogi"]}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />
+    );
+    fireEvent.press(ogi.getByText(ua("bJoelShrt")));
+    expect(ogi.getByText("4")).toBeTruthy();
+  });
+
+  it("draws no button for a chapter the translation does not have", () => {
+    // Турконяк used to number 151 psalms; the psalm left the file it is served
+    // from, so there is no 151st chapter to offer
+    const screen = renderPicker(
+      <AddressPicker
+        visible={true}
+        translationId={SHIPPED_TRANSLATION_IDS["ukr-turk"]}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />
+    );
+    fireEvent.press(screen.getByText(ua("bPsShrt")));
+    expect(screen.getByText("150")).toBeTruthy();
+    expect(screen.queryByText("151")).toBeNull();
+  });
+
+  it("names the books in the language of the address, not of the interface", () => {
+    // a passage picked in the Синодальний is shown as "Иоанна 3:16" everywhere
+    // else in the app, so the picker offering "John" was the one disagreement
+    const screen = renderPicker(
+      <AddressPicker
+        visible={true}
+        translationId={SHIPPED_TRANSLATION_IDS["rus-syn"]}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />,
+      { langCode: LANGCODE.en }
+    );
+    expect(screen.getByText(ru("bJohnShrt"))).toBeTruthy();
+    expect(screen.queryByText(t("bJohnShrt"))).toBeNull();
+  });
+
+  it("titles itself in the address language once a book is picked", () => {
+    const screen = renderPicker(
+      <AddressPicker
+        visible={true}
+        translationId={SHIPPED_TRANSLATION_IDS["rus-syn"]}
+        onCancel={() => {}}
+        onConfirm={() => {}}
+      />,
+      { langCode: LANGCODE.en }
+    );
+    fireEvent.press(screen.getByText(ru("bJohnShrt")));
+    expect(screen.getByText(ru("bJohnLong"))).toBeTruthy();
+  });
+
+  it("falls back to the interface language when no translation is chosen", () => {
+    // a translation the user typed themselves has no address language of its
+    // own, and neither has a picker opened before anything is chosen
+    const screen = renderPicker(
+      <AddressPicker visible={true} onCancel={() => {}} onConfirm={() => {}} />,
+      { langCode: LANGCODE.en }
+    );
+    expect(screen.getByText(t("bJohnShrt"))).toBeTruthy();
   });
 });

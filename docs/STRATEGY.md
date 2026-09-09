@@ -58,12 +58,12 @@ un-animated app.
    progress bar. **No forcible merge.** Design in `ARCHITECTURE.md`. Depends on the
    shared contract package and an API version compatibility gate: sync being off must
    never mean the app is broken.
-3. **Ukrainian translation text** — four Ukrainian translations sit in
-   `bbh-api/src/translations/` as full-text JSON, so the capability and the content
-   arrive together. The pluggable source *is* bbh-api — the client makes one call for any
-   translation, and ESV is one id among them instead of a direct third-party call from
-   the phone. Two rules govern it: the ESV key lives only in the API's env file, and the
-   API is a **proxy that stores no passage text**.
+3. **Translation text** — the bundled translations sit in `bbh-api/src/translations/` as
+   full-text JSON, so the capability and the content arrive together. The pluggable
+   source *is* bbh-api — the client makes one call for any translation, and ESV is one id
+   among them instead of a direct third-party call from the phone. Two rules govern it:
+   the ESV key lives only in the API's env file, and the API is a **proxy that stores no
+   passage text**.
 4. **Finish-screen session data** — what was trained, how long, level-ups, what needs
    repeating. **Never error counts.**
 5. **Premium subscription** — in-app digital subscriptions must go through Google Play
@@ -166,8 +166,36 @@ Not scheduled work — read the relevant line whenever touching its area.
 | Error-message design unification | Dropped as a scheduled item; fix messages where a step already touches them. |
 | Text sources | **bbh-api serves every translation**, ESV included, through one call. The app never holds the ESV key. The API is a proxy and **stores no passage text**. |
 | Translation before address | The translation is picked *before* the address picker — numbering differs between translations, so it must be settled before a verse number is shown. |
+| Numbering | **A translation numbers its own chapters and verses**, generated from the text the API serves (~4 KB each) and shipped on-device for the bundled ones. No shared table can be right about five translations at once; `chaptersAlternative` was the attempt and goes. `bibleReference` keeps the book list, the book order and the title keys, and its `chapters` becomes the KJV table it was trying to be. |
+| Canon scope | **Every translation carries the 66 books and their canonical chapters, and nothing else.** The deuterocanonical books and the chapters appended to canonical ones — Ps 151, Dan 13–14, Esth 11, 2Chr 37 — are *deleted from the translation files*, not kept and filtered: a translation that had them originally is no exception. Chapter *divisions* still differ freely (Joel in three chapters or four, Mal in three or four), and verses inside a canonical chapter are never filtered — Dan 3 running to 100 verses is that chapter in that translation. |
 | Book-name variants | A shipped on-device table, never a lookup — address recognition from shared text must work offline. |
 | Typeable text | **Every text source normalizes to characters a phone keyboard can produce**, at the API, with the same folding table as `sanitizeSharedText.ts`. Learning ends in typing by hand and L5 demands the exact character, so an em dash or a curly quote makes a passage unlearnable. Already-saved passages are never rewritten — the L5 comparator tolerates those instead. |
 | Whitelist, not blacklist | The typeable set is defined by **what is allowed** — per language (Ukrainian letters *or* Latin, never both), digits, space, `.` `,` `:` `;` `!` `?` `-` `'` `"`. Fold variants first, then validate; a character outside the list is **reported as a data defect, never silently stripped**. This is what surfaced the OCR homoglyphs (`госпzдї`, `Iсус`) that a blacklist would have shipped forever. |
 | UCVNTR | The label the app shipped for hand-typed Ukrainian text is not one of the four bundled translations and is not guessed at; it is no longer a shipped default. |
+| Синодальний | Public domain, so **bundled** like the Ukrainian four rather than proxied like ESV: `rus-syn`, shipped id 7, third in the catalogue, ~7.5 MB. Source and licence chain in §3. |
+| Address language ≠ interface language | One enum did both jobs; a Russian translation needs the first and must not touch the second. The address language becomes its own type, a superset of `LANGCODE`, with book titles from a book-name table rather than a UI dictionary. **No third `l10n` file.** |
+| Interface languages | English and Ukrainian, and never a third — the Синодальний is a compromise on the *text*, not an invitation to localize the app into Russian. A phone set to Russian opens the app in **Ukrainian**; a phone that is neither Ukrainian nor Russian opens it in English. |
+| The picker speaks the address language | The address picker names its books in the **translation's** language, from the same book-name table the display, the export and the parser share — pick "Иоанна", see "Иоанна 3:16". It is the picker that was out of step, not the four screens around it. |
+| Verse counting | `versesCount` counts in the **passage's own translation numbering**, never the KJV table — a chapter that ends at a different verse is exactly what the numbering exists to know. Passages already saved keep the `versesNumber` they were saved with. |
 | Docs | `PLAN.md` carries no archive, and no doc but `robotdiary.md` carries history. Comments cite no document. |
+
+## 8. Judgement — the calls this document cannot list
+
+**Common sense before flexibility.** The app cannot be infinitely accommodating and does
+not try to be. Who would learn 1 Esdras or Enoch by heart? Nobody — so those books are
+not carried, not declared, not filtered, and no mechanism is built to hold them "just in
+case". Cost with no reader is still cost. The same question settles the ones nobody
+anticipated: not "could the data model express it", but "would a believer memorizing
+scripture ever want it".
+
+**Synergy over autonomy, at the price of a round trip.** When Fedir's reasoning is
+unclear it is neither guessed at nor silently followed. Say so, and say it *before*
+writing anything:
+
+> There are several things I keep trying to say that it seems you don't quite
+> understand. Are you sure you want to add that feature…?
+
+Being confronted about a question that makes no sense is welcome — he asked for it in
+those words. Building the wrong thing because nobody asked is not: it costs more than
+any number of questions, and it costs the same whether the misunderstanding was his or
+the AI's. Stopping to ask is never the expensive option.

@@ -445,3 +445,73 @@ red tests.
 *Friction:* the strip regex matched `\d+\.\d+\.\d+`, so it also ate legitimate **state**
 versions (`before 0.1.1`, `new in 0.0.8`) and left half-sentences behind; caught only by
 diffing against a pre-edit snapshot, and restored by hand.
+
+**2026-09-08 — four reported bugs.** Screens stop animating (`animation: "none"`,
+gestures off): an animated card shares its value with the pan dismissing it, so an
+interruption strands it half-open. L3 draws blanks, not transparent words; each test
+mounts its own level. Fetch fills empty fields.
+*Friction:* read the stack's `Card.js` hunting the stranded card rather than taking
+"make it not animate" at face value. Two heredocs mangled by bash before moving to
+Node. Three rewrites of the empty-field tests before they waited for the editor's own
+first fetch.
+
+**2026-09-08 — 8.3.0a Синодальний.** Public domain, verified at the module conf:
+CrossWire RusSynodal 1.9.1, taken as getBible JSON, sha1 matched. Bundled, rus-syn, id 7,
+third. 31 349 verses, nothing untypeable under a Russian whitelist. Address language splits
+off LANGCODE — no third l10n file.
+*Friction:* the file every search returns first (open-bibles Zefania) is the Synodal
+re-versified onto Hebrew psalms with (22:1) left inside the verse — and digits pass the
+whitelist, so it fails silently. Caught only by reading Ps 22 by hand.
+
+**2026-09-08 (b) — numbering belongs to the translation.** Fedir's call. Measured first:
+the five disagree on Ps, Dan 3, Joel, Jer 29 and Esth, so no shared table can be right
+about more than one. ~4 KB per map, generated and shipped. chaptersAlternative goes;
+regenerating bibleReference fixes six.
+*Friction:* had decided to drop the Синодальний's twelve deuterocanonical books before
+asking — ukr-hom already keeps its eight. Then wrote the two decisions as new files under
+docs/; Fedir wants no doc beyond the six, so both were folded into STRATEGY and FILEMAP
+and deleted.
+
+**2026-09-08 (c) — six small fixes.** Deuteronomy spelled right (its alias had to go,
+or the no-duplicate rule fires). MiniModal dims under the status bar. A dash standing
+apart is a dangling separator; one touching a word is not. Ів. 3:16 parses. www is an
+App Link. isApiVersionCompatible decides.
+*Friction:* ended by offering to commit and push - the one thing that is never mine to
+do. The LevelPicker one-liner is not one, and the l10n'd alert needs a t through nine
+call sites, so both went back to the list. Two node -e edits died on regex escaping
+through bash.
+
+**2026-09-08 (d) — 8.3.0 b/d/e.** rus-syn served: 78 books, 37 098 verses, sha1 matched,
+three OSIS notes cut content and all, Russian whitelist. Every translation now numbers
+itself from its own file - /getNumbering, ~4 KB, plus a shipped copy. bibleReference
+regenerated from the ASV: 1189/31102.
+*Friction:* gave rus-syn all 78 book titles, not the 66 the step asked for - the
+catalogue test holds books to bookCount*2 and ukr-hom already keeps its eight. Two node
+-e edits died on backslash escaping through bash again; heredocs fixed it. Nothing to
+check on a phone: no UI moved.
+
+**2026-09-09 — 8.3.0 f/c.** Picker and parser read the chosen translation's
+numbering; a chapter outside the 66-book canon answers 0 verses - no button, no parse.
+Russian is an address language, not an interface one: ADDRESSLANG plus a book-title table,
+Синодальний shipped id 7. On a phone: its list entry, Ps stopping at 150.
+*Friction:* wrote getBookSpellings only after a probe found the Синодальний's "1 Цар" is
+1 Samuel and the app's Ukrainian "1 Цар" is 1 Kings - a cross-language clash the alias
+test never looked for. One node -e died on a backtick through bash again.
+
+**2026-09-09 (b) — four out-of-scope items, scoped not built.** Fedir's calls: 66 books
+and canonical chapters only, deleted from the files not declared; the picker speaks the
+address language; no Russian interface; versesCount by translation. Four steps queued,
+STRATEGY gained a judgement section.
+*Friction:* the canon question had failed to land twice before, so nothing was written
+until it was asked plainly — and measuring the five files first found what
+declare-and-filter had already missed: ukr-turk 2Chr 37 is the Prayer of Manasseh,
+undeclared, offered by the picker today.
+
+**2026-09-09 (c) — 8.3.0 g/h/i/j.** 20 deuterocanonical books and 7 appended chapters
+cut from the five files; all 66 now, nonCanonicalChapters gone both repos.
+versesCount and the picker's books follow the chosen translation. rus-syn aliased, ru
+phones open Ukrainian, setLang survives no default.
+*Friction:* node was permission-denied in auto mode until Fedir switched it off. And
+renderWithContext set `t` from langCode but not state.settings.langCode — a pairing the
+app never has, so the picker snapshot failed on correct code; fixed the harness, not the
+component.

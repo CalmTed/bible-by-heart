@@ -143,9 +143,18 @@ export const getWeeklyStats: (state: AppStateModel) => WeeklyStatsModel = (
       if (!passage) {
         return partialSum;
       }
+      // the stored number is what the passage was saved with and stays that
+      // way; only a passage that never got one is counted here, and then in its
+      // own translation's numbering
       return (
         partialSum +
-        (passage.versesNumber || Address.versesCount(passage.address))
+        (passage.versesNumber ||
+          Address.versesCount(
+            passage.address,
+            state.settings.translations.find(
+              (tr) => tr.id === passage.verseTranslation
+            )?.sourceId
+          ))
       );
     }, 0);
     const minutesNumber = Math.ceil(

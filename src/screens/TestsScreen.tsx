@@ -342,8 +342,17 @@ export const TestsScreen: FC<ScreenPropsModel<SCREEN.test>> = ({
             handleOpen={handleLevelPickerOpen}
             handleRestart={handleReset}
           />
+          {/* Keyed by the test, so moving to the next one MOUNTS a level
+              rather than handing it new props. Two tests of the same level are
+              the same component type in the same slot, so React would otherwise
+              keep the instance and every piece of answer-in-progress state in
+              it: level 3's filled-in words, level 5's typed text, a level's
+              open picker. An effect can only put that right AFTER the frame
+              that already showed it — which on level 3 is the whole verse,
+              readable, above the options asking for it. */}
           {LevelComponent && (
             <LevelComponent
+              key={activeTestObj.i}
               test={activeTestObj}
               state={state}
               submitTest={handleTestSubmit}

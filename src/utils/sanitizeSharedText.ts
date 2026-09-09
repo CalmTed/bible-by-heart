@@ -78,6 +78,13 @@ const stripLeadingTranslationCode = (input: string): string => {
 // text the user is going to be tested on character by character.
 const BRACKETED_VERSE_NUMBER = /\[[ \t]*\d+(?:[ \t]*[:.][ \t]*\d+)?[ \t]*\]/g;
 
+// A dash counts as a dangling separator only where it STANDS APART - "- text",
+// "text -". That is what a share leaves behind once the reference is cut out of
+// it: `Ps 23:1 — "the LORD is my shepherd"` becomes `- "the LORD..."`. A dash
+// TOUCHING a word belongs to what was shared - a verse range ("3:16-17"), a
+// hyphenated name - which is why it is not simply added to the class above.
+const DANGLING_DASH = /^-+(?=\s|$)|\s-+$/g;
+
 export const sanitizeSharedText = (input: string): string => {
   let text = input
     // en/em dash → hyphen
@@ -108,6 +115,7 @@ export const sanitizeSharedText = (input: string): string => {
     const before = text;
     text = stripWrappingQuotes(text);
     text = text.replace(/^[\s:;,]+|[\s:;,]+$/g, "");
+    text = text.replace(DANGLING_DASH, "");
     changed = text !== before;
   }
   return text;

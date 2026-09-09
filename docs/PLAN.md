@@ -27,23 +27,14 @@
 
 - [ ] **8.3.1 Expo SDK upgrade** (54 → current, if the jump is documented-safe) (build)
 - [ ] aditional issues fix:  
-      - __tests__/ is checked by nothing. tsconfig.json include is ["*","src/*","src/*","src/**/*","plugins/*"] (note the duplicated entry) and lint is eslint ./src/ — so tests get neither tsc nor eslint. test-utils/ is uncovered too
       - @ts-ignore in src/ — Button, Input, TestNavDot, WeekActivity, initials ×2, models ×2, CalendarScreen — against a rule that bans them
-      - MiniModal has no statusBarTranslucent — its backdrop is full-screen, so on Android the dim stops short of the status bar
-      - LevelPicker.handleLabelPress opens with a dead if: if (!isNaN(passageLevelFromTestLevel)) { // return; } — so the picker opens mid-session and lets the level be changed
+      - LevelPicker.handleLabelPress opens with a dead if: if (!isNaN(passageLevelFromTestLevel)) { // return; } — so the picker opens mid-session and lets the level be changed. Not a one-line uncomment: the modal's own body has branches written for the mid-session case (the two subtexts and the restart button, all gated on testLevel), so closing the door leaves them unreachable. Decide what the label does during a test first
       - TestsScreen builds try-durations from new Date().getTime() during render (lines 291/295), so a recorded duration is "time between two renders" and a first-time-correct test stores an unclosed try
       - L40 compares typed text raw — targetText.trim().startsWith(passageText.trim()), ===, and toLowerCase().startsWith for word options
-      - PassageEditor's fetch proposition is a hand-rolled ConfirmModal (raw MiniModal + text + Cancel/green confirm)
-      - Address.parse rejects a dot after an abbreviation — Ів. 3:16 and Jn. 3:16 don't resolve, Ів 3:16 does
-      - sanitizeSharedText leaves a leading dash — Пс 23:1 — «текст» arrives as — «текст»
       - Timezone/DST streak math can drop a day (a 25h day reads as a break)
       - The text endpoints are unauthenticated and unrated — the ESV proxy is an open door onto your quota - will need device id to check rate
       - data/test.db is tracked and rewritten by every test run — an unreadable 20 KB binary in every commit, unmergeable on conflict --- drop it add autogeneration on device when not exists
-      - www.biblebyheart.app is not in the App-Links filter (only the bare host, app.config.js:92), though Caddy serves it
-      - bDeuLong reads "Deoteronomy" in en.ts (and ua.ts) — visible in the UI. bibleBooks.ts spells it correctly on purpose, so the two now differ --- rename bDeuLong
-      - ukr-turk's meta has no chapterCount — the catalogue reports null --- count and add
-      - isApiVersionCompatible() in bbh-shared is dead code — fetch.ts:158 compares versionData.version === API_VERSION raw, so the API_COMPATIBILITY range table never runs and the first contract bump hard-fails every older app
-      - The "outdated app" alert (fetch.ts:161 and :190) is a hardcoded Ukrainian title + English body, not t() from l10n
+      - The "outdated app" alert (fetch.ts) is a hardcoded Ukrainian title + English body, not t() from l10n. fetchAPI has no language: threading a `t` in reaches all nine call sites, which is what makes this a step and not a quick fix
 
       
 
@@ -124,4 +115,11 @@ Retired IDs, never to be re-added: **8.5.1** (pluggable text-source interface �
 serving every translation *is* that interface) and **8.2.9** (layered `t("page.title")`
 l10n keys). Also dropped: fresh-install default tags/train-modes (`initials.ts`), and the
 standalone error-message-design unification — fix messages where a step already touches
-them. The post-1.0 pool lives in `STRATEGY.md`.
+them.
+
+**Ignored on purpose — do not raise it again:** `__tests__/` and `test-utils/` are outside
+`tsconfig.json`'s `include` and outside `eslint ./src/`, so they get neither `tsc` nor
+`eslint`. That stays. Pulling them in costs a `@types` dependency and a dozen loosely
+typed fixtures, and `npm test` already tells us the thing that matters.
+
+The post-1.0 pool lives in `STRATEGY.md`.

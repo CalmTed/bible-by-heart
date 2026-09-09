@@ -1,4 +1,7 @@
-import { TranslationSourceModel } from "../constants";
+import {
+  BUNDLED_TRANSLATION_SOURCES,
+  TranslationSourceModel
+} from "../constants";
 import { TranslationModel } from "../models";
 
 // What the app does with a text-source catalogue once it has one - pure, so the
@@ -12,6 +15,38 @@ export const isFetchableTranslation: (
 ) => boolean = (translation, catalogue) =>
   !!translation?.sourceId &&
   catalogue.some((source) => source.sourceId === translation.sourceId);
+
+/**
+ * The list in the order it is offered in: the shipped sources in the order
+ * `BUNDLED_TRANSLATION_SOURCES` names them, then everything else - a source the
+ * catalogue added later, and the translations the user typed themselves - in
+ * the order the list already had them.
+ *
+ * The order is a property of the LIST rather than of each screen that renders
+ * it, because six screens render it and every one of them would otherwise have
+ * to remember. Unchanged means the SAME array back, so the reducer can tell
+ * whether anything moved without comparing element by element.
+ */
+export const sortTranslations: (
+  translations: TranslationModel[]
+) => TranslationModel[] = (translations) => {
+  const rank = (translation: TranslationModel) => {
+    const shipped = BUNDLED_TRANSLATION_SOURCES.findIndex(
+      (source) => source.sourceId === translation.sourceId
+    );
+    return shipped === -1 ? BUNDLED_TRANSLATION_SOURCES.length : shipped;
+  };
+  const sorted = translations
+    .map((translation, index) => ({ translation, index }))
+    .sort(
+      (a, b) => rank(a.translation) - rank(b.translation) || a.index - b.index
+    )
+    .map((entry) => entry.translation);
+  const moved = sorted.some(
+    (translation, index) => translation !== translations[index]
+  );
+  return moved ? sorted : translations;
+};
 
 /**
  * The catalogue's translations, as entries of the user's own list. A source the
@@ -74,7 +109,8 @@ export const TRANSLATION_ALIASES: Record<string, string[]> = {
   "ukr-hom": ["Хоменка", "Хоменко"],
   "ukr-kul": ["Куліша", "Куліш", "UKRK"],
   "ukr-ogi": ["Огієнка", "Огієнко", "UBIO"],
-  "ukr-turk": ["Турконяка", "Турконяк", "UTT"]
+  "ukr-turk": ["Турконяка", "Турконяк", "UTT"],
+  "rus-syn": ["Синодальный перевод", "Синодальный", "Синодальний", "RUSV"]
 };
 
 /**

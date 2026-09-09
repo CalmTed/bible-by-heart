@@ -18,7 +18,8 @@ import {
 import { Button, IconButton } from "./Button";
 import { Header } from "./Header";
 import { IconName } from "./Icon";
-import { WORD, createT } from "../l10n";
+import { WORD } from "../l10n";
+import { createAddressT } from "../addressLanguage";
 import { Address } from "../utils/address";
 import { Passage } from "../utils/passage";
 import { TextInput } from "react-native-gesture-handler";
@@ -108,10 +109,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   const handleTextFetch = (translation?: number) => {
     const translationId = translation || tempPassage.verseTranslation;
     const sourceId = getTranslation(translationId)?.sourceId;
-    const validAdress =
-      tempPassage.address.bookIndex !== null &&
-      tempPassage.address.startChapterNum !== null &&
-      tempPassage.address.startVerseNum !== null;
+    const validAdress = Address.isComplete(tempPassage.address);
     if (sourceId && validAdress && canFetchTranslation(translationId)) {
       if (state.settings.devModeEnabled) {
         logger.write(
@@ -170,34 +168,49 @@ export const PassageEditor: FC<PassageEditorModel> = ({
   useEffect(() => {
     // On mount: if we already have a valid address but no text yet (e.g. adding
     // from a picked address / shared intent), fetch the verse text.
-    const addressExists =
-      tempPassage.address.bookIndex !== null &&
-      tempPassage.address.startChapterNum !== null &&
-      tempPassage.address.startVerseNum !== null;
-    const textIsEmpty = !tempPassage.verseText.length;
-    if (addressExists && textIsEmpty) {
+    if (
+      Address.isComplete(tempPassage.address) &&
+      !tempPassage.verseText.length
+    ) {
       handleTextFetch();
     }
   }, []);
 
+  // An empty field fills itself when the address or the translation lands on
+  // something fetchable — there is nothing there to lose, and that is the whole
+  // add-a-passage flow.
+  //
+  // A field with text in it is left ALONE. It used to raise a "fetch the text?"
+  // dialog on every one of those changes, which is a question asked of somebody
+  // who was typing, and answering it wrongly overwrites what they wrote. Text
+  // that is already there is only ever replaced by the fetch button below it,
+  // which asks first.
   useEffect(() => {
-    //checknig if data changed after first PE rendering
-    const fetchableTranslation = canFetchTranslation(
-      tempPassage.verseTranslation
-    );
-    const addressORTranslationChanged =
+    const changed =
       passage.verseTranslation !== tempPassage.verseTranslation ||
       JSON.stringify(passage.address) !== JSON.stringify(tempPassage.address);
-    const textEmpty = !tempPassage.verseText.length;
-    //should ask user to fetch if verse taxt is not empty
-    if (fetchableTranslation && addressORTranslationChanged) {
-      if (!textEmpty) {
-        setFetchPropositionOpen(true);
-      } else {
-        handleTextFetch();
-      }
+    if (
+      changed &&
+      !tempPassage.verseText.length &&
+      canFetchTranslation(tempPassage.verseTranslation)
+    ) {
+      handleTextFetch();
     }
   }, [JSON.stringify(tempPassage.address), tempPassage.verseTranslation]);
+
+  // Pressing "fetch" over an empty field is not a decision worth a dialog; over
+  // text the user can see it is, because it replaces it.
+  const handleFetchPress = () => {
+    if (tempPassage.verseText.length) {
+      setFetchPropositionOpen(true);
+      return;
+    }
+    handleTextFetch();
+  };
+  const canFetchNow =
+    !fetchingInProgress &&
+    canFetchTranslation(tempPassage.verseTranslation) &&
+    Address.isComplete(tempPassage.address);
 
   const handleTextChange = (newVal: string) => {
     setPassage((prv) => {
@@ -239,7 +252,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({
         return {
           ...prv,
           address: newAdress,
-          versesNumber: Address.versesCount(newAdress)
+          versesNumber: Address.versesCount(
+            newAdress,
+            getTranslation(prv.verseTranslation)?.sourceId
+          )
         };
       });
     }
@@ -422,7 +438,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       borderRadius: 2
     }
   });
-  const tempT = createT(
+  const tempT = createAddressT(
     state.settings.translations.find(
       (tr) => tr.id === tempPassage.verseTranslation
     )?.addressLanguage || state.settings.langCode
@@ -466,7 +482,10 @@ export const PassageEditor: FC<PassageEditorModel> = ({
             <Pressable onPress={() => setAPVisible(true)}>
               <Text style={PEstyle.bodyTopAddress}>
                 {Address.format(tempPassage.address, tempT)}
-                {`(${Address.versesCount(tempPassage.address)})`}
+                {`(${Address.versesCount(
+                  tempPassage.address,
+                  getTranslation(tempPassage.verseTranslation)?.sourceId
+                )})`}
               </Text>
             </Pressable>
             <IconButton
@@ -502,6 +521,17 @@ export const PassageEditor: FC<PassageEditorModel> = ({
                   .indexOf(tempPassage.verseTranslation || -1) + 1
               }
               onSelect={handleTranslationChange}
+            />
+            {/* The only way text arrives over text that is already there. It
+                sits next to the translation because that is what it fetches
+                in, and it is dead rather than hidden when there is nothing to
+                fetch — a control that disappears reads as an app that lost
+                it. */}
+            <Button
+              title={t("Fetch")}
+              type="transparent"
+              onPress={handleFetchPress}
+              disabled={!canFetchNow}
             />
           </View>
           <View style={PEstyle.bodyText}>
@@ -716,6 +746,7 @@ export const PassageEditor: FC<PassageEditorModel> = ({
       <AddressPicker
         visible={isAPVisible}
         address={tempPassage.address}
+        translationId={tempPassage.verseTranslation}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddresChange}
       />
@@ -741,31 +772,18 @@ export const PassageEditor: FC<PassageEditorModel> = ({
           onBack();
         }}
       />
-      <MiniModal
+      {/* What replacing the text asks first. Through ConfirmModal rather than a
+          MiniModal with two buttons arranged by hand: this is a confirmation,
+          and the app has one of those. */}
+      <ConfirmModal
         shown={isFetchPropositionOpen}
-        handleClose={() => setFetchPropositionOpen(false)}
-      >
-        <Text style={theme.theme.headerText}>{t("fetchPropositionText")}</Text>
-        <View
-          style={{
-            ...theme.theme.rowView,
-            ...theme.theme.marginVertical,
-            ...theme.theme.gap20
-          }}
-        >
-          <Button
-            onPress={() => setFetchPropositionOpen(false)}
-            type="secondary"
-            title={t("Cancel")}
-          />
-          <Button
-            onPress={() => handleFetchConfirm()}
-            type="main"
-            color="green"
-            title={t("Fetch")}
-          />
-        </View>
-      </MiniModal>
+        text={t("fetchOverwriteText")}
+        confirmTitle={t("Fetch")}
+        cancelTitle={t("Cancel")}
+        confirmColor="green"
+        onCancel={() => setFetchPropositionOpen(false)}
+        onConfirm={handleFetchConfirm}
+      />
       <MiniModal
         shown={reminderModalShown}
         handleClose={() => setReminderModalShown(false)}

@@ -201,9 +201,11 @@ describe("legacy hop 0.0.6 → 0.0.7 (to007)", () => {
     expect(to.filters.selectedLevels).toEqual(from.filters.selectedLevels);
     expect(to.filters.maxLevels).toEqual(from.filters.maxLevels);
     expect(to.filters.translations).toEqual([]); //new in 0.0.7
-    //defaults appear here: ESV plus the four bundled Ukrainian translations
-    //put in front of every install
-    expect(to.settings.translations).toHaveLength(5);
+    //defaults appear here: every bundled source is put in front of every
+    //install, so the count follows the shipped catalogue rather than a number
+    expect(to.settings.translations).toHaveLength(
+      BUNDLED_TRANSLATION_SOURCES.length
+    );
     //by design (see the converter comment): 0.0.6 reminder times were not
     //user-editable, so they are dropped rather than migrated
     expect(from.reminderTimes).toEqual([28800, 72000]);

@@ -5,6 +5,7 @@ exports[`testing confirm modal renders correctly 1`] = `
   animationType="none"
   onDismiss={[Function]}
   onRequestClose={[Function]}
+  statusBarTranslucent={true}
   transparent={true}
   visible={true}
 >

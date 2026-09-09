@@ -23,7 +23,8 @@ import { ScreenPropsModel } from "../models";
 import { useAppContext } from "../context/AppContext";
 import { getAppStats, getTimeBoundStats } from "../utils/getStats";
 import { dateToString, timeStringFromMS } from "../utils/formatDateTime";
-import { WORD, createT } from "../l10n";
+import { WORD } from "../l10n";
+import { createAddressT } from "../addressLanguage";
 import { Address } from "../utils/address";
 import { testLevelToPassageLevel } from "../utils/levelsConvertion";
 import { LinearGradient } from "expo-linear-gradient";
@@ -548,7 +549,9 @@ export const CalendarScreen: FC<ScreenPropsModel<SCREEN.calendar>> = ({
                       (translation) =>
                         translation.id === targetPassage.verseTranslation
                     )[0];
-                    const tempT = createT(tagetTranslation.addressLanguage);
+                    const tempT = createAddressT(
+                      tagetTranslation.addressLanguage
+                    );
                     const promotionTime =
                       targetPassage.upgradeDates?.[
                         (testLevelToPassageLevel(test.l) + 1) as PASSAGELEVEL

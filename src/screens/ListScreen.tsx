@@ -17,7 +17,7 @@ import {
   ANIMATION,
   ARCHIVED_NAME,
   NO_TAGS_NAME,
-  LANGCODE,
+  ADDRESSLANG,
   LAYOUT,
   SORTINGOPTION,
   SCREEN
@@ -34,7 +34,7 @@ import { Button, IconButton } from "../components/Button";
 import { Icon, IconName } from "../components/Icon";
 import { createAddress, createPassage } from "../initials";
 import { AddressPicker } from "../components/AddressPicker";
-import { createT } from "../l10n";
+import { createAddressT } from "../addressLanguage";
 import { Address } from "../utils/address";
 import { Passage } from "../utils/passage";
 import ReanimatedSwipeable, {
@@ -570,6 +570,7 @@ export const ListScreen: FC<ScreenPropsModel<SCREEN.listPassage>> = ({
       <AddressPicker
         visible={addFlowStep === "address"}
         address={selectedAddress}
+        translationId={flowTranslationId}
         onCancel={handleAPCancel}
         onConfirm={handleAPSubmit}
       />
@@ -646,7 +647,7 @@ const ListItemBase: FC<{
   data: PassageModel;
   sort: SORTINGOPTION;
   leftSwipeTag: string;
-  addressLanguage: LANGCODE;
+  addressLanguage: ADDRESSLANG;
   onPress: (passage: PassageModel) => void;
   onToggleTag: (passage: PassageModel) => void;
   onRemove: (passage: PassageModel) => void;
@@ -773,7 +774,7 @@ const ListItemBase: FC<{
         return `${passage.dateTested ? timeToString(passage.dateTested) : t("Never")}`;
     }
   };
-  const customT = createT(addressLanguage);
+  const customT = createAddressT(addressLanguage);
   // The Pressable sits INSIDE the swipeable, wrapping the row and nothing else.
   // The other way round, wrapping the whole `Swipeable`, puts the action
   // panels inside the row's press area, so a tap on the empty part of a

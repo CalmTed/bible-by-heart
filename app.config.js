@@ -87,10 +87,20 @@ export default {
         {
           autoVerify: true,
           action: "VIEW",
-          data: {
-            "scheme": "https",
-            "host": "biblebyheart.app"
-          },
+          // Both hosts, because the site answers on both and a link shared from
+          // a browser carries whichever one the user landed on. Android
+          // verifies every host in an autoVerify filter, so www must serve the
+          // same /.well-known/assetlinks.json - it does.
+          data: [
+            {
+              "scheme": "https",
+              "host": "biblebyheart.app"
+            },
+            {
+              "scheme": "https",
+              "host": "www.biblebyheart.app"
+            }
+          ],
           category: [
             "BROWSABLE",
             "DEFAULT"

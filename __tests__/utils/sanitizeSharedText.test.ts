@@ -85,6 +85,21 @@ describe("sanitizeSharedText", () => {
     expect(sanitizeSharedText('"John 3:16",')).toBe("John 3:16");
   });
 
+  it("strips a dash left standing apart at either end", () => {
+    // what the reference leaves behind once it is cut out of a share
+    expect(sanitizeSharedText(`${EM_DASH} ${LAQUO}the text${RAQUO}`)).toBe(
+      "the text"
+    );
+    expect(sanitizeSharedText("- the text")).toBe("the text");
+    expect(sanitizeSharedText("the text -")).toBe("the text");
+    expect(sanitizeSharedText("-")).toBe("");
+  });
+
+  it("keeps a dash that touches a word", () => {
+    expect(sanitizeSharedText("John 3:16-17")).toBe("John 3:16-17");
+    expect(sanitizeSharedText("Beth-el")).toBe("Beth-el");
+  });
+
   it("keeps the verse-internal colon of an address intact", () => {
     expect(sanitizeSharedText("John 3:16")).toBe("John 3:16");
   });

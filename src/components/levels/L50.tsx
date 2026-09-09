@@ -349,6 +349,7 @@ export const L50: FC<LevelComponentModel> = ({
       <AddressPicker
         confirmTitle="Submit"
         visible={APVisible}
+        translationId={targetPassage.verseTranslation}
         onCancel={() => setAPVisible(false)}
         onConfirm={handleAddressSelect}
       />

@@ -37,6 +37,7 @@ exports[`testing level 30 rendering L30 renders correctly 1`] = `
             "padding": 10,
           }
         }
+        testID="l30Verse"
       >
         <View
           style={

@@ -4,7 +4,8 @@ import {
   PASSAGELEVEL,
   SORTINGOPTION,
   STUDY_ONE_REPEATS,
-  SETTINGS
+  SETTINGS,
+  THEMETYPE
 } from "../../src/constants";
 import {
   createAddress,
@@ -87,6 +88,32 @@ describe("reducer must return valid state for every call", () => {
       payload: LANGCODE.ua
     });
     expect(toggledLangState?.settings.langCode).toBe(LANGCODE.ua);
+  });
+
+  it("changes the language when nothing is left to be default in it", () => {
+    // the default train mode follows the interface language by moving to the
+    // default translation - and there may be no translation in that language at
+    // all, which used to throw and take the language switch down with it
+    const noUkrainian = {
+      ...testState,
+      settings: {
+        ...testState.settings,
+        langCode: LANGCODE.en,
+        translations: testState.settings.translations.filter(
+          (tr) => tr.addressLanguage === LANGCODE.en
+        )
+      }
+    };
+    expect(noUkrainian.settings.translations.length).toBeGreaterThan(0);
+    const switched = reduce(noUkrainian, {
+      name: ActionName.setLang,
+      payload: LANGCODE.ua
+    });
+    expect(switched?.settings.langCode).toBe(LANGCODE.ua);
+    // the mode keeps the translation it had, which is the one still there
+    expect(switched?.settings.trainModesList[0].translation).toBe(
+      noUkrainian.settings.trainModesList[0].translation
+    );
   });
 
   it("should be able to add or edit passage", () => {
@@ -302,5 +329,43 @@ describe("reducer must return valid state for every call", () => {
       expect(after?.settings).toBe(before.settings);
       expect(after?.settings.leftSwipeTag).toBe("gone");
     });
+  });
+});
+
+/**
+ * The order every screen offers translations in. A state written by an older
+ * build - or restored from a backup taken by one - carries the order that build
+ * used, so the reducer puts it right rather than the six rendering sites each
+ * remembering to sort.
+ */
+describe("the translation order is healed, not converted", () => {
+  const shuffled = () => {
+    const state = createAppState();
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        translations: [...state.settings.translations].reverse()
+      }
+    };
+  };
+
+  it("puts a list written in an older order back", () => {
+    const healed = reduce(shuffled(), {
+      name: ActionName.setTheme,
+      payload: THEMETYPE.dark
+    });
+    expect(healed?.settings.translations.map((tr) => tr.sourceId)).toEqual(
+      createAppState().settings.translations.map((tr) => tr.sourceId)
+    );
+  });
+
+  it("leaves the settings object alone when the order is already right", () => {
+    const state = createAppState();
+    const unchanged = reduce(state, {
+      name: ActionName.setTheme,
+      payload: state.settings.theme
+    });
+    expect(unchanged?.settings.translations).toBe(state.settings.translations);
   });
 });

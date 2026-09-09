@@ -47,10 +47,9 @@ interface HeaderModel {
  * A screen with no bar still renders a bare `<Header />` for the margin, so
  * "every screen goes through the Header" has no exceptions to remember.
  *
- * It springs in on mount with the shared `ANIMATION` vocabulary, staggered
- * behind the screen transition. That is where the app's bounce lives: the card
- * itself is clamped (`utils/screenTransition.ts`), because a full-screen card
- * that overshoots uncovers the screen behind it, while a header has room. It
+ * It springs in on mount with the shared `ANIMATION` vocabulary. Screens
+ * themselves do not move — the navigator swaps them with no transition at all —
+ * so the bar arriving is the whole of the app's motion between screens. It
  * falls from the top edge rather than rising with the content underneath it,
  * and over half the distance - see `entranceStyle` below.
  */

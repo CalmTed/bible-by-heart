@@ -27,6 +27,9 @@ export const SettingsScreen: FC<ScreenPropsModel<SCREEN.settings>> = ({
   const { state, setState, dispatch, t, theme } = useAppContext();
   const [loadingState, setLoadingState] = useState(false);
 
+  // The INTERFACE languages only - every one of them has an l10n dictionary
+  // behind it. The address languages a translation may be written in are a
+  // wider list, offered in the translations screen.
   const languageOptions = Object.entries(LANGCODE).map(([k, v]) => {
     const customT = createT(v);
     return {
